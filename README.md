@@ -91,6 +91,13 @@ CardDemo includes several optional modules that extend the base functionality:
    - DB2 and IMS DB load/unload operations
    - Internal reader functionality
 
+5. **Live Data Input Tool**
+   - Web-based data entry interface for creating test data
+   - Support for transactions, customers, accounts, and cards
+   - Export to fixed-width format compatible with CardDemo batch jobs
+   - Located in `tools/live-data-input/` - open `index.html` in a browser
+   - See [Live Data Input README](./tools/live-data-input/README.md) for details
+
 ## Installation
 
 ### Prerequisites

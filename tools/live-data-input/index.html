@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardDemo - Live Data Input</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CardDemo Live Data Input</h1>
+            <p class="subtitle">Mainframe Credit Card Management System - Data Entry Tool</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="transactions">Transactions</button>
+            <button class="tab-btn" data-tab="customers">Customers</button>
+            <button class="tab-btn" data-tab="accounts">Accounts</button>
+            <button class="tab-btn" data-tab="cards">Cards</button>
+            <button class="tab-btn" data-tab="export">Export Data</button>
+        </nav>
+
+        <!-- Transactions Tab -->
+        <div id="transactions" class="tab-content active">
+            <h2>Add Transaction</h2>
+            <form id="transaction-form" class="data-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tran-id">Transaction ID (16 chars)</label>
+                        <input type="text" id="tran-id" maxlength="16" placeholder="Auto-generated" readonly>
+                        <button type="button" class="btn-small" onclick="generateTransactionId()">Generate</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="tran-type">Transaction Type</label>
+                        <select id="tran-type">
+                            <option value="01">01 - Purchase</option>
+                            <option value="02">02 - Cash Advance</option>
+                            <option value="03">03 - Return</option>
+                            <option value="04">04 - Payment</option>
+                            <option value="05">05 - Fee</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tran-cat">Category Code (4 digits)</label>
+                        <input type="number" id="tran-cat" min="0" max="9999" value="0001">
+                    </div>
+                    <div class="form-group">
+                        <label for="tran-source">Source (10 chars)</label>
+                        <select id="tran-source">
+                            <option value="POS TERM">POS TERM</option>
+                            <option value="ONLINE">ONLINE</option>
+                            <option value="MOBILE">MOBILE</option>
+                            <option value="ATM">ATM</option>
+                            <option value="OPERATOR">OPERATOR</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="tran-desc">Description (100 chars)</label>
+                    <input type="text" id="tran-desc" maxlength="100" placeholder="Purchase at Merchant Name">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tran-amt">Amount ($)</label>
+                        <input type="number" id="tran-amt" step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="tran-card">Card Number (16 digits)</label>
+                        <input type="text" id="tran-card" maxlength="16" pattern="[0-9]{16}" placeholder="1234567890123456">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tran-merchant-id">Merchant ID (9 digits)</label>
+                        <input type="text" id="tran-merchant-id" maxlength="9" pattern="[0-9]{9}" placeholder="800000000">
+                    </div>
+                    <div class="form-group">
+                        <label for="tran-merchant-name">Merchant Name (50 chars)</label>
+                        <input type="text" id="tran-merchant-name" maxlength="50" placeholder="Merchant Name">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="tran-merchant-city">Merchant City (50 chars)</label>
+                        <input type="text" id="tran-merchant-city" maxlength="50" placeholder="City Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="tran-merchant-zip">Merchant ZIP (10 chars)</label>
+                        <input type="text" id="tran-merchant-zip" maxlength="10" placeholder="12345">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Add Transaction</button>
+                    <button type="reset" class="btn-secondary">Clear Form</button>
+                </div>
+            </form>
+            <div class="data-preview">
+                <h3>Transaction Queue (<span id="tran-count">0</span> records)</h3>
+                <div id="transaction-list" class="record-list"></div>
+            </div>
+        </div>
+
+        <!-- Customers Tab -->
+        <div id="customers" class="tab-content">
+            <h2>Add Customer</h2>
+            <form id="customer-form" class="data-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cust-id">Customer ID (9 digits)</label>
+                        <input type="text" id="cust-id" maxlength="9" pattern="[0-9]{9}" placeholder="000000001">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust-ssn">SSN (9 digits)</label>
+                        <input type="text" id="cust-ssn" maxlength="9" pattern="[0-9]{9}" placeholder="123456789">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cust-first">First Name (25 chars)</label>
+                        <input type="text" id="cust-first" maxlength="25" placeholder="John">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust-middle">Middle Name (25 chars)</label>
+                        <input type="text" id="cust-middle" maxlength="25" placeholder="Michael">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust-last">Last Name (25 chars)</label>
+                        <input type="text" id="cust-last" maxlength="25" placeholder="Doe">
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="cust-addr1">Address Line 1 (50 chars)</label>
+                    <input type="text" id="cust-addr1" maxlength="50" placeholder="123 Main Street">
+                </div>
+                <div class="form-group full-width">
+                    <label for="cust-addr2">Address Line 2 (50 chars)</label>
+                    <input type="text" id="cust-addr2" maxlength="50" placeholder="Apt. 456">
+                </div>
+                <div class="form-group full-width">
+                    <label for="cust-addr3">City (50 chars)</label>
+                    <input type="text" id="cust-addr3" maxlength="50" placeholder="Springfield">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cust-state">State (2 chars)</label>
+                        <input type="text" id="cust-state" maxlength="2" placeholder="CA">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust-country">Country (3 chars)</label>
+                        <input type="text" id="cust-country" maxlength="3" value="USA">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust-zip">ZIP Code (10 chars)</label>
+                        <input type="text" id="cust-zip" maxlength="10" placeholder="12345-6789">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cust-phone1">Phone 1 (15 chars)</label>
+                        <input type="text" id="cust-phone1" maxlength="15" placeholder="(555)123-4567">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust-phone2">Phone 2 (15 chars)</label>
+                        <input type="text" id="cust-phone2" maxlength="15" placeholder="(555)987-6543">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cust-dob">Date of Birth</label>
+                        <input type="date" id="cust-dob">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust-fico">FICO Score (3 digits)</label>
+                        <input type="number" id="cust-fico" min="300" max="850" placeholder="700">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust-primary">Primary Card Holder</label>
+                        <select id="cust-primary">
+                            <option value="Y">Yes</option>
+                            <option value="N">No</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cust-govt-id">Government ID (20 chars)</label>
+                        <input type="text" id="cust-govt-id" maxlength="20" placeholder="DL12345678">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust-eft">EFT Account ID (10 chars)</label>
+                        <input type="text" id="cust-eft" maxlength="10" placeholder="0012345678">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Add Customer</button>
+                    <button type="reset" class="btn-secondary">Clear Form</button>
+                </div>
+            </form>
+            <div class="data-preview">
+                <h3>Customer Queue (<span id="cust-count">0</span> records)</h3>
+                <div id="customer-list" class="record-list"></div>
+            </div>
+        </div>
+
+        <!-- Accounts Tab -->
+        <div id="accounts" class="tab-content">
+            <h2>Add Account</h2>
+            <form id="account-form" class="data-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="acct-id">Account ID (11 digits)</label>
+                        <input type="text" id="acct-id" maxlength="11" pattern="[0-9]{11}" placeholder="00000000001">
+                    </div>
+                    <div class="form-group">
+                        <label for="acct-status">Active Status</label>
+                        <select id="acct-status">
+                            <option value="Y">Active (Y)</option>
+                            <option value="N">Inactive (N)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="acct-balance">Current Balance ($)</label>
+                        <input type="number" id="acct-balance" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="acct-credit-limit">Credit Limit ($)</label>
+                        <input type="number" id="acct-credit-limit" step="0.01" placeholder="10000.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="acct-cash-limit">Cash Credit Limit ($)</label>
+                        <input type="number" id="acct-cash-limit" step="0.01" placeholder="2000.00">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="acct-open-date">Open Date</label>
+                        <input type="date" id="acct-open-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="acct-exp-date">Expiration Date</label>
+                        <input type="date" id="acct-exp-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="acct-reissue-date">Reissue Date</label>
+                        <input type="date" id="acct-reissue-date">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="acct-cyc-credit">Current Cycle Credit ($)</label>
+                        <input type="number" id="acct-cyc-credit" step="0.01" value="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="acct-cyc-debit">Current Cycle Debit ($)</label>
+                        <input type="number" id="acct-cyc-debit" step="0.01" value="0.00">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="acct-zip">ZIP Code (10 chars)</label>
+                        <input type="text" id="acct-zip" maxlength="10" placeholder="12345">
+                    </div>
+                    <div class="form-group">
+                        <label for="acct-group">Group ID (10 chars)</label>
+                        <input type="text" id="acct-group" maxlength="10" value="A000000000">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Add Account</button>
+                    <button type="reset" class="btn-secondary">Clear Form</button>
+                </div>
+            </form>
+            <div class="data-preview">
+                <h3>Account Queue (<span id="acct-count">0</span> records)</h3>
+                <div id="account-list" class="record-list"></div>
+            </div>
+        </div>
+
+        <!-- Cards Tab -->
+        <div id="cards" class="tab-content">
+            <h2>Add Card</h2>
+            <form id="card-form" class="data-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-num">Card Number (16 digits)</label>
+                        <input type="text" id="card-num" maxlength="16" pattern="[0-9]{16}" placeholder="1234567890123456">
+                        <button type="button" class="btn-small" onclick="generateCardNumber()">Generate</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-acct-id">Account ID (11 digits)</label>
+                        <input type="text" id="card-acct-id" maxlength="11" pattern="[0-9]{11}" placeholder="00000000001">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-cvv">CVV (3 digits)</label>
+                        <input type="text" id="card-cvv" maxlength="3" pattern="[0-9]{3}" placeholder="123">
+                        <button type="button" class="btn-small" onclick="generateCVV()">Generate</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-exp">Expiration Date</label>
+                        <input type="date" id="card-exp">
+                    </div>
+                    <div class="form-group">
+                        <label for="card-status">Active Status</label>
+                        <select id="card-status">
+                            <option value="Y">Active (Y)</option>
+                            <option value="N">Inactive (N)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label for="card-name">Embossed Name (50 chars)</label>
+                    <input type="text" id="card-name" maxlength="50" placeholder="JOHN M DOE">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Add Card</button>
+                    <button type="reset" class="btn-secondary">Clear Form</button>
+                </div>
+            </form>
+            <div class="data-preview">
+                <h3>Card Queue (<span id="card-count">0</span> records)</h3>
+                <div id="card-list" class="record-list"></div>
+            </div>
+        </div>
+
+        <!-- Export Tab -->
+        <div id="export" class="tab-content">
+            <h2>Export Data</h2>
+            <p class="info-text">Export your queued data to fixed-width format files compatible with CardDemo mainframe processing.</p>
+            
+            <div class="export-section">
+                <h3>Data Summary</h3>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <span class="summary-label">Transactions</span>
+                        <span class="summary-value" id="export-tran-count">0</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label">Customers</span>
+                        <span class="summary-value" id="export-cust-count">0</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label">Accounts</span>
+                        <span class="summary-value" id="export-acct-count">0</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="summary-label">Cards</span>
+                        <span class="summary-value" id="export-card-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="export-section">
+                <h3>Export Options</h3>
+                <div class="export-buttons">
+                    <button class="btn-export" onclick="exportTransactions()">
+                        <span class="btn-icon">&#128196;</span>
+                        Export Transactions (dailytran.txt)
+                    </button>
+                    <button class="btn-export" onclick="exportCustomers()">
+                        <span class="btn-icon">&#128100;</span>
+                        Export Customers (custdata.txt)
+                    </button>
+                    <button class="btn-export" onclick="exportAccounts()">
+                        <span class="btn-icon">&#128179;</span>
+                        Export Accounts (acctdata.txt)
+                    </button>
+                    <button class="btn-export" onclick="exportCards()">
+                        <span class="btn-icon">&#128179;</span>
+                        Export Cards (carddata.txt)
+                    </button>
+                    <button class="btn-export btn-export-all" onclick="exportAll()">
+                        <span class="btn-icon">&#128230;</span>
+                        Export All Data (ZIP)
+                    </button>
+                </div>
+            </div>
+
+            <div class="export-section">
+                <h3>Data Management</h3>
+                <div class="management-buttons">
+                    <button class="btn-danger" onclick="clearAllData()">Clear All Queued Data</button>
+                    <button class="btn-secondary" onclick="loadSampleData()">Load Sample Data</button>
+                </div>
+            </div>
+
+            <div class="export-section">
+                <h3>File Format Information</h3>
+                <div class="format-info">
+                    <details>
+                        <summary>Transaction File Format (CVTRA06Y - 350 bytes)</summary>
+                        <table class="format-table">
+                            <tr><th>Field</th><th>Position</th><th>Length</th><th>Type</th></tr>
+                            <tr><td>Transaction ID</td><td>1-16</td><td>16</td><td>X</td></tr>
+                            <tr><td>Type Code</td><td>17-18</td><td>2</td><td>X</td></tr>
+                            <tr><td>Category Code</td><td>19-22</td><td>4</td><td>9</td></tr>
+                            <tr><td>Source</td><td>23-32</td><td>10</td><td>X</td></tr>
+                            <tr><td>Description</td><td>33-132</td><td>100</td><td>X</td></tr>
+                            <tr><td>Amount</td><td>133-143</td><td>11</td><td>S9(9)V99</td></tr>
+                            <tr><td>Merchant ID</td><td>144-152</td><td>9</td><td>9</td></tr>
+                            <tr><td>Merchant Name</td><td>153-202</td><td>50</td><td>X</td></tr>
+                            <tr><td>Merchant City</td><td>203-252</td><td>50</td><td>X</td></tr>
+                            <tr><td>Merchant ZIP</td><td>253-262</td><td>10</td><td>X</td></tr>
+                            <tr><td>Card Number</td><td>263-278</td><td>16</td><td>X</td></tr>
+                            <tr><td>Orig Timestamp</td><td>279-304</td><td>26</td><td>X</td></tr>
+                            <tr><td>Proc Timestamp</td><td>305-330</td><td>26</td><td>X</td></tr>
+                            <tr><td>Filler</td><td>331-350</td><td>20</td><td>X</td></tr>
+                        </table>
+                    </details>
+                    <details>
+                        <summary>Customer File Format (CVCUS01Y - 500 bytes)</summary>
+                        <table class="format-table">
+                            <tr><th>Field</th><th>Position</th><th>Length</th><th>Type</th></tr>
+                            <tr><td>Customer ID</td><td>1-9</td><td>9</td><td>9</td></tr>
+                            <tr><td>First Name</td><td>10-34</td><td>25</td><td>X</td></tr>
+                            <tr><td>Middle Name</td><td>35-59</td><td>25</td><td>X</td></tr>
+                            <tr><td>Last Name</td><td>60-84</td><td>25</td><td>X</td></tr>
+                            <tr><td>Address Line 1</td><td>85-134</td><td>50</td><td>X</td></tr>
+                            <tr><td>Address Line 2</td><td>135-184</td><td>50</td><td>X</td></tr>
+                            <tr><td>Address Line 3</td><td>185-234</td><td>50</td><td>X</td></tr>
+                            <tr><td>State Code</td><td>235-236</td><td>2</td><td>X</td></tr>
+                            <tr><td>Country Code</td><td>237-239</td><td>3</td><td>X</td></tr>
+                            <tr><td>ZIP Code</td><td>240-249</td><td>10</td><td>X</td></tr>
+                            <tr><td>Phone 1</td><td>250-264</td><td>15</td><td>X</td></tr>
+                            <tr><td>Phone 2</td><td>265-279</td><td>15</td><td>X</td></tr>
+                            <tr><td>SSN</td><td>280-288</td><td>9</td><td>9</td></tr>
+                            <tr><td>Government ID</td><td>289-308</td><td>20</td><td>X</td></tr>
+                            <tr><td>Date of Birth</td><td>309-318</td><td>10</td><td>X</td></tr>
+                            <tr><td>EFT Account ID</td><td>319-328</td><td>10</td><td>X</td></tr>
+                            <tr><td>Primary Holder</td><td>329</td><td>1</td><td>X</td></tr>
+                            <tr><td>FICO Score</td><td>330-332</td><td>3</td><td>9</td></tr>
+                            <tr><td>Filler</td><td>333-500</td><td>168</td><td>X</td></tr>
+                        </table>
+                    </details>
+                    <details>
+                        <summary>Account File Format (CVACT01Y - 300 bytes)</summary>
+                        <table class="format-table">
+                            <tr><th>Field</th><th>Position</th><th>Length</th><th>Type</th></tr>
+                            <tr><td>Account ID</td><td>1-11</td><td>11</td><td>9</td></tr>
+                            <tr><td>Active Status</td><td>12</td><td>1</td><td>X</td></tr>
+                            <tr><td>Current Balance</td><td>13-24</td><td>12</td><td>S9(10)V99</td></tr>
+                            <tr><td>Credit Limit</td><td>25-36</td><td>12</td><td>S9(10)V99</td></tr>
+                            <tr><td>Cash Credit Limit</td><td>37-48</td><td>12</td><td>S9(10)V99</td></tr>
+                            <tr><td>Open Date</td><td>49-58</td><td>10</td><td>X</td></tr>
+                            <tr><td>Expiration Date</td><td>59-68</td><td>10</td><td>X</td></tr>
+                            <tr><td>Reissue Date</td><td>69-78</td><td>10</td><td>X</td></tr>
+                            <tr><td>Cycle Credit</td><td>79-90</td><td>12</td><td>S9(10)V99</td></tr>
+                            <tr><td>Cycle Debit</td><td>91-102</td><td>12</td><td>S9(10)V99</td></tr>
+                            <tr><td>ZIP Code</td><td>103-112</td><td>10</td><td>X</td></tr>
+                            <tr><td>Group ID</td><td>113-122</td><td>10</td><td>X</td></tr>
+                            <tr><td>Filler</td><td>123-300</td><td>178</td><td>X</td></tr>
+                        </table>
+                    </details>
+                    <details>
+                        <summary>Card File Format (CVACT02Y - 150 bytes)</summary>
+                        <table class="format-table">
+                            <tr><th>Field</th><th>Position</th><th>Length</th><th>Type</th></tr>
+                            <tr><td>Card Number</td><td>1-16</td><td>16</td><td>X</td></tr>
+                            <tr><td>Account ID</td><td>17-27</td><td>11</td><td>9</td></tr>
+                            <tr><td>CVV Code</td><td>28-30</td><td>3</td><td>9</td></tr>
+                            <tr><td>Embossed Name</td><td>31-80</td><td>50</td><td>X</td></tr>
+                            <tr><td>Expiration Date</td><td>81-90</td><td>10</td><td>X</td></tr>
+                            <tr><td>Active Status</td><td>91</td><td>1</td><td>X</td></tr>
+                            <tr><td>Filler</td><td>92-150</td><td>59</td><td>X</td></tr>
+                        </table>
+                    </details>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>CardDemo Live Data Input Tool - Part of AWS Mainframe Modernization CardDemo</p>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

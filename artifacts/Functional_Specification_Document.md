@@ -969,12 +969,48 @@ DisclosureGroup
 
 ### 8.3 Optional Functions (DB2/IMS/MQ)
 
+#### 8.3.1 Credit Card Authorizations (IMS-DB2-MQ)
+
 | Function ID | Name | Transaction | Program | Description |
 |-------------|------|-------------|---------|-------------|
-| F-OPT-001 | Transaction Type List | CTLI | COTRTLIC | List transaction types from DB2 |
-| F-OPT-002 | Transaction Type Update | CTTU | COTRTUPC | Update transaction types in DB2 |
-| F-OPT-003 | Pending Auth View | CPVS | COPAUS0C | View pending authorizations (IMS) |
-| F-OPT-004 | Pending Auth Detail | CPVD | COPAUS1C | View authorization details (IMS) |
+| F-OPT-001 | Authorization Processing | CP00 | COPAUA0C | Process credit card authorization requests via MQ trigger, validate against VSAM, store in IMS |
+| F-OPT-002 | Pending Auth Summary | CPVS | COPAUS0C | View pending authorizations with account details from IMS and VSAM |
+| F-OPT-003 | Pending Auth Detail | CPVD | COPAUS1C | View comprehensive authorization details, update IMS and insert to DB2 |
+| F-OPT-004 | Fraud Marking | (Called) | COPAUS2C | Mark transactions as fraudulent and update DB2 fraud tracking table |
+| F-OPT-005 | Auth Purge Batch | CBPAUP0J | CBPAUP0C | Batch purge of expired authorizations with credit adjustment |
+
+**Business Rules for Authorization Processing:**
+- Authorization requests received via MQ are validated against account and customer VSAM files
+- Approved authorizations are stored in IMS hierarchical database
+- Fraudulent transactions can be marked and logged to DB2 for analytics
+- Expired authorizations are purged daily with available credit adjustment
+
+#### 8.3.2 Transaction Type Management (DB2)
+
+| Function ID | Name | Transaction | Program | Description |
+|-------------|------|-------------|---------|-------------|
+| F-OPT-006 | Transaction Type List | CTLI | COTRTLIC | List transaction types from DB2 with forward/backward cursor navigation |
+| F-OPT-007 | Transaction Type Add/Edit | CTTU | COTRTUPC | Add new or edit existing transaction types in DB2 |
+| F-OPT-008 | Transaction Type Batch | MNTTRDB2 | COBTUPDT | Batch maintenance of transaction type table |
+| F-OPT-009 | DB2 Data Extract | TRANEXTR | DSNTIAUL | Extract transaction types from DB2 to VSAM-compatible files |
+
+**Business Rules for Transaction Type Management:**
+- Transaction types are maintained in DB2 for administrative functions
+- Data is synchronized to VSAM for high-performance transaction processing
+- Supports CRUD operations with referential integrity checking
+- Admin menu options 5 and 6 provide online access to this functionality
+
+#### 8.3.3 Account Extractions (MQ-VSAM)
+
+| Function ID | Name | Transaction | Program | Description |
+|-------------|------|-------------|---------|-------------|
+| F-OPT-010 | System Date Inquiry | CDRD | CODATE01 | Query system date via MQ request/response pattern |
+| F-OPT-011 | Account Details Inquiry | CDRA | COACCT01 | Retrieve account information via MQ from VSAM |
+
+**Business Rules for MQ Integration:**
+- Demonstrates asynchronous request/response patterns
+- Enables external system integration via MQ channels
+- Account data extracted from VSAM and transmitted via MQ
 
 ---
 
@@ -1072,6 +1108,8 @@ DisclosureGroup
 
 ## 12. Appendix: Transaction Code Reference
 
+### 12.1 Core Transactions
+
 | Transaction | Program | Description |
 |-------------|---------|-------------|
 | CC00 | COSGN00C | Sign-on Screen |
@@ -1091,8 +1129,30 @@ DisclosureGroup
 | CU01 | COUSR01C | User Add |
 | CU02 | COUSR02C | User Update |
 | CU03 | COUSR03C | User Delete |
-| CTLI | COTRTLIC | Transaction Type List (DB2) |
-| CTTU | COTRTUPC | Transaction Type Update (DB2) |
+
+### 12.2 Optional Module Transactions
+
+#### Credit Card Authorizations (IMS-DB2-MQ)
+
+| Transaction | Program | Description |
+|-------------|---------|-------------|
+| CP00 | COPAUA0C | Process Authorization Requests (MQ trigger) |
+| CPVS | COPAUS0C | Pending Authorization Summary |
+| CPVD | COPAUS1C | Pending Authorization Details |
+
+#### Transaction Type Management (DB2)
+
+| Transaction | Program | Description |
+|-------------|---------|-------------|
+| CTLI | COTRTLIC | Transaction Type List/Update/Delete |
+| CTTU | COTRTUPC | Transaction Type Add/Edit |
+
+#### Account Extractions (MQ-VSAM)
+
+| Transaction | Program | Description |
+|-------------|---------|-------------|
+| CDRD | CODATE01 | Inquire System Date via MQ |
+| CDRA | COACCT01 | Inquire Account Details via MQ |
 
 ---
 

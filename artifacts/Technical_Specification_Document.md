@@ -1014,6 +1014,36 @@ END-EVALUATE
 | COBSWAIT | Utility | ~41 | Wait Utility - Pauses execution for specified centiseconds (calls MVSWAIT) |
 | CSUTLDTC | Utility | ~158 | Date Validation - Validates dates using CEEDAYS Language Environment API |
 
+#### 14.1.4 Optional Module Programs
+
+##### Credit Card Authorizations (IMS-DB2-MQ)
+
+| Program | Type | Transaction | Description |
+|---------|------|-------------|-------------|
+| COPAUA0C | CICS | CP00 | Authorization Request Processor - MQ trigger program that processes credit card authorization requests, validates against VSAM, stores in IMS |
+| COPAUS0C | CICS | CPVS | Authorization Summary Display - Shows pending authorizations with account details, reads from IMS and VSAM |
+| COPAUS1C | CICS | CPVD | Authorization Details Display - Shows comprehensive authorization information, updates IMS and inserts to DB2 |
+| COPAUS2C | CICS | (Called) | Fraud Marking - Marks transactions as fraudulent and updates DB2 fraud tracking table |
+| CBPAUP0C | Batch | - | Expired Authorization Purge - Batch program to purge expired authorizations and adjust available credit |
+| DBUNLDGS | Batch | - | GSAM Unload - Unloads data from GSAM for IMS processing |
+| PAUDBLOD | Batch | - | Authorization DB Load - Loads authorization data into IMS database |
+| PAUDBUNL | Batch | - | Authorization DB Unload - Unloads authorization data from IMS database |
+
+##### Transaction Type Management (DB2)
+
+| Program | Type | Transaction | Description |
+|---------|------|-------------|-------------|
+| COTRTLIC | CICS | CTLI | Transaction Type List - Lists transaction types from DB2 with forward/backward cursor navigation, supports update and delete |
+| COTRTUPC | CICS | CTTU | Transaction Type Add/Edit - Adds new or edits existing transaction types in DB2 using static embedded SQL |
+| COBTUPDT | Batch | - | Transaction Type Batch Maintenance - Batch program for maintaining transaction type table in DB2 |
+
+##### Account Extractions (MQ-VSAM)
+
+| Program | Type | Transaction | Description |
+|---------|------|-------------|-------------|
+| CODATE01 | CICS | CDRD | System Date Inquiry via MQ - Demonstrates MQ request/response pattern for system date retrieval |
+| COACCT01 | CICS | CDRA | Account Details Inquiry via MQ - Retrieves account information through MQ channels from VSAM |
+
 ### 14.2 Copybook Inventory
 
 #### 14.2.1 Data Structure Copybooks
@@ -1130,6 +1160,26 @@ END-EVALUATE
 | INTRDRJ1.JCL | Internal reader job 1 |
 | INTRDRJ2.JCL | Internal reader job 2 |
 | CBADMCDJ.jcl | Administrative card processing |
+
+#### 14.3.6 Optional Module Jobs
+
+##### Credit Card Authorizations (IMS-DB2-MQ)
+
+| JCL Job | Program | Description |
+|---------|---------|-------------|
+| CBPAUP0J.jcl | CBPAUP0C | Batch job to purge expired authorizations |
+| DBPAUTP0.jcl | - | IMS database definition for authorization storage |
+| LOADPADB.JCL | PAUDBLOD | Load authorization data into IMS database |
+| UNLDGSAM.JCL | DBUNLDGS | Unload GSAM data for IMS processing |
+| UNLDPADB.JCL | PAUDBUNL | Unload authorization data from IMS database |
+
+##### Transaction Type Management (DB2)
+
+| JCL Job | Program | Description |
+|---------|---------|-------------|
+| CREADB21.jcl | DSNTEP4 | Creates CardDemo DB2 database and loads transaction type tables |
+| TRANEXTR.jcl | DSNTIAUL | Extracts latest DB2 data for transaction types to VSAM-compatible files |
+| MNTTRDB2.jcl | COBTUPDT | Batch maintenance of transaction type table in DB2 |
 
 ### 14.4 Dataset Naming Convention
 

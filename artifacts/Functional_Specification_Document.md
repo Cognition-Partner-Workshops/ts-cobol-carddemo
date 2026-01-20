@@ -960,6 +960,12 @@ DisclosureGroup
 | F-BAT-006 | File Close | CLOSEFIL | - | Close CICS file access for batch |
 | F-BAT-007 | File Open | OPENFIL | - | Restore CICS file access after batch |
 | F-BAT-008 | Transaction Backup | TRANBKP | - | Backup transaction files |
+| F-BAT-009 | Transaction Validation | - | CBTRN01C | Validate daily transactions against cross-reference and account files |
+| F-BAT-010 | Transaction Report | TRANREPT | CBTRN03C | Generate detailed transaction reports with date filtering |
+| F-BAT-011 | Account File Read | READACCT | CBACT01C | Read account file and write to multiple output formats |
+| F-BAT-012 | Card File Read | READCARD | CBACT02C | Read and print card data file |
+| F-BAT-013 | Cross-Ref File Read | READXREF | CBACT03C | Read and print cross-reference data file |
+| F-BAT-014 | Customer File Read | READCUST | CBCUS01C | Read and print customer data file |
 
 ### 8.3 Optional Functions (DB2/IMS/MQ)
 

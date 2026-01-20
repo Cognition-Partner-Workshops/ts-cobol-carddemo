@@ -970,53 +970,168 @@ END-EVALUATE
 
 ### 14.1 Program Inventory
 
+#### 14.1.1 Online Programs (CICS)
+
 | Program | Type | Lines | Description |
 |---------|------|-------|-------------|
-| COSGN00C | Online | ~400 | Sign-on |
-| COMEN01C | Online | ~350 | Main Menu |
-| COADM01C | Online | ~290 | Admin Menu |
-| COACTVWC | Online | ~500 | Account View |
-| COACTUPC | Online | ~800 | Account Update |
-| COCRDLIC | Online | ~600 | Card List |
-| COCRDSLC | Online | ~400 | Card Detail |
-| COCRDUPC | Online | ~700 | Card Update |
-| COTRN00C | Online | ~600 | Transaction List |
-| COTRN01C | Online | ~400 | Transaction View |
-| COTRN02C | Online | ~700 | Transaction Add |
-| COBIL00C | Online | ~500 | Bill Payment |
-| CORPT00C | Online | ~650 | Reports |
-| COUSR00C | Online | ~700 | User List |
-| COUSR01C | Online | ~300 | User Add |
-| COUSR02C | Online | ~415 | User Update |
-| COUSR03C | Online | ~360 | User Delete |
-| CBTRN02C | Batch | ~730 | Transaction Posting |
-| CBACT04C | Batch | ~650 | Interest Calculation |
-| CBSTM03A | Batch | ~920 | Statement Generation |
-| CBSTM03B | Batch | ~400 | Statement I/O |
-| CBEXPORT | Batch | ~580 | Data Export |
-| CBIMPORT | Batch | ~500 | Data Import |
+| COSGN00C | Online | ~400 | Sign-on - User authentication and session management |
+| COMEN01C | Online | ~350 | Main Menu - Navigation hub for all user functions |
+| COADM01C | Online | ~290 | Admin Menu - Gateway to administrative functions |
+| COACTVWC | Online | ~500 | Account View - Display account details |
+| COACTUPC | Online | ~800 | Account Update - Modify account information |
+| COCRDLIC | Online | ~600 | Card List - Display cards for an account |
+| COCRDSLC | Online | ~400 | Card Detail - Display individual card details |
+| COCRDUPC | Online | ~700 | Card Update - Modify card information |
+| COTRN00C | Online | ~600 | Transaction List - Browse transactions |
+| COTRN01C | Online | ~400 | Transaction View - Display transaction details |
+| COTRN02C | Online | ~700 | Transaction Add - Create new transactions |
+| COBIL00C | Online | ~500 | Bill Payment - Process bill payments |
+| CORPT00C | Online | ~650 | Reports - Generate and display reports |
+| COUSR00C | Online | ~700 | User List - Display system users |
+| COUSR01C | Online | ~300 | User Add - Create new users |
+| COUSR02C | Online | ~415 | User Update - Modify user information |
+| COUSR03C | Online | ~360 | User Delete - Remove users from system |
+
+#### 14.1.2 Batch Programs
+
+| Program | Type | Lines | Description |
+|---------|------|-------|-------------|
+| CBACT01C | Batch | ~431 | Account File Reader - Reads account file and writes to multiple output formats (fixed, array, variable-length records) |
+| CBACT02C | Batch | ~179 | Card File Reader - Reads and prints card data file |
+| CBACT03C | Batch | ~179 | Cross-Reference Reader - Reads and prints account cross-reference data file |
+| CBACT04C | Batch | ~650 | Interest Calculation - Calculates monthly interest on account balances |
+| CBCUS01C | Batch | ~179 | Customer File Reader - Reads and prints customer data file |
+| CBTRN01C | Batch | ~495 | Transaction Validator - Validates daily transactions against cross-reference and account files |
+| CBTRN02C | Batch | ~730 | Transaction Posting - Posts validated transactions to master files |
+| CBTRN03C | Batch | ~650 | Transaction Report - Generates detailed transaction reports with date filtering |
+| CBEXPORT | Batch | ~580 | Data Export - Exports data for branch migration |
+| CBIMPORT | Batch | ~500 | Data Import - Imports data from branch migration files |
+
+#### 14.1.3 Utility Programs
+
+| Program | Type | Lines | Description |
+|---------|------|-------|-------------|
+| COBSWAIT | Utility | ~41 | Wait Utility - Pauses execution for specified centiseconds (calls MVSWAIT) |
+| CSUTLDTC | Utility | ~158 | Date Validation - Validates dates using CEEDAYS Language Environment API |
 
 ### 14.2 Copybook Inventory
 
+#### 14.2.1 Data Structure Copybooks
+
 | Copybook | Lines | Description |
 |----------|-------|-------------|
-| COCOM01Y | 48 | Communication Area |
-| COMEN02Y | 102 | Main Menu Options |
-| COADM02Y | 63 | Admin Menu Options |
-| COTTL01Y | 20 | Title Constants |
-| CSDAT01Y | 30 | Date Formatting |
-| CSMSG01Y | 25 | Message Constants |
-| CSUSR01Y | 27 | User Security Record |
-| CVACT01Y | 21 | Account Record |
-| CVACT02Y | 15 | Card Record |
-| CVACT03Y | 12 | Card Cross-Reference |
-| CVCUS01Y | 27 | Customer Record |
-| CVTRA05Y | 22 | Transaction Record |
-| CVTRA01Y | 14 | Transaction Category Balance |
-| CVTRA02Y | 14 | Disclosure Group |
-| CVEXPORT | 50 | Export Record |
+| CVACT01Y | 21 | Account Record - Account master data structure (300 bytes) |
+| CVACT02Y | 15 | Card Record - Card master data structure (150 bytes) |
+| CVACT03Y | 12 | Card Cross-Reference - Card-to-account-to-customer mapping (50 bytes) |
+| CVCUS01Y | 27 | Customer Record - Customer master data structure (500 bytes) |
+| CVTRA01Y | 14 | Transaction Category Balance - Category balance tracking |
+| CVTRA02Y | 14 | Disclosure Group - Interest rate disclosure groups |
+| CVTRA03Y | 11 | Transaction Type - Transaction type codes and descriptions (60 bytes) |
+| CVTRA04Y | 13 | Transaction Category - Transaction category codes and descriptions (60 bytes) |
+| CVTRA05Y | 22 | Transaction Record - Transaction master data structure (350 bytes) |
+| CVTRA06Y | 22 | Daily Transaction Record - Daily transaction input format (350 bytes) |
+| CVTRA07Y | 74 | Transaction Report Layout - Report headers, detail lines, and totals |
+| CVEXPORT | 50 | Export Record - Multi-record export format for branch migration (500 bytes) |
+| CUSTREC | - | Customer Record (alternate format) |
+| COSTM01 | - | Statement Transaction Layout - Statement report record format |
 
-### 14.3 Dataset Naming Convention
+#### 14.2.2 Communication and Control Copybooks
+
+| Copybook | Lines | Description |
+|----------|-------|-------------|
+| COCOM01Y | 48 | Communication Area - CICS COMMAREA structure for program-to-program communication |
+| COMEN02Y | 102 | Main Menu Options - Menu option definitions and navigation |
+| COADM02Y | 63 | Admin Menu Options - Administrative menu option definitions |
+| COTTL01Y | 20 | Title Constants - Screen title and header constants |
+| CVCRD01Y | 47 | Card Work Areas - AID key definitions, navigation fields, account/card/customer IDs |
+
+#### 14.2.3 Utility Copybooks
+
+| Copybook | Lines | Description |
+|----------|-------|-------------|
+| CSDAT01Y | 30 | Date Formatting - Date display formatting structures |
+| CSMSG01Y | 25 | Message Constants - Standard message text constants |
+| CSMSG02Y | - | Message Constants (extended) - Additional message definitions |
+| CSUSR01Y | 27 | User Security Record - User authentication data structure (80 bytes) |
+| CSUTLDWY | 90 | Date Validation Working Storage - Date editing fields and flags |
+| CSUTLDPY | 376 | Date Validation Procedures - Reusable date validation paragraphs |
+| CODATECN | 53 | Date Conversion - Date format conversion structure (YYYYMMDD/YYYY-MM-DD) |
+| CSSETATY | - | Set Attribute - Screen field attribute manipulation |
+| CSSTRPFY | - | String Processing - String manipulation utilities |
+| CSLKPCDY | - | Lookup Code - Code lookup utilities |
+
+#### 14.2.4 Unused/Reserved Copybooks
+
+| Copybook | Lines | Description |
+|----------|-------|-------------|
+| UNUSED1Y | - | Reserved for future use |
+
+### 14.3 JCL Job Inventory
+
+#### 14.3.1 Data Loading Jobs
+
+| JCL Job | Description |
+|---------|-------------|
+| ACCTFILE.jcl | Define and load Account VSAM KSDS file |
+| CARDFILE.jcl | Define and load Card VSAM KSDS file |
+| CUSTFILE.jcl | Define and load Customer VSAM KSDS file |
+| XREFFILE.jcl | Define and load Card Cross-Reference VSAM KSDS file |
+| TRANFILE.jcl | Define and load Transaction VSAM KSDS file |
+| DUSRSECJ.jcl | Create and load User Security file |
+| DEFCUST.jcl | Define Customer VSAM cluster |
+| TCATBALF.jcl | Define and load Transaction Category Balance file |
+| DISCGRP.jcl | Define and load Disclosure Group file |
+| TRANTYPE.jcl | Define and load Transaction Type reference file |
+| TRANCATG.jcl | Define and load Transaction Category reference file |
+
+#### 14.3.2 Batch Processing Jobs
+
+| JCL Job | Program | Description |
+|---------|---------|-------------|
+| POSTTRAN.jcl | CBTRN02C | Daily transaction posting - validates and posts transactions to master files |
+| INTCALC.jcl | CBACT04C | Monthly interest calculation on account balances |
+| CBEXPORT.jcl | CBEXPORT | Data export for branch migration |
+| CBIMPORT.jcl | CBIMPORT | Data import from branch migration files |
+| TRANREPT.jcl | CBTRN03C | Generate transaction detail report with date filtering |
+| COMBTRAN.jcl | - | Combine transaction files |
+
+#### 14.3.3 File Management Jobs
+
+| JCL Job | Description |
+|---------|-------------|
+| CLOSEFIL.jcl | Close CICS files before batch processing |
+| OPENFIL.jcl | Open CICS files after batch processing |
+| TRANBKP.jcl | Backup transaction file to GDG |
+| WAITSTEP.jcl | Synchronization job - waits for parallel jobs to complete |
+
+#### 14.3.4 Index and Report Jobs
+
+| JCL Job | Description |
+|---------|-------------|
+| TRANIDX.jcl | Build alternate index for transaction file |
+| REPTFILE.jcl | Define report output file |
+| PRTCATBL.jcl | Print transaction category balance report |
+| DALYREJS.jcl | Process daily transaction rejections |
+
+#### 14.3.5 Utility Jobs
+
+| JCL Job | Description |
+|---------|-------------|
+| READACCT.jcl | Read and display account file contents |
+| READCARD.jcl | Read and display card file contents |
+| READCUST.jcl | Read and display customer file contents |
+| READXREF.jcl | Read and display cross-reference file contents |
+| DEFGDGB.jcl | Define Generation Data Group base |
+| DEFGDGD.jcl | Define Generation Data Group with model |
+| ESDSRRDS.jcl | Define ESDS/RRDS VSAM files |
+| CREASTMT.JCL | Create customer statements |
+| TXT2PDF1.JCL | Convert text reports to PDF format |
+| FTPJCL.JCL | FTP file transfer job |
+| INTRDRJ1.JCL | Internal reader job 1 |
+| INTRDRJ2.JCL | Internal reader job 2 |
+| CBADMCDJ.jcl | Administrative card processing |
+
+### 14.4 Dataset Naming Convention
 
 ```
 AWS.M2.CARDDEMO.<entity>.<type>.<organization>

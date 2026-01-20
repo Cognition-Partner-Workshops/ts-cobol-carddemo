@@ -1096,6 +1096,73 @@ END-EVALUATE
 |----------|-------|-------------|
 | UNUSED1Y | - | Reserved for future use |
 
+#### 14.2.5 Optional Module Copybooks
+
+##### Credit Card Authorizations (IMS-DB2-MQ)
+
+| Copybook | Description |
+|----------|-------------|
+| CCPAUERY | Authorization Error Response - Error handling for authorization requests |
+| CCPAURLY | Authorization Reply - MQ reply message structure for authorization responses |
+| CCPAURQY | Authorization Request - MQ request message structure for authorization requests |
+| CIPAUDTY | IMS Authorization Detail - IMS segment structure for authorization details |
+| CIPAUSMY | IMS Authorization Summary - IMS segment structure for authorization summary |
+| IMSFUNCS | IMS Functions - IMS DL/I function code definitions |
+| PADFLPCB | IMS PCB Definition - Program Communication Block for authorization detail |
+| PASFLPCB | IMS PCB Definition - Program Communication Block for authorization summary |
+| PAUTBPCB | IMS PCB Definition - Program Communication Block for authorization table |
+| COPAU00 | BMS Copybook - Generated from COPAU00.bms for authorization summary screen |
+| COPAU01 | BMS Copybook - Generated from COPAU01.bms for authorization detail screen |
+
+##### Transaction Type Management (DB2)
+
+| Copybook | Description |
+|----------|-------------|
+| CSDB2RPY | DB2 Reply Structure - Response structure for DB2 operations |
+| CSDB2RWY | DB2 Row Working Storage - Working storage for DB2 row processing |
+| COTRTLI | BMS Copybook - Generated from COTRTLI.bms for transaction type list screen |
+| COTRTUP | BMS Copybook - Generated from COTRTUP.bms for transaction type update screen |
+
+### 14.5 BMS Map Inventory
+
+#### 14.5.1 Core Application BMS Maps
+
+| BMS Map | Screen | Program | Description |
+|---------|--------|---------|-------------|
+| COSGN00.bms | Sign-on | COSGN00C | User authentication screen |
+| COMEN01.bms | Main Menu | COMEN01C | Regular user main menu |
+| COADM01.bms | Admin Menu | COADM01C | Administrator menu |
+| COACTVW.bms | Account View | COACTVWC | Account details display |
+| COACTUP.bms | Account Update | COACTUPC | Account modification |
+| COCRDLI.bms | Card List | COCRDLIC | Card listing with pagination |
+| COCRDSL.bms | Card Detail | COCRDSLC | Single card details |
+| COCRDUP.bms | Card Update | COCRDUPC | Card modification |
+| COTRN00.bms | Transaction List | COTRN00C | Transaction listing |
+| COTRN01.bms | Transaction View | COTRN01C | Transaction details |
+| COTRN02.bms | Transaction Add | COTRN02C | New transaction entry |
+| COBIL00.bms | Bill Payment | COBIL00C | Bill payment processing |
+| CORPT00.bms | Reports | CORPT00C | Transaction reports |
+| COUSR00.bms | User List | COUSR00C | User listing (Admin) |
+| COUSR01.bms | User Add | COUSR01C | New user entry (Admin) |
+| COUSR02.bms | User Update | COUSR02C | User modification (Admin) |
+| COUSR03.bms | User Delete | COUSR03C | User deletion (Admin) |
+
+#### 14.5.2 Optional Module BMS Maps
+
+##### Credit Card Authorizations (IMS-DB2-MQ)
+
+| BMS Map | Screen | Program | Description |
+|---------|--------|---------|-------------|
+| COPAU00.bms | Auth Summary | COPAUS0C | Pending authorization summary display |
+| COPAU01.bms | Auth Detail | COPAUS1C | Authorization detail view with fraud marking |
+
+##### Transaction Type Management (DB2)
+
+| BMS Map | Screen | Program | Description |
+|---------|--------|---------|-------------|
+| COTRTLI.bms | Type List | COTRTLIC | Transaction type listing from DB2 |
+| COTRTUP.bms | Type Update | COTRTUPC | Transaction type add/edit |
+
 ### 14.3 JCL Job Inventory
 
 #### 14.3.1 Data Loading Jobs

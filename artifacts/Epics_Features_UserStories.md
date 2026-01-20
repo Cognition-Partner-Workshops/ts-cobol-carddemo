@@ -2664,7 +2664,12 @@ Scenario: Account details inquiry
 | F-BAT-006 | File Close | EPIC-008 | FEAT-008-05 | US-008-05-01 |
 | F-BAT-007 | File Open | EPIC-008 | FEAT-008-05 | US-008-05-02 |
 | F-BAT-008 | Transaction Backup | EPIC-008 | FEAT-008-05 | US-008-05-03 |
+| F-BAT-009 | Transaction Validation | EPIC-008 | FEAT-008-01 | US-008-01-02 |
 | F-BAT-010 | Transaction Report | EPIC-006 | FEAT-006-02 | US-006-02-01, US-006-02-02 |
+| F-BAT-011 | Account File Read | EPIC-008 | FEAT-008-04 | US-008-04-01 |
+| F-BAT-012 | Card File Read | EPIC-008 | FEAT-008-04 | US-008-04-01 |
+| F-BAT-013 | Cross-Ref File Read | EPIC-008 | FEAT-008-04 | US-008-04-01 |
+| F-BAT-014 | Customer File Read | EPIC-008 | FEAT-008-04 | US-008-04-01 |
 | F-OPT-001 | Authorization Processing | EPIC-009 | FEAT-009-01 | US-009-01-01, US-009-01-02 |
 | F-OPT-002 | Pending Auth Summary | EPIC-009 | FEAT-009-02 | US-009-02-01 |
 | F-OPT-003 | Pending Auth Detail | EPIC-009 | FEAT-009-03 | US-009-03-01 |

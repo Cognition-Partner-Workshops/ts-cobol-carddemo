@@ -1,0 +1,32 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: authorization-service
+  datasource:
+    url: jdbc:h2:mem:authdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+logging:
+  level:
+    com.carddemo.authorization: DEBUG
+
+# Authorization configuration
+authorization:
+  default-currency: USD
+  max-amount: 50000.00
+  velocity:
+    default-count: 10
+    default-period-minutes: 60

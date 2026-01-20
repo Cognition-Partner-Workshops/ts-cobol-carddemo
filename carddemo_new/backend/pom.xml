@@ -29,6 +29,14 @@
         <module>report-service</module>
         <module>admin-service</module>
         <module>api-gateway</module>
+        <!-- EPIC-008: Batch Processing -->
+        <module>batch-service</module>
+        <!-- EPIC-009: Authorization Processing -->
+        <module>authorization-service</module>
+        <!-- EPIC-010: Transaction Type Management -->
+        <module>transaction-type-service</module>
+        <!-- EPIC-011: System Integration -->
+        <module>integration-service</module>
     </modules>
 
     <properties>

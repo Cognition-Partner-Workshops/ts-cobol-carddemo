@@ -13,6 +13,10 @@ import {
   FileText,
   Users,
   Settings,
+  Clock,
+  Shield,
+  Tag,
+  Network,
 } from 'lucide-react';
 
 const menuItems = [
@@ -26,6 +30,10 @@ const menuItems = [
 
 const adminItems = [
   { href: '/admin', label: 'User Management', icon: Users },
+  { href: '/batch', label: 'Batch Processing', icon: Clock },
+  { href: '/authorization', label: 'Authorization', icon: Shield },
+  { href: '/transaction-types', label: 'Transaction Types', icon: Tag },
+  { href: '/integration', label: 'System Integration', icon: Network },
 ];
 
 export default function Sidebar() {

@@ -54,7 +54,7 @@
          05  WS-PFK-FLAG                           PIC X(1).                    
            88  PFK-VALID                           VALUE '0'.                   
            88  PFK-INVALID                         VALUE '1'.                   
-           88  INPUT-PENDING                       VALUE LOW-VALUES.            
+           88  PFK-PENDING                         VALUE LOW-VALUES.            
          05  WS-EDIT-ACCT-FLAG                     PIC X(1).                    
            88  FLG-ACCTFILTER-NOT-OK               VALUE '0'.                   
            88  FLG-ACCTFILTER-ISVALID              VALUE '1'.                   
@@ -158,7 +158,7 @@
                                                    VALUE 'CCRDSLA'.             
           05 LIT-CARDUPDATEPGM                           PIC X(8)               
                                                    VALUE 'COCRDUPC'.            
-          05 LIT-CARDUDPATETRANID                        PIC X(4)               
+          05 LIT-CARDUPDATETRANID                        PIC X(4)               
                                                    VALUE 'CCUP'.                
           05 LIT-CARDUPDATEMAPSET                        PIC X(8)               
                                                    VALUE 'COCRDUP '.            
@@ -485,7 +485,7 @@
                  MOVE ACCT-CURR-CYC-DEBIT TO ACRCYDBO OF CACTVWAO               
                                                                                 
                  MOVE ACCT-OPEN-DATE      TO ADTOPENO OF CACTVWAO               
-                 MOVE ACCT-EXPIRAION-DATE TO AEXPDTO  OF CACTVWAO               
+                 MOVE ACCT-EXPIRATION-DATE TO AEXPDTO  OF CACTVWAO               
                  MOVE ACCT-REISSUE-DATE   TO AREISDTO OF CACTVWAO               
                  MOVE ACCT-GROUP-ID       TO AADDGRPO OF CACTVWAO               
               END-IF                                                            

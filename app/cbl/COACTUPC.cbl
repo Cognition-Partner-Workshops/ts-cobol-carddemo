@@ -425,7 +425,7 @@
                15  ACCT-UPDATE-CREDIT-LIMIT            PIC S9(10)V99.
                15  ACCT-UPDATE-CASH-CREDIT-LIMIT       PIC S9(10)V99.
                15  ACCT-UPDATE-OPEN-DATE               PIC X(10).
-               15  ACCT-UPDATE-EXPIRAION-DATE          PIC X(10).
+               15  ACCT-UPDATE-EXPIRATION-DATE         PIC X(10).
                15  ACCT-UPDATE-REISSUE-DATE            PIC X(10).
                15  ACCT-UPDATE-CURR-CYC-CREDIT         PIC S9(10)V99.
                15  ACCT-UPDATE-CURR-CYC-DEBIT          PIC S9(10)V99.
@@ -687,9 +687,9 @@
                     20 ACUP-OLD-OPEN-YEAR              PIC X(4).
                     20 ACUP-OLD-OPEN-MON               PIC X(2).
                     20 ACUP-OLD-OPEN-DAY               PIC X(2).
-                15  ACUP-OLD-EXPIRAION-DATE            PIC X(08).
-                15  ACUP-OLD-EXPIRAION-DATE-PARTS      REDEFINES
-                    ACUP-OLD-EXPIRAION-DATE.
+                15  ACUP-OLD-EXPIRATION-DATE           PIC X(08).
+                15  ACUP-OLD-EXPIRATION-DATE-PARTS     REDEFINES
+                    ACUP-OLD-EXPIRATION-DATE.
                     20 ACUP-OLD-EXP-YEAR                PIC X(4).
                     20 ACUP-OLD-EXP-MON                 PIC X(2).
                     20 ACUP-OLD-EXP-DAY                 PIC X(2).
@@ -775,9 +775,9 @@
                     20 ACUP-NEW-OPEN-YEAR              PIC X(4).
                     20 ACUP-NEW-OPEN-MON               PIC X(2).
                     20 ACUP-NEW-OPEN-DAY               PIC X(2).
-                15  ACUP-NEW-EXPIRAION-DATE            PIC X(08).
-                15  ACUP-NEW-EXPIRAION-DATE-PARTS      REDEFINES
-                    ACUP-NEW-EXPIRAION-DATE.
+                15  ACUP-NEW-EXPIRATION-DATE           PIC X(08).
+                15  ACUP-NEW-EXPIRATION-DATE-PARTS     REDEFINES
+                    ACUP-NEW-EXPIRATION-DATE.
                     20 ACUP-NEW-EXP-YEAR                PIC X(4).
                     20 ACUP-NEW-EXP-MON                 PIC X(2).
                     20 ACUP-NEW-EXP-DAY                 PIC X(2).
@@ -1488,7 +1488,7 @@
            MOVE WS-FLG-SIGNED-NUMBER-EDIT  TO WS-EDIT-CREDIT-LIMIT
 
            MOVE 'Expiry Date'            TO WS-EDIT-VARIABLE-NAME
-           MOVE ACUP-NEW-EXPIRAION-DATE  TO WS-EDIT-DATE-CCYYMMDD
+           MOVE ACUP-NEW-EXPIRATION-DATE TO WS-EDIT-DATE-CCYYMMDD
            PERFORM EDIT-DATE-CCYYMMDD
               THRU EDIT-DATE-CCYYMMDD-EXIT
            MOVE WS-EDIT-DATE-FLGS        TO WS-EXPIRY-DATE-FLGS
@@ -1690,7 +1690,7 @@
            AND ACUP-NEW-CREDIT-LIMIT      = ACUP-OLD-CREDIT-LIMIT
            AND ACUP-NEW-CASH-CREDIT-LIMIT = ACUP-OLD-CASH-CREDIT-LIMIT
            AND ACUP-NEW-OPEN-DATE         = ACUP-OLD-OPEN-DATE
-           AND ACUP-NEW-EXPIRAION-DATE    = ACUP-OLD-EXPIRAION-DATE
+           AND ACUP-NEW-EXPIRATION-DATE   = ACUP-OLD-EXPIRATION-DATE
            AND ACUP-NEW-REISSUE-DATE      = ACUP-OLD-REISSUE-DATE
            AND ACUP-NEW-CURR-CYC-CREDIT   = ACUP-OLD-CURR-CYC-CREDIT
            AND ACUP-NEW-CURR-CYC-DEBIT    = ACUP-OLD-CURR-CYC-DEBIT
@@ -3833,10 +3833,10 @@
            MOVE ACCT-OPEN-DATE(6:2)      TO ACUP-OLD-OPEN-MON
            MOVE ACCT-OPEN-DATE(9:2)      TO ACUP-OLD-OPEN-DAY
       * Expiry date
-      *    MOVE ACCT-EXPIRAION-DATE      TO ACUP-OLD-EXPIRAION-DATE
-           MOVE ACCT-EXPIRAION-DATE(1:4) TO ACUP-OLD-EXP-YEAR
-           MOVE ACCT-EXPIRAION-DATE(6:2) TO ACUP-OLD-EXP-MON
-           MOVE ACCT-EXPIRAION-DATE(9:2) TO ACUP-OLD-EXP-DAY
+      *    MOVE ACCT-EXPIRATION-DATE     TO ACUP-OLD-EXPIRATION-DATE
+           MOVE ACCT-EXPIRATION-DATE(1:4) TO ACUP-OLD-EXP-YEAR
+           MOVE ACCT-EXPIRATION-DATE(6:2) TO ACUP-OLD-EXP-MON
+           MOVE ACCT-EXPIRATION-DATE(9:2) TO ACUP-OLD-EXP-DAY
 
       * Reissue date
       *    MOVE ACCT-REISSUE-DATE        TO ACUP-OLD-REISSUE-DATE
@@ -3987,7 +3987,7 @@
                   '-'
                   ACUP-NEW-EXP-DAY
            DELIMITED BY SIZE
-                                       INTO ACCT-UPDATE-EXPIRAION-DATE
+                                       INTO ACCT-UPDATE-EXPIRATION-DATE
 
       * Reissue date
            MOVE ACCT-REISSUE-DATE        TO ACCT-UPDATE-REISSUE-DATE
@@ -4128,9 +4128,9 @@
            AND ACCT-OPEN-DATE(6:2)     EQUAL ACUP-OLD-OPEN-MON
            AND ACCT-OPEN-DATE(9:2)     EQUAL ACUP-OLD-OPEN-DAY
       * Expiry date
-           AND ACCT-EXPIRAION-DATE(1:4)EQUAL ACUP-OLD-EXP-YEAR
-           AND ACCT-EXPIRAION-DATE(6:2)EQUAL ACUP-OLD-EXP-MON
-           AND ACCT-EXPIRAION-DATE(9:2)EQUAL ACUP-OLD-EXP-DAY
+           AND ACCT-EXPIRATION-DATE(1:4)EQUAL ACUP-OLD-EXP-YEAR
+           AND ACCT-EXPIRATION-DATE(6:2)EQUAL ACUP-OLD-EXP-MON
+           AND ACCT-EXPIRATION-DATE(9:2)EQUAL ACUP-OLD-EXP-DAY
       * Reissue date
            AND ACCT-REISSUE-DATE(1:4)  EQUAL ACUP-OLD-REISSUE-YEAR
            AND ACCT-REISSUE-DATE(6:2)  EQUAL ACUP-OLD-REISSUE-MON

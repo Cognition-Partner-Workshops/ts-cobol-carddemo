@@ -112,15 +112,15 @@
                                                    PIC 9(16).                   
            10  CARD-NAME-EMBOSSED-X                PIC X(50).                   
            10  CARD-STATUS-X                       PIC X.                       
-           10  CARD-EXPIRAION-DATE-X               PIC X(10).                   
-           10  FILLER REDEFINES CARD-EXPIRAION-DATE-X.                          
+           10  CARD-EXPIRATION-DATE-X              PIC X(10).                   
+           10  FILLER REDEFINES CARD-EXPIRATION-DATE-X.                         
                20 CARD-EXPIRY-YEAR                 PIC X(4).                    
                20 FILLER                           PIC X(1).                    
                20 CARD-EXPIRY-MONTH                PIC X(2).                    
                20 FILLER                           PIC X(1).                    
                20 CARD-EXPIRY-DAY                  PIC X(2).                    
-           10  CARD-EXPIRAION-DATE-N REDEFINES                                  
-               CARD-EXPIRAION-DATE-X               PIC 9(10).                   
+           10  CARD-EXPIRATION-DATE-N REDEFINES                                 
+               CARD-EXPIRATION-DATE-X              PIC 9(10).                   
                                                                                 
       ******************************************************************        
       *      File and data Handling                                             
@@ -294,7 +294,7 @@
              10 CCUP-OLD-CVV-CD                    PIC X(3).                    
              10 CCUP-OLD-CARDDATA.                                              
                 20 CCUP-OLD-CRDNAME                PIC X(50).                   
-                20 CCUP-OLD-EXPIRAION-DATE.                                     
+                20 CCUP-OLD-EXPIRATION-DATE.                                     
                    25 CCUP-OLD-EXPYEAR             PIC X(4).                    
                    25 CCUP-OLD-EXPMON              PIC X(2).                    
                    25 CCUP-OLD-EXPDAY              PIC X(2).                    
@@ -306,7 +306,7 @@
              10 CCUP-NEW-CVV-CD                    PIC X(3).                    
              10 CCUP-NEW-CARDDATA.                                              
                 20 CCUP-NEW-CRDNAME                PIC X(50).                   
-                20 CCUP-NEW-EXPIRAION-DATE.                                     
+                20 CCUP-NEW-EXPIRATION-DATE.                                     
                    25 CCUP-NEW-EXPYEAR             PIC X(4).                    
                    25 CCUP-NEW-EXPMON              PIC X(2).                    
                    25 CCUP-NEW-EXPDAY              PIC X(2).                    
@@ -316,7 +316,7 @@
              10 CARD-UPDATE-ACCT-ID               PIC 9(11).                    
              10 CARD-UPDATE-CVV-CD                PIC 9(03).                    
              10 CARD-UPDATE-EMBOSSED-NAME         PIC X(50).                    
-             10 CARD-UPDATE-EXPIRAION-DATE        PIC X(10).                    
+             10 CARD-UPDATE-EXPIRATION-DATE       PIC X(10).                    
              10 CARD-UPDATE-ACTIVE-STATUS         PIC X(01).                    
              10 FILLER                            PIC X(59).                    
                                                                                 
@@ -1358,11 +1358,11 @@
                       TO LIT-UPPER                                              
                                                                                 
               MOVE CARD-EMBOSSED-NAME   TO CCUP-OLD-CRDNAME                     
-              MOVE CARD-EXPIRAION-DATE(1:4)                                     
+              MOVE CARD-EXPIRATION-DATE(1:4)                                    
                                         TO CCUP-OLD-EXPYEAR                     
-              MOVE CARD-EXPIRAION-DATE(6:2)                                     
+              MOVE CARD-EXPIRATION-DATE(6:2)                                    
                                         TO CCUP-OLD-EXPMON                      
-              MOVE CARD-EXPIRAION-DATE(9:2)                                     
+              MOVE CARD-EXPIRATION-DATE(9:2)                                    
                                         TO CCUP-OLD-EXPDAY                      
               MOVE CARD-ACTIVE-STATUS   TO CCUP-OLD-CRDSTCD                     
                                                                                 
@@ -1470,7 +1470,7 @@
                    '-'                                                          
                    CCUP-NEW-EXPDAY                                              
                    DELIMITED BY SIZE                                            
-              INTO CARD-UPDATE-EXPIRAION-DATE                                   
+              INTO CARD-UPDATE-EXPIRATION-DATE                                   
            END-STRING                                                           
            MOVE CCUP-NEW-CRDSTCD            TO CARD-UPDATE-ACTIVE-STATUS        
                                                                                 
@@ -1502,18 +1502,18 @@
                                                                                 
            IF  CARD-CVV-CD              EQUAL  TO CCUP-OLD-CVV-CD               
            AND CARD-EMBOSSED-NAME       EQUAL  TO CCUP-OLD-CRDNAME              
-           AND CARD-EXPIRAION-DATE(1:4) EQUAL  TO CCUP-OLD-EXPYEAR              
-           AND CARD-EXPIRAION-DATE(6:2) EQUAL  TO CCUP-OLD-EXPMON               
-           AND CARD-EXPIRAION-DATE(9:2) EQUAL  TO CCUP-OLD-EXPDAY               
+           AND CARD-EXPIRATION-DATE(1:4) EQUAL  TO CCUP-OLD-EXPYEAR             
+           AND CARD-EXPIRATION-DATE(6:2) EQUAL  TO CCUP-OLD-EXPMON              
+           AND CARD-EXPIRATION-DATE(9:2) EQUAL  TO CCUP-OLD-EXPDAY               
            AND CARD-ACTIVE-STATUS       EQUAL  TO CCUP-OLD-CRDSTCD              
                CONTINUE                                                         
            ELSE                                                                 
               SET DATA-WAS-CHANGED-BEFORE-UPDATE TO TRUE                        
               MOVE CARD-CVV-CD                 TO CCUP-OLD-CVV-CD               
               MOVE CARD-EMBOSSED-NAME          TO CCUP-OLD-CRDNAME              
-              MOVE CARD-EXPIRAION-DATE(1:4)    TO CCUP-OLD-EXPYEAR              
-              MOVE CARD-EXPIRAION-DATE(6:2)    TO CCUP-OLD-EXPMON               
-              MOVE CARD-EXPIRAION-DATE(9:2)    TO CCUP-OLD-EXPDAY               
+              MOVE CARD-EXPIRATION-DATE(1:4)   TO CCUP-OLD-EXPYEAR              
+              MOVE CARD-EXPIRATION-DATE(6:2)   TO CCUP-OLD-EXPMON               
+              MOVE CARD-EXPIRATION-DATE(9:2)   TO CCUP-OLD-EXPDAY               
               MOVE CARD-ACTIVE-STATUS          TO CCUP-OLD-CRDSTCD              
               GO TO 9200-WRITE-PROCESSING-EXIT                                  
            END-IF EXIT                                                          

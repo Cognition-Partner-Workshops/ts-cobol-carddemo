@@ -411,7 +411,7 @@
                   MOVE 'OVERLIMIT TRANSACTION'                                  
                     TO WS-VALIDATION-FAIL-REASON-DESC                           
                 END-IF                                                          
-                IF ACCT-EXPIRAION-DATE >= DALYTRAN-ORIG-TS (1:10)               
+                IF ACCT-EXPIRATION-DATE >= DALYTRAN-ORIG-TS (1:10)               
                   CONTINUE                                                      
                 ELSE                                                            
                   MOVE 103 TO WS-VALIDATION-FAIL-REASON                         

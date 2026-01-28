@@ -1,0 +1,195 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: carddemo-postgres
+    environment:
+      POSTGRES_DB: carddemo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: carddemo-auth
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: carddemo
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: carddemo-secret-key-for-jwt-token-generation-must-be-at-least-256-bits-long-for-security
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  customer-service:
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    container_name: carddemo-customer
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: carddemo
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  account-service:
+    build:
+      context: ./account-service
+      dockerfile: Dockerfile
+    container_name: carddemo-account
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: carddemo
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  card-service:
+    build:
+      context: ./card-service
+      dockerfile: Dockerfile
+    container_name: carddemo-card
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: carddemo
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  transaction-service:
+    build:
+      context: ./transaction-service
+      dockerfile: Dockerfile
+    container_name: carddemo-transaction
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: carddemo
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8085:8085"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: carddemo-payment
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: carddemo
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8086:8086"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  reporting-service:
+    build:
+      context: ./reporting-service
+      dockerfile: Dockerfile
+    container_name: carddemo-reporting
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: carddemo
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8087:8087"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  batch-service:
+    build:
+      context: ./batch-service
+      dockerfile: Dockerfile
+    container_name: carddemo-batch
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: carddemo
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "8088:8088"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: carddemo-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      JWT_SECRET: carddemo-secret-key-for-jwt-token-generation-must-be-at-least-256-bits-long-for-security
+      AUTH_SERVICE_URL: http://auth-service:8081
+      CUSTOMER_SERVICE_URL: http://customer-service:8082
+      ACCOUNT_SERVICE_URL: http://account-service:8083
+      CARD_SERVICE_URL: http://card-service:8084
+      TRANSACTION_SERVICE_URL: http://transaction-service:8085
+      PAYMENT_SERVICE_URL: http://payment-service:8086
+      REPORTING_SERVICE_URL: http://reporting-service:8087
+      BATCH_SERVICE_URL: http://batch-service:8088
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - customer-service
+      - account-service
+      - card-service
+      - transaction-service
+      - payment-service
+      - reporting-service
+      - batch-service
+
+volumes:
+  postgres_data:

@@ -1,0 +1,4 @@
+com/carddemo/gateway/config/CorsConfig.class
+com/carddemo/gateway/filter/JwtAuthenticationFilter.class
+com/carddemo/gateway/config/GatewayConfig.class
+com/carddemo/gateway/ApiGatewayApplication.class

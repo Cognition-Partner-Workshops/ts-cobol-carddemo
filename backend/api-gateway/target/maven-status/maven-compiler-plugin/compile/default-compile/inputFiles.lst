@@ -1,0 +1,4 @@
+/home/ubuntu/repos/carddemo-backend/api-gateway/src/main/java/com/carddemo/gateway/filter/JwtAuthenticationFilter.java
+/home/ubuntu/repos/carddemo-backend/api-gateway/src/main/java/com/carddemo/gateway/config/GatewayConfig.java
+/home/ubuntu/repos/carddemo-backend/api-gateway/src/main/java/com/carddemo/gateway/config/CorsConfig.java
+/home/ubuntu/repos/carddemo-backend/api-gateway/src/main/java/com/carddemo/gateway/ApiGatewayApplication.java

@@ -1,0 +1,8 @@
+/home/ubuntu/repos/carddemo-backend/account-service/src/main/java/com/carddemo/account/repository/CardAccountXrefRepository.java
+/home/ubuntu/repos/carddemo-backend/account-service/src/main/java/com/carddemo/account/AccountServiceApplication.java
+/home/ubuntu/repos/carddemo-backend/account-service/src/main/java/com/carddemo/account/repository/AccountRepository.java
+/home/ubuntu/repos/carddemo-backend/account-service/src/main/java/com/carddemo/account/service/AccountService.java
+/home/ubuntu/repos/carddemo-backend/account-service/src/main/java/com/carddemo/account/dto/CreateAccountRequest.java
+/home/ubuntu/repos/carddemo-backend/account-service/src/main/java/com/carddemo/account/dto/UpdateAccountRequest.java
+/home/ubuntu/repos/carddemo-backend/account-service/src/main/java/com/carddemo/account/controller/AccountController.java
+/home/ubuntu/repos/carddemo-backend/account-service/src/main/java/com/carddemo/account/dto/AccountSummaryDto.java

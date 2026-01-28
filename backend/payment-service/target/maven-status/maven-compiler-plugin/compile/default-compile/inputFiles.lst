@@ -1,7 +1,0 @@
-/home/ubuntu/repos/carddemo-backend/payment-service/src/main/java/com/carddemo/payment/dto/PaymentDto.java
-/home/ubuntu/repos/carddemo-backend/payment-service/src/main/java/com/carddemo/payment/service/PaymentService.java
-/home/ubuntu/repos/carddemo-backend/payment-service/src/main/java/com/carddemo/payment/repository/PaymentRepository.java
-/home/ubuntu/repos/carddemo-backend/payment-service/src/main/java/com/carddemo/payment/entity/Payment.java
-/home/ubuntu/repos/carddemo-backend/payment-service/src/main/java/com/carddemo/payment/dto/CreatePaymentRequest.java
-/home/ubuntu/repos/carddemo-backend/payment-service/src/main/java/com/carddemo/payment/PaymentServiceApplication.java
-/home/ubuntu/repos/carddemo-backend/payment-service/src/main/java/com/carddemo/payment/controller/PaymentController.java

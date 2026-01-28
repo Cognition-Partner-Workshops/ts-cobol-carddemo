@@ -1,6 +1,0 @@
-/home/ubuntu/repos/carddemo-backend/customer-service/src/main/java/com/carddemo/customer/dto/UpdateCustomerRequest.java
-/home/ubuntu/repos/carddemo-backend/customer-service/src/main/java/com/carddemo/customer/controller/CustomerController.java
-/home/ubuntu/repos/carddemo-backend/customer-service/src/main/java/com/carddemo/customer/service/CustomerService.java
-/home/ubuntu/repos/carddemo-backend/customer-service/src/main/java/com/carddemo/customer/CustomerServiceApplication.java
-/home/ubuntu/repos/carddemo-backend/customer-service/src/main/java/com/carddemo/customer/dto/CreateCustomerRequest.java
-/home/ubuntu/repos/carddemo-backend/customer-service/src/main/java/com/carddemo/customer/repository/CustomerRepository.java

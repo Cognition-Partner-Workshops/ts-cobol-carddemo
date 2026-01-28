@@ -1,8 +1,0 @@
-/home/ubuntu/repos/carddemo-backend/transaction-service/src/main/java/com/carddemo/transaction/service/TransactionService.java
-/home/ubuntu/repos/carddemo-backend/transaction-service/src/main/java/com/carddemo/transaction/dto/TransactionSummaryDto.java
-/home/ubuntu/repos/carddemo-backend/transaction-service/src/main/java/com/carddemo/transaction/repository/TransactionRepository.java
-/home/ubuntu/repos/carddemo-backend/transaction-service/src/main/java/com/carddemo/transaction/TransactionServiceApplication.java
-/home/ubuntu/repos/carddemo-backend/transaction-service/src/main/java/com/carddemo/transaction/repository/TransactionTypeRepository.java
-/home/ubuntu/repos/carddemo-backend/transaction-service/src/main/java/com/carddemo/transaction/repository/TransactionCategoryRepository.java
-/home/ubuntu/repos/carddemo-backend/transaction-service/src/main/java/com/carddemo/transaction/controller/TransactionController.java
-/home/ubuntu/repos/carddemo-backend/transaction-service/src/main/java/com/carddemo/transaction/dto/CreateTransactionRequest.java

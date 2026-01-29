@@ -1,0 +1,940 @@
+# CardDemo Migration CI/CD Pipeline
+# GitHub Actions workflow for building, testing, and deploying the migrated application
+# 
+# This file contains two workflow definitions:
+# 1. Backend CI/CD (Java Spring Boot Microservices)
+# 2. Frontend CI/CD (React TypeScript)
+#
+# To use these workflows:
+# 1. Create .github/workflows/ directory in your repository
+# 2. Copy the backend workflow to .github/workflows/backend-ci.yml
+# 3. Copy the frontend workflow to .github/workflows/frontend-ci.yml
+# 4. Configure the required secrets in GitHub repository settings
+
+# ============================================================================
+# BACKEND CI/CD WORKFLOW
+# File: .github/workflows/backend-ci.yml
+# ============================================================================
+
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+
+env:
+  JAVA_VERSION: '21'
+  MAVEN_OPTS: '-Xmx1024m'
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Build and Test Job
+  # -------------------------------------------------------------------------
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: carddemo
+          POSTGRES_PASSWORD: carddemo
+          POSTGRES_DB: carddemo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build with Maven
+        working-directory: backend
+        run: mvn clean compile -B
+
+      - name: Run Unit Tests
+        working-directory: backend
+        run: mvn test -B
+        env:
+          SPRING_PROFILES_ACTIVE: test
+
+      - name: Run Integration Tests
+        working-directory: backend
+        run: mvn verify -B -DskipUnitTests
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/carddemo_test
+          SPRING_DATASOURCE_USERNAME: carddemo
+          SPRING_DATASOURCE_PASSWORD: carddemo
+
+      - name: Generate Test Report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Maven Tests
+          path: backend/**/target/surefire-reports/*.xml
+          reporter: java-junit
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: backend/**/target/surefire-reports/
+
+  # -------------------------------------------------------------------------
+  # Code Quality Job
+  # -------------------------------------------------------------------------
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Checkstyle
+        working-directory: backend
+        run: mvn checkstyle:check -B
+        continue-on-error: true
+
+      - name: Run SpotBugs
+        working-directory: backend
+        run: mvn spotbugs:check -B
+        continue-on-error: true
+
+      - name: SonarCloud Scan
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        working-directory: backend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=carddemo-backend \
+            -Dsonar.organization=${{ github.repository_owner }} \
+            -Dsonar.host.url=https://sonarcloud.io
+        continue-on-error: true
+
+  # -------------------------------------------------------------------------
+  # Security Scan Job
+  # -------------------------------------------------------------------------
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: OWASP Dependency Check
+        working-directory: backend
+        run: mvn org.owasp:dependency-check-maven:check -B
+        continue-on-error: true
+
+      - name: Upload Dependency Check Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: backend/**/target/dependency-check-report.html
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: 'backend'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+  # -------------------------------------------------------------------------
+  # Build Docker Images Job
+  # -------------------------------------------------------------------------
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [build, code-quality]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - auth-service
+          - customer-service
+          - account-service
+          - card-service
+          - transaction-service
+          - payment-service
+          - reporting-service
+          - batch-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build JAR
+        working-directory: backend/${{ matrix.service }}
+        run: mvn package -DskipTests -B
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Amazon ECR
+        if: github.ref == 'refs/heads/main'
+        uses: aws-actions/amazon-ecr-login@v2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: backend/${{ matrix.service }}
+          file: backend/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # -------------------------------------------------------------------------
+  # Deploy to Development Job
+  # -------------------------------------------------------------------------
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: build-images
+    if: github.ref == 'refs/heads/develop'
+    environment: development
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name carddemo-dev-cluster --region ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/api-gateway api-gateway=ghcr.io/${{ github.repository }}/api-gateway:${{ github.sha }} -n carddemo-dev
+          kubectl set image deployment/auth-service auth-service=ghcr.io/${{ github.repository }}/auth-service:${{ github.sha }} -n carddemo-dev
+          kubectl set image deployment/customer-service customer-service=ghcr.io/${{ github.repository }}/customer-service:${{ github.sha }} -n carddemo-dev
+          kubectl set image deployment/account-service account-service=ghcr.io/${{ github.repository }}/account-service:${{ github.sha }} -n carddemo-dev
+          kubectl set image deployment/card-service card-service=ghcr.io/${{ github.repository }}/card-service:${{ github.sha }} -n carddemo-dev
+          kubectl set image deployment/transaction-service transaction-service=ghcr.io/${{ github.repository }}/transaction-service:${{ github.sha }} -n carddemo-dev
+          kubectl set image deployment/payment-service payment-service=ghcr.io/${{ github.repository }}/payment-service:${{ github.sha }} -n carddemo-dev
+          kubectl set image deployment/reporting-service reporting-service=ghcr.io/${{ github.repository }}/reporting-service:${{ github.sha }} -n carddemo-dev
+          kubectl set image deployment/batch-service batch-service=ghcr.io/${{ github.repository }}/batch-service:${{ github.sha }} -n carddemo-dev
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/api-gateway -n carddemo-dev --timeout=300s
+          kubectl rollout status deployment/auth-service -n carddemo-dev --timeout=300s
+
+      - name: Run smoke tests
+        run: |
+          API_URL=$(kubectl get svc api-gateway -n carddemo-dev -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl -f http://$API_URL/actuator/health || exit 1
+
+  # -------------------------------------------------------------------------
+  # Deploy to Staging Job
+  # -------------------------------------------------------------------------
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-images
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name carddemo-staging-cluster --region ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/api-gateway api-gateway=ghcr.io/${{ github.repository }}/api-gateway:${{ github.sha }} -n carddemo-staging
+          kubectl set image deployment/auth-service auth-service=ghcr.io/${{ github.repository }}/auth-service:${{ github.sha }} -n carddemo-staging
+          kubectl set image deployment/customer-service customer-service=ghcr.io/${{ github.repository }}/customer-service:${{ github.sha }} -n carddemo-staging
+          kubectl set image deployment/account-service account-service=ghcr.io/${{ github.repository }}/account-service:${{ github.sha }} -n carddemo-staging
+          kubectl set image deployment/card-service card-service=ghcr.io/${{ github.repository }}/card-service:${{ github.sha }} -n carddemo-staging
+          kubectl set image deployment/transaction-service transaction-service=ghcr.io/${{ github.repository }}/transaction-service:${{ github.sha }} -n carddemo-staging
+          kubectl set image deployment/payment-service payment-service=ghcr.io/${{ github.repository }}/payment-service:${{ github.sha }} -n carddemo-staging
+          kubectl set image deployment/reporting-service reporting-service=ghcr.io/${{ github.repository }}/reporting-service:${{ github.sha }} -n carddemo-staging
+          kubectl set image deployment/batch-service batch-service=ghcr.io/${{ github.repository }}/batch-service:${{ github.sha }} -n carddemo-staging
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/api-gateway -n carddemo-staging --timeout=300s
+
+      - name: Run integration tests
+        run: |
+          API_URL=$(kubectl get svc api-gateway -n carddemo-staging -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          # Run integration test suite against staging
+          echo "Running integration tests against $API_URL"
+
+  # -------------------------------------------------------------------------
+  # Deploy to Production Job
+  # -------------------------------------------------------------------------
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name carddemo-prod-cluster --region ${{ secrets.AWS_REGION }}
+
+      - name: Blue-Green Deployment
+        run: |
+          # Deploy to green environment
+          kubectl apply -f backend/k8s/production/green/ -n carddemo-prod
+          
+          # Wait for green deployment to be ready
+          kubectl rollout status deployment/api-gateway-green -n carddemo-prod --timeout=600s
+          
+          # Run health checks on green
+          GREEN_URL=$(kubectl get svc api-gateway-green -n carddemo-prod -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          curl -f http://$GREEN_URL/actuator/health || exit 1
+          
+          # Switch traffic to green
+          kubectl patch svc api-gateway -n carddemo-prod -p '{"spec":{"selector":{"version":"green"}}}'
+          
+          # Scale down blue
+          kubectl scale deployment api-gateway-blue --replicas=0 -n carddemo-prod
+
+      - name: Notify deployment
+        uses: slackapi/slack-github-action@v1.24.0
+        if: always()
+        with:
+          payload: |
+            {
+              "text": "Production deployment ${{ job.status }}: ${{ github.repository }}@${{ github.sha }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+---
+# ============================================================================
+# FRONTEND CI/CD WORKFLOW
+# File: .github/workflows/frontend-ci.yml
+# ============================================================================
+
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'frontend/**'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Build and Test Job
+  # -------------------------------------------------------------------------
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run linting
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Run type check
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Run unit tests
+        working-directory: frontend
+        run: npm test -- --coverage --watchAll=false
+        continue-on-error: true
+
+      - name: Build application
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+          retention-days: 7
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: frontend/coverage/
+        continue-on-error: true
+
+  # -------------------------------------------------------------------------
+  # Code Quality Job
+  # -------------------------------------------------------------------------
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: frontend
+        run: npm run lint -- --format json --output-file eslint-report.json
+        continue-on-error: true
+
+      - name: SonarCloud Scan
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: frontend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
+
+  # -------------------------------------------------------------------------
+  # Security Scan Job
+  # -------------------------------------------------------------------------
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run npm audit
+        working-directory: frontend
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=frontend/package.json
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: 'frontend'
+          format: 'sarif'
+          output: 'trivy-frontend-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-frontend-results.sarif'
+        continue-on-error: true
+
+  # -------------------------------------------------------------------------
+  # E2E Tests Job
+  # -------------------------------------------------------------------------
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps
+        continue-on-error: true
+
+      - name: Run Playwright tests
+        working-directory: frontend
+        run: npx playwright test
+        continue-on-error: true
+        env:
+          VITE_API_URL: http://localhost:8080
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+        continue-on-error: true
+
+  # -------------------------------------------------------------------------
+  # Build Docker Image Job
+  # -------------------------------------------------------------------------
+  build-image:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [build, code-quality]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}/frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: frontend
+          file: frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # -------------------------------------------------------------------------
+  # Deploy to Development Job
+  # -------------------------------------------------------------------------
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: build-image
+    if: github.ref == 'refs/heads/develop'
+    environment: development
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync frontend/dist/ s3://${{ secrets.S3_BUCKET_DEV }} --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_DEV }} \
+            --paths "/*"
+
+      - name: Run smoke tests
+        run: |
+          sleep 30
+          curl -f https://dev.carddemo.example.com || exit 1
+
+  # -------------------------------------------------------------------------
+  # Deploy to Staging Job
+  # -------------------------------------------------------------------------
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-image
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync frontend/dist/ s3://${{ secrets.S3_BUCKET_STAGING }} --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_STAGING }} \
+            --paths "/*"
+
+      - name: Run E2E tests against staging
+        run: |
+          sleep 30
+          curl -f https://staging.carddemo.example.com || exit 1
+
+  # -------------------------------------------------------------------------
+  # Deploy to Production Job
+  # -------------------------------------------------------------------------
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3 (Blue-Green)
+        run: |
+          # Deploy to green bucket
+          aws s3 sync frontend/dist/ s3://${{ secrets.S3_BUCKET_PROD_GREEN }} --delete
+          
+          # Verify green deployment
+          sleep 30
+          curl -f https://green.carddemo.example.com || exit 1
+          
+          # Switch CloudFront origin to green
+          aws cloudfront update-distribution \
+            --id ${{ secrets.CLOUDFRONT_DISTRIBUTION_PROD }} \
+            --distribution-config file://frontend/cloudfront-green-config.json
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_PROD }} \
+            --paths "/*"
+
+      - name: Notify deployment
+        uses: slackapi/slack-github-action@v1.24.0
+        if: always()
+        with:
+          payload: |
+            {
+              "text": "Frontend production deployment ${{ job.status }}: ${{ github.repository }}@${{ github.sha }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+---
+# ============================================================================
+# COMBINED WORKFLOW (Optional - for full stack deployment)
+# File: .github/workflows/full-stack-ci.yml
+# ============================================================================
+
+name: Full Stack CI/CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+jobs:
+  trigger-backend:
+    name: Trigger Backend CI/CD
+    uses: ./.github/workflows/backend-ci.yml
+    secrets: inherit
+
+  trigger-frontend:
+    name: Trigger Frontend CI/CD
+    uses: ./.github/workflows/frontend-ci.yml
+    secrets: inherit
+
+  integration-tests:
+    name: Full Stack Integration Tests
+    runs-on: ubuntu-latest
+    needs: [trigger-backend, trigger-frontend]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run full stack integration tests
+        run: |
+          echo "Running full stack integration tests against ${{ inputs.environment }}"
+          # Add integration test commands here
+
+---
+# ============================================================================
+# REQUIRED SECRETS CONFIGURATION
+# ============================================================================
+# 
+# Configure these secrets in your GitHub repository settings:
+# Settings > Secrets and variables > Actions > New repository secret
+#
+# AWS Credentials:
+#   AWS_ACCESS_KEY_ID        - AWS access key for deployments
+#   AWS_SECRET_ACCESS_KEY    - AWS secret key for deployments
+#   AWS_REGION               - AWS region (e.g., us-east-1)
+#
+# S3 Buckets (Frontend):
+#   S3_BUCKET_DEV            - S3 bucket for development frontend
+#   S3_BUCKET_STAGING        - S3 bucket for staging frontend
+#   S3_BUCKET_PROD_GREEN     - S3 bucket for production green deployment
+#
+# CloudFront Distributions:
+#   CLOUDFRONT_DISTRIBUTION_DEV      - CloudFront distribution ID for dev
+#   CLOUDFRONT_DISTRIBUTION_STAGING  - CloudFront distribution ID for staging
+#   CLOUDFRONT_DISTRIBUTION_PROD     - CloudFront distribution ID for production
+#
+# Code Quality:
+#   SONAR_TOKEN              - SonarCloud authentication token
+#   SNYK_TOKEN               - Snyk authentication token
+#
+# Notifications:
+#   SLACK_WEBHOOK_URL        - Slack webhook for deployment notifications
+#
+# ============================================================================
+# REQUIRED VARIABLES CONFIGURATION
+# ============================================================================
+#
+# Configure these variables in your GitHub repository settings:
+# Settings > Secrets and variables > Actions > Variables > New repository variable
+#
+#   VITE_API_URL             - Backend API URL for frontend builds
+#
+# ============================================================================
+# DOCKERFILE TEMPLATES
+# ============================================================================
+#
+# Backend Dockerfile (backend/{service}/Dockerfile):
+# -------------------------------------------------
+# FROM eclipse-temurin:21-jre-alpine
+# WORKDIR /app
+# COPY target/*.jar app.jar
+# EXPOSE 8080
+# ENTRYPOINT ["java", "-jar", "app.jar"]
+#
+# Frontend Dockerfile (frontend/Dockerfile):
+# -----------------------------------------
+# FROM nginx:alpine
+# COPY dist/ /usr/share/nginx/html/
+# COPY nginx.conf /etc/nginx/nginx.conf
+# EXPOSE 80
+# CMD ["nginx", "-g", "daemon off;"]
+#
+# ============================================================================

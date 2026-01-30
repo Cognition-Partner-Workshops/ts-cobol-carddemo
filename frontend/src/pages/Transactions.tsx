@@ -140,9 +140,9 @@ export default function Transactions() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {data?.content.map((transaction) => (
-              <tr key={transaction.id} className="hover:bg-gray-50">
+              <tr key={transaction.id || transaction.transactionId} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
-                  {transaction.id.slice(0, 8)}...
+                  {String(transaction.id || transaction.transactionId || '').slice(0, 8)}...
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
                   {maskCardNumber(transaction.cardNumber)}
@@ -157,19 +157,19 @@ export default function Transactions() {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-sm max-w-xs truncate">
-                  {transaction.transactionDescription}
+                  {transaction.transactionDescription || transaction.description || '-'}
                 </td>
                 <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${
                   transaction.transactionTypeCode === 'CR' ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {transaction.transactionTypeCode === 'CR' ? '+' : '-'}
-                  {formatCurrency(transaction.transactionAmount)}
+                  {formatCurrency(transaction.transactionAmount ?? transaction.amount ?? 0)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   {transaction.merchantName || '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {formatDateTime(transaction.originTimestamp)}
+                  {formatDateTime(transaction.originTimestamp || transaction.originationTimestamp || '')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <button
@@ -221,16 +221,20 @@ function TransactionDetails({ transaction }: { transaction: Transaction }) {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
   };
 
+  const getAmount = () => transaction.transactionAmount ?? transaction.amount ?? 0;
+  const getDescription = () => transaction.transactionDescription ?? transaction.description ?? '';
+  const getOriginTime = () => transaction.originTimestamp ?? transaction.originationTimestamp ?? '';
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="text-sm text-gray-500">Transaction ID</p>
-          <p className="font-mono">{transaction.id}</p>
+          <p className="font-mono">{transaction.id || transaction.transactionId}</p>
         </div>
         <div>
           <p className="text-sm text-gray-500">Card Number</p>
-          <p className="font-mono">**** **** **** {transaction.cardNumber.slice(-4)}</p>
+          <p className="font-mono">**** **** **** {transaction.cardNumber?.slice(-4) || '****'}</p>
         </div>
         <div>
           <p className="text-sm text-gray-500">Type</p>
@@ -245,7 +249,7 @@ function TransactionDetails({ transaction }: { transaction: Transaction }) {
           <p className={`font-semibold ${
             transaction.transactionTypeCode === 'CR' ? 'text-green-600' : 'text-red-600'
           }`}>
-            {formatCurrency(transaction.transactionAmount)}
+            {formatCurrency(getAmount())}
           </p>
         </div>
         <div>
@@ -256,7 +260,7 @@ function TransactionDetails({ transaction }: { transaction: Transaction }) {
       
       <div>
         <p className="text-sm text-gray-500">Description</p>
-        <p>{transaction.transactionDescription}</p>
+        <p>{getDescription()}</p>
       </div>
 
       {transaction.merchantName && (
@@ -287,7 +291,7 @@ function TransactionDetails({ transaction }: { transaction: Transaction }) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-500">Origin Time</p>
-            <p>{new Date(transaction.originTimestamp).toLocaleString()}</p>
+            <p>{getOriginTime() ? new Date(getOriginTime()).toLocaleString() : '-'}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Processed Time</p>

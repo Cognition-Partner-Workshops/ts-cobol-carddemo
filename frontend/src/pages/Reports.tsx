@@ -169,17 +169,17 @@ export default function Reports() {
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {statement.transactions.map((txn) => (
-                        <tr key={txn.id}>
+                        <tr key={txn.id || txn.transactionId}>
                           <td className="px-4 py-2 text-sm">
-                            {new Date(txn.originTimestamp).toLocaleDateString()}
+                            {new Date(txn.originTimestamp || txn.originationTimestamp || '').toLocaleDateString()}
                           </td>
-                          <td className="px-4 py-2 text-sm">{txn.transactionDescription}</td>
+                          <td className="px-4 py-2 text-sm">{txn.transactionDescription || txn.description || '-'}</td>
                           <td className="px-4 py-2 text-sm">{txn.transactionTypeCode}</td>
                           <td className={`px-4 py-2 text-sm text-right font-semibold ${
                             txn.transactionTypeCode === 'CR' ? 'text-green-600' : 'text-red-600'
                           }`}>
                             {txn.transactionTypeCode === 'CR' ? '+' : '-'}
-                            {formatCurrency(txn.transactionAmount)}
+                            {formatCurrency(txn.transactionAmount ?? txn.amount ?? 0)}
                           </td>
                         </tr>
                       ))}

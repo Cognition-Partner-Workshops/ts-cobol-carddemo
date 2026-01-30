@@ -63,18 +63,22 @@ export interface Card {
 }
 
 export interface Transaction {
-  id: string;
+  id?: string;
+  transactionId?: string;
   cardNumber: string;
   transactionTypeCode: string;
   transactionCategoryCode: number;
   transactionSource: string;
-  transactionDescription: string;
-  transactionAmount: number;
+  transactionDescription?: string;
+  description?: string;
+  transactionAmount?: number;
+  amount?: number;
   merchantId?: string;
   merchantName?: string;
   merchantCity?: string;
   merchantZip?: string;
-  originTimestamp: string;
+  originTimestamp?: string;
+  originationTimestamp?: string;
   processingTimestamp?: string;
 }
 

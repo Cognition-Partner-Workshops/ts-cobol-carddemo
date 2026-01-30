@@ -5,7 +5,7 @@ import { authService } from '../services/authService';
 import Alert from '../components/common/Alert';
 
 export default function Login() {
-  const [username, setUsername] = useState('');
+  const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await authService.login({ username, password });
+      const response = await authService.login({ userId, password });
       setAuth(response.user, response.accessToken, response.refreshToken);
       navigate('/dashboard');
     } catch (err) {
@@ -41,14 +41,14 @@ export default function Login() {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-1">
                 Username
               </label>
               <input
                 type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="userId"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
                 className="input-field"
                 required
                 autoFocus

@@ -7,7 +7,12 @@
 
 The Transaction Type Management module is an optional extension for the CardDemo application that demonstrates DB2 integration patterns using embedded static SQL. This module allows administrators to maintain transaction type reference data in DB2 tables, providing a more robust and relational approach to managing transaction metadata while integrating with the existing VSAM-based transaction processing system.
 
+This extension is ideal for organizations looking to understand DB2 integration patterns in a CICS environment, including cursor processing, CRUD operations, and data synchronization between DB2 and VSAM.
+
+---
+
 ## Table of Contents
+
 - [Features](#features)
 - [Components](#components)
 - [Installation](#installation)
@@ -16,18 +21,29 @@ The Transaction Type Management module is an optional extension for the CardDemo
 - [Integration with Base Application](#integration-with-base-application)
 - [Dependencies](#dependencies)
 
+---
+
 ## Features
 
 This extension provides the following capabilities:
 
-- **Transaction Type Management**: Add, update, or delete transaction types through CICS transactions
-- **Batch Management**: Maintain transaction types through batch jobs and extract data for VSAM integration
-- **DB2 Integration**: Demonstrates various DB2 integration patterns including:
-  - Static embedded SQL with host variables
-  - Forward and backward cursor processing
-  - Standard CRUD operations (Create, Read, Update, Delete)
-  - DB2 precompiler integration in CICS environment
-  - Proper error handling with SQLCA
+| Feature | Description |
+|:--------|:------------|
+| **Transaction Type Management** | Add, update, or delete transaction types through CICS transactions |
+| **Batch Management** | Maintain transaction types through batch jobs and extract data for VSAM integration |
+| **DB2 Integration Patterns** | Demonstrates static embedded SQL, cursor processing, CRUD operations, and error handling |
+
+### DB2 Integration Patterns Demonstrated
+
+This module showcases the following DB2 integration techniques:
+
+- Static embedded SQL with host variables
+- Forward and backward cursor processing
+- Standard CRUD operations (Create, Read, Update, Delete)
+- DB2 precompiler integration in CICS environment
+- Proper error handling with SQLCA
+
+---
 
 ## Components
 
@@ -48,19 +64,26 @@ This extension provides the following capabilities:
 
 ### Directory Structure
 
-- **bms/**: BMS map definitions for transaction screens
-- **cbl/**: COBOL programs for transaction processing
-- **cpy/**: Copybooks for data structures
-- **cpy-bms/**: Copybooks for BMS maps
-- **csd/**: CICS resource definitions
-- **dcl/**: DB2 declarations
-- **ddl/**: DB2 table definitions
-- **jcl/**: JCL for batch operations
-- **ctl/**: Control files for DB2 operations
+| Directory | Contents |
+|:----------|:---------|
+| **bms/** | BMS map definitions for transaction screens |
+| **cbl/** | COBOL programs for transaction processing |
+| **cpy/** | Copybooks for data structures |
+| **cpy-bms/** | Copybooks for BMS maps |
+| **csd/** | CICS resource definitions |
+| **dcl/** | DB2 declarations |
+| **ddl/** | DB2 table definitions |
+| **jcl/** | JCL for batch operations |
+| **ctl/** | Control files for DB2 operations |
+
+---
 
 ## Installation
 
 ### Prerequisites
+
+Before installing this extension, ensure you have:
+
 - Base CardDemo application installed and operational
 - DB2 subsystem configured and accessible
 - CICS with DB2 support
@@ -88,6 +111,8 @@ This extension provides the following capabilities:
    - Option 5: Transaction Type list/update/delete (CTLI)
    - Option 6: Transaction Type add/edit (CTTU)
 
+---
+
 ## Usage
 
 ### Online Transaction Type Management
@@ -104,6 +129,8 @@ This extension provides the following capabilities:
 ### Batch Transaction Type Management
 
 Execute the MNTTRDB2 job to perform batch maintenance of transaction types. This job uses the COBTUPDT program to update transaction type information in batch mode.
+
+---
 
 ## Technical Details
 
@@ -132,16 +159,24 @@ This extension demonstrates several DB2 integration patterns:
 5. **DB2 Precompiler Integration**: Demonstrates the use of DB2 precompiler in a CICS environment
 6. **Host Variable Usage**: Proper use of COBOL host variables for data exchange between COBOL and DB2
 
+---
+
 ## Integration with Base Application
 
 This module integrates with the base CardDemo application in the following ways:
 
-1. **Data Synchronization**: The TRANEXTR job extracts transaction type data from DB2 and creates VSAM-compatible files that can be used by the base application's transaction processing
-2. **Admin Menu Integration**: Adds options 5 and 6 to the Admin Menu (CA00) for transaction type management
-3. **Reference Data Management**: Provides a centralized way to manage transaction type reference data that feeds into the VSAM-based transaction processing system
-4. **Dual Storage Strategy**: Maintains transaction types in both DB2 (for administrative functions) and VSAM (for high-performance transaction processing)
+| Integration Point | Description |
+|:------------------|:------------|
+| **Data Synchronization** | The TRANEXTR job extracts transaction type data from DB2 and creates VSAM-compatible files for the base application |
+| **Admin Menu Integration** | Adds options 5 and 6 to the Admin Menu (CA00) for transaction type management |
+| **Reference Data Management** | Provides centralized management of transaction type reference data |
+| **Dual Storage Strategy** | Maintains transaction types in both DB2 (administrative) and VSAM (high-performance processing) |
+
+---
 
 ## Dependencies
+
+This extension requires:
 
 - Base CardDemo application
 - DB2 subsystem

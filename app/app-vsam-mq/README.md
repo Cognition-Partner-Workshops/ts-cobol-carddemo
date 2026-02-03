@@ -7,7 +7,12 @@
 
 The Account Extractions module is an optional extension for the CardDemo application that demonstrates integration between VSAM and IBM MQ. This module enables the extraction and transmission of account data through MQ channels, showcasing asynchronous processing patterns commonly used in mainframe environments.
 
+This extension is ideal for organizations looking to understand MQ integration patterns for data extraction and system-to-system communication in a mainframe context.
+
+---
+
 ## Table of Contents
+
 - [Features](#features)
 - [Components](#components)
 - [Installation](#installation)
@@ -15,14 +20,20 @@ The Account Extractions module is an optional extension for the CardDemo applica
 - [Technical Details](#technical-details)
 - [Dependencies](#dependencies)
 
+---
+
 ## Features
 
 This extension provides the following capabilities:
 
-- **System Date Inquiry via MQ**: Query the system date through an MQ request/response pattern (CDRD transaction)
-- **Account Details Inquiry via MQ**: Retrieve account information through MQ channels (CDRA transaction)
-- **Asynchronous Processing**: Demonstrates asynchronous communication patterns between systems
-- **MQ Integration**: Shows how to integrate MQ with existing VSAM-based applications
+| Feature | Description |
+|:--------|:------------|
+| **System Date Inquiry via MQ** | Query the system date through an MQ request/response pattern (CDRD transaction) |
+| **Account Details Inquiry via MQ** | Retrieve account information through MQ channels (CDRA transaction) |
+| **Asynchronous Processing** | Demonstrates asynchronous communication patterns between systems |
+| **MQ Integration** | Shows how to integrate MQ with existing VSAM-based applications |
+
+---
 
 ## Components
 
@@ -35,12 +46,19 @@ This extension provides the following capabilities:
 
 ### Directory Structure
 
-- **cbl/**: COBOL programs for MQ integration
-- **csd/**: CICS resource definitions for MQ transactions
+| Directory | Contents |
+|:----------|:---------|
+| **cbl/** | COBOL programs for MQ integration |
+| **csd/** | CICS resource definitions for MQ transactions |
+
+---
 
 ## Installation
 
 ### Prerequisites
+
+Before installing this extension, ensure you have:
+
 - Base CardDemo application installed and operational
 - IBM MQ configured and accessible from CICS
 - CICS with MQ support
@@ -72,6 +90,8 @@ This extension provides the following capabilities:
      DEFINE MQQUEUE(CARDRES) GROUP(CARDDEMO) QNAME(CARDDEMO.RESPONSE.QUEUE)
      ```
 
+---
+
 ## Usage
 
 ### System Date Inquiry (CDRD)
@@ -91,6 +111,8 @@ The CDRA transaction demonstrates how to retrieve account information via MQ:
 2. The transaction sends a request message containing the account number to the request queue
 3. A listener program retrieves the account details from VSAM and sends them to the response queue
 4. The CDRA transaction retrieves and displays the account information
+
+---
 
 ## Technical Details
 
@@ -136,7 +158,11 @@ This extension demonstrates several MQ integration patterns:
 3. **Data Extraction**: Shows how to extract data from VSAM files for transmission via MQ
 4. **Error Handling**: Includes proper error handling for MQ operations
 
+---
+
 ## Dependencies
+
+This extension requires:
 
 - Base CardDemo application
 - IBM MQ

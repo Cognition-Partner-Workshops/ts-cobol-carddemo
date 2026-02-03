@@ -4,77 +4,87 @@
 ![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)
 
 ## Overview
+
 The Credit Card Authorizations extension enhances CardDemo with a comprehensive authorization processing system that integrates IMS DB, DB2, and MQ technologies. This extension simulates real-world credit card authorization flows, from initial merchant request to approval/decline decisions, with fraud detection capabilities.
 
+This module is ideal for organizations looking to understand and test mainframe integration patterns involving hierarchical databases, relational databases, and message queuing systems.
+
+---
+
 ## Table of Contents
+
 - [Features](#features)
 - [Technologies](#technologies)
 - [Architecture](#architecture)
 - [Business Logic](#business-logic)
 - [Installation](#installation)
-  - [Prerequisites](#prerequisites)
-  - [IMS Database Setup](#ims-database-setup)
-  - [DB2 Table Setup](#db2-table-setup)
-  - [Program Compilation](#program-compilation)
-  - [CICS Resources](#cics-resources)
 - [Application Components](#application-components)
-  - [Programs](#programs)
-  - [Copybooks](#copybooks)
-  - [CICS Transactions](#cics-transactions)
-  - [CICS Screens](#cics-screens)
-  - [JCL](#jcl)
-  - [IMS DB Components](#ims-db-components)
-  - [DB2 Components](#db2-components)
-  - [MQ Configuration](#mq-configuration)
 - [Data Models](#data-models)
-  - [MQ Message Formats](#mq-message-formats)
-  - [IMS DB Structure](#ims-db-structure)
-  - [DB2 Schema](#db2-schema)
 - [User Interface](#user-interface)
 - [License](#license)
+
+---
 
 ## Features
 
 This extension adds the following capabilities to CardDemo:
 
-- Real-time credit card authorization processing via MQ
-- Authorization request validation and business rule application
-- Storage of authorization details in IMS hierarchical database
-- Fraud detection and reporting with DB2 integration
-- Two-phase commit transactions across IMS DB and DB2
-- Authorization history viewing and management
-- Batch purging of expired authorizations
+| Feature | Description |
+|:--------|:------------|
+| Real-time Authorization Processing | Process credit card authorization requests via MQ in real-time |
+| Business Rule Validation | Apply configurable business rules to approve or decline requests |
+| IMS Database Storage | Store authorization details in a hierarchical IMS database structure |
+| Fraud Detection | Identify and report fraudulent transactions with DB2 integration |
+| Two-Phase Commit | Ensure data consistency across IMS DB and DB2 with coordinated transactions |
+| Authorization History | View and manage authorization history through CICS screens |
+| Batch Purging | Automatically purge expired authorizations through scheduled batch jobs |
+
+---
 
 ## Technologies
 
-The Credit Card Authorizations extension leverages:
+The Credit Card Authorizations extension leverages the following technologies:
 
-- **COBOL**: Core business logic implementation
-- **CICS**: Transaction processing and screen management
-- **IMS DB**: Hierarchical database for authorization storage
-- **DB2**: Relational database for fraud analytics
-- **MQ**: Message queuing for authorization requests/responses
-- **VSAM**: For account and customer data access
+| Technology | Purpose |
+|:-----------|:--------|
+| **COBOL** | Core business logic implementation |
+| **CICS** | Transaction processing and screen management |
+| **IMS DB** | Hierarchical database for authorization storage |
+| **DB2** | Relational database for fraud analytics |
+| **MQ** | Message queuing for authorization requests/responses |
+| **VSAM** | Account and customer data access |
+
+---
 
 ## Architecture
+
+The following diagram illustrates the authorization flow through the system:
 
 ![Authorization Flow](../../diagrams/auth_flow.png "Authorization Flow Diagram")
 
 *Note: The Cloud client component shown in the diagram is not included with the example code. Any MQ-compatible client can be used to send authorization requests in the specified format.*
+
+---
 
 ## Business Logic
 
 The authorization extension implements the following business processes:
 
 ### 1. Authorization Processing
-- Cloud-based POS emulator sends authorization requests via MQ
-- CICS program processes requests triggered by MQ messages
-- Account and customer data retrieved via VSAM cross-reference
-- Business rules applied to approve or decline the request
-- Response sent back via reply MQ queue
-- Authorization details stored in IMS database
+
+The authorization processing flow handles real-time credit card authorization requests:
+
+1. Cloud-based POS emulator sends authorization requests via MQ
+2. CICS program processes requests triggered by MQ messages
+3. Account and customer data retrieved via VSAM cross-reference
+4. Business rules applied to approve or decline the request
+5. Response sent back via reply MQ queue
+6. Authorization details stored in IMS database
 
 ### 2. Authorization Management
+
+The authorization management functions allow users to:
+
 - View account and authorization summaries
 - Examine detailed authorization information
 - Navigate through multiple authorizations
@@ -82,8 +92,13 @@ The authorization extension implements the following business processes:
 - Store fraud cases in DB2 for analytics
 
 ### 3. Batch Processing
+
+Scheduled batch jobs perform the following maintenance tasks:
+
 - Daily purging of expired authorizations
 - Adjustment of available credit when unmatched authorizations are deleted
+
+---
 
 ## Installation
 
@@ -195,6 +210,8 @@ After installing the base CardDemo CICS resources, define the additional resourc
    CEMT SET PROG(COPAU0*) NEWCOPY  
    CEMT SET PROG(COPAUS*C) NEWCOPY 
    ```
+---
+
 ## Application Components
 
 All components for the Credit Card Authorizations extension are located in the `app/app-authorization-ims-db2-mq` directory.
@@ -277,6 +294,9 @@ All components for the Credit Card Authorizations extension are located in the `
 |:-----------|:------------|
 | AWS.M2.CARDDEMO.PAUTH.REQUEST | Input queue for authorization requests |
 | AWS.M2.CARDDEMO.PAUTH.REPLY | Output queue for authorization responses |
+
+---
+
 ## Data Models
 
 ### MQ Message Formats
@@ -329,6 +349,8 @@ The DB2 table stores authorization records that have been marked as fraudulent:
 
 ![DB2 Data Model](../../diagrams/db2_model.png "DB2 Data Model")
 
+---
+
 ## User Interface
 
 ### Authorization Summary Screen
@@ -352,6 +374,8 @@ The Authorization Details screen shows comprehensive information about a specifi
 Pressing PF5 on the Authorization Details screen marks the transaction as fraudulent:
 
 ![Mark Authorization Fraud](../../diagrams/auth_fraud.png "Mark Authorization Fraud")
+
+---
 
 ## License
 

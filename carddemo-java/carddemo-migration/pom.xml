@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.aws.cardemo</groupId>
+        <artifactId>carddemo-java</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>carddemo-migration</artifactId>
+    <packaging>jar</packaging>
+
+    <name>CardDemo Migration</name>
+    <description>Data importers for CardDemo application - handles COBOL/mainframe data migration</description>
+
+    <dependencies>
+        <!-- Domain module -->
+        <dependency>
+            <groupId>com.aws.cardemo</groupId>
+            <artifactId>carddemo-domain</artifactId>
+        </dependency>
+
+        <!-- Persistence module -->
+        <dependency>
+            <groupId>com.aws.cardemo</groupId>
+            <artifactId>carddemo-persistence</artifactId>
+        </dependency>
+
+        <!-- Services module -->
+        <dependency>
+            <groupId>com.aws.cardemo</groupId>
+            <artifactId>carddemo-services</artifactId>
+        </dependency>
+
+        <!-- Spring Batch for data import jobs -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-batch</artifactId>
+        </dependency>
+
+        <!-- JRecord for COBOL file processing -->
+        <!-- Note: JRecord dependency is commented out as it requires manual installation -->
+        <!-- To use JRecord, download from https://sourceforge.net/projects/jrecord/ -->
+        <!-- and install to local Maven repository using: -->
+        <!-- mvn install:install-file -Dfile=JRecordV1.jar -DgroupId=net.sf.JRecord -->
+        <!--     -DartifactId=JRecordV1 -Dversion=0.81.6 -Dpackaging=jar -->
+        <!--
+        <dependency>
+            <groupId>net.sf.JRecord</groupId>
+            <artifactId>JRecordV1</artifactId>
+            <version>0.81.6</version>
+        </dependency>
+        -->
+
+        <!-- Spring Batch Test -->
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

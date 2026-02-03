@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardDemo Mainframe to Java/Spring Boot Migration Plan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #1e3a8a;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        h3 {
+            color: #374151;
+            margin: 20px 0 15px 0;
+            font-size: 1.2rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }
+        tr:hover {
+            background: #f9fafb;
+        }
+        .architecture-diagram {
+            background: #1f2937;
+            color: #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            white-space: pre;
+            font-size: 0.9rem;
+        }
+        .json-block {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .json-key { color: #60a5fa; }
+        .json-string { color: #34d399; }
+        .json-comment { color: #9ca3af; }
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .tech-item {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        .tech-item strong {
+            display: block;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+        .endpoint-group {
+            margin: 20px 0;
+        }
+        .endpoint {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+        .method {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-right: 15px;
+            min-width: 60px;
+            text-align: center;
+        }
+        .method.get { background: #dcfce7; color: #166534; }
+        .method.post { background: #dbeafe; color: #1e40af; }
+        .method.put { background: #fef3c7; color: #92400e; }
+        .method.delete { background: #fee2e2; color: #991b1b; }
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            color: #374151;
+            flex: 1;
+        }
+        .endpoint-desc {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .page-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .page-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .page-item strong {
+            color: #1e40af;
+        }
+        .step-list {
+            counter-reset: step-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+        .step-list li {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 50px;
+            margin: 15px 0;
+        }
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            width: 35px;
+            height: 35px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CardDemo Migration Plan</h1>
+        <p>Mainframe COBOL to Java Spring Boot Microservices with MongoDB and React</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Executive Summary</h2>
+            <p>This document outlines the migration strategy for converting the CardDemo mainframe COBOL application to a modern Java Spring Boot microservices architecture with MongoDB and React frontend. The migration transforms legacy VSAM files to MongoDB collections, CICS transactions to REST APIs, and BMS screens to React components.</p>
+        </div>
+
+        <div class="card">
+            <h2>Source System Analysis</h2>
+            
+            <h3>Original COBOL Data Structures</h3>
+            <p>The CardDemo application uses the following VSAM KSDS files:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Entity</th>
+                        <th>Copybook</th>
+                        <th>Record Length</th>
+                        <th>Primary Key</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Customer</td><td>CVCUS01Y.cpy</td><td>500 bytes</td><td>CUST-ID (9 digits)</td></tr>
+                    <tr><td>Account</td><td>CVACT01Y.cpy</td><td>300 bytes</td><td>ACCT-ID (11 digits)</td></tr>
+                    <tr><td>Card</td><td>CVACT02Y.cpy</td><td>150 bytes</td><td>CARD-NUM (16 chars)</td></tr>
+                    <tr><td>Card Cross-Reference</td><td>CVACT03Y.cpy</td><td>50 bytes</td><td>XREF-CARD-NUM</td></tr>
+                    <tr><td>Transaction</td><td>CVTRA05Y.cpy</td><td>350 bytes</td><td>TRAN-ID (16 chars)</td></tr>
+                    <tr><td>User Security</td><td>CSUSR01Y.cpy</td><td>80 bytes</td><td>SEC-USR-ID (8 chars)</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Original COBOL Programs</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Program</th>
+                        <th>Function</th>
+                        <th>Target Microservice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>COSGN00C</td><td>User Sign-on</td><td>Auth Service</td></tr>
+                    <tr><td>COMEN01C</td><td>Main Menu</td><td>Frontend Router</td></tr>
+                    <tr><td>COACTVWC</td><td>Account View</td><td>Account Service</td></tr>
+                    <tr><td>COACTUPC</td><td>Account Update</td><td>Account Service</td></tr>
+                    <tr><td>COCRDLIC</td><td>Card List</td><td>Card Service</td></tr>
+                    <tr><td>COCRDSLC</td><td>Card View</td><td>Card Service</td></tr>
+                    <tr><td>COCRDUPC</td><td>Card Update</td><td>Card Service</td></tr>
+                    <tr><td>COTRN00C</td><td>Transaction List</td><td>Transaction Service</td></tr>
+                    <tr><td>COTRN01C</td><td>Transaction View</td><td>Transaction Service</td></tr>
+                    <tr><td>COTRN02C</td><td>Transaction Add</td><td>Transaction Service</td></tr>
+                    <tr><td>COBIL00C</td><td>Bill Payment</td><td>Transaction Service</td></tr>
+                    <tr><td>COUSR00C-03C</td><td>User Management</td><td>User Service</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Target Architecture</h2>
+            
+            <h3>Technology Stack</h3>
+            <div class="tech-stack">
+                <div class="tech-item"><strong>Backend</strong>Java 17, Spring Boot 3.x</div>
+                <div class="tech-item"><strong>Database</strong>MongoDB</div>
+                <div class="tech-item"><strong>ORM</strong>Spring Data MongoDB</div>
+                <div class="tech-item"><strong>Authentication</strong>JWT (JSON Web Tokens)</div>
+                <div class="tech-item"><strong>Frontend</strong>React 18, TypeScript</div>
+                <div class="tech-item"><strong>Styling</strong>Tailwind CSS</div>
+                <div class="tech-item"><strong>Build Tool</strong>Maven</div>
+                <div class="tech-item"><strong>Icons</strong>Lucide React</div>
+            </div>
+
+            <h3>Microservices Architecture</h3>
+            <div class="architecture-diagram">
+                    +------------------+
+                    |   React Frontend |
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    |   API Gateway    |
+                    +--------+---------+
+                             |
+        +--------------------+--------------------+
+        |          |         |         |         |
++-------v--+ +-----v----+ +--v-----+ +-v------+ +v--------+
+| Customer | | Account  | | Card   | |  Trans | |  Auth   |
+| Service  | | Service  | | Service| | Service| | Service |
++----+-----+ +----+-----+ +---+----+ +---+----+ +----+----+
+     |            |           |          |           |
+     +------------+-----------+----------+-----------+
+                             |
+                    +--------v---------+
+                    |     MongoDB      |
+                    +------------------+
+            </div>
+
+            <h3>MongoDB Collections</h3>
+            <ul>
+                <li><strong>customers</strong> - Customer master data</li>
+                <li><strong>accounts</strong> - Account information</li>
+                <li><strong>cards</strong> - Credit card details</li>
+                <li><strong>cardXrefs</strong> - Card to customer/account cross-reference</li>
+                <li><strong>transactions</strong> - Transaction records</li>
+                <li><strong>users</strong> - User authentication data</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Data Model Mapping</h2>
+
+            <h3>Customer Document</h3>
+            <div class="json-block">{
+  <span class="json-key">"_id"</span>: <span class="json-string">"ObjectId"</span>,
+  <span class="json-key">"customerId"</span>: <span class="json-string">"string (9 digits)"</span>,
+  <span class="json-key">"firstName"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"middleName"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"lastName"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"addressLine1"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"addressCity"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"addressState"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"zipCode"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"phoneNumber1"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"ssn"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"dateOfBirth"</span>: <span class="json-string">"date"</span>,
+  <span class="json-key">"ficoCreditScore"</span>: <span class="json-string">"number"</span>
+}</div>
+
+            <h3>Account Document</h3>
+            <div class="json-block">{
+  <span class="json-key">"_id"</span>: <span class="json-string">"ObjectId"</span>,
+  <span class="json-key">"accountId"</span>: <span class="json-string">"string (11 digits)"</span>,
+  <span class="json-key">"activeStatus"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"currentBalance"</span>: <span class="json-string">"decimal"</span>,
+  <span class="json-key">"creditLimit"</span>: <span class="json-string">"decimal"</span>,
+  <span class="json-key">"cashCreditLimit"</span>: <span class="json-string">"decimal"</span>,
+  <span class="json-key">"openDate"</span>: <span class="json-string">"date"</span>,
+  <span class="json-key">"expirationDate"</span>: <span class="json-string">"date"</span>,
+  <span class="json-key">"currentCycleCredit"</span>: <span class="json-string">"decimal"</span>,
+  <span class="json-key">"currentCycleDebit"</span>: <span class="json-string">"decimal"</span>
+}</div>
+
+            <h3>Card Document</h3>
+            <div class="json-block">{
+  <span class="json-key">"_id"</span>: <span class="json-string">"ObjectId"</span>,
+  <span class="json-key">"cardNumber"</span>: <span class="json-string">"string (16 chars)"</span>,
+  <span class="json-key">"accountId"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"cvvCode"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"embossedName"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"expirationDate"</span>: <span class="json-string">"date"</span>,
+  <span class="json-key">"activeStatus"</span>: <span class="json-string">"string"</span>
+}</div>
+
+            <h3>Transaction Document</h3>
+            <div class="json-block">{
+  <span class="json-key">"_id"</span>: <span class="json-string">"ObjectId"</span>,
+  <span class="json-key">"transactionId"</span>: <span class="json-string">"string (16 chars)"</span>,
+  <span class="json-key">"typeCode"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"categoryCode"</span>: <span class="json-string">"number"</span>,
+  <span class="json-key">"source"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"description"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"amount"</span>: <span class="json-string">"decimal"</span>,
+  <span class="json-key">"merchantName"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"cardNumber"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"originTimestamp"</span>: <span class="json-string">"datetime"</span>,
+  <span class="json-key">"processTimestamp"</span>: <span class="json-string">"datetime"</span>
+}</div>
+
+            <h3>User Document</h3>
+            <div class="json-block">{
+  <span class="json-key">"_id"</span>: <span class="json-string">"ObjectId"</span>,
+  <span class="json-key">"userId"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"firstName"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"lastName"</span>: <span class="json-string">"string"</span>,
+  <span class="json-key">"password"</span>: <span class="json-string">"string (hashed)"</span>,
+  <span class="json-key">"userType"</span>: <span class="json-string">"string (ADMIN/USER)"</span>
+}</div>
+        </div>
+
+        <div class="card">
+            <h2>API Endpoints</h2>
+
+            <h3>Auth Service</h3>
+            <div class="endpoint-group">
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/auth/login</span>
+                    <span class="endpoint-desc">User authentication</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/auth/register</span>
+                    <span class="endpoint-desc">User registration (admin only)</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/auth/me</span>
+                    <span class="endpoint-desc">Get current user</span>
+                </div>
+            </div>
+
+            <h3>Customer Service</h3>
+            <div class="endpoint-group">
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/customers</span>
+                    <span class="endpoint-desc">List customers</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/customers/{id}</span>
+                    <span class="endpoint-desc">Get customer by ID</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/customers</span>
+                    <span class="endpoint-desc">Create customer</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method put">PUT</span>
+                    <span class="endpoint-path">/api/customers/{id}</span>
+                    <span class="endpoint-desc">Update customer</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method delete">DELETE</span>
+                    <span class="endpoint-path">/api/customers/{id}</span>
+                    <span class="endpoint-desc">Delete customer</span>
+                </div>
+            </div>
+
+            <h3>Account Service</h3>
+            <div class="endpoint-group">
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/accounts</span>
+                    <span class="endpoint-desc">List accounts</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/accounts/{id}</span>
+                    <span class="endpoint-desc">Get account by ID</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/accounts</span>
+                    <span class="endpoint-desc">Create account</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method put">PUT</span>
+                    <span class="endpoint-path">/api/accounts/{id}</span>
+                    <span class="endpoint-desc">Update account</span>
+                </div>
+            </div>
+
+            <h3>Card Service</h3>
+            <div class="endpoint-group">
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/cards</span>
+                    <span class="endpoint-desc">List cards</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/cards/{cardNumber}</span>
+                    <span class="endpoint-desc">Get card by number</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/cards/account/{accountId}</span>
+                    <span class="endpoint-desc">Get cards by account</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/cards</span>
+                    <span class="endpoint-desc">Create card</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method put">PUT</span>
+                    <span class="endpoint-path">/api/cards/{cardNumber}</span>
+                    <span class="endpoint-desc">Update card</span>
+                </div>
+            </div>
+
+            <h3>Transaction Service</h3>
+            <div class="endpoint-group">
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/transactions</span>
+                    <span class="endpoint-desc">List transactions (with pagination)</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/transactions/{id}</span>
+                    <span class="endpoint-desc">Get transaction by ID</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/transactions/card/{cardNumber}</span>
+                    <span class="endpoint-desc">Get transactions by card</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/transactions</span>
+                    <span class="endpoint-desc">Create transaction</span>
+                </div>
+                <div class="endpoint">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/transactions/bill-payment</span>
+                    <span class="endpoint-desc">Process bill payment</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Frontend Pages</h2>
+            <div class="page-list">
+                <div class="page-item"><strong>Login Page</strong><br>User authentication</div>
+                <div class="page-item"><strong>Dashboard</strong><br>Main menu with navigation</div>
+                <div class="page-item"><strong>Account View</strong><br>View account details</div>
+                <div class="page-item"><strong>Account Update</strong><br>Edit account information</div>
+                <div class="page-item"><strong>Card List</strong><br>List all cards</div>
+                <div class="page-item"><strong>Card View</strong><br>View card details</div>
+                <div class="page-item"><strong>Card Update</strong><br>Edit card information</div>
+                <div class="page-item"><strong>Transaction List</strong><br>List transactions with pagination</div>
+                <div class="page-item"><strong>Transaction View</strong><br>View transaction details</div>
+                <div class="page-item"><strong>Transaction Add</strong><br>Create new transaction</div>
+                <div class="page-item"><strong>Bill Payment</strong><br>Process bill payments</div>
+                <div class="page-item"><strong>User Management</strong><br>Admin user management (admin only)</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Migration Steps</h2>
+            <ol class="step-list">
+                <li>Set up Spring Boot project structure with Maven</li>
+                <li>Create MongoDB document models based on COBOL copybooks</li>
+                <li>Implement repositories and services for all entities</li>
+                <li>Create REST controllers with proper API endpoints</li>
+                <li>Implement JWT authentication and authorization</li>
+                <li>Build React frontend with TypeScript and Tailwind CSS</li>
+                <li>Test all functionality end-to-end</li>
+                <li>Deploy and validate in production environment</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>Business Logic Migration</h2>
+            
+            <h3>Sign-on Logic (COSGN00C → AuthService)</h3>
+            <ul>
+                <li>Validate user credentials against users collection</li>
+                <li>Generate JWT token on successful authentication</li>
+                <li>Return user type (ADMIN/USER) for role-based access</li>
+            </ul>
+
+            <h3>Account View (COACTVWC → AccountService)</h3>
+            <ul>
+                <li>Read account by ID from accounts collection</li>
+                <li>Join with customer data via cardXrefs</li>
+                <li>Return formatted account details</li>
+            </ul>
+
+            <h3>Transaction Processing (COTRN02C → TransactionService)</h3>
+            <ul>
+                <li>Validate card number exists</li>
+                <li>Validate account is active</li>
+                <li>Create transaction record</li>
+                <li>Update account balance</li>
+            </ul>
+
+            <h3>Bill Payment (COBIL00C → TransactionService)</h3>
+            <ul>
+                <li>Read account current balance</li>
+                <li>Create payment transaction</li>
+                <li>Update account balance to zero</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>CardDemo Migration Plan - Generated for AWS Mainframe Modernization</p>
+        <p>Java Spring Boot 3.x | MongoDB | React 18 | TypeScript</p>
+    </footer>
+</body>
+</html>

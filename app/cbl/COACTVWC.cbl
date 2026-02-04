@@ -485,7 +485,7 @@
                  MOVE ACCT-CURR-CYC-DEBIT TO ACRCYDBO OF CACTVWAO               
                                                                                 
                  MOVE ACCT-OPEN-DATE      TO ADTOPENO OF CACTVWAO               
-                 MOVE ACCT-EXPIRAION-DATE TO AEXPDTO  OF CACTVWAO               
+                 MOVE ACCT-EXPIRATION-DATE TO AEXPDTO  OF CACTVWAO               
                  MOVE ACCT-REISSUE-DATE   TO AREISDTO OF CACTVWAO               
                  MOVE ACCT-GROUP-ID       TO AADDGRPO OF CACTVWAO               
               END-IF                                                            

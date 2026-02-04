@@ -51,7 +51,7 @@
                10  EXP-ACCT-CREDIT-LIMIT           PIC S9(10)V99.
                10  EXP-ACCT-CASH-CREDIT-LIMIT      PIC S9(10)V99 COMP-3.
                10  EXP-ACCT-OPEN-DATE              PIC X(10).
-               10  EXP-ACCT-EXPIRAION-DATE         PIC X(10).
+               10  EXP-ACCT-EXPIRATION-DATE        PIC X(10).
                10  EXP-ACCT-REISSUE-DATE           PIC X(10).
                10  EXP-ACCT-CURR-CYC-CREDIT        PIC S9(10)V99.
                10  EXP-ACCT-CURR-CYC-DEBIT         PIC S9(10)V99 COMP.
@@ -95,7 +95,7 @@
                10  EXP-CARD-ACCT-ID                PIC 9(11) COMP.
                10  EXP-CARD-CVV-CD                 PIC 9(03) COMP.
                10  EXP-CARD-EMBOSSED-NAME          PIC X(50).
-               10  EXP-CARD-EXPIRAION-DATE         PIC X(10).
+               10  EXP-CARD-EXPIRATION-DATE        PIC X(10).
                10  EXP-CARD-ACTIVE-STATUS          PIC X(01).
                10  FILLER                          PIC X(373).      
       *

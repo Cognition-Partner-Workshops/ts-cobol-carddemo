@@ -6,7 +6,7 @@
            05  CARD-ACCT-ID                      PIC 9(11).
            05  CARD-CVV-CD                       PIC 9(03).
            05  CARD-EMBOSSED-NAME                PIC X(50).
-           05  CARD-EXPIRAION-DATE               PIC X(10).
+           05  CARD-EXPIRATION-DATE              PIC X(10).
            05  CARD-ACTIVE-STATUS                PIC X(01).
            05  FILLER                            PIC X(59).
       *

@@ -8,7 +8,7 @@
            05  ACCT-CREDIT-LIMIT                 PIC S9(10)V99.
            05  ACCT-CASH-CREDIT-LIMIT            PIC S9(10)V99.
            05  ACCT-OPEN-DATE                    PIC X(10).
-           05  ACCT-EXPIRAION-DATE               PIC X(10). 
+           05  ACCT-EXPIRATION-DATE              PIC X(10). 
            05  ACCT-REISSUE-DATE                 PIC X(10).
            05  ACCT-CURR-CYC-CREDIT              PIC S9(10)V99.
            05  ACCT-CURR-CYC-DEBIT               PIC S9(10)V99.

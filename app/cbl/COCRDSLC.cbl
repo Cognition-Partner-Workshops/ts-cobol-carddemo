@@ -81,15 +81,15 @@
                                                    PIC 9(16).                   
            10  CARD-NAME-EMBOSSED-X                PIC X(50).                   
            10  CARD-STATUS-X                       PIC X.                       
-           10  CARD-EXPIRAION-DATE-X               PIC X(10).                   
-           10  FILLER REDEFINES CARD-EXPIRAION-DATE-X.                          
+           10  CARD-EXPIRATION-DATE-X              PIC X(10).                   
+           10  FILLER REDEFINES CARD-EXPIRATION-DATE-X.                         
                20 CARD-EXPIRY-YEAR                 PIC X(4).                    
                20 FILLER                           PIC X(1).                    
                20 CARD-EXPIRY-MONTH                PIC X(2).                    
                20 FILLER                           PIC X(1).                    
                20 CARD-EXPIRY-DAY                  PIC X(2).                    
-           10  CARD-EXPIRAION-DATE-N REDEFINES                                  
-               CARD-EXPIRAION-DATE-X               PIC 9(10).                   
+           10  CARD-EXPIRATION-DATE-N REDEFINES                                 
+               CARD-EXPIRATION-DATE-X              PIC 9(10).                   
                                                                                 
       ******************************************************************        
       *      File and data Handling                                             
@@ -474,8 +474,8 @@
               IF FOUND-CARDS-FOR-ACCOUNT                                        
                  MOVE CARD-EMBOSSED-NAME                                        
                                         TO CRDNAMEO OF CCRDSLAO                 
-                 MOVE CARD-EXPIRAION-DATE                                       
-                                        TO CARD-EXPIRAION-DATE-X                
+                 MOVE CARD-EXPIRATION-DATE                                       
+                                        TO CARD-EXPIRATION-DATE-X                
                                                                                 
                  MOVE CARD-EXPIRY-MONTH TO EXPMONO  OF CCRDSLAO                 
                                                                                 

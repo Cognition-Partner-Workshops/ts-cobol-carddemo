@@ -278,7 +278,7 @@
            IF  APPL-AOK                                                         
                CONTINUE                                                         
            ELSE                                                                 
-               DISPLAY 'ERROR OPENING DALY REJECTS FILE'                        
+               DISPLAY 'ERROR OPENING DISCLOSURE GROUP FILE'
                MOVE DISCGRP-STATUS TO IO-STATUS                                 
                PERFORM 9910-DISPLAY-IO-STATUS                                   
                PERFORM 9999-ABEND-PROGRAM                                       

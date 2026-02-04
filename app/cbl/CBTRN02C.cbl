@@ -411,7 +411,7 @@
                   MOVE 'OVERLIMIT TRANSACTION'                                  
                     TO WS-VALIDATION-FAIL-REASON-DESC                           
                 END-IF                                                          
-                IF ACCT-EXPIRAION-DATE >= DALYTRAN-ORIG-TS (1:10)               
+                IF ACCT-EXPIRATION-DATE >= DALYTRAN-ORIG-TS (1:10)               
                   CONTINUE                                                      
                 ELSE                                                            
                   MOVE 103 TO WS-VALIDATION-FAIL-REASON                         
@@ -645,8 +645,8 @@
            IF  APPL-AOK                                                         
                CONTINUE                                                         
            ELSE                                                                 
-               DISPLAY 'ERROR CLOSING DAILY REJECTS FILE'                       
-               MOVE XREFFILE-STATUS TO IO-STATUS                                
+               DISPLAY 'ERROR CLOSING DAILY REJECTS FILE'
+               MOVE DALYREJS-STATUS TO IO-STATUS                                
                PERFORM 9910-DISPLAY-IO-STATUS                                   
                PERFORM 9999-ABEND-PROGRAM                                       
            END-IF                                                               

@@ -152,7 +152,7 @@
            05  WS-ACCT-OPEN-DATE                 PIC X(10) VALUE SPACES.01261307
            05  WS-EXPR-DATE-LBL                  PIC X(12) VALUE        01261407
                                                  'EXPR DATE : '.        01261507
-           05  WS-ACCT-EXPIRAION-DATE            PIC X(10) VALUE SPACES.01261607
+           05  WS-ACCT-EXPIRATION-DATE           PIC X(10) VALUE SPACES.01261607
            05  WS-REISSUE-DT-LBL                 PIC X(12) VALUE        01261707
                                                  'REIS DATE : '.        01261807
            05  WS-ACCT-REISSUE-DATE              PIC X(10) VALUE SPACES.01261907
@@ -414,8 +414,8 @@
                     MOVE ACCT-CASH-CREDIT-LIMIT                         03702210
                                           TO WS-ACCT-CASH-CREDIT-LIMIT  03702310
                     MOVE ACCT-OPEN-DATE   TO WS-ACCT-OPEN-DATE          03702410
-                    MOVE ACCT-EXPIRAION-DATE                            03702510
-                                          TO WS-ACCT-EXPIRAION-DATE     03702610
+                    MOVE ACCT-EXPIRATION-DATE                           03702510
+                                          TO WS-ACCT-EXPIRATION-DATE    03702610
                     MOVE ACCT-REISSUE-DATE                              03702710
                                           TO WS-ACCT-REISSUE-DATE       03702810
                     MOVE ACCT-CURR-CYC-CREDIT                           03702910

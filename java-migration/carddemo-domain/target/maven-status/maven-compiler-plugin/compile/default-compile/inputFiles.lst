@@ -1,0 +1,17 @@
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/entity/User.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/repository/CardRepository.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/repository/TransactionRepository.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/repository/AccountRepository.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/entity/TransactionCategoryBalance.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/entity/Customer.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/entity/Transaction.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/repository/TransactionTypeRepository.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/repository/UserRepository.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/entity/TransactionCategoryBalanceId.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/repository/CardCrossReferenceRepository.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/entity/Account.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/repository/CustomerRepository.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/entity/CardCrossReference.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/entity/Card.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/entity/TransactionType.java
+/home/ubuntu/repos/aws-mainframe-modernization-carddemo/java-migration/carddemo-domain/src/main/java/com/aws/carddemo/domain/repository/TransactionCategoryBalanceRepository.java

@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: carddemo-api
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/carddemo
+    username: ${DB_USERNAME:carddemo}
+    password: ${DB_PASSWORD:carddemo}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+jwt:
+  secret: ${JWT_SECRET:carddemo-secret-key-for-jwt-token-generation-must-be-at-least-256-bits}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+carddemo:
+  batch:
+    schedule:
+      daily-posting: "0 0 2 * * ?"
+      monthly-cycle: "0 0 3 1 * ?"
+    interest:
+      annual-rate: 0.1999
+    backup:
+      directory: /tmp/carddemo/backup
+
+logging:
+  level:
+    com.aws.carddemo: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized

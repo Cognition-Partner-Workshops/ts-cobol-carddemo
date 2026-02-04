@@ -1,0 +1,7 @@
+com/aws/carddemo/etl/reader/VsamExportRecordReader$AccountRecord.class
+com/aws/carddemo/etl/reader/VsamExportRecordReader.class
+com/aws/carddemo/etl/reader/VsamExportRecordReader$CardRecord.class
+com/aws/carddemo/etl/config/EtlJobConfig.class
+com/aws/carddemo/etl/reader/VsamExportRecordReader$TransactionRecord.class
+com/aws/carddemo/etl/reader/VsamExportRecordReader$CustomerRecord.class
+com/aws/carddemo/etl/reader/VsamExportRecordReader$ExportRecord.class

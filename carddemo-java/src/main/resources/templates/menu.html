@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>CardDemo - Main Menu</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>AWS CardDemo Application</h1>
+        <div class="info">
+            <span>Tran: CM00</span> | <span>Program: COMEN01C</span> |
+            <span th:text="'User: ' + ${userId}"></span>
+        </div>
+    </div>
+    <h2 th:if="${isAdmin}">Admin Menu</h2>
+    <h2 th:unless="${isAdmin}">Main Menu</h2>
+
+    <div th:unless="${isAdmin}">
+        <div class="menu-item">01. <a th:href="@{/accounts/view}">View Account</a></div>
+        <div class="menu-item">02. <a th:href="@{/accounts/view}">Update Account</a></div>
+        <div class="menu-item">03. <a th:href="@{/cards/list}">Credit Card List</a></div>
+        <div class="menu-item">04. <a th:href="@{/cards/list}">View Credit Card</a></div>
+        <div class="menu-item">05. <a th:href="@{/transactions/list}">Transaction List</a></div>
+        <div class="menu-item">06. <a th:href="@{/transactions/list}">View Transaction</a></div>
+        <div class="menu-item">07. <a th:href="@{/transactions/add}">Add Transaction</a></div>
+        <div class="menu-item">08. <a th:href="@{/reports}">Transaction Report</a></div>
+        <div class="menu-item">09. <a th:href="@{/payments}">Bill Payment</a></div>
+    </div>
+
+    <div th:if="${isAdmin}">
+        <div class="menu-item">01. <a th:href="@{/admin/users}">User List</a></div>
+        <div class="menu-item">02. <a th:href="@{/admin/users/add}">User Add</a></div>
+        <div class="menu-item">03. <a th:href="@{/admin/users}">User Update</a></div>
+        <div class="menu-item">04. <a th:href="@{/admin/users}">User Delete</a></div>
+    </div>
+
+    <div class="footer">
+        <a th:href="@{/logout}">Sign Off (PF03)</a>
+    </div>
+</div>
+</body>
+</html>

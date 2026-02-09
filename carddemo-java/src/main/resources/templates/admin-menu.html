@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CardDemo - Admin Menu</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>AWS CardDemo Application</h1>
+        <div class="info">Tran: CA00 | Program: COADM01C</div>
+    </div>
+    <h2>Administration Menu</h2>
+
+    <div class="menu-item">01. <a th:href="@{/admin/users}">User List</a></div>
+    <div class="menu-item">02. <a th:href="@{/admin/users/add}">User Add</a></div>
+    <div class="menu-item">03. <a th:href="@{/admin/users}">User Update</a></div>
+    <div class="menu-item">04. <a th:href="@{/admin/users}">User Delete</a></div>
+    <div class="menu-item">05. <a th:href="@{/admin/transaction-types}">Transaction Type List</a></div>
+    <div class="menu-item">06. <a th:href="@{/admin/transaction-types}">Transaction Type Add/Update</a></div>
+
+    <div class="footer"><a th:href="@{/menu}">PF03 - Back to Main Menu</a></div>
+</div>
+</body>
+</html>

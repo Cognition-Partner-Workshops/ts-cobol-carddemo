@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CardDemo - Transaction View</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>AWS CardDemo Application</h1>
+        <div class="info">Tran: CT01 | Program: COTRN01C</div>
+    </div>
+    <h2>Transaction Details</h2>
+
+    <div class="detail-row"><span class="detail-label">Transaction ID:</span><span class="detail-value" th:text="${transaction.tranId}"></span></div>
+    <div class="detail-row"><span class="detail-label">Card Number:</span><span class="detail-value" th:text="${transaction.cardNum}"></span></div>
+    <div class="detail-row"><span class="detail-label">Type Code:</span><span class="detail-value" th:text="${transaction.typeCd}"></span></div>
+    <div class="detail-row"><span class="detail-label">Category Code:</span><span class="detail-value" th:text="${transaction.catCd}"></span></div>
+    <div class="detail-row"><span class="detail-label">Source:</span><span class="detail-value" th:text="${transaction.source}"></span></div>
+    <div class="detail-row"><span class="detail-label">Description:</span><span class="detail-value" th:text="${transaction.description}"></span></div>
+    <div class="detail-row"><span class="detail-label">Amount:</span><span class="detail-value" th:text="${#numbers.formatDecimal(transaction.amount, 1, 2)}"></span></div>
+    <div class="detail-row"><span class="detail-label">Merchant Name:</span><span class="detail-value" th:text="${transaction.merchantName}"></span></div>
+    <div class="detail-row"><span class="detail-label">Merchant City:</span><span class="detail-value" th:text="${transaction.merchantCity}"></span></div>
+    <div class="detail-row"><span class="detail-label">Merchant ZIP:</span><span class="detail-value" th:text="${transaction.merchantZip}"></span></div>
+    <div class="detail-row"><span class="detail-label">Originated:</span><span class="detail-value" th:text="${transaction.origTs}"></span></div>
+    <div class="detail-row"><span class="detail-label">Processed:</span><span class="detail-value" th:text="${transaction.procTs}"></span></div>
+
+    <div class="footer"><a th:href="@{/transactions/list}">PF03 - Back to Transaction List</a></div>
+</div>
+</body>
+</html>

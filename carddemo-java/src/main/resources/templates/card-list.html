@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CardDemo - Credit Card List</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>AWS CardDemo Application</h1>
+        <div class="info">Tran: CCLI | Program: COCRDLIC</div>
+    </div>
+    <h2>Credit Card List</h2>
+
+    <table>
+        <tr><th>Card Number</th><th>Account ID</th><th>Embossed Name</th><th>Expiration</th><th>Status</th><th>Action</th></tr>
+        <tr th:each="card : ${cards.content}">
+            <td><a th:href="@{/cards/view/{id}(id=${card.cardNum})}" th:text="${card.cardNum}"></a></td>
+            <td th:text="${card.acctId}"></td>
+            <td th:text="${card.embossedName}"></td>
+            <td th:text="${card.expirationDate}"></td>
+            <td th:text="${card.activeStatus}"></td>
+            <td><a th:href="@{/cards/update/{id}(id=${card.cardNum})}">Update</a></td>
+        </tr>
+    </table>
+
+    <div class="pagination">
+        <a th:if="${cards.hasPrevious()}" th:href="@{/cards/list(page=${cards.number - 1})}">Previous</a>
+        <span th:text="'Page ' + ${cards.number + 1} + ' of ' + ${cards.totalPages}"></span>
+        <a th:if="${cards.hasNext()}" th:href="@{/cards/list(page=${cards.number + 1})}">Next</a>
+    </div>
+
+    <div class="footer"><a th:href="@{/menu}">PF03 - Back to Menu</a></div>
+</div>
+</body>
+</html>

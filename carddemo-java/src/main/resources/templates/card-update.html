@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CardDemo - Credit Card Update</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>AWS CardDemo Application</h1>
+        <div class="info">Tran: CCUP | Program: COCRDUPC</div>
+    </div>
+    <h2>Credit Card Update</h2>
+
+    <form th:action="@{/cards/update/{id}(id=${card.cardNum})}" method="post" th:object="${card}">
+        <div class="detail-row"><span class="detail-label">Card Number:</span><span class="detail-value" th:text="${card.cardNum}"></span></div>
+        <div class="form-group"><label>Embossed Name:</label><input type="text" th:field="*{embossedName}" maxlength="50"/></div>
+        <div class="form-group"><label>Expiration Date:</label><input type="text" th:field="*{expirationDate}" placeholder="YYYY-MM-DD"/></div>
+        <div class="form-group"><label>Active Status (Y/N):</label><input type="text" th:field="*{activeStatus}" maxlength="1"/></div>
+        <button type="submit" class="btn">Update</button>
+        <a th:href="@{/cards/view/{id}(id=${card.cardNum})}" class="btn">Cancel</a>
+    </form>
+
+    <div class="footer"><a th:href="@{/cards/list}">PF03 - Back to Card List</a></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CardDemo - User List</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>AWS CardDemo Application</h1>
+        <div class="info">Tran: CU00 | Program: COUSR00C</div>
+    </div>
+    <h2>User List</h2>
+
+    <div th:if="${message}" class="message" th:text="${message}"></div>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+
+    <table>
+        <tr><th>User ID</th><th>First Name</th><th>Last Name</th><th>Type</th><th>Actions</th></tr>
+        <tr th:each="user : ${users.content}">
+            <td th:text="${user.userId}"></td>
+            <td th:text="${user.firstName}"></td>
+            <td th:text="${user.lastName}"></td>
+            <td th:text="${user.userType}"></td>
+            <td>
+                <a th:href="@{/admin/users/update/{id}(id=${user.userId})}">Update</a> |
+                <form th:action="@{/admin/users/delete/{id}(id=${user.userId})}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-danger" style="padding:2px 8px; font-size:11px;"
+                            onclick="return confirm('Delete this user?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+
+    <div class="pagination">
+        <a th:if="${users.hasPrevious()}" th:href="@{/admin/users(page=${users.number - 1})}">Previous</a>
+        <span th:text="'Page ' + ${users.number + 1} + ' of ' + ${users.totalPages}"></span>
+        <a th:if="${users.hasNext()}" th:href="@{/admin/users(page=${users.number + 1})}">Next</a>
+    </div>
+
+    <a th:href="@{/admin/users/add}" class="btn">Add New User</a>
+
+    <div class="footer"><a th:href="@{/admin}">PF03 - Back to Admin Menu</a></div>
+</div>
+</body>
+</html>

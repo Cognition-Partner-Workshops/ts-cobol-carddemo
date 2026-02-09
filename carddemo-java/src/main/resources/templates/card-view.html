@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CardDemo - Credit Card View</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>AWS CardDemo Application</h1>
+        <div class="info">Tran: CCDL | Program: COCRDSLC</div>
+    </div>
+    <h2>Credit Card Details</h2>
+
+    <div th:if="${message}" class="message" th:text="${message}"></div>
+
+    <div class="detail-row"><span class="detail-label">Card Number:</span><span class="detail-value" th:text="${card.cardNum}"></span></div>
+    <div class="detail-row"><span class="detail-label">Account ID:</span><span class="detail-value" th:text="${card.acctId}"></span></div>
+    <div class="detail-row"><span class="detail-label">CVV Code:</span><span class="detail-value" th:text="${card.cvvCd}"></span></div>
+    <div class="detail-row"><span class="detail-label">Embossed Name:</span><span class="detail-value" th:text="${card.embossedName}"></span></div>
+    <div class="detail-row"><span class="detail-label">Expiration Date:</span><span class="detail-value" th:text="${card.expirationDate}"></span></div>
+    <div class="detail-row"><span class="detail-label">Active Status:</span><span class="detail-value" th:text="${card.activeStatus}"></span></div>
+
+    <div style="margin-top: 15px;">
+        <a th:href="@{/cards/update/{id}(id=${card.cardNum})}" class="btn">Update Card</a>
+        <a th:href="@{/accounts/view/{id}(id=${card.acctId})}" class="btn">View Account</a>
+    </div>
+
+    <div class="footer"><a th:href="@{/cards/list}">PF03 - Back to Card List</a></div>
+</div>
+</body>
+</html>

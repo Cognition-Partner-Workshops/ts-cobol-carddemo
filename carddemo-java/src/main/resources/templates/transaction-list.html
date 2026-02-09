@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CardDemo - Transaction List</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>AWS CardDemo Application</h1>
+        <div class="info">Tran: CT00 | Program: COTRN00C</div>
+    </div>
+    <h2>Transaction List</h2>
+
+    <table>
+        <tr><th>Tran ID</th><th>Card Number</th><th>Type</th><th>Amount</th><th>Description</th><th>Date</th></tr>
+        <tr th:each="tran : ${transactions.content}">
+            <td><a th:href="@{/transactions/view/{id}(id=${tran.tranId})}" th:text="${tran.tranId}"></a></td>
+            <td th:text="${tran.cardNum}"></td>
+            <td th:text="${tran.typeCd}"></td>
+            <td th:text="${#numbers.formatDecimal(tran.amount, 1, 2)}"></td>
+            <td th:text="${tran.description}"></td>
+            <td th:text="${tran.origTs}"></td>
+        </tr>
+    </table>
+
+    <div class="pagination">
+        <a th:if="${transactions.hasPrevious()}" th:href="@{/transactions/list(page=${transactions.number - 1}, acctId=${acctId})}">Previous</a>
+        <span th:text="'Page ' + ${transactions.number + 1} + ' of ' + ${transactions.totalPages}"></span>
+        <a th:if="${transactions.hasNext()}" th:href="@{/transactions/list(page=${transactions.number + 1}, acctId=${acctId})}">Next</a>
+    </div>
+
+    <div class="footer"><a th:href="@{/menu}">PF03 - Back to Menu</a></div>
+</div>
+</body>
+</html>

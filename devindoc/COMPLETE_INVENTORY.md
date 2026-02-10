@@ -2,6 +2,7 @@
 
 **Repository**: `aws-mainframe-modernization-carddemo`
 **Analysis Date**: 2026-02-09
+**Analysis Duration**: ~45 minutes (automated scan, read, and classification of all 118 code artifacts)
 **Source**: All conclusions traced to code artifacts in the repository.
 
 ---
@@ -139,7 +140,7 @@ All batch programs use standard COBOL FILE-CONTROL with OPEN/READ/WRITE/CLOSE op
 ## 3. JCL Inventory
 
 **Location**: `app/jcl/`
-**Total JCL Scripts**: 39
+**Total JCL Scripts**: 38
 
 ### 3.1 Core Batch Processing Jobs
 

@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardDemo Application - Java Migration Plan</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --code-background: #1e293b;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--card-background);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 1rem;
+            z-index: 100;
+        }
+
+        nav h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        nav a {
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        nav a:hover {
+            background-color: var(--background-color);
+        }
+
+        /* Sections */
+        section {
+            background: var(--card-background);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            font-size: 1.25rem;
+            margin: 1.5rem 0 1rem;
+        }
+
+        h4 {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--background-color);
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        tr:hover {
+            background-color: var(--background-color);
+        }
+
+        /* Code blocks */
+        pre {
+            background-color: var(--code-background);
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background-color: var(--background-color);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .card {
+            background: var(--background-color);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .card h4 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        /* Session cards */
+        .session-card {
+            background: linear-gradient(135deg, var(--background-color), white);
+            border-left: 4px solid var(--primary-color);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+
+        .session-card h4 {
+            color: var(--primary-color);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .session-number {
+            background: var(--primary-color);
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .badge-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        /* Prompt boxes */
+        .prompt-box {
+            background: var(--code-background);
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .prompt-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .prompt-content {
+            padding: 1.5rem;
+            color: #e2e8f0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* Architecture diagram */
+        .architecture-diagram {
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        /* Phase timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2rem;
+            top: 0.25rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+
+        .timeline-item h4 {
+            margin-top: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            header {
+                padding: 2rem 1rem;
+            }
+
+            header h1 {
+                font-size: 1.75rem;
+            }
+
+            nav {
+                position: static;
+            }
+
+            nav ul {
+                flex-direction: column;
+            }
+
+            .meta-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            nav {
+                display: none;
+            }
+
+            section {
+                break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid var(--border-color);
+            }
+
+            header {
+                background: var(--primary-color);
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>CardDemo Application - Java Migration Plan</h1>
+            <p>Comprehensive guide for migrating the CardDemo mainframe application from COBOL/CICS/VSAM/JCL to a modern Java-based architecture</p>
+            <div class="meta-info">
+                <div class="meta-item">Version: 2.0</div>
+                <div class="meta-item">Last Updated: February 2026</div>
+                <div class="meta-item">Target: Java 17 + Spring Boot 3.2</div>
+                <div class="meta-item">Sessions: 12</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav>
+            <h2>Quick Navigation</h2>
+            <ul>
+                <li><a href="#executive-summary">Executive Summary</a></li>
+                <li><a href="#migration-strategy">Migration Strategy</a></li>
+                <li><a href="#target-architecture">Target Architecture</a></li>
+                <li><a href="#cobol-java-mapping">COBOL-to-Java Mapping</a></li>
+                <li><a href="#database-schema">Database Schema</a></li>
+                <li><a href="#api-mapping">API Mapping</a></li>
+                <li><a href="#batch-jobs">Batch Jobs</a></li>
+                <li><a href="#session-plan">Session Plan</a></li>
+                <li><a href="#prompts">Prompts Library</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+            </ul>
+        </nav>
+
+        <section id="executive-summary">
+            <h2>Executive Summary</h2>
+            <p>This document provides a comprehensive plan for migrating the CardDemo mainframe application from COBOL/CICS/VSAM/JCL to a modern Java-based architecture. The migration follows a strangler-fig pattern, allowing incremental cutover while maintaining business continuity.</p>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <h4>Application Scope</h4>
+                    <ul>
+                        <li>31 COBOL programs</li>
+                        <li>30 Copybooks</li>
+                        <li>17 BMS screen maps</li>
+                        <li>37 JCL batch jobs</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Target Stack</h4>
+                    <ul>
+                        <li>Java 17 with Spring Boot 3</li>
+                        <li>PostgreSQL for persistence</li>
+                        <li>Spring Security with JWT</li>
+                        <li>Spring Batch for batch processing</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Frontend</h4>
+                    <ul>
+                        <li>Next.js 15 with TypeScript</li>
+                        <li>Tailwind CSS</li>
+                        <li>TanStack Query & Table</li>
+                        <li>NextAuth.js for authentication</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Timeline</h4>
+                    <ul>
+                        <li>12 migration sessions</li>
+                        <li>~3-4 months estimated</li>
+                        <li>Incremental delivery</li>
+                        <li>Parallel validation</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="migration-strategy">
+            <h2>Migration Strategy</h2>
+            
+            <h3>Approach: Strangler-Fig Pattern</h3>
+            <p>The strangler-fig pattern allows gradual replacement of mainframe functionality without a big-bang cutover. New Java services are built alongside the existing system, with traffic incrementally shifted as each component is validated.</p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Phase 1: Foundation (Sessions 1-3)</h4>
+                    <p>Project scaffolding, CI/CD setup, database schema design, and data ingestion utilities for EBCDIC files.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 2: Core Services (Sessions 4-6)</h4>
+                    <p>Authentication and security, account and card management APIs, transaction processing APIs with validation.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 3: Batch Processing (Sessions 7-8)</h4>
+                    <p>Transaction posting job (POSTTRAN equivalent), interest calculation and statement generation.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>Phase 4: Completion (Sessions 9-12)</h4>
+                    <p>Reports and admin tooling, Next.js 15 web UI development, optional modules migration, testing and deployment.</p>
+                </div>
+            </div>
+
+            <h3>Migration Principles</h3>
+            <ol>
+                <li><strong>Preserve Business Logic:</strong> Replicate COBOL validation rules and processing logic exactly before optimizing</li>
+                <li><strong>Data Integrity First:</strong> Validate data migration with checksums and sample comparisons</li>
+                <li><strong>Incremental Validation:</strong> Test each component against mainframe outputs before proceeding</li>
+                <li><strong>Maintain Audit Trail:</strong> Log all operations for compliance and debugging</li>
+                <li><strong>Zero Data Loss:</strong> Ensure all VSAM records are accurately migrated with proper type conversions</li>
+            </ol>
+        </section>
+
+        <section id="target-architecture">
+            <h2>Target Architecture</h2>
+            
+            <h3>Technology Stack</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Layer</th>
+                        <th>Technology</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Runtime</td>
+                        <td>Java 17</td>
+                        <td>Primary language</td>
+                    </tr>
+                    <tr>
+                        <td>Framework</td>
+                        <td>Spring Boot 3.x</td>
+                        <td>Application framework</td>
+                    </tr>
+                    <tr>
+                        <td>Web</td>
+                        <td>Spring Web MVC</td>
+                        <td>REST API development</td>
+                    </tr>
+                    <tr>
+                        <td>Data Access</td>
+                        <td>Spring Data JPA</td>
+                        <td>ORM and repositories</td>
+                    </tr>
+                    <tr>
+                        <td>Database</td>
+                        <td>PostgreSQL 15+</td>
+                        <td>Primary data store</td>
+                    </tr>
+                    <tr>
+                        <td>Migrations</td>
+                        <td>Flyway</td>
+                        <td>Schema version control</td>
+                    </tr>
+                    <tr>
+                        <td>Batch</td>
+                        <td>Spring Batch 5.x</td>
+                        <td>Batch job processing</td>
+                    </tr>
+                    <tr>
+                        <td>Security</td>
+                        <td>Spring Security 6.x</td>
+                        <td>Authentication/authorization</td>
+                    </tr>
+                    <tr>
+                        <td>API Docs</td>
+                        <td>SpringDoc OpenAPI</td>
+                        <td>API documentation</td>
+                    </tr>
+                    <tr>
+                        <td>Frontend</td>
+                        <td>Next.js 15</td>
+                        <td>Web user interface</td>
+                    </tr>
+                    <tr>
+                        <td>Build</td>
+                        <td>Maven or Gradle</td>
+                        <td>Build automation</td>
+                    </tr>
+                    <tr>
+                        <td>Containers</td>
+                        <td>Docker</td>
+                        <td>Containerization</td>
+                    </tr>
+                    <tr>
+                        <td>Orchestration</td>
+                        <td>Kubernetes / ECS</td>
+                        <td>Container orchestration</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Module Structure</h3>
+            <pre>carddemo-java/
+├── carddemo-domain/           # Domain entities and value objects
+├── carddemo-persistence/      # JPA repositories and database config
+├── carddemo-services/         # Business logic services
+├── carddemo-api/              # REST controllers and DTOs
+├── carddemo-batch/            # Spring Batch jobs
+├── carddemo-security/         # Authentication and authorization
+├── carddemo-migration/        # EBCDIC data importers
+├── carddemo-ui/               # Next.js 15 frontend
+└── carddemo-infra/            # Docker, Helm, Terraform configs</pre>
+
+            <h3>High-Level Architecture</h3>
+            <div class="architecture-diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                        Load Balancer                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              ▼               ▼               ▼
+        ┌──────────┐   ┌──────────┐   ┌──────────┐
+        │  API     │   │  API     │   │  API     │
+        │ Instance │   │ Instance │   │ Instance │
+        └──────────┘   └──────────┘   └──────────┘
+              │               │               │
+              └───────────────┼───────────────┘
+                              ▼
+                    ┌──────────────────┐
+                    │   PostgreSQL     │
+                    │   (RDS/Aurora)   │
+                    └──────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              ▼               ▼               ▼
+        ┌──────────┐   ┌──────────┐   ┌──────────┐
+        │  Batch   │   │  Batch   │   │  Batch   │
+        │  Worker  │   │  Worker  │   │  Worker  │
+        └──────────┘   └──────────┘   └──────────┘
+            </div>
+        </section>
+
+        <section id="cobol-java-mapping">
+            <h2>COBOL-to-Java Mapping Guide</h2>
+            
+            <h3>Data Type Mappings</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>COBOL Type</th>
+                        <th>Example</th>
+                        <th>Java Type</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PIC 9(n)</td>
+                        <td>PIC 9(09)</td>
+                        <td>Long or BigInteger</td>
+                        <td>Use Long for IDs up to 18 digits</td>
+                    </tr>
+                    <tr>
+                        <td>PIC X(n)</td>
+                        <td>PIC X(25)</td>
+                        <td>String</td>
+                        <td>Trim trailing spaces</td>
+                    </tr>
+                    <tr>
+                        <td>PIC S9(n)V99</td>
+                        <td>PIC S9(10)V99</td>
+                        <td>BigDecimal</td>
+                        <td>Scale = 2, use for all monetary values</td>
+                    </tr>
+                    <tr>
+                        <td>PIC S9(n) COMP</td>
+                        <td>PIC S9(9) COMP</td>
+                        <td>int or long</td>
+                        <td>Binary storage</td>
+                    </tr>
+                    <tr>
+                        <td>PIC 9(n) COMP-3</td>
+                        <td>PIC 9(3) COMP-3</td>
+                        <td>BigDecimal</td>
+                        <td>Packed decimal, handle sign nibble</td>
+                    </tr>
+                    <tr>
+                        <td>Date fields</td>
+                        <td>PIC X(10)</td>
+                        <td>LocalDate</td>
+                        <td>Parse YYYY-MM-DD format</td>
+                    </tr>
+                    <tr>
+                        <td>Timestamp</td>
+                        <td>PIC X(26)</td>
+                        <td>LocalDateTime</td>
+                        <td>Parse DB2 timestamp format</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Architectural Pattern Mappings</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>COBOL/CICS Concept</th>
+                        <th>Java Equivalent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>COMMAREA</td>
+                        <td>Stateless REST; state in request/JWT</td>
+                    </tr>
+                    <tr>
+                        <td>CICS Transaction</td>
+                        <td>REST endpoint</td>
+                    </tr>
+                    <tr>
+                        <td>BMS Map</td>
+                        <td>Next.js page component</td>
+                    </tr>
+                    <tr>
+                        <td>VSAM KSDS</td>
+                        <td>JPA Entity + Repository</td>
+                    </tr>
+                    <tr>
+                        <td>VSAM AIX</td>
+                        <td>Database secondary index</td>
+                    </tr>
+                    <tr>
+                        <td>Copybook</td>
+                        <td>Java DTO/Entity class</td>
+                    </tr>
+                    <tr>
+                        <td>JCL Job</td>
+                        <td>Spring Batch Job</td>
+                    </tr>
+                    <tr>
+                        <td>JCL Step</td>
+                        <td>Spring Batch Step</td>
+                    </tr>
+                    <tr>
+                        <td>PERFORM paragraph</td>
+                        <td>Private method</td>
+                    </tr>
+                    <tr>
+                        <td>CALL subprogram</td>
+                        <td>Service method call</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>CICS Command Mappings</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>CICS Command</th>
+                        <th>Java Equivalent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>EXEC CICS READ</td>
+                        <td>repository.findById()</td>
+                    </tr>
+                    <tr>
+                        <td>EXEC CICS WRITE</td>
+                        <td>repository.save()</td>
+                    </tr>
+                    <tr>
+                        <td>EXEC CICS REWRITE</td>
+                        <td>repository.save() (update)</td>
+                    </tr>
+                    <tr>
+                        <td>EXEC CICS DELETE</td>
+                        <td>repository.delete()</td>
+                    </tr>
+                    <tr>
+                        <td>EXEC CICS STARTBR/READNEXT</td>
+                        <td>repository.findAll() with pagination</td>
+                    </tr>
+                    <tr>
+                        <td>EXEC CICS SEND MAP</td>
+                        <td>Return DTO from controller</td>
+                    </tr>
+                    <tr>
+                        <td>EXEC CICS RECEIVE MAP</td>
+                        <td>@RequestBody DTO parameter</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="database-schema">
+            <h2>Database Schema Design</h2>
+            
+            <h3>Entity-Relationship Model</h3>
+            <p>The relational schema normalizes the VSAM file structures while preserving the original key relationships.</p>
+
+            <h3>Core Tables</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Table</th>
+                        <th>Source Copybook</th>
+                        <th>Record Size</th>
+                        <th>Primary Key</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>customer</td>
+                        <td>CVCUS01Y.cpy</td>
+                        <td>500 bytes</td>
+                        <td>id (CUST-ID)</td>
+                    </tr>
+                    <tr>
+                        <td>account</td>
+                        <td>CVACT01Y.cpy</td>
+                        <td>300 bytes</td>
+                        <td>id (ACCT-ID)</td>
+                    </tr>
+                    <tr>
+                        <td>card</td>
+                        <td>CVACT02Y.cpy</td>
+                        <td>150 bytes</td>
+                        <td>card_number (CARD-NUM)</td>
+                    </tr>
+                    <tr>
+                        <td>card_xref</td>
+                        <td>CVACT03Y.cpy</td>
+                        <td>50 bytes</td>
+                        <td>card_number (XREF-CARD-NUM)</td>
+                    </tr>
+                    <tr>
+                        <td>transaction</td>
+                        <td>CVTRA05Y.cpy</td>
+                        <td>350 bytes</td>
+                        <td>id (TRAN-ID)</td>
+                    </tr>
+                    <tr>
+                        <td>tcat_balance</td>
+                        <td>CVTRA01Y.cpy</td>
+                        <td>50 bytes</td>
+                        <td>(account_id, type_code, category_code)</td>
+                    </tr>
+                    <tr>
+                        <td>app_user</td>
+                        <td>CSUSR01Y.cpy</td>
+                        <td>80 bytes</td>
+                        <td>id (auto-generated)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Sample Schema: Account Table</h3>
+            <pre>CREATE TABLE account (
+    id BIGINT PRIMARY KEY,                    -- ACCT-ID (11 digits)
+    customer_id BIGINT NOT NULL REFERENCES customer(id),
+    active_status VARCHAR(1) NOT NULL,        -- ACCT-ACTIVE-STATUS
+    current_balance DECIMAL(12,2) NOT NULL DEFAULT 0,
+    credit_limit DECIMAL(12,2) NOT NULL,
+    cash_credit_limit DECIMAL(12,2),
+    open_date DATE NOT NULL,
+    expiration_date DATE NOT NULL,
+    reissue_date DATE,
+    cycle_credit DECIMAL(12,2) DEFAULT 0,
+    cycle_debit DECIMAL(12,2) DEFAULT 0,
+    zip_code VARCHAR(10),
+    group_id VARCHAR(10),
+    version BIGINT DEFAULT 0,                 -- Optimistic locking
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_account_customer ON account(customer_id);
+CREATE INDEX idx_account_expiration ON account(expiration_date);</pre>
+        </section>
+
+        <section id="api-mapping">
+            <h2>Program-to-API Mapping</h2>
+            
+            <h3>Online Programs to REST Endpoints</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>COBOL Program</th>
+                        <th>Transaction</th>
+                        <th>REST Endpoint</th>
+                        <th>Method</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>COSGN00C</td>
+                        <td>CC00</td>
+                        <td>/api/auth/login</td>
+                        <td><span class="badge badge-success">POST</span></td>
+                        <td>User authentication</td>
+                    </tr>
+                    <tr>
+                        <td>COACTVWC</td>
+                        <td>CAVW</td>
+                        <td>/api/accounts/{id}</td>
+                        <td><span class="badge badge-primary">GET</span></td>
+                        <td>View account details</td>
+                    </tr>
+                    <tr>
+                        <td>COACTUPC</td>
+                        <td>CAUP</td>
+                        <td>/api/accounts/{id}</td>
+                        <td><span class="badge badge-warning">PUT</span></td>
+                        <td>Update account</td>
+                    </tr>
+                    <tr>
+                        <td>COCRDLIC</td>
+                        <td>CCLI</td>
+                        <td>/api/accounts/{id}/cards</td>
+                        <td><span class="badge badge-primary">GET</span></td>
+                        <td>List cards for account</td>
+                    </tr>
+                    <tr>
+                        <td>COCRDSLC</td>
+                        <td>CCDL</td>
+                        <td>/api/cards/{cardNumber}</td>
+                        <td><span class="badge badge-primary">GET</span></td>
+                        <td>View card details</td>
+                    </tr>
+                    <tr>
+                        <td>COCRDUPC</td>
+                        <td>CCUP</td>
+                        <td>/api/cards/{cardNumber}</td>
+                        <td><span class="badge badge-warning">PUT</span></td>
+                        <td>Update card</td>
+                    </tr>
+                    <tr>
+                        <td>COTRN00C</td>
+                        <td>CT00</td>
+                        <td>/api/accounts/{id}/transactions</td>
+                        <td><span class="badge badge-primary">GET</span></td>
+                        <td>List transactions</td>
+                    </tr>
+                    <tr>
+                        <td>COTRN01C</td>
+                        <td>CT01</td>
+                        <td>/api/transactions/{id}</td>
+                        <td><span class="badge badge-primary">GET</span></td>
+                        <td>View transaction</td>
+                    </tr>
+                    <tr>
+                        <td>COTRN02C</td>
+                        <td>CT02</td>
+                        <td>/api/transactions</td>
+                        <td><span class="badge badge-success">POST</span></td>
+                        <td>Create transaction</td>
+                    </tr>
+                    <tr>
+                        <td>CORPT00C</td>
+                        <td>CR00</td>
+                        <td>/api/reports/transactions</td>
+                        <td><span class="badge badge-primary">GET</span></td>
+                        <td>Transaction reports</td>
+                    </tr>
+                    <tr>
+                        <td>COBIL00C</td>
+                        <td>CB00</td>
+                        <td>/api/payments</td>
+                        <td><span class="badge badge-success">POST</span></td>
+                        <td>Process bill payment</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>API Response Codes Mapping</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>COBOL Condition</th>
+                        <th>HTTP Status</th>
+                        <th>Response Body</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Successful operation</td>
+                        <td>200 OK</td>
+                        <td>Resource data</td>
+                    </tr>
+                    <tr>
+                        <td>Record created</td>
+                        <td>201 Created</td>
+                        <td>Created resource</td>
+                    </tr>
+                    <tr>
+                        <td>Record not found (RESP=13)</td>
+                        <td>404 Not Found</td>
+                        <td>Error message</td>
+                    </tr>
+                    <tr>
+                        <td>Validation failure</td>
+                        <td>422 Unprocessable Entity</td>
+                        <td>Validation errors</td>
+                    </tr>
+                    <tr>
+                        <td>Duplicate key (RESP=14)</td>
+                        <td>409 Conflict</td>
+                        <td>Error message</td>
+                    </tr>
+                    <tr>
+                        <td>Authentication failure</td>
+                        <td>401 Unauthorized</td>
+                        <td>Error message</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="batch-jobs">
+            <h2>Batch Jobs Migration</h2>
+            
+            <h3>Spring Batch Job Mappings</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>JCL Job</th>
+                        <th>COBOL Program</th>
+                        <th>Spring Batch Job</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>POSTTRAN</td>
+                        <td>CBTRN02C</td>
+                        <td>postTransactionsJob</td>
+                        <td>Daily transaction posting</td>
+                    </tr>
+                    <tr>
+                        <td>INTCALC</td>
+                        <td>CBACT04C</td>
+                        <td>interestCalculationJob</td>
+                        <td>Monthly interest calculation</td>
+                    </tr>
+                    <tr>
+                        <td>CREASTMT</td>
+                        <td>CBSTM03A/B</td>
+                        <td>createStatementsJob</td>
+                        <td>Statement generation</td>
+                    </tr>
+                    <tr>
+                        <td>TRANREPT</td>
+                        <td>CBTRN03C</td>
+                        <td>transactionReportJob</td>
+                        <td>Transaction reporting</td>
+                    </tr>
+                    <tr>
+                        <td>CBEXPORT</td>
+                        <td>CBEXPORT</td>
+                        <td>dataExportJob</td>
+                        <td>Branch migration export</td>
+                    </tr>
+                    <tr>
+                        <td>CBIMPORT</td>
+                        <td>CBIMPORT</td>
+                        <td>dataImportJob</td>
+                        <td>Branch migration import</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Transaction Validation Codes (CBTRN02C)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Condition</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>100</td>
+                        <td>Card not in XREF</td>
+                        <td>Invalid card number - not found in cross-reference file</td>
+                    </tr>
+                    <tr>
+                        <td>101</td>
+                        <td>Account not found</td>
+                        <td>Account record not found for the card's account ID</td>
+                    </tr>
+                    <tr>
+                        <td>102</td>
+                        <td>Over credit limit</td>
+                        <td>Transaction would exceed account credit limit</td>
+                    </tr>
+                    <tr>
+                        <td>103</td>
+                        <td>Account expired</td>
+                        <td>Transaction date is after account expiration date</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="session-plan">
+            <h2>Session-by-Session Migration Plan</h2>
+
+            <div class="session-card">
+                <h4><span class="session-number">1</span> Foundation and Project Scaffolding</h4>
+                <p><strong>Objectives:</strong> Establish Java project structure, configure CI/CD pipeline, create baseline database schema</p>
+                <ul>
+                    <li>Initialize Spring Boot 3.2 multi-module Maven project</li>
+                    <li>Configure application.yml for PostgreSQL and Flyway</li>
+                    <li>Create Dockerfile and docker-compose.yml</li>
+                    <li>Set up GitHub Actions CI workflow</li>
+                    <li>Create Flyway V1__baseline.sql with complete schema</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">2</span> Domain Entities and Persistence Layer</h4>
+                <p><strong>Objectives:</strong> Create JPA entities for all tables, implement Spring Data repositories</p>
+                <ul>
+                    <li>Create Customer, Account, Card, CardXref entities</li>
+                    <li>Create Transaction, TcatBalance, AppUser entities</li>
+                    <li>Implement repositories with custom query methods</li>
+                    <li>Add seed data for testing</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">3</span> EBCDIC Data Ingestion Utilities</h4>
+                <p><strong>Objectives:</strong> Build JRecord-based file parsers, implement data import services</p>
+                <ul>
+                    <li>Create CopybookParser utility for EBCDIC handling</li>
+                    <li>Implement import services for each entity type</li>
+                    <li>Handle COMP-3 packed decimal conversion</li>
+                    <li>Create ImportCommandLineRunner for batch imports</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">4</span> Authentication and Security</h4>
+                <p><strong>Objectives:</strong> Implement Spring Security with JWT, create login endpoint</p>
+                <ul>
+                    <li>Configure SecurityFilterChain with JWT authentication</li>
+                    <li>Create JwtTokenProvider and AuthController</li>
+                    <li>Implement UserDetailsService with role mapping</li>
+                    <li>Migrate users with bcrypt password hashing</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">5</span> Account and Card Services</h4>
+                <p><strong>Objectives:</strong> Implement account and card CRUD operations</p>
+                <ul>
+                    <li>Create AccountService and AccountController</li>
+                    <li>Create CardService and CardController</li>
+                    <li>Implement validation matching COBOL business rules</li>
+                    <li>Add OpenAPI documentation</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">6</span> Transaction Services and Business Rules</h4>
+                <p><strong>Objectives:</strong> Implement transaction APIs with CBTRN02C validation logic</p>
+                <ul>
+                    <li>Create TransactionValidationService with rejection codes</li>
+                    <li>Implement atomic balance updates</li>
+                    <li>Handle optimistic locking for concurrent transactions</li>
+                    <li>Create comprehensive validation tests</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">7</span> Batch Processing - Transaction Posting Job</h4>
+                <p><strong>Objectives:</strong> Implement Spring Batch job equivalent to POSTTRAN</p>
+                <ul>
+                    <li>Create JRecordItemReader for DALYTRAN file</li>
+                    <li>Implement TransactionValidationProcessor</li>
+                    <li>Create TransactionPostingWriter and RejectionWriter</li>
+                    <li>Configure job with skip/retry policies</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">8</span> Interest Calculation and Statement Generation</h4>
+                <p><strong>Objectives:</strong> Implement monthly batch jobs</p>
+                <ul>
+                    <li>Create interestCalculationJob with configurable rates</li>
+                    <li>Create createStatementsJob with PDF generation</li>
+                    <li>Implement Thymeleaf statement templates</li>
+                    <li>Configure job scheduling</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">9</span> Reports and Admin Tooling</h4>
+                <p><strong>Objectives:</strong> Implement reporting APIs and user management</p>
+                <ul>
+                    <li>Create ReportService with CSV/PDF export</li>
+                    <li>Implement UserManagementService</li>
+                    <li>Add audit logging</li>
+                    <li>Create admin endpoints</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">10</span> Next.js 15 UI Development</h4>
+                <p><strong>Objectives:</strong> Create web frontend replacing BMS screens</p>
+                <ul>
+                    <li>Initialize Next.js 15 project with TypeScript and Tailwind</li>
+                    <li>Implement NextAuth.js authentication</li>
+                    <li>Create dashboard, accounts, cards, transactions pages</li>
+                    <li>Build reusable components with shadcn/ui</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">11</span> Optional Modules Migration</h4>
+                <p><strong>Objectives:</strong> Migrate IMS/DB2/MQ integrations if needed</p>
+                <ul>
+                    <li>Implement transaction type management</li>
+                    <li>Add JMS/MQ integration or REST alternatives</li>
+                    <li>Create authorization processing service</li>
+                </ul>
+            </div>
+
+            <div class="session-card">
+                <h4><span class="session-number">12</span> Testing, Parity Validation, and Deployment</h4>
+                <p><strong>Objectives:</strong> Comprehensive testing and production deployment</p>
+                <ul>
+                    <li>Create parity tests against mainframe outputs</li>
+                    <li>Implement performance tests with Gatling</li>
+                    <li>Create Kubernetes manifests and Terraform configs</li>
+                    <li>Set up monitoring and observability</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="prompts">
+            <h2>Prompts Library</h2>
+            <p>Copy-paste ready prompts for each migration task. Each prompt is self-contained and can be used in a separate Devin session.</p>
+
+            <div class="prompt-box">
+                <div class="prompt-header">Prompt 1.1: Initialize Spring Boot Multi-Module Project</div>
+                <div class="prompt-content">Create a new Spring Boot 3.2 multi-module Maven project for migrating the CardDemo mainframe application to Java.
+
+Project structure:
+- Parent POM: carddemo-java (packaging: pom)
+- Modules:
+  - carddemo-domain: JPA entities and value objects
+  - carddemo-persistence: Spring Data repositories and database configuration
+  - carddemo-services: Business logic and service layer
+  - carddemo-api: REST controllers, DTOs, and API configuration
+  - carddemo-batch: Spring Batch jobs for batch processing
+  - carddemo-security: Spring Security configuration and JWT handling
+  - carddemo-migration: EBCDIC data import utilities
+
+Parent POM dependencies to include:
+- spring-boot-starter-parent: 3.2.0
+- Java version: 17
+
+Create application.yml in carddemo-api with:
+- Server port: 8080
+- PostgreSQL datasource configuration (use environment variables)
+- Flyway enabled with baseline-on-migrate: true
+- JPA hibernate ddl-auto: validate
+
+Generate .gitignore for Java/Maven project.</div>
+            </div>
+
+            <div class="prompt-box">
+                <div class="prompt-header">Prompt 2.1: Create Customer Entity</div>
+                <div class="prompt-content">Create the Customer JPA entity in carddemo-domain module matching COBOL copybook CVCUS01Y.cpy.
+
+COBOL copybook structure (500 bytes total):
+01 CUSTOMER-RECORD.
+   05 CUST-ID                    PIC 9(09).
+   05 CUST-FIRST-NAME            PIC X(25).
+   05 CUST-MIDDLE-NAME           PIC X(25).
+   05 CUST-LAST-NAME             PIC X(25).
+   05 CUST-ADDR-LINE-1           PIC X(50).
+   05 CUST-ADDR-LINE-2           PIC X(50).
+   05 CUST-ADDR-LINE-3           PIC X(50).
+   05 CUST-ADDR-STATE-CD         PIC X(02).
+   05 CUST-ADDR-COUNTRY-CD       PIC X(03).
+   05 CUST-ADDR-ZIP              PIC X(10).
+   05 CUST-PHONE-NUM-1           PIC X(15).
+   05 CUST-PHONE-NUM-2           PIC X(15).
+   05 CUST-SSN                   PIC X(09).
+   05 CUST-GOVT-ISSUED-ID        PIC X(20).
+   05 CUST-DOB-YYYY-MM-DD        PIC X(10).
+   05 CUST-EFT-ACCOUNT-ID        PIC X(10).
+   05 CUST-PRI-CARD-HOLDER-IND   PIC X(01).
+   05 CUST-FICO-CREDIT-SCORE     PIC 9(03).
+   05 FILLER                     PIC X(168).
+
+Java entity requirements:
+- Package: com.carddemo.domain.entity
+- Use Lombok @Data, @Entity, @Table annotations
+- Map CUST-ID to Long id with @Id
+- Map all PIC X fields to String with appropriate @Column(length=N)
+- Add @OneToMany relationship to Account (mappedBy = "customer")
+
+Create CustomerRepository in carddemo-persistence with custom query methods.</div>
+            </div>
+
+            <div class="prompt-box">
+                <div class="prompt-header">Prompt 4.1: Implement Spring Security with JWT</div>
+                <div class="prompt-content">Implement JWT-based authentication in carddemo-security module, replacing COBOL program COSGN00C.
+
+1. Create SecurityConfig class:
+   - @EnableWebSecurity, @EnableMethodSecurity
+   - Configure SecurityFilterChain:
+     - Disable CSRF (stateless API)
+     - Session management: STATELESS
+     - Public endpoints: /api/auth/**, /api/health, /swagger-ui/**
+     - /api/admin/** requires ROLE_ADMIN
+     - All other /api/** requires authentication
+   - Add JwtAuthenticationFilter before UsernamePasswordAuthenticationFilter
+
+2. Create JwtTokenProvider:
+   - generateToken(UserDetails userDetails): String
+   - validateToken(String token): boolean
+   - getUsernameFromToken(String token): String
+
+3. Create AuthController:
+   - POST /api/auth/login
+     - Request: LoginRequest { username, password }
+     - Response: AuthResponse { token, username, userType, expiresAt }
+
+4. Map user_type 'A' to ROLE_ADMIN, 'U' to ROLE_USER</div>
+            </div>
+
+            <div class="prompt-box">
+                <div class="prompt-header">Prompt 6.1: Implement Transaction Validation (CBTRN02C Logic)</div>
+                <div class="prompt-content">Implement Transaction APIs with validation logic matching COBOL program CBTRN02C.
+
+Create TransactionValidationService with validateTransaction method:
+
+Validation steps (matching CBTRN02C):
+a. Card validation (rejection code 100):
+   - Lookup card in card_xref by cardNumber
+   - If not found: return ValidationResult.rejected(100, "Invalid card number")
+
+b. Account validation (rejection code 101):
+   - Get accountId from xref
+   - Lookup account by accountId
+   - If not found: return ValidationResult.rejected(101, "Account not found")
+
+c. Credit limit validation (rejection code 102):
+   - Calculate: tempBalance = cycleCredit - cycleDebit + transactionAmount
+   - If tempBalance > creditLimit: return ValidationResult.rejected(102, "Over limit")
+
+d. Expiration validation (rejection code 103):
+   - If account.expirationDate < transaction.originatedAt.toLocalDate():
+     return ValidationResult.rejected(103, "Account expired")
+
+On success within @Transactional:
+1. Create Transaction entity
+2. Update account: currentBalance += amount
+3. Update TcatBalance record
+4. Set processedAt = now()</div>
+            </div>
+
+            <div class="prompt-box">
+                <div class="prompt-header">Prompt 10.1: Create Next.js 15 Frontend Application</div>
+                <div class="prompt-content">Create a Next.js 15 frontend application replacing BMS 3270 screens.
+
+1. Initialize Next.js 15 project:
+   npx create-next-app@latest carddemo-ui --typescript --tailwind --eslint --app --src-dir
+   
+   Additional dependencies:
+   - @tanstack/react-query, axios
+   - react-hook-form + zod
+   - shadcn/ui components
+   - next-auth (authentication)
+   - @tanstack/react-table
+
+2. Project structure with App Router:
+   src/app/(auth)/login/page.tsx
+   src/app/(dashboard)/accounts/page.tsx
+   src/app/(dashboard)/cards/page.tsx
+   src/app/(dashboard)/transactions/page.tsx
+   src/app/(dashboard)/reports/page.tsx
+
+3. Configure NextAuth.js for JWT authentication
+4. Create API client with Axios interceptors
+5. Implement Server Components where possible
+6. Create reusable DataTable, SearchForm, Modal components
+7. Match COBOL validation rules in forms</div>
+            </div>
+        </section>
+
+        <section id="troubleshooting">
+            <h2>Troubleshooting Guide</h2>
+
+            <h3>COMP-3 (Packed Decimal) Conversion Errors</h3>
+            <div class="card">
+                <p><strong>Symptom:</strong> Monetary amounts are incorrect after migration</p>
+                <p><strong>Cause:</strong> Incorrect handling of packed decimal sign nibble or scale</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Verify JRecord configuration uses correct charset (cp037)</li>
+                    <li>Check scale parameter matches copybook (V99 = scale 2)</li>
+                    <li>Test with known values: COBOL PIC S9(5)V99 COMP-3 value +12345.67 = Java BigDecimal("12345.67")</li>
+                    <li>Use JRecord's getFieldValue() with explicit type conversion</li>
+                </ol>
+            </div>
+
+            <h3>Character Encoding Problems</h3>
+            <div class="card">
+                <p><strong>Symptom:</strong> Special characters appear garbled</p>
+                <p><strong>Cause:</strong> Wrong EBCDIC code page or missing conversion</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Verify source file code page (usually cp037 for US)</li>
+                    <li>Configure JRecord: Convert.FMT_MAINFRAME, "cp037"</li>
+                    <li>Trim trailing spaces from string fields</li>
+                    <li>Test with records containing special characters</li>
+                </ol>
+            </div>
+
+            <h3>Transaction Validation Mismatch</h3>
+            <div class="card">
+                <p><strong>Symptom:</strong> Java rejects transactions that COBOL accepted (or vice versa)</p>
+                <p><strong>Cause:</strong> Business logic differences</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Compare validation code side-by-side with CBTRN02C.cbl</li>
+                    <li>Check date comparison logic (inclusive vs exclusive)</li>
+                    <li>Verify credit limit calculation matches exactly</li>
+                    <li>Run parallel testing with same input file</li>
+                    <li>Log detailed validation results for comparison</li>
+                </ol>
+            </div>
+
+            <h3>Batch Job Performance</h3>
+            <div class="card">
+                <p><strong>Symptom:</strong> Spring Batch job runs much slower than JCL</p>
+                <p><strong>Cause:</strong> Inefficient database operations or small chunk size</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Increase chunk size (try 500-1000)</li>
+                    <li>Use batch inserts: spring.jpa.properties.hibernate.jdbc.batch_size=50</li>
+                    <li>Disable auto-commit during batch</li>
+                    <li>Add database indexes for lookup queries</li>
+                    <li>Consider partitioning for parallel processing</li>
+                </ol>
+            </div>
+
+            <h3>Concurrent Transaction Conflicts</h3>
+            <div class="card">
+                <p><strong>Symptom:</strong> OptimisticLockingFailureException during high volume</p>
+                <p><strong>Cause:</strong> Multiple transactions updating same account simultaneously</p>
+                <p><strong>Solution:</strong></p>
+                <ol>
+                    <li>Implement retry logic with exponential backoff</li>
+                    <li>Consider pessimistic locking for critical updates</li>
+                    <li>Partition batch processing by account ID</li>
+                    <li>Use database-level serialization for balance updates</li>
+                </ol>
+            </div>
+        </section>
+
+        <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+            <p>CardDemo Java Migration Plan v2.0 | Last Updated: February 2026</p>
+            <p>Target: Java 17 with Spring Boot 3.2 | Frontend: Next.js 15</p>
+            <p>For the complete markdown version, see <a href="MIGRATION_TO_JAVA.md">MIGRATION_TO_JAVA.md</a></p>
+        </footer>
+    </div>
+</body>
+</html>

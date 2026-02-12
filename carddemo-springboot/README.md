@@ -51,6 +51,7 @@ The application starts on port **8080** by default. The H2 database console is a
 | `Card` | CARDFILE | CVACT02Y | Card records |
 | `Transaction` | TRANSACT | CVTRA05Y | Transaction records |
 | `User` | USRSEC | CSUSR01Y | User security records |
+| `CrossReference` | XREFFILE | CVACT03Y | Card-to-account cross-reference |
 
 ### Controller to CICS Transaction Mapping
 
@@ -60,6 +61,7 @@ The application starts on port **8080** by default. The H2 database console is a
 | `AccountController` | CAVW | COACTVWC | Account view |
 | `CardController` | Card mgmt | COCRDLIC, COCRDSLC | Card list/detail |
 | `TransactionController` | CT02 | COTRN00C, COTRN01C, COTRN02C | Transaction processing |
+| `CustomerController` | Customer mgmt | COCUSTIC, COCUSTPC | Customer inquiry/update |
 | `PaymentController` | Bill pay | COBIL00C | Bill payment |
 
 ### Service to COBOL Program Mapping
@@ -70,6 +72,7 @@ The application starts on port **8080** by default. The H2 database console is a
 | `CardService` | COCRDLIC, COCRDSLC, CBACT02C | Card management logic |
 | `TransactionService` | COTRN00C, COTRN01C, COTRN02C, CBTRN01C, CBTRN02C | Transaction processing |
 | `PaymentService` | COBIL00C | Bill payment processing |
+| `CustomerService` | COCUSTIC, COCUSTPC | Customer management logic |
 | `UserService` | COSGN00C | Authentication logic |
 
 ### Batch Jobs (Spring Batch replacing JCL)

@@ -1,6 +1,5 @@
 package com.carddemo.config;
 
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -11,8 +10,10 @@ import org.springframework.context.annotation.Configuration;
  * - CBTRN01C (Transaction batch posting)
  * - CBTRN02C (Interest calculation)
  * - CBSTM03A/B (Statement generation)
+ *
+ * Spring Boot 3.x auto-configures Spring Batch when the starter is present.
+ * Individual Job and Step beans should be defined here during migration.
  */
 @Configuration
-@EnableBatchProcessing
 public class BatchConfig {
 }

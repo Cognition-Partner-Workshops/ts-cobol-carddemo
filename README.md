@@ -9,6 +9,7 @@ CardDemo is a comprehensive mainframe application that simulates a credit card m
 ## Table of Contents
 - [Description](#description)
 - [Technologies](#technologies)
+- [Spring Boot Migration Target](#spring-boot-migration-target)
 - [Optional Features](#optional-features)
 - [Installation](#installation)
 - [Running Batch Jobs](#running-batch-jobs)
@@ -58,6 +59,75 @@ The application intentionally incorporates various coding styles and patterns to
 - **Additional Dataset Types**: VSAM (ESDS/RRDS), GDG, PDS
 - **Record Formats**: VB, FBA, and others
 - **Complex Copybook Structures**: REDEFINES, OCCURS, OCCURS DEPENDING ON
+
+## Spring Boot Migration Target
+
+This repository includes a Java Spring Boot application (`carddemo-springboot/`) that serves as the migration target for modernizing the mainframe COBOL application. The Spring Boot project provides a complete scaffolding that maps directly to the existing mainframe components.
+
+### Quick Start
+
+```bash
+cd carddemo-springboot
+mvn clean package
+mvn spring-boot:run
+```
+
+The application starts on port **8080** with an H2 in-memory database. The H2 console is available at `http://localhost:8080/h2-console`.
+
+### Technology Stack
+
+- **Java 17** with **Spring Boot 3.2.3**
+- **Spring Data JPA** for database access (replacing VSAM I/O)
+- **Spring Security** for authentication/authorization (replacing USRSEC)
+- **Spring Batch** for batch processing (replacing JCL jobs)
+- **H2 Database** for development (configurable for production RDBMS)
+
+### Architecture Mapping
+
+| Mainframe Component | Spring Boot Equivalent | Location |
+|---|---|---|
+| CICS Transactions | REST Controllers (`/api/*`) | `com.carddemo.controller` |
+| COBOL Programs | Service Classes | `com.carddemo.service` |
+| VSAM KSDS Files | JPA Repositories + RDBMS | `com.carddemo.repository` |
+| COBOL Copybooks | JPA Entities and DTOs | `com.carddemo.entity`, `com.carddemo.dto` |
+| JCL Batch Jobs | Spring Batch Jobs | `com.carddemo.config` |
+| USRSEC File | Spring Security | `com.carddemo.security` |
+
+### VSAM File to Entity Mapping
+
+| VSAM File | Entity | Copybook | Description |
+|---|---|---|---|
+| CUSTFILE | `Customer` | CVCUS01Y | Customer records |
+| ACCTFILE | `Account` | CVACT01Y | Account records |
+| CARDFILE | `Card` | CVACT02Y | Card records |
+| XREFFILE | `CrossReference` | CVACT03Y | Card-to-account cross-reference |
+| TRANSACT | `Transaction` | CVTRA05Y | Transaction records |
+| USRSEC | `User` | CSUSR01Y | User security records |
+
+### CICS Transaction to REST Controller Mapping
+
+| CICS Transaction | COBOL Program | REST Controller | API Path |
+|---|---|---|---|
+| CC00 (Sign-on) | COSGN00C | `AuthController` | `/api/auth` |
+| CAVW (Account View) | COACTVWC | `AccountController` | `/api/accounts` |
+| CCLI/CCDL (Card List/Detail) | COCRDLIC, COCRDSLC | `CardController` | `/api/cards` |
+| CT00/CT01/CT02 (Transactions) | COTRN00C, COTRN01C, COTRN02C | `TransactionController` | `/api/transactions` |
+| Customer Inquiry/Update | COCUSTIC, COCUSTPC | `CustomerController` | `/api/customers` |
+| CB00 (Bill Payment) | COBIL00C | `PaymentController` | `/api/payments` |
+
+### Batch Job Migration
+
+Spring Batch (`BatchConfig`) will replace the following JCL batch jobs:
+
+| JCL Job | COBOL Program | Description |
+|---|---|---|
+| POSTTRAN | CBTRN02C | Daily transaction posting |
+| INTCALC | CBACT04C | Interest calculation |
+| CREASTMT | CBSTM03A | Monthly statement generation |
+| Account batch | CBACT01C | Account file processing |
+| Card batch | CBACT02C | Card file processing |
+
+For detailed documentation, see [`carddemo-springboot/README.md`](./carddemo-springboot/README.md).
 
 ## Optional Features
 

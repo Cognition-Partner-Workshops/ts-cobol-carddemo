@@ -2,6 +2,8 @@ package com.aws.carddemo.statement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -96,7 +98,8 @@ class StatementServiceTests {
         TransactionRecord txn2 = createTransaction(2L, testCard, "CR", new BigDecimal("-200.00"),
                 LocalDateTime.of(2025, 6, 15, 14, 0));
 
-        when(transactionRecordRepository.findByCardCardNumber("4111111111111111"))
+        when(transactionRecordRepository.findByCardCardNumberInAndTimestampBetween(
+                eq(List.of("4111111111111111")), any(), any()))
                 .thenReturn(List.of(txn1, txn2));
 
         StatementRequest request = new StatementRequest(1L, LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30));
@@ -120,13 +123,14 @@ class StatementServiceTests {
         TransactionRecord txn2 = createTransaction(2L, testCard, "CR", new BigDecimal("-200.00"),
                 LocalDateTime.of(2025, 6, 15, 14, 0));
 
-        when(transactionRecordRepository.findByCardCardNumber("4111111111111111"))
+        when(transactionRecordRepository.findByCardCardNumberInAndTimestampBetween(
+                eq(List.of("4111111111111111")), any(), any()))
                 .thenReturn(List.of(txn1, txn2));
 
         StatementRequest request = new StatementRequest(1L, LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30));
         StatementResponse response = statementService.generateStatement(request);
 
-        BigDecimal expectedOpening = new BigDecimal("2500.00")
+        BigDecimal expectedOpening= new BigDecimal("2500.00")
                 .subtract(new BigDecimal("500.00"))
                 .add(new BigDecimal("200.00"));
         assertThat(response.openingBalance()).isEqualByComparingTo(expectedOpening);
@@ -144,8 +148,9 @@ class StatementServiceTests {
         TransactionRecord afterRange = createTransaction(3L, testCard, "SA", new BigDecimal("888.00"),
                 LocalDateTime.of(2025, 7, 1, 0, 1));
 
-        when(transactionRecordRepository.findByCardCardNumber("4111111111111111"))
-                .thenReturn(List.of(inRange, beforeRange, afterRange));
+        when(transactionRecordRepository.findByCardCardNumberInAndTimestampBetween(
+                eq(List.of("4111111111111111")), any(), any()))
+                .thenReturn(List.of(inRange));
 
         StatementRequest request = new StatementRequest(1L, LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30));
         StatementResponse response = statementService.generateStatement(request);
@@ -171,7 +176,8 @@ class StatementServiceTests {
                 LocalDateTime.of(2025, 6, 20, 12, 0));
         txn3.setTransactionCategory("GAS");
 
-        when(transactionRecordRepository.findByCardCardNumber("4111111111111111"))
+        when(transactionRecordRepository.findByCardCardNumberInAndTimestampBetween(
+                eq(List.of("4111111111111111")), any(), any()))
                 .thenReturn(List.of(txn1, txn2, txn3));
 
         StatementRequest request = new StatementRequest(1L, LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30));
@@ -216,7 +222,8 @@ class StatementServiceTests {
         TransactionRecord txn2 = createTransaction(2L, testCard, "SA", new BigDecimal("50.00"),
                 LocalDateTime.of(2025, 6, 5, 12, 0));
 
-        when(transactionRecordRepository.findByCardCardNumber("4111111111111111"))
+        when(transactionRecordRepository.findByCardCardNumberInAndTimestampBetween(
+                eq(List.of("4111111111111111")), any(), any()))
                 .thenReturn(List.of(txn1, txn2));
 
         StatementRequest request = new StatementRequest(1L, LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30));
@@ -231,7 +238,8 @@ class StatementServiceTests {
     void generateStatementWithNoTransactions() {
         when(accountRepository.findByIdWithCustomer(1L)).thenReturn(Optional.of(testAccount));
         when(cardXrefRepository.findByAccountId(1L)).thenReturn(List.of(testCardXref));
-        when(transactionRecordRepository.findByCardCardNumber("4111111111111111"))
+        when(transactionRecordRepository.findByCardCardNumberInAndTimestampBetween(
+                eq(List.of("4111111111111111")), any(), any()))
                 .thenReturn(List.of());
 
         StatementRequest request = new StatementRequest(1L, LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30));
@@ -247,7 +255,8 @@ class StatementServiceTests {
     void generateAndRetrieveStatement() {
         when(accountRepository.findByIdWithCustomer(1L)).thenReturn(Optional.of(testAccount));
         when(cardXrefRepository.findByAccountId(1L)).thenReturn(List.of(testCardXref));
-        when(transactionRecordRepository.findByCardCardNumber("4111111111111111"))
+        when(transactionRecordRepository.findByCardCardNumberInAndTimestampBetween(
+                eq(List.of("4111111111111111")), any(), any()))
                 .thenReturn(List.of());
 
         StatementRequest request = new StatementRequest(1L, LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30));
@@ -263,7 +272,8 @@ class StatementServiceTests {
         testCustomer.setMiddleName(null);
         when(accountRepository.findByIdWithCustomer(1L)).thenReturn(Optional.of(testAccount));
         when(cardXrefRepository.findByAccountId(1L)).thenReturn(List.of(testCardXref));
-        when(transactionRecordRepository.findByCardCardNumber("4111111111111111"))
+        when(transactionRecordRepository.findByCardCardNumberInAndTimestampBetween(
+                eq(List.of("4111111111111111")), any(), any()))
                 .thenReturn(List.of());
 
         StatementRequest request = new StatementRequest(1L, LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30));

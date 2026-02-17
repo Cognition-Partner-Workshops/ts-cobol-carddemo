@@ -2,6 +2,8 @@ package com.aws.carddemo.report;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -21,7 +23,6 @@ import com.aws.carddemo.exception.ValidationException;
 import com.aws.carddemo.report.dto.ReportData;
 import com.aws.carddemo.report.dto.ReportRequest;
 import com.aws.carddemo.report.dto.ReportRequest.ReportType;
-import com.aws.carddemo.report.dto.ReportStatusResponse;
 import com.aws.carddemo.report.dto.ReportStatusResponse.ReportJobStatus;
 import com.aws.carddemo.transaction.TransactionCategory;
 import com.aws.carddemo.transaction.TransactionCategoryRepository;
@@ -43,17 +44,19 @@ class ReportServiceTests {
     private TransactionCategoryRepository transactionCategoryRepository;
 
     private ReportService reportService;
+    private ReportGenerator reportGenerator;
 
     private Card card1;
     private Card card2;
 
     @BeforeEach
     void setUp() {
-        reportService = new ReportService(
+        reportGenerator = new ReportGenerator(
                 transactionRecordRepository,
                 transactionTypeRepository,
                 transactionCategoryRepository
         );
+        reportService = new ReportService(reportGenerator);
 
         card1 = new Card();
         card1.setCardNumber("4111111111111111");
@@ -64,7 +67,7 @@ class ReportServiceTests {
 
     @Test
     void submitMonthlyReportReturnsJobId() {
-        when(transactionRecordRepository.findAll()).thenReturn(List.of());
+        when(transactionRecordRepository.findByTimestampBetween(any(), any())).thenReturn(List.of());
         when(transactionTypeRepository.findAll()).thenReturn(List.of());
         when(transactionCategoryRepository.findAll()).thenReturn(List.of());
 
@@ -129,7 +132,7 @@ class ReportServiceTests {
 
     @Test
     void getReportDataNotCompletedThrows() {
-        when(transactionRecordRepository.findAll()).thenReturn(List.of());
+        when(transactionRecordRepository.findByTimestampBetween(any(), any())).thenReturn(List.of());
         when(transactionTypeRepository.findAll()).thenReturn(List.of());
         when(transactionCategoryRepository.findAll()).thenReturn(List.of());
 
@@ -152,10 +155,9 @@ class ReportServiceTests {
                 LocalDateTime.of(2025, 6, 15, 14, 0));
         TransactionRecord txn3 = createTransaction(3L, card2, "SA", "5001", new BigDecimal("50.00"),
                 LocalDateTime.of(2025, 6, 20, 10, 0));
-        TransactionRecord outsideRange = createTransaction(4L, card1, "SA", "5001", new BigDecimal("999.00"),
-                LocalDateTime.of(2025, 7, 1, 10, 0));
 
-        when(transactionRecordRepository.findAll()).thenReturn(List.of(txn1, txn2, txn3, outsideRange));
+        when(transactionRecordRepository.findByTimestampBetween(any(), any()))
+                .thenReturn(List.of(txn1, txn2, txn3));
 
         TransactionType type = new TransactionType();
         type.setTypeCd("SA");
@@ -189,7 +191,7 @@ class ReportServiceTests {
         TransactionRecord txn = createTransaction(1L, card1, "SA", "5001", new BigDecimal("100.00"),
                 LocalDateTime.of(2025, 3, 15, 12, 0));
 
-        when(transactionRecordRepository.findAll()).thenReturn(List.of(txn));
+        when(transactionRecordRepository.findByTimestampBetween(any(), any())).thenReturn(List.of(txn));
         when(transactionTypeRepository.findAll()).thenReturn(List.of());
         when(transactionCategoryRepository.findAll()).thenReturn(List.of());
 
@@ -213,7 +215,8 @@ class ReportServiceTests {
         TransactionRecord txn2 = createTransaction(2L, card1, "SA", "5001", new BigDecimal("25.00"),
                 LocalDateTime.of(2025, 3, 20, 12, 0));
 
-        when(transactionRecordRepository.findAll()).thenReturn(List.of(txn1, txn2));
+        when(transactionRecordRepository.findByTimestampBetween(any(), any()))
+                .thenReturn(List.of(txn1, txn2));
         when(transactionTypeRepository.findAll()).thenReturn(List.of());
         when(transactionCategoryRepository.findAll()).thenReturn(List.of());
 
@@ -239,7 +242,8 @@ class ReportServiceTests {
         TransactionRecord txn3 = createTransaction(3L, card1, "SA", "5002", new BigDecimal("75.00"),
                 LocalDateTime.of(2025, 6, 20, 12, 0));
 
-        when(transactionRecordRepository.findAll()).thenReturn(List.of(txn1, txn2, txn3));
+        when(transactionRecordRepository.findByTimestampBetween(any(), any()))
+                .thenReturn(List.of(txn1, txn2, txn3));
 
         TransactionCategory cat1 = new TransactionCategory();
         cat1.setCatCd("5001");
@@ -273,7 +277,8 @@ class ReportServiceTests {
         TransactionRecord txn2 = createTransaction(2L, card1, "SA", "5001", new BigDecimal("50.00"),
                 LocalDateTime.of(2025, 6, 5, 12, 0));
 
-        when(transactionRecordRepository.findAll()).thenReturn(List.of(txn1, txn2));
+        when(transactionRecordRepository.findByTimestampBetween(any(), any()))
+                .thenReturn(List.of(txn1, txn2));
         when(transactionTypeRepository.findAll()).thenReturn(List.of());
         when(transactionCategoryRepository.findAll()).thenReturn(List.of());
 
@@ -290,7 +295,7 @@ class ReportServiceTests {
 
     @Test
     void emptyReportReturnsZeroGrandTotal() {
-        when(transactionRecordRepository.findAll()).thenReturn(List.of());
+        when(transactionRecordRepository.findByTimestampBetween(any(), any())).thenReturn(List.of());
         when(transactionTypeRepository.findAll()).thenReturn(List.of());
         when(transactionCategoryRepository.findAll()).thenReturn(List.of());
 

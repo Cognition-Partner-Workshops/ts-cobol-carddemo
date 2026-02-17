@@ -64,14 +64,13 @@ public class StatementService {
         LocalDateTime periodStart = request.periodStartDate().atStartOfDay();
         LocalDateTime periodEnd = request.periodEndDate().atTime(LocalTime.MAX);
 
-        List<TransactionRecord> periodTransactions = new ArrayList<>();
-        for (String cardNumber : cardNumbers) {
-            List<TransactionRecord> cardTxns = transactionRecordRepository.findByCardCardNumber(cardNumber);
-            for (TransactionRecord txn : cardTxns) {
-                if (!txn.getTimestamp().isBefore(periodStart) && !txn.getTimestamp().isAfter(periodEnd)) {
-                    periodTransactions.add(txn);
-                }
-            }
+        List<TransactionRecord> periodTransactions;
+        if (cardNumbers.isEmpty()) {
+            periodTransactions = new ArrayList<>();
+        } else {
+            periodTransactions = new ArrayList<>(
+                    transactionRecordRepository.findByCardCardNumberInAndTimestampBetween(
+                            cardNumbers, periodStart, periodEnd));
         }
 
         periodTransactions.sort(Comparator.comparing(TransactionRecord::getTimestamp));

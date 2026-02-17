@@ -1,0 +1,311 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Step Functions state machines and EventBridge Scheduler rules for
+  CardDemo batch job orchestration. Migrates Control-M scheduling
+  (daily, weekly, monthly cycles) to AWS-native services.
+
+Parameters:
+  M2EnvironmentStack:
+    Type: String
+    Description: Name of the M2 environment CloudFormation stack.
+  IAMRolesStack:
+    Type: String
+    Description: Name of the IAM roles CloudFormation stack.
+  M2ApplicationId:
+    Type: String
+    Description: >
+      AWS M2 Application ID for the CardDemo batch application.
+      Obtained from the M2 environment stack output after deployment.
+  DailyScheduleExpression:
+    Type: String
+    Default: "cron(0 2 * * ? *)"
+    Description: >
+      Cron expression for the daily batch cycle. Default runs at
+      02:00 UTC daily. Corresponds to Control-M DAYS=ALL setting
+      in the DAILY-TransactionBackup folder.
+  WeeklyScheduleExpression:
+    Type: String
+    Default: "cron(0 3 ? * SAT *)"
+    Description: >
+      Cron expression for the weekly batch cycle. Default runs at
+      03:00 UTC on Saturdays. Corresponds to Control-M DAYS=SA
+      setting in the WEEKLY-TransactionTypesDBRefresh folder.
+  MonthlyScheduleExpression:
+    Type: String
+    Default: "cron(0 4 1 * ? *)"
+    Description: >
+      Cron expression for the monthly batch cycle. Default runs at
+      04:00 UTC on the 1st of each month. Corresponds to the
+      MONTHLY-InterestCalculation folder schedule.
+  ScheduleTimezone:
+    Type: String
+    Default: America/Chicago
+    Description: Timezone for schedule expressions (CDT/CST).
+
+Resources:
+  DailyTransactionBackupStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: CardDemo-Daily-TransactionBackup
+      RoleArn:
+        Fn::ImportValue: !Sub "${IAMRolesStack}-StepFunctionsRoleArn"
+      DefinitionS3Location:
+        Bucket:
+          Fn::ImportValue: !Sub "${M2EnvironmentStack}-ArtifactsBucket"
+        Key: state-machines/daily-transaction-backup.asl.json
+      LoggingConfiguration:
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt DailyBatchLogGroup.Arn
+        IncludeExecutionData: true
+        Level: ALL
+      Tags:
+        - Key: Application
+          Value: CardDemo
+        - Key: BatchCycle
+          Value: Daily
+        - Key: MigratedFrom
+          Value: Control-M/DAILY-TransactionBackup
+
+  WeeklyTranTypeRefreshStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: CardDemo-Weekly-TransactionTypesDBRefresh
+      RoleArn:
+        Fn::ImportValue: !Sub "${IAMRolesStack}-StepFunctionsRoleArn"
+      DefinitionS3Location:
+        Bucket:
+          Fn::ImportValue: !Sub "${M2EnvironmentStack}-ArtifactsBucket"
+        Key: state-machines/weekly-transaction-types-db-refresh.asl.json
+      LoggingConfiguration:
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt WeeklyBatchLogGroup.Arn
+        IncludeExecutionData: true
+        Level: ALL
+      Tags:
+        - Key: Application
+          Value: CardDemo
+        - Key: BatchCycle
+          Value: Weekly
+        - Key: MigratedFrom
+          Value: Control-M/WEEKLY-TransactionTypesDBRefresh
+
+  WeeklyDisclosureRefreshStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: CardDemo-Weekly-DisclosureGroupsRefresh
+      RoleArn:
+        Fn::ImportValue: !Sub "${IAMRolesStack}-StepFunctionsRoleArn"
+      DefinitionS3Location:
+        Bucket:
+          Fn::ImportValue: !Sub "${M2EnvironmentStack}-ArtifactsBucket"
+        Key: state-machines/weekly-disclosure-groups-refresh.asl.json
+      LoggingConfiguration:
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt WeeklyBatchLogGroup.Arn
+        IncludeExecutionData: true
+        Level: ALL
+      Tags:
+        - Key: Application
+          Value: CardDemo
+        - Key: BatchCycle
+          Value: Weekly
+        - Key: MigratedFrom
+          Value: Control-M/WEEKLY-DisclosureGroupsRefresh
+
+  MonthlyInterestCalcStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: CardDemo-Monthly-InterestCalculation
+      RoleArn:
+        Fn::ImportValue: !Sub "${IAMRolesStack}-StepFunctionsRoleArn"
+      DefinitionS3Location:
+        Bucket:
+          Fn::ImportValue: !Sub "${M2EnvironmentStack}-ArtifactsBucket"
+        Key: state-machines/monthly-interest-calculation.asl.json
+      LoggingConfiguration:
+        Destinations:
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: !GetAtt MonthlyBatchLogGroup.Arn
+        IncludeExecutionData: true
+        Level: ALL
+      Tags:
+        - Key: Application
+          Value: CardDemo
+        - Key: BatchCycle
+          Value: Monthly
+        - Key: MigratedFrom
+          Value: Control-M/MONTHLY-InterestCalculation
+
+  DailyBatchSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: CardDemo-Daily-TransactionBackup-Schedule
+      Description: >
+        Daily trigger for the transaction backup batch cycle.
+        Migrated from Control-M DAILY-TransactionBackup folder
+        (DAYS=ALL, all months enabled).
+      ScheduleExpression: !Ref DailyScheduleExpression
+      ScheduleExpressionTimezone: !Ref ScheduleTimezone
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      State: ENABLED
+      Target:
+        Arn: !GetAtt DailyTransactionBackupStateMachine.Arn
+        RoleArn:
+          Fn::ImportValue: !Sub "${IAMRolesStack}-EventBridgeSchedulerRoleArn"
+        Input: !Sub |
+          {
+            "ApplicationId": "${M2ApplicationId}"
+          }
+        RetryPolicy:
+          MaximumEventAgeInSeconds: 3600
+          MaximumRetryAttempts: 2
+
+  WeeklyBatchSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: CardDemo-Weekly-TransactionTypesDBRefresh-Schedule
+      Description: >
+        Weekly trigger for the transaction types DB refresh and
+        disclosure groups refresh cycles. Runs on Saturdays.
+        Migrated from Control-M WEEKLY-TransactionTypesDBRefresh
+        folder (DAYS=SA, all months enabled). This single schedule
+        triggers the parent workflow which orchestrates both the
+        TRANEXTR extraction and the DisclosureGroupsRefresh
+        sub-workflow in parallel after MNTTRDB2 completes.
+      ScheduleExpression: !Ref WeeklyScheduleExpression
+      ScheduleExpressionTimezone: !Ref ScheduleTimezone
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      State: ENABLED
+      Target:
+        Arn: !GetAtt WeeklyTranTypeRefreshStateMachine.Arn
+        RoleArn:
+          Fn::ImportValue: !Sub "${IAMRolesStack}-EventBridgeSchedulerRoleArn"
+        Input: !Sub |
+          {
+            "ApplicationId": "${M2ApplicationId}",
+            "DisclosureGroupsRefreshArn": "${WeeklyDisclosureRefreshStateMachine.Arn}"
+          }
+        RetryPolicy:
+          MaximumEventAgeInSeconds: 3600
+          MaximumRetryAttempts: 2
+
+  MonthlyBatchSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: CardDemo-Monthly-InterestCalculation-Schedule
+      Description: >
+        Monthly trigger for the interest calculation batch cycle.
+        Runs on the 1st of each month. Migrated from Control-M
+        MONTHLY-InterestCalculation folder (all months enabled).
+      ScheduleExpression: !Ref MonthlyScheduleExpression
+      ScheduleExpressionTimezone: !Ref ScheduleTimezone
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      State: ENABLED
+      Target:
+        Arn: !GetAtt MonthlyInterestCalcStateMachine.Arn
+        RoleArn:
+          Fn::ImportValue: !Sub "${IAMRolesStack}-EventBridgeSchedulerRoleArn"
+        Input: !Sub |
+          {
+            "ApplicationId": "${M2ApplicationId}"
+          }
+        RetryPolicy:
+          MaximumEventAgeInSeconds: 3600
+          MaximumRetryAttempts: 2
+
+  DailyBatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/stepfunctions/CardDemo-Daily-TransactionBackup
+      RetentionInDays: 90
+
+  WeeklyBatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/stepfunctions/CardDemo-Weekly-BatchCycles
+      RetentionInDays: 90
+
+  MonthlyBatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/stepfunctions/CardDemo-Monthly-InterestCalculation
+      RetentionInDays: 90
+
+  DailyBatchFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: CardDemo-Daily-TransactionBackup-Failure
+      AlarmDescription: >
+        Alarm when the daily transaction backup batch cycle fails.
+        Corresponds to Control-M MAXRERUN=5 retry policy (retries
+        are handled by Step Functions retry configuration).
+      MetricName: ExecutionsFailed
+      Namespace: AWS/States
+      Statistic: Sum
+      Period: 86400
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !GetAtt DailyTransactionBackupStateMachine.Arn
+      TreatMissingData: notBreaching
+
+  WeeklyBatchFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: CardDemo-Weekly-TransactionTypesDBRefresh-Failure
+      AlarmDescription: >
+        Alarm when the weekly transaction types DB refresh batch cycle fails.
+      MetricName: ExecutionsFailed
+      Namespace: AWS/States
+      Statistic: Sum
+      Period: 604800
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !GetAtt WeeklyTranTypeRefreshStateMachine.Arn
+      TreatMissingData: notBreaching
+
+  MonthlyBatchFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: CardDemo-Monthly-InterestCalculation-Failure
+      AlarmDescription: >
+        Alarm when the monthly interest calculation batch cycle fails.
+      MetricName: ExecutionsFailed
+      Namespace: AWS/States
+      Statistic: Sum
+      Period: 2592000
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !GetAtt MonthlyInterestCalcStateMachine.Arn
+      TreatMissingData: notBreaching
+
+Outputs:
+  DailyStateMachineArn:
+    Description: ARN of the daily transaction backup state machine
+    Value: !GetAtt DailyTransactionBackupStateMachine.Arn
+
+  WeeklyTranTypeStateMachineArn:
+    Description: ARN of the weekly transaction types DB refresh state machine
+    Value: !GetAtt WeeklyTranTypeRefreshStateMachine.Arn
+
+  WeeklyDisclosureStateMachineArn:
+    Description: ARN of the weekly disclosure groups refresh state machine
+    Value: !GetAtt WeeklyDisclosureRefreshStateMachine.Arn
+
+  MonthlyStateMachineArn:
+    Description: ARN of the monthly interest calculation state machine
+    Value: !GetAtt MonthlyInterestCalcStateMachine.Arn

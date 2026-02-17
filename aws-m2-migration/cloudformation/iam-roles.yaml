@@ -1,0 +1,221 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  IAM roles and policies for CardDemo AWS Mainframe Modernization batch
+  processing orchestration. Supports Step Functions, EventBridge Scheduler,
+  and M2 batch job execution.
+
+Parameters:
+  M2EnvironmentStack:
+    Type: String
+    Description: Name of the M2 environment CloudFormation stack for cross-stack references.
+  AccountId:
+    Type: String
+    Default: ""
+    Description: AWS Account ID (auto-detected if left blank).
+
+Conditions:
+  UseCurrentAccount: !Equals [!Ref AccountId, ""]
+
+Resources:
+  StepFunctionsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: carddemo-batch-stepfunctions-role
+      Description: >
+        Allows Step Functions to orchestrate CardDemo batch jobs on
+        AWS Mainframe Modernization and publish to SNS for notifications.
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: M2BatchJobExecution
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: M2JobManagement
+                Effect: Allow
+                Action:
+                  - m2:StartBatchJob
+                  - m2:GetBatchJobExecution
+                  - m2:ListBatchJobExecutions
+                  - m2:CancelBatchJobExecution
+                Resource: "*"
+              - Sid: M2EnvironmentAccess
+                Effect: Allow
+                Action:
+                  - m2:GetEnvironment
+                  - m2:GetApplication
+                Resource: "*"
+        - PolicyName: CloudWatchLogging
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AllowLogging
+                Effect: Allow
+                Action:
+                  - logs:CreateLogDelivery
+                  - logs:GetLogDelivery
+                  - logs:UpdateLogDelivery
+                  - logs:DeleteLogDelivery
+                  - logs:ListLogDeliveries
+                  - logs:PutResourcePolicy
+                  - logs:DescribeResourcePolicies
+                  - logs:DescribeLogGroups
+                  - logs:PutLogEvents
+                  - logs:CreateLogStream
+                Resource: "*"
+        - PolicyName: SNSNotifications
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AllowSNSPublish
+                Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:carddemo-m2-*"
+        - PolicyName: S3ArtifactAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AllowS3Read
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - Fn::ImportValue: !Sub "${M2EnvironmentStack}-ArtifactsBucket"
+                  - !Sub
+                    - "${BucketArn}/*"
+                    - BucketArn:
+                        Fn::ImportValue: !Sub "${M2EnvironmentStack}-ArtifactsBucket"
+      Tags:
+        - Key: Application
+          Value: CardDemo
+        - Key: MigrationPhase
+          Value: "1"
+
+  EventBridgeSchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: carddemo-batch-scheduler-role
+      Description: >
+        Allows EventBridge Scheduler to invoke Step Functions state machines
+        for CardDemo batch job orchestration.
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeStepFunctions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AllowStepFunctionsExecution
+                Effect: Allow
+                Action:
+                  - states:StartExecution
+                Resource:
+                  - !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:CardDemo-Daily-*"
+                  - !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:CardDemo-Weekly-*"
+                  - !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:CardDemo-Monthly-*"
+      Tags:
+        - Key: Application
+          Value: CardDemo
+        - Key: MigrationPhase
+          Value: "1"
+
+  M2BatchJobRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: carddemo-m2-batch-job-role
+      Description: >
+        Service role for the M2 runtime environment to execute batch jobs,
+        access VSAM data on EFS, and read artifacts from S3.
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: m2.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EFSDataAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AllowEFSAccess
+                Effect: Allow
+                Action:
+                  - elasticfilesystem:ClientMount
+                  - elasticfilesystem:ClientWrite
+                  - elasticfilesystem:ClientRootAccess
+                Resource:
+                  - !Sub
+                    - "arn:aws:elasticfilesystem:${AWS::Region}:${AWS::AccountId}:file-system/${EfsId}"
+                    - EfsId:
+                        Fn::ImportValue: !Sub "${M2EnvironmentStack}-EFSFileSystemId"
+        - PolicyName: S3ArtifactAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AllowS3Read
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetBucketLocation
+                  - s3:ListBucket
+                Resource:
+                  - Fn::ImportValue: !Sub "${M2EnvironmentStack}-ArtifactsBucket"
+                  - !Sub
+                    - "${BucketArn}/*"
+                    - BucketArn:
+                        Fn::ImportValue: !Sub "${M2EnvironmentStack}-ArtifactsBucket"
+        - PolicyName: CloudWatchMetricsAndLogs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: AllowMetrics
+                Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+                Condition:
+                  StringEquals:
+                    cloudwatch:namespace: "CardDemo/BatchJobs"
+              - Sid: AllowLogs
+                Effect: Allow
+                Action:
+                  - logs:PutLogEvents
+                  - logs:CreateLogStream
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/m2/carddemo-m2/*"
+      Tags:
+        - Key: Application
+          Value: CardDemo
+        - Key: MigrationPhase
+          Value: "1"
+
+Outputs:
+  StepFunctionsRoleArn:
+    Description: ARN of the Step Functions execution role
+    Value: !GetAtt StepFunctionsExecutionRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-StepFunctionsRoleArn"
+
+  EventBridgeSchedulerRoleArn:
+    Description: ARN of the EventBridge Scheduler role
+    Value: !GetAtt EventBridgeSchedulerRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-EventBridgeSchedulerRoleArn"
+
+  M2BatchJobRoleArn:
+    Description: ARN of the M2 batch job execution role
+    Value: !GetAtt M2BatchJobRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-M2BatchJobRoleArn"

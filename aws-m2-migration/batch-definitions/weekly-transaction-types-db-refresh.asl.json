@@ -1,0 +1,208 @@
+{
+  "Comment": "CardDemo Weekly Transaction Types DB Refresh - Migrated from Control-M WEEKLY-TransactionTypesDBRefresh folder and SMART_FOLDER. Runs on Saturdays. Executes MNTTRDB2 (DB2 table maintenance), then triggers TRANEXTR (DB2 data extraction) and the Disclosure Groups Refresh workflow in parallel. The MNTTRDB2 OUTCOND is consumed by both the DisclosureGroupsRefresh SMART_FOLDER and the TransactionTypesDBRefresh SMART_FOLDER in the original Control-M config.",
+  "StartAt": "MNTTRDB2",
+  "States": {
+    "MNTTRDB2": {
+      "Type": "Task",
+      "Comment": "Maintain DB2 Transaction Type table - batch insert/update/delete operations. Runs program COBTUPDT via IKJEFT01 against DB2 subsystem. Corresponds to Control-M OUTCOND: WEEKLY-TransactionTypesDBRefresh-MNTTRDB2.",
+      "Resource": "arn:aws:states:::aws-sdk:m2:startBatchJob",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "BatchJobIdentifier": {
+          "FileBatchJobIdentifier": {
+            "FileName": "MNTTRDB2.jcl",
+            "FolderPath": "/m2/data/jcl/db2"
+          }
+        }
+      },
+      "ResultPath": "$.MntTrDb2",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "WaitForMntTrDb2"
+    },
+    "WaitForMntTrDb2": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:m2:getBatchJobExecution",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "ExecutionId.$": "$.MntTrDb2.ExecutionId"
+      },
+      "ResultPath": "$.MntTrDb2Status",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 5,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "CheckMntTrDb2Status"
+    },
+    "CheckMntTrDb2Status": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.MntTrDb2Status.Status",
+          "StringEquals": "Succeeded",
+          "Next": "PostMntTrDb2ParallelJobs"
+        },
+        {
+          "Variable": "$.MntTrDb2Status.Status",
+          "StringEquals": "Failed",
+          "Next": "WeeklyTranTypeFailed"
+        },
+        {
+          "Variable": "$.MntTrDb2Status.Status",
+          "StringEquals": "Running",
+          "Next": "MntTrDb2PollingWait"
+        },
+        {
+          "Variable": "$.MntTrDb2Status.Status",
+          "StringEquals": "Dispatching",
+          "Next": "MntTrDb2PollingWait"
+        }
+      ],
+      "Default": "MntTrDb2PollingWait"
+    },
+    "MntTrDb2PollingWait": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "WaitForMntTrDb2"
+    },
+    "PostMntTrDb2ParallelJobs": {
+      "Type": "Parallel",
+      "Comment": "After MNTTRDB2 succeeds, run TRANEXTR and the DisclosureGroupsRefresh workflow in parallel. In the original Control-M config, both the TransactionTypesDBRefresh SMART_FOLDER (containing TRANEXTR) and the DisclosureGroupsRefresh SMART_FOLDER consume the MNTTRDB2 OUTCOND.",
+      "Branches": [
+        {
+          "StartAt": "TRANEXTR",
+          "States": {
+            "TRANEXTR": {
+              "Type": "Task",
+              "Comment": "Extract latest DB2 data for transaction types and categories using DSNTIAUL. Backs up previous TRANTYPE.PS and TRANCATG.PS to GDG, then extracts fresh data from DB2 CARDDEMO.TRANSACTION_TYPE and CARDDEMO.TRANSACTION_TYPE_CATEGORY tables. Corresponds to Control-M INCOND: WEEKLY-TransactionTypesDBRefresh-MNTTRDB2.",
+              "Resource": "arn:aws:states:::aws-sdk:m2:startBatchJob",
+              "Parameters": {
+                "ApplicationId.$": "$.ApplicationId",
+                "BatchJobIdentifier": {
+                  "FileBatchJobIdentifier": {
+                    "FileName": "TRANEXTR.jcl",
+                    "FolderPath": "/m2/data/jcl/db2"
+                  }
+                }
+              },
+              "ResultPath": "$.TranExtr",
+              "Retry": [
+                {
+                  "ErrorEquals": ["M2.ThrottlingException"],
+                  "IntervalSeconds": 10,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2.0
+                }
+              ],
+              "Next": "WaitForTranExtr"
+            },
+            "WaitForTranExtr": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:m2:getBatchJobExecution",
+              "Parameters": {
+                "ApplicationId.$": "$.ApplicationId",
+                "ExecutionId.$": "$.TranExtr.ExecutionId"
+              },
+              "ResultPath": "$.TranExtrStatus",
+              "Retry": [
+                {
+                  "ErrorEquals": ["M2.ThrottlingException"],
+                  "IntervalSeconds": 5,
+                  "MaxAttempts": 5,
+                  "BackoffRate": 2.0
+                }
+              ],
+              "Next": "CheckTranExtrStatus"
+            },
+            "CheckTranExtrStatus": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.TranExtrStatus.Status",
+                  "StringEquals": "Succeeded",
+                  "Next": "TranExtrSucceeded"
+                },
+                {
+                  "Variable": "$.TranExtrStatus.Status",
+                  "StringEquals": "Failed",
+                  "Next": "TranExtrFailed"
+                },
+                {
+                  "Variable": "$.TranExtrStatus.Status",
+                  "StringEquals": "Running",
+                  "Next": "TranExtrPollingWait"
+                },
+                {
+                  "Variable": "$.TranExtrStatus.Status",
+                  "StringEquals": "Dispatching",
+                  "Next": "TranExtrPollingWait"
+                }
+              ],
+              "Default": "TranExtrPollingWait"
+            },
+            "TranExtrPollingWait": {
+              "Type": "Wait",
+              "Seconds": 30,
+              "Next": "WaitForTranExtr"
+            },
+            "TranExtrSucceeded": {
+              "Type": "Succeed"
+            },
+            "TranExtrFailed": {
+              "Type": "Fail",
+              "Error": "TranExtrError",
+              "Cause": "TRANEXTR job failed during DB2 data extraction."
+            }
+          }
+        },
+        {
+          "StartAt": "DisclosureGroupsRefresh",
+          "States": {
+            "DisclosureGroupsRefresh": {
+              "Type": "Task",
+              "Comment": "Invoke the Weekly Disclosure Groups Refresh sub-workflow (CLOSEFIL -> DISCGRP -> WAITSTEP -> OPENFIL). This preserves the Control-M cross-folder dependency where DisclosureGroupsRefresh SMART_FOLDER consumes MNTTRDB2 OUTCOND.",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn.$": "$.DisclosureGroupsRefreshArn",
+                "Input": {
+                  "ApplicationId.$": "$.ApplicationId",
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "ResultPath": "$.DisclosureRefreshResult",
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.ParallelResults",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.ParallelError",
+          "Next": "WeeklyTranTypeFailed"
+        }
+      ],
+      "Next": "WeeklyTranTypeSucceeded"
+    },
+    "WeeklyTranTypeSucceeded": {
+      "Type": "Succeed",
+      "Comment": "Weekly transaction types DB refresh and disclosure groups refresh completed successfully."
+    },
+    "WeeklyTranTypeFailed": {
+      "Type": "Fail",
+      "Error": "WeeklyTranTypeError",
+      "Cause": "One or more jobs in the weekly transaction types DB refresh cycle failed. Check CloudWatch logs for details."
+    }
+  }
+}

@@ -1,0 +1,324 @@
+{
+  "Comment": "CardDemo Daily Transaction Backup - Migrated from Control-M DAILY-TransactionBackup folder. Executes CLOSEFIL -> TRANBKP -> WAITSTEP -> OPENFIL sequence daily. Preserves the VSAM file locking pattern required for exclusive batch access.",
+  "StartAt": "CLOSEFIL",
+  "States": {
+    "CLOSEFIL": {
+      "Type": "Task",
+      "Comment": "Close VSAM files in CICS region to obtain exclusive batch access. Corresponds to Control-M OUTCOND: DAILY-TransactionBackup-CLOSEFIL.",
+      "Resource": "arn:aws:states:::aws-sdk:m2:startBatchJob",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "BatchJobIdentifier": {
+          "FileBatchJobIdentifier": {
+            "FileName": "CLOSEFIL.jcl",
+            "FolderPath": "/m2/data/jcl"
+          }
+        }
+      },
+      "ResultPath": "$.CloseFil",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "WaitForCloseFil"
+    },
+    "WaitForCloseFil": {
+      "Type": "Task",
+      "Comment": "Poll until CLOSEFIL job completes.",
+      "Resource": "arn:aws:states:::aws-sdk:m2:getBatchJobExecution",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "ExecutionId.$": "$.CloseFil.ExecutionId"
+      },
+      "ResultPath": "$.CloseFilStatus",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 5,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "CheckCloseFilStatus"
+    },
+    "CheckCloseFilStatus": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.CloseFilStatus.Status",
+          "StringEquals": "Succeeded",
+          "Next": "TRANBKP"
+        },
+        {
+          "Variable": "$.CloseFilStatus.Status",
+          "StringEquals": "Failed",
+          "Next": "DailyBatchFailed"
+        },
+        {
+          "Variable": "$.CloseFilStatus.Status",
+          "StringEquals": "Running",
+          "Next": "CloseFilPollingWait"
+        },
+        {
+          "Variable": "$.CloseFilStatus.Status",
+          "StringEquals": "Dispatching",
+          "Next": "CloseFilPollingWait"
+        }
+      ],
+      "Default": "CloseFilPollingWait"
+    },
+    "CloseFilPollingWait": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "WaitForCloseFil"
+    },
+    "TRANBKP": {
+      "Type": "Task",
+      "Comment": "Create Transaction database backup. REPRO VSAM KSDS to GDG, then DELETE and DEFINE the TRANSACT cluster. Corresponds to Control-M INCOND: DAILY-TransactionBackup-CLOSEFIL, OUTCOND: DAILY-TransactionBackup-TRANBKP.",
+      "Resource": "arn:aws:states:::aws-sdk:m2:startBatchJob",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "BatchJobIdentifier": {
+          "FileBatchJobIdentifier": {
+            "FileName": "TRANBKP.jcl",
+            "FolderPath": "/m2/data/jcl"
+          }
+        }
+      },
+      "ResultPath": "$.TranBkp",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "WaitForTranBkp"
+    },
+    "WaitForTranBkp": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:m2:getBatchJobExecution",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "ExecutionId.$": "$.TranBkp.ExecutionId"
+      },
+      "ResultPath": "$.TranBkpStatus",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 5,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "CheckTranBkpStatus"
+    },
+    "CheckTranBkpStatus": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.TranBkpStatus.Status",
+          "StringEquals": "Succeeded",
+          "Next": "WAITSTEP"
+        },
+        {
+          "Variable": "$.TranBkpStatus.Status",
+          "StringEquals": "Failed",
+          "Next": "EmergencyOpenFiles"
+        },
+        {
+          "Variable": "$.TranBkpStatus.Status",
+          "StringEquals": "Running",
+          "Next": "TranBkpPollingWait"
+        },
+        {
+          "Variable": "$.TranBkpStatus.Status",
+          "StringEquals": "Dispatching",
+          "Next": "TranBkpPollingWait"
+        }
+      ],
+      "Default": "TranBkpPollingWait"
+    },
+    "TranBkpPollingWait": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "WaitForTranBkp"
+    },
+    "WAITSTEP": {
+      "Type": "Task",
+      "Comment": "Safety delay (36 seconds via COBSWAIT PARM=00003600 centiseconds). Allows VSAM buffers to flush before reopening files. Corresponds to Control-M INCOND: DAILY-TransactionBackup-TRANBKP, OUTCOND: DAILY-TransactionBackup-WAITSTEP.",
+      "Resource": "arn:aws:states:::aws-sdk:m2:startBatchJob",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "BatchJobIdentifier": {
+          "FileBatchJobIdentifier": {
+            "FileName": "WAITSTEP.jcl",
+            "FolderPath": "/m2/data/jcl"
+          }
+        }
+      },
+      "ResultPath": "$.WaitStep",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "WaitForWaitStep"
+    },
+    "WaitForWaitStep": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:m2:getBatchJobExecution",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "ExecutionId.$": "$.WaitStep.ExecutionId"
+      },
+      "ResultPath": "$.WaitStepStatus",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 5,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "CheckWaitStepStatus"
+    },
+    "CheckWaitStepStatus": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.WaitStepStatus.Status",
+          "StringEquals": "Succeeded",
+          "Next": "OPENFIL"
+        },
+        {
+          "Variable": "$.WaitStepStatus.Status",
+          "StringEquals": "Failed",
+          "Next": "EmergencyOpenFiles"
+        },
+        {
+          "Variable": "$.WaitStepStatus.Status",
+          "StringEquals": "Running",
+          "Next": "WaitStepPollingWait"
+        },
+        {
+          "Variable": "$.WaitStepStatus.Status",
+          "StringEquals": "Dispatching",
+          "Next": "WaitStepPollingWait"
+        }
+      ],
+      "Default": "WaitStepPollingWait"
+    },
+    "WaitStepPollingWait": {
+      "Type": "Wait",
+      "Seconds": 15,
+      "Next": "WaitForWaitStep"
+    },
+    "OPENFIL": {
+      "Type": "Task",
+      "Comment": "Reopen VSAM files in CICS region to restore online access. Corresponds to Control-M INCOND: DAILY-TransactionBackup-WAITSTEP. Final step in the daily cycle.",
+      "Resource": "arn:aws:states:::aws-sdk:m2:startBatchJob",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "BatchJobIdentifier": {
+          "FileBatchJobIdentifier": {
+            "FileName": "OPENFIL.jcl",
+            "FolderPath": "/m2/data/jcl"
+          }
+        }
+      },
+      "ResultPath": "$.OpenFil",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 10,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "WaitForOpenFil"
+    },
+    "WaitForOpenFil": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:m2:getBatchJobExecution",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "ExecutionId.$": "$.OpenFil.ExecutionId"
+      },
+      "ResultPath": "$.OpenFilStatus",
+      "Retry": [
+        {
+          "ErrorEquals": ["M2.ThrottlingException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 5,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Next": "CheckOpenFilStatus"
+    },
+    "CheckOpenFilStatus": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.OpenFilStatus.Status",
+          "StringEquals": "Succeeded",
+          "Next": "DailyBatchSucceeded"
+        },
+        {
+          "Variable": "$.OpenFilStatus.Status",
+          "StringEquals": "Failed",
+          "Next": "DailyBatchFailed"
+        },
+        {
+          "Variable": "$.OpenFilStatus.Status",
+          "StringEquals": "Running",
+          "Next": "OpenFilPollingWait"
+        },
+        {
+          "Variable": "$.OpenFilStatus.Status",
+          "StringEquals": "Dispatching",
+          "Next": "OpenFilPollingWait"
+        }
+      ],
+      "Default": "OpenFilPollingWait"
+    },
+    "OpenFilPollingWait": {
+      "Type": "Wait",
+      "Seconds": 15,
+      "Next": "WaitForOpenFil"
+    },
+    "EmergencyOpenFiles": {
+      "Type": "Task",
+      "Comment": "Emergency recovery: reopen VSAM files after a mid-batch failure to prevent CICS from being locked out indefinitely.",
+      "Resource": "arn:aws:states:::aws-sdk:m2:startBatchJob",
+      "Parameters": {
+        "ApplicationId.$": "$.ApplicationId",
+        "BatchJobIdentifier": {
+          "FileBatchJobIdentifier": {
+            "FileName": "OPENFIL.jcl",
+            "FolderPath": "/m2/data/jcl"
+          }
+        }
+      },
+      "ResultPath": "$.EmergencyOpenFil",
+      "Next": "DailyBatchFailed"
+    },
+    "DailyBatchSucceeded": {
+      "Type": "Succeed",
+      "Comment": "Daily transaction backup cycle completed successfully."
+    },
+    "DailyBatchFailed": {
+      "Type": "Fail",
+      "Error": "DailyBatchError",
+      "Cause": "One or more jobs in the daily transaction backup cycle failed. Check CloudWatch logs for details."
+    }
+  }
+}

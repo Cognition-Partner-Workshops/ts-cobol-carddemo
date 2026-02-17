@@ -1,0 +1,225 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  AWS Mainframe Modernization (M2) environment for CardDemo application.
+  Phase 1: Lift-and-shift migration of COBOL batch processing from
+  Control-M scheduler to AWS-native orchestration.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: carddemo-m2
+    Description: Name for the M2 managed runtime environment.
+  EngineType:
+    Type: String
+    Default: bluage
+    AllowedValues:
+      - bluage
+      - microfocus
+    Description: >
+      Runtime engine for the M2 environment. Use 'microfocus' for
+      Micro Focus (Rocket) COBOL compatibility or 'bluage' for
+      Blu Age refactoring engine.
+  InstanceType:
+    Type: String
+    Default: M2.m5.large
+    Description: Instance type for the M2 runtime environment.
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC in which the M2 environment will be deployed.
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: >
+      Subnet IDs (at least two in different AZs) for the M2 environment.
+  HighAvailability:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: Enable multi-AZ high availability for the runtime environment.
+  S3BucketName:
+    Type: String
+    Default: carddemo-m2-artifacts
+    Description: S3 bucket for application artifacts (JCL, COBOL load modules, data).
+  NotificationEmail:
+    Type: String
+    Default: ""
+    Description: Email address for batch job failure notifications (leave blank to skip).
+
+Conditions:
+  HasNotificationEmail: !Not [!Equals [!Ref NotificationEmail, ""]]
+
+Resources:
+  M2ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${S3BucketName}-${AWS::AccountId}-${AWS::Region}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+      Tags:
+        - Key: Application
+          Value: CardDemo
+        - Key: MigrationPhase
+          Value: "1"
+
+  M2ArtifactsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref M2ArtifactsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowM2ServiceAccess
+            Effect: Allow
+            Principal:
+              Service: m2.amazonaws.com
+            Action:
+              - s3:GetObject
+              - s3:ListBucket
+            Resource:
+              - !Sub "arn:aws:s3:::${M2ArtifactsBucket}"
+              - !Sub "arn:aws:s3:::${M2ArtifactsBucket}/*"
+
+  M2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for CardDemo M2 runtime environment
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-sg"
+
+  M2RuntimeEnvironment:
+    Type: AWS::M2::Environment
+    Properties:
+      Name: !Ref EnvironmentName
+      Description: >
+        CardDemo mainframe application runtime environment.
+        Hosts COBOL batch programs migrated from on-premises mainframe.
+      EngineType: !Ref EngineType
+      InstanceType: !Ref InstanceType
+      HighAvailabilityConfig:
+        DesiredCapacity: !If [HasNotificationEmail, 2, 1]
+      SubnetIds: !Ref SubnetIds
+      SecurityGroupIds:
+        - !GetAtt M2SecurityGroup.GroupId
+      StorageConfigurations:
+        - Efs:
+            FileSystemId: !Ref M2FileSystem
+            MountPoint: /m2/data
+      Tags:
+        Application: CardDemo
+        MigrationPhase: "1"
+
+  M2FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      ThroughputMode: bursting
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub "${EnvironmentName}-efs"
+        - Key: Application
+          Value: CardDemo
+
+  M2EFSMountTargetA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref M2FileSystem
+      SubnetId: !Select [0, !Ref SubnetIds]
+      SecurityGroups:
+        - !GetAtt M2SecurityGroup.GroupId
+
+  M2EFSMountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref M2FileSystem
+      SubnetId: !Select [1, !Ref SubnetIds]
+      SecurityGroups:
+        - !GetAtt M2SecurityGroup.GroupId
+
+  M2Application:
+    Type: AWS::M2::Application
+    Properties:
+      Name: carddemo-batch
+      Description: >
+        CardDemo COBOL batch application containing transaction processing,
+        interest calculation, and data management programs.
+      EngineType: !Ref EngineType
+      Definition:
+        S3Location: !Sub "s3://${M2ArtifactsBucket}/applications/carddemo-batch/definition.json"
+      Tags:
+        Application: CardDemo
+        MigrationPhase: "1"
+
+  BatchJobNotificationTopic:
+    Type: AWS::SNS::Topic
+    Condition: HasNotificationEmail
+    Properties:
+      TopicName: !Sub "${EnvironmentName}-batch-notifications"
+      Subscription:
+        - Endpoint: !Ref NotificationEmail
+          Protocol: email
+
+  BatchJobLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/m2/${EnvironmentName}/batch-jobs"
+      RetentionInDays: 90
+      Tags:
+        - Key: Application
+          Value: CardDemo
+
+  BatchJobAlarmTopic:
+    Type: AWS::SNS::Topic
+    Condition: HasNotificationEmail
+    Properties:
+      TopicName: !Sub "${EnvironmentName}-batch-alarms"
+      Subscription:
+        - Endpoint: !Ref NotificationEmail
+          Protocol: email
+
+Outputs:
+  M2EnvironmentId:
+    Description: ID of the M2 runtime environment
+    Value: !Ref M2RuntimeEnvironment
+    Export:
+      Name: !Sub "${AWS::StackName}-M2EnvironmentId"
+
+  M2ApplicationId:
+    Description: ID of the M2 application
+    Value: !Ref M2Application
+    Export:
+      Name: !Sub "${AWS::StackName}-M2ApplicationId"
+
+  ArtifactsBucketName:
+    Description: S3 bucket for application artifacts
+    Value: !Ref M2ArtifactsBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-ArtifactsBucket"
+
+  ArtifactsBucketArn:
+    Description: ARN of the S3 artifacts bucket
+    Value: !GetAtt M2ArtifactsBucket.Arn
+
+  EFSFileSystemId:
+    Description: EFS file system ID for VSAM data storage
+    Value: !Ref M2FileSystem
+    Export:
+      Name: !Sub "${AWS::StackName}-EFSFileSystemId"
+
+  LogGroupName:
+    Description: CloudWatch log group for batch job logs
+    Value: !Ref BatchJobLogGroup
+
+  NotificationTopicArn:
+    Description: SNS topic ARN for batch notifications
+    Value: !If
+      - HasNotificationEmail
+      - !Ref BatchJobNotificationTopic
+      - "N/A"

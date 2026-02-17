@@ -1,0 +1,248 @@
+{
+  "definition": {
+    "listeners": [],
+    "bat-program-list": [
+      {
+        "program": "CBTRN02C",
+        "source": "CBTRN02C.cbl",
+        "description": "Posts records from daily transaction file to TRANSACT indexed file. Core transaction processing program used in POSTTRAN job."
+      },
+      {
+        "program": "CBACT04C",
+        "source": "CBACT04C.cbl",
+        "description": "Interest calculator program. Reads TCATBAL, XREF, ACCOUNT, and DISCGRP files; writes computed interest/fee transactions. Used in INTCALC job."
+      },
+      {
+        "program": "COBSWAIT",
+        "source": "COBSWAIT.cbl",
+        "description": "Utility wait program. Accepts PARM in centiseconds (e.g., 00003600 = 36 seconds). Used in WAITSTEP job for safety delays between batch steps."
+      },
+      {
+        "program": "CBTRN01C",
+        "source": "CBTRN01C.cbl",
+        "description": "Posts records from daily transaction file. Reads DALYTRAN-FILE and accesses CUSTOMER, XREF, CARD, ACCOUNT, and TRANSACT files."
+      },
+      {
+        "program": "CBEXPORT",
+        "source": "CBEXPORT.cbl",
+        "description": "Exports customer data for branch migration. Reads CUSTOMER, ACCOUNT, XREF, TRANSACTION, and CARD input files."
+      },
+      {
+        "program": "CBIMPORT",
+        "source": "CBIMPORT.cbl",
+        "description": "Imports customer data from branch migration export. Reads EXPORT-INPUT; writes to CUSTOMER, ACCOUNT, XREF, TRANSACTION output files."
+      },
+      {
+        "program": "CBSTM03A",
+        "source": "CBSTM03A.CBL",
+        "description": "Produces transaction statements. Used in CREASTMT job."
+      },
+      {
+        "program": "CBTRN03C",
+        "source": "CBTRN03C.cbl",
+        "description": "Transaction report program. Used in TRANREPT job, submitted from CICS."
+      },
+      {
+        "program": "COBTUPDT",
+        "source": "app-transaction-type-db2/cbl/COBTUPDT.cbl",
+        "description": "DB2 Transaction Type table maintenance. Batch insert/update/delete operations. Used in MNTTRDB2 job (optional DB2 module)."
+      }
+    ],
+    "source-locations": [
+      {
+        "source-id": "s3-source",
+        "source-type": "s3",
+        "attributes": {
+          "s3-bucket": "${ARTIFACTS_BUCKET}",
+          "s3-key-prefix": "applications/carddemo-batch"
+        }
+      }
+    ],
+    "dataset-catalog": {
+      "datasets": [
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+          "dataset-org": {
+            "vsam": {
+              "format": "KS",
+              "encoding": "A",
+              "primary-key": {
+                "name": "TRAN-ID",
+                "offset": 0,
+                "length": 16
+              }
+            }
+          },
+          "record-length": {
+            "min": 350,
+            "max": 350
+          },
+          "relative-path": "data/vsam/TRANSACT.VSAM.KSDS"
+        },
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+          "dataset-org": {
+            "vsam": {
+              "format": "KS",
+              "encoding": "A"
+            }
+          },
+          "record-length": {
+            "min": 300,
+            "max": 300
+          },
+          "relative-path": "data/vsam/ACCTDATA.VSAM.KSDS"
+        },
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+          "dataset-org": {
+            "vsam": {
+              "format": "KS",
+              "encoding": "A"
+            }
+          },
+          "record-length": {
+            "min": 50,
+            "max": 50
+          },
+          "relative-path": "data/vsam/CARDXREF.VSAM.KSDS"
+        },
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+          "dataset-org": {
+            "vsam": {
+              "format": "KS",
+              "encoding": "A"
+            }
+          },
+          "record-length": {
+            "min": 50,
+            "max": 50
+          },
+          "relative-path": "data/vsam/TCATBALF.VSAM.KSDS"
+        },
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS",
+          "dataset-org": {
+            "vsam": {
+              "format": "KS",
+              "encoding": "A",
+              "primary-key": {
+                "name": "DISCGRP-KEY",
+                "offset": 0,
+                "length": 16
+              }
+            }
+          },
+          "record-length": {
+            "min": 50,
+            "max": 50
+          },
+          "relative-path": "data/vsam/DISCGRP.VSAM.KSDS"
+        },
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+          "dataset-org": {
+            "vsam": {
+              "format": "KS",
+              "encoding": "A"
+            }
+          },
+          "record-length": {
+            "min": 80,
+            "max": 80
+          },
+          "relative-path": "data/vsam/USRSEC.VSAM.KSDS"
+        },
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.DALYTRAN.PS",
+          "dataset-org": {
+            "ps": {
+              "format": "FB",
+              "encoding": "A"
+            }
+          },
+          "record-length": {
+            "min": 350,
+            "max": 350
+          },
+          "relative-path": "data/ps/DALYTRAN.PS"
+        },
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.DISCGRP.PS",
+          "dataset-org": {
+            "ps": {
+              "format": "FB",
+              "encoding": "A"
+            }
+          },
+          "record-length": {
+            "min": 50,
+            "max": 50
+          },
+          "relative-path": "data/ps/DISCGRP.PS"
+        },
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.TRANTYPE.PS",
+          "dataset-org": {
+            "ps": {
+              "format": "FB",
+              "encoding": "A"
+            }
+          },
+          "record-length": {
+            "min": 60,
+            "max": 60
+          },
+          "relative-path": "data/ps/TRANTYPE.PS"
+        },
+        {
+          "dataset-name": "AWS.M2.CARDDEMO.TRANCATG.PS",
+          "dataset-org": {
+            "ps": {
+              "format": "FB",
+              "encoding": "A"
+            }
+          },
+          "record-length": {
+            "min": 60,
+            "max": 60
+          },
+          "relative-path": "data/ps/TRANCATG.PS"
+        }
+      ],
+      "gdg-catalogs": [
+        {
+          "gdg-name": "AWS.M2.CARDDEMO.TRANSACT.BKUP",
+          "limit": 5,
+          "description": "GDG for transaction master backups created by TRANBKP job"
+        },
+        {
+          "gdg-name": "AWS.M2.CARDDEMO.SYSTRAN",
+          "limit": 5,
+          "description": "GDG for system-generated transactions from INTCALC job"
+        },
+        {
+          "gdg-name": "AWS.M2.CARDDEMO.TRANSACT.COMBINED",
+          "limit": 5,
+          "description": "GDG for combined transaction files from COMBTRAN job"
+        },
+        {
+          "gdg-name": "AWS.M2.CARDDEMO.DALYREJS",
+          "limit": 5,
+          "description": "GDG for daily rejected transactions from POSTTRAN job"
+        },
+        {
+          "gdg-name": "AWS.M2.CARDDEMO.TRANTYPE.BKUP",
+          "limit": 5,
+          "description": "GDG for transaction type backups from TRANEXTR job"
+        },
+        {
+          "gdg-name": "AWS.M2.CARDDEMO.TRANCATG.PS.BKUP",
+          "limit": 5,
+          "description": "GDG for transaction category backups from TRANEXTR job"
+        }
+      ]
+    }
+  }
+}

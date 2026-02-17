@@ -79,6 +79,10 @@ spring:
       ddl-auto: update
     show-sql: true
 
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET:dGVzdGluZy1vbmx5LWRldi1rZXktbm90LWZvci1wcm9kdWN0aW9uLXVzZS1jaGFuZ2UtbWU=}
+
 logging:
   level:
     com.aws.carddemo: DEBUG

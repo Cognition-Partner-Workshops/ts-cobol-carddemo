@@ -1,0 +1,15 @@
+target/
+*.class
+*.jar
+*.war
+
+# IDE
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db

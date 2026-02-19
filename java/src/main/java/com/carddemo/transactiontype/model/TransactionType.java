@@ -1,5 +1,6 @@
 package com.carddemo.transactiontype.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -25,6 +26,7 @@ public class TransactionType {
     @Size(max = 50, message = "Description must not exceed 50 characters")
     private String trDescription;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "transactionType")
     private List<TransactionTypeCategory> categories = new ArrayList<>();
 

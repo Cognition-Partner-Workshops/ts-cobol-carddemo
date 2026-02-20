@@ -27,7 +27,7 @@ public class Transaction {
     @Column(name = "description", length = 100)
     private String description;
 
-    @Column(name = "amount", precision = 11, scale = 2)
+    @Column(name = "amount", precision = 15, scale = 2)
     private BigDecimal amount;
 
     @Column(name = "merchant_id")

@@ -7,6 +7,7 @@ import com.carddemo.entity.Customer;
 import com.carddemo.entity.DisclosureGroup;
 import com.carddemo.entity.TransactionCategory;
 import com.carddemo.entity.TransactionCategoryBalance;
+import com.carddemo.entity.Transaction;
 import com.carddemo.entity.TransactionType;
 import com.carddemo.entity.UserSecurity;
 import com.carddemo.repository.AccountRepository;
@@ -16,6 +17,7 @@ import com.carddemo.repository.CustomerRepository;
 import com.carddemo.repository.DisclosureGroupRepository;
 import com.carddemo.repository.TransactionCategoryBalanceRepository;
 import com.carddemo.repository.TransactionCategoryRepository;
+import com.carddemo.repository.TransactionRepository;
 import com.carddemo.repository.TransactionTypeRepository;
 import com.carddemo.repository.UserSecurityRepository;
 import org.slf4j.Logger;
@@ -30,6 +32,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -48,6 +51,7 @@ public class DataLoader implements CommandLineRunner {
     private final TransactionTypeRepository transactionTypeRepository;
     private final TransactionCategoryRepository transactionCategoryRepository;
     private final TransactionCategoryBalanceRepository tranCatBalRepository;
+    private final TransactionRepository transactionRepository;
     private final DisclosureGroupRepository disclosureGroupRepository;
     private final UserSecurityRepository userSecurityRepository;
 
@@ -58,6 +62,7 @@ public class DataLoader implements CommandLineRunner {
                       TransactionTypeRepository transactionTypeRepository,
                       TransactionCategoryRepository transactionCategoryRepository,
                       TransactionCategoryBalanceRepository tranCatBalRepository,
+                      TransactionRepository transactionRepository,
                       DisclosureGroupRepository disclosureGroupRepository,
                       UserSecurityRepository userSecurityRepository) {
         this.accountRepository = accountRepository;
@@ -67,6 +72,7 @@ public class DataLoader implements CommandLineRunner {
         this.transactionTypeRepository = transactionTypeRepository;
         this.transactionCategoryRepository = transactionCategoryRepository;
         this.tranCatBalRepository = tranCatBalRepository;
+        this.transactionRepository = transactionRepository;
         this.disclosureGroupRepository = disclosureGroupRepository;
         this.userSecurityRepository = userSecurityRepository;
     }
@@ -88,6 +94,7 @@ public class DataLoader implements CommandLineRunner {
         loadCardCrossReferences();
         loadTransactionCategoryBalances();
         loadDisclosureGroups();
+        loadDailyTransactions();
         log.info("Sample data loading complete.");
     }
 
@@ -287,6 +294,33 @@ public class DataLoader implements CommandLineRunner {
         log.info("Loaded {} disclosure groups", groups.size());
     }
 
+    private void loadDailyTransactions() {
+        log.info("Loading daily transactions...");
+        List<String> lines = readLines("data/dailytran.txt");
+        List<Transaction> transactions = new ArrayList<>();
+
+        for (String line : lines) {
+            if (line.length() < 300) continue;
+            Transaction tran = new Transaction();
+            tran.setTranId(line.substring(0, 16));
+            tran.setTypeCd(line.substring(16, 18));
+            tran.setCatCd(Integer.parseInt(line.substring(18, 22).trim()));
+            tran.setSource(line.substring(22, 32).trim());
+            tran.setDescription(line.substring(32, 132).trim());
+            tran.setAmount(parseSignedDecimal(line.substring(132, 144)));
+            tran.setMerchantId(parseLongSafe(line.substring(144, 153).trim()));
+            tran.setMerchantName(line.substring(153, 203).trim());
+            tran.setMerchantCity(line.substring(203, 253).trim());
+            tran.setMerchantZip(line.substring(253, 263).trim());
+            tran.setCardNum(line.substring(263, 279));
+            tran.setOrigTs(parseTimestamp(line.substring(279, 305).trim()));
+            transactions.add(tran);
+        }
+
+        transactionRepository.saveAll(transactions);
+        log.info("Loaded {} daily transactions", transactions.size());
+    }
+
     static BigDecimal parseSignedDecimal(String raw) {
         if (raw == null || raw.isBlank()) {
             return BigDecimal.ZERO;
@@ -343,6 +377,28 @@ public class DataLoader implements CommandLineRunner {
         try {
             return LocalDate.parse(raw, DATE_FORMAT);
         } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    private static LocalDateTime parseTimestamp(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        try {
+            return LocalDateTime.parse(raw, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+        } catch (DateTimeParseException e) {
+            try {
+                return LocalDateTime.parse(raw, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            } catch (DateTimeParseException e2) {
+                return null;
+            }
+        }
+    }
+
+    private static Long parseLongSafe(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        try {
+            return Long.parseLong(raw);
+        } catch (NumberFormatException e) {
             return null;
         }
     }

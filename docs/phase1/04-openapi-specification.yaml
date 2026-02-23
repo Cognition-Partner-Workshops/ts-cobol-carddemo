@@ -1,0 +1,1233 @@
+openapi: 3.0.3
+info:
+  title: CardDemo REST API
+  description: |
+    REST API specification for the CardDemo credit card management application,
+    migrated from COBOL/CICS mainframe to Java 17 Spring Boot.
+    
+    This API replaces the following mainframe technologies:
+    - CICS online transactions → REST endpoints
+    - BMS screens → JSON request/response
+    - VSAM file I/O → JPA/PostgreSQL
+    - RACF security → JWT authentication
+  version: 1.0.0
+  contact:
+    name: CardDemo Migration Team
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: User authentication (replaces CC00/COSGN00C)
+  - name: Accounts
+    description: Account management (replaces CAVW/CAUP)
+  - name: Cards
+    description: Credit card management (replaces CCLI/CCDL/CCUP)
+  - name: Transactions
+    description: Transaction management (replaces CT00/CT01/CT02)
+  - name: Payments
+    description: Bill payments (replaces CB00/COBIL00C)
+  - name: Reports
+    description: Report generation (replaces CR00/CORPT00C)
+  - name: Admin - Users
+    description: User administration (replaces CU00-CU03)
+  - name: Admin - Transaction Types
+    description: Transaction type management (replaces CTTU/CTLI)
+  - name: Authorizations
+    description: Pending authorization management (replaces CP00/CPVS/CPVD)
+  - name: System
+    description: System utilities
+
+paths:
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      description: |
+        Authenticates a user and returns a JWT token.
+        Replaces CICS transaction CC00 (COSGN00C).
+        Validates against USER_SECURITY table.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/logout:
+    post:
+      tags: [Authentication]
+      summary: User logout
+      description: Invalidates the current JWT token.
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+
+  /api/menu:
+    get:
+      tags: [Authentication]
+      summary: Get menu options
+      description: |
+        Returns available menu options based on user role.
+        Replaces CICS transaction CM00 (COMEN01C).
+      operationId: getMenu
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Menu options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuResponse'
+
+  /api/accounts/{accountId}:
+    get:
+      tags: [Accounts]
+      summary: View account details
+      description: |
+        Retrieves account information including customer and card details.
+        Replaces CICS transaction CAVW (COACTVWC).
+      operationId: getAccount
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 11-digit account ID
+      responses:
+        '200':
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags: [Accounts]
+      summary: Update account
+      description: |
+        Updates account information.
+        Replaces CICS transaction CAUP (COACTUPC).
+      operationId: updateAccount
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountUpdateRequest'
+      responses:
+        '200':
+          description: Account updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '404':
+          description: Account not found
+
+  /api/cards:
+    get:
+      tags: [Cards]
+      summary: List credit cards
+      description: |
+        Returns paginated list of credit cards with filtering.
+        Replaces CICS transaction CCLI (COCRDLIC).
+      operationId: listCards
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: query
+          schema:
+            type: integer
+            format: int64
+          description: Filter by account ID
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Card list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardListResponse'
+
+  /api/cards/{cardNumber}:
+    get:
+      tags: [Cards]
+      summary: View card details
+      description: |
+        Retrieves credit card details.
+        Replaces CICS transaction CCDL (COCRDSLC).
+      operationId: getCard
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cardNumber
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 16
+      responses:
+        '200':
+          description: Card details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+        '404':
+          description: Card not found
+    put:
+      tags: [Cards]
+      summary: Update card
+      description: |
+        Updates credit card information.
+        Replaces CICS transaction CCUP (COCRDUPC).
+      operationId: updateCard
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cardNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardUpdateRequest'
+      responses:
+        '200':
+          description: Card updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardResponse'
+
+  /api/transactions:
+    get:
+      tags: [Transactions]
+      summary: List transactions
+      description: |
+        Returns paginated list of transactions with filtering.
+        Replaces CICS transaction CT00 (COTRN00C).
+      operationId: listTransactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cardNumber
+          in: query
+          schema:
+            type: string
+          description: Filter by card number
+        - name: accountId
+          in: query
+          schema:
+            type: integer
+            format: int64
+          description: Filter by account ID
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionListResponse'
+    post:
+      tags: [Transactions]
+      summary: Add transaction
+      description: |
+        Creates a new transaction.
+        Replaces CICS transaction CT02 (COTRN02C).
+      operationId: addTransaction
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionCreateRequest'
+      responses:
+        '201':
+          description: Transaction created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Validation error
+
+  /api/transactions/{transactionId}:
+    get:
+      tags: [Transactions]
+      summary: View transaction
+      description: |
+        Retrieves transaction details.
+        Replaces CICS transaction CT01 (COTRN01C).
+      operationId: getTransaction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '404':
+          description: Transaction not found
+
+  /api/payments:
+    post:
+      tags: [Payments]
+      summary: Make bill payment
+      description: |
+        Processes a bill payment against an account.
+        Replaces CICS transaction CB00 (COBIL00C).
+      operationId: makeBillPayment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BillPaymentRequest'
+      responses:
+        '200':
+          description: Payment processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillPaymentResponse'
+        '400':
+          description: Payment validation error
+
+  /api/reports/transactions:
+    post:
+      tags: [Reports]
+      summary: Generate transaction report
+      description: |
+        Generates a transaction report for a date range.
+        Replaces CICS transaction CR00 (CORPT00C) and batch job TRANREPT (CBTRN03C).
+      operationId: generateTransactionReport
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionReportRequest'
+      responses:
+        '200':
+          description: Report generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionReportResponse'
+
+  /api/admin/users:
+    get:
+      tags: [Admin - Users]
+      summary: List users
+      description: |
+        Returns paginated list of security users.
+        Replaces CICS transaction CU00 (COUSR00C).
+      operationId: listUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserListResponse'
+    post:
+      tags: [Admin - Users]
+      summary: Add user
+      description: |
+        Creates a new security user.
+        Replaces CICS transaction CU01 (COUSR01C).
+      operationId: addUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+  /api/admin/users/{userId}:
+    get:
+      tags: [Admin - Users]
+      summary: Get user details
+      operationId: getUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+    put:
+      tags: [Admin - Users]
+      summary: Update user
+      description: |
+        Updates an existing security user.
+        Replaces CICS transaction CU02 (COUSR02C).
+      operationId: updateUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+    delete:
+      tags: [Admin - Users]
+      summary: Delete user
+      description: |
+        Deletes a security user.
+        Replaces CICS transaction CU03 (COUSR03C).
+      operationId: deleteUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: User deleted
+
+  /api/admin/transaction-types:
+    get:
+      tags: [Admin - Transaction Types]
+      summary: List transaction types
+      description: |
+        Returns paginated list of transaction types.
+        Replaces CICS transaction CTLI (COTRTLIC).
+      operationId: listTransactionTypes
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Transaction type list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionTypeListResponse'
+    post:
+      tags: [Admin - Transaction Types]
+      summary: Add transaction type
+      description: |
+        Creates a new transaction type.
+        Replaces CICS transaction CTTU (COTRTUPC) add function.
+      operationId: addTransactionType
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionTypeRequest'
+      responses:
+        '201':
+          description: Transaction type created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionTypeResponse'
+
+  /api/admin/transaction-types/{typeCode}:
+    put:
+      tags: [Admin - Transaction Types]
+      summary: Update transaction type
+      description: Replaces CICS transaction CTTU (COTRTUPC) edit function.
+      operationId: updateTransactionType
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: typeCode
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionTypeRequest'
+      responses:
+        '200':
+          description: Transaction type updated
+    delete:
+      tags: [Admin - Transaction Types]
+      summary: Delete transaction type
+      description: Replaces CICS transaction CTLI (COTRTLIC) delete function.
+      operationId: deleteTransactionType
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: typeCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Transaction type deleted
+        '409':
+          description: Cannot delete - referenced by transaction categories
+
+  /api/authorizations/summary/{accountId}:
+    get:
+      tags: [Authorizations]
+      summary: Get authorization summary
+      description: |
+        Returns pending authorization summary for an account.
+        Replaces CICS transaction CPVS (COPAUS0C).
+      operationId: getAuthorizationSummary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Authorization summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationSummaryResponse'
+
+  /api/authorizations/{id}:
+    get:
+      tags: [Authorizations]
+      summary: Get authorization details
+      description: |
+        Returns detailed authorization information.
+        Replaces CICS transaction CPVD (COPAUS1C).
+      operationId: getAuthorizationDetail
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Authorization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationDetailResponse'
+
+  /api/authorizations/{id}/fraud:
+    post:
+      tags: [Authorizations]
+      summary: Mark authorization as fraud
+      description: |
+        Marks an authorization as fraudulent and records in fraud tracking table.
+        Replaces the PF5 action in COPAUS1C that calls COPAUS2C.
+      operationId: markAuthorizationFraud
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Fraud marked successfully
+
+  /api/system/date:
+    get:
+      tags: [System]
+      summary: Get system date
+      description: |
+        Returns the current system date.
+        Replaces CICS transaction CDRD (CODATE01) MQ-based date inquiry.
+      operationId: getSystemDate
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: System date
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  timestamp:
+                    type: string
+                    format: date-time
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [userId, password]
+      properties:
+        userId:
+          type: string
+          maxLength: 8
+          example: USER0001
+        password:
+          type: string
+          maxLength: 8
+          example: PASSWORD
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT access token
+        userId:
+          type: string
+        userType:
+          type: string
+          enum: [ADMIN, USER]
+        firstName:
+          type: string
+        lastName:
+          type: string
+
+    MenuResponse:
+      type: object
+      properties:
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              number:
+                type: integer
+              name:
+                type: string
+              endpoint:
+                type: string
+
+    AccountResponse:
+      type: object
+      properties:
+        accountId:
+          type: integer
+          format: int64
+        activeStatus:
+          type: string
+        currentBalance:
+          type: number
+          format: double
+        creditLimit:
+          type: number
+          format: double
+        cashCreditLimit:
+          type: number
+          format: double
+        openDate:
+          type: string
+          format: date
+        expirationDate:
+          type: string
+          format: date
+        reissueDate:
+          type: string
+          format: date
+        currentCycleCredit:
+          type: number
+          format: double
+        currentCycleDebit:
+          type: number
+          format: double
+        addressZip:
+          type: string
+        groupId:
+          type: string
+        customerName:
+          type: string
+          description: Denormalized from customer record via XREF
+
+    AccountUpdateRequest:
+      type: object
+      properties:
+        activeStatus:
+          type: string
+          maxLength: 1
+        creditLimit:
+          type: number
+          format: double
+        cashCreditLimit:
+          type: number
+          format: double
+        expirationDate:
+          type: string
+          format: date
+        reissueDate:
+          type: string
+          format: date
+        addressZip:
+          type: string
+          maxLength: 10
+        groupId:
+          type: string
+          maxLength: 10
+
+    CardListResponse:
+      type: object
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardResponse'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        currentPage:
+          type: integer
+
+    CardResponse:
+      type: object
+      properties:
+        cardNumber:
+          type: string
+        accountId:
+          type: integer
+          format: int64
+        cvvCode:
+          type: integer
+        embossedName:
+          type: string
+        expirationDate:
+          type: string
+          format: date
+        activeStatus:
+          type: string
+
+    CardUpdateRequest:
+      type: object
+      properties:
+        embossedName:
+          type: string
+          maxLength: 50
+        expirationDate:
+          type: string
+          format: date
+        activeStatus:
+          type: string
+          maxLength: 1
+
+    TransactionListResponse:
+      type: object
+      properties:
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionResponse'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        currentPage:
+          type: integer
+
+    TransactionResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        typeCode:
+          type: string
+        categoryCode:
+          type: integer
+        source:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+          format: double
+        merchantId:
+          type: integer
+          format: int64
+        merchantName:
+          type: string
+        merchantCity:
+          type: string
+        merchantZip:
+          type: string
+        cardNumber:
+          type: string
+        origTimestamp:
+          type: string
+          format: date-time
+        procTimestamp:
+          type: string
+          format: date-time
+
+    TransactionCreateRequest:
+      type: object
+      required: [typeCode, categoryCode, cardNumber, amount]
+      properties:
+        typeCode:
+          type: string
+          maxLength: 2
+        categoryCode:
+          type: integer
+        source:
+          type: string
+          maxLength: 10
+        description:
+          type: string
+          maxLength: 100
+        amount:
+          type: number
+          format: double
+        merchantId:
+          type: integer
+          format: int64
+        merchantName:
+          type: string
+          maxLength: 50
+        merchantCity:
+          type: string
+          maxLength: 50
+        merchantZip:
+          type: string
+          maxLength: 10
+        cardNumber:
+          type: string
+          maxLength: 16
+
+    BillPaymentRequest:
+      type: object
+      required: [accountId, amount]
+      properties:
+        accountId:
+          type: integer
+          format: int64
+        amount:
+          type: number
+          format: double
+        cardNumber:
+          type: string
+          maxLength: 16
+
+    BillPaymentResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        accountId:
+          type: integer
+          format: int64
+        amount:
+          type: number
+          format: double
+        newBalance:
+          type: number
+          format: double
+        status:
+          type: string
+          enum: [SUCCESS, FAILED]
+        message:
+          type: string
+
+    TransactionReportRequest:
+      type: object
+      required: [startDate, endDate]
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        accountId:
+          type: integer
+          format: int64
+          description: Optional filter by account
+
+    TransactionReportResponse:
+      type: object
+      properties:
+        reportName:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionResponse'
+        pageTotal:
+          type: number
+          format: double
+        grandTotal:
+          type: number
+          format: double
+
+    UserListResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        currentPage:
+          type: integer
+
+    UserResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        userType:
+          type: string
+          enum: [ADMIN, USER]
+
+    UserCreateRequest:
+      type: object
+      required: [userId, firstName, lastName, password, userType]
+      properties:
+        userId:
+          type: string
+          maxLength: 8
+        firstName:
+          type: string
+          maxLength: 20
+        lastName:
+          type: string
+          maxLength: 20
+        password:
+          type: string
+          maxLength: 8
+        userType:
+          type: string
+          enum: [ADMIN, USER]
+
+    UserUpdateRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          maxLength: 20
+        lastName:
+          type: string
+          maxLength: 20
+        password:
+          type: string
+          maxLength: 8
+        userType:
+          type: string
+          enum: [ADMIN, USER]
+
+    TransactionTypeListResponse:
+      type: object
+      properties:
+        transactionTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionTypeResponse'
+        totalElements:
+          type: integer
+          format: int64
+
+    TransactionTypeResponse:
+      type: object
+      properties:
+        typeCode:
+          type: string
+        description:
+          type: string
+        categories:
+          type: array
+          items:
+            type: object
+            properties:
+              categoryCode:
+                type: string
+              description:
+                type: string
+
+    TransactionTypeRequest:
+      type: object
+      required: [typeCode, description]
+      properties:
+        typeCode:
+          type: string
+          maxLength: 2
+        description:
+          type: string
+          maxLength: 50
+
+    AuthorizationSummaryResponse:
+      type: object
+      properties:
+        accountId:
+          type: integer
+          format: int64
+        customerId:
+          type: integer
+          format: int64
+        authStatus:
+          type: string
+        creditLimit:
+          type: number
+          format: double
+        cashLimit:
+          type: number
+          format: double
+        creditBalance:
+          type: number
+          format: double
+        cashBalance:
+          type: number
+          format: double
+        approvedAuthCount:
+          type: integer
+        declinedAuthCount:
+          type: integer
+        approvedAuthAmount:
+          type: number
+          format: double
+        declinedAuthAmount:
+          type: number
+          format: double
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorizationDetailResponse'
+
+    AuthorizationDetailResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        authDate:
+          type: string
+          format: date
+        authTime:
+          type: string
+        cardNumber:
+          type: string
+        authType:
+          type: string
+        authIdCode:
+          type: string
+        authRespCode:
+          type: string
+        authRespReason:
+          type: string
+        transactionAmount:
+          type: number
+          format: double
+        approvedAmount:
+          type: number
+          format: double
+        merchantName:
+          type: string
+        merchantCity:
+          type: string
+        merchantState:
+          type: string
+        transactionId:
+          type: string
+        matchStatus:
+          type: string
+          enum: [PENDING, DECLINED, EXPIRED, MATCHED]
+        fraudStatus:
+          type: string
+          enum: [NONE, CONFIRMED, REMOVED]
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+
+security:
+  - bearerAuth: []

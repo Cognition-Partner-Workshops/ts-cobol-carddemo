@@ -1,0 +1,58 @@
+# =============================================================================
+# CardDemo Docker Compose Configuration
+# Local development environment replacing mainframe subsystems
+#
+# Subsystem mapping:
+#   VSAM / DB2  → PostgreSQL (port 5432)
+#   IBM MQ      → ActiveMQ Artemis (ports 61616, 8161)
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL - Replaces VSAM KSDS files and DB2 databases
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: carddemo-postgres
+    environment:
+      POSTGRES_DB: carddemo
+      POSTGRES_USER: carddemo
+      POSTGRES_PASSWORD: carddemo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U carddemo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # ActiveMQ Artemis - Replaces IBM MQ
+  # Management console: http://localhost:8161 (artemis/artemis)
+  # ---------------------------------------------------------------------------
+  artemis:
+    image: apache/activemq-artemis:2.31.2
+    container_name: carddemo-artemis
+    environment:
+      ARTEMIS_USER: artemis
+      ARTEMIS_PASSWORD: artemis
+    ports:
+      - "61616:61616"   # AMQP/Core protocol
+      - "8161:8161"     # Web management console
+    volumes:
+      - artemis_data:/var/lib/artemis-instance
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8161/console"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  artemis_data:
+    driver: local

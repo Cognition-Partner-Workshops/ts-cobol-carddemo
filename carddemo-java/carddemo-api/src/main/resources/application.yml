@@ -1,0 +1,169 @@
+# =============================================================================
+# CardDemo API Application Configuration
+# Replaces CICS SIT (System Initialization Table) and JCL DD statements
+# =============================================================================
+
+spring:
+  application:
+    name: carddemo-api
+
+  # --- Database Configuration ---
+  # Replaces VSAM KSDS file definitions and DB2 connection parameters
+  datasource:
+    url: jdbc:postgresql://localhost:5432/carddemo
+    username: carddemo
+    password: carddemo
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # --- JPA / Hibernate Configuration ---
+  # Replaces VSAM file access methods (KSDS, ESDS, RRDS)
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+
+  # --- Flyway Database Migration ---
+  # Replaces IDCAMS DEFINE CLUSTER and IEBGENER initial load jobs
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  # --- JMS / ActiveMQ Artemis Configuration ---
+  # Replaces IBM MQ connection parameters
+  artemis:
+    mode: native
+    broker-url: tcp://localhost:61616
+    user: artemis
+    password: artemis
+
+  # --- Spring Batch Configuration ---
+  # Replaces JES2/JES3 batch scheduling
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+
+  # --- Jackson JSON Configuration ---
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+# --- Server Configuration ---
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# --- SpringDoc OpenAPI Configuration ---
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+# --- Logging Configuration ---
+# Replaces CICS CEDF debugging and COBOL DISPLAY statements
+logging:
+  level:
+    root: INFO
+    com.carddemo: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# --- Actuator Configuration ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env
+  endpoint:
+    health:
+      show-details: when-authorized
+
+---
+# =============================================================================
+# Development Profile
+# =============================================================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:h2:mem:carddemo;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: false
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+logging:
+  level:
+    com.carddemo: DEBUG
+    org.hibernate.SQL: DEBUG
+
+---
+# =============================================================================
+# Test Profile
+# =============================================================================
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:carddemo-test;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+  flyway:
+    enabled: false
+
+  batch:
+    jdbc:
+      initialize-schema: embedded
+
+logging:
+  level:
+    com.carddemo: DEBUG

@@ -1,0 +1,37 @@
+# =============================================================================
+# CardDemo Batch Application Configuration
+# Replaces JCL JOB cards and DD statements for batch processing
+# =============================================================================
+
+spring:
+  application:
+    name: carddemo-batch
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/carddemo
+    username: carddemo
+    password: carddemo
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+
+logging:
+  level:
+    root: INFO
+    com.carddemo: DEBUG
+    org.springframework.batch: INFO

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle != null ? pageTitle + ' - CardDemo' : 'CardDemo'}">CardDemo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; min-height: 100vh; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #00ff41; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.2em; }
+        .header .user-info { font-size: 0.9em; }
+        .nav { background: #0f3460; padding: 8px 20px; border-bottom: 1px solid #00ff41; }
+        .nav a { color: #00ff41; text-decoration: none; margin-right: 15px; }
+        .nav a:hover { color: #fff; }
+        .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: #16213e; border: 1px solid #00ff41; padding: 15px; margin-bottom: 15px; }
+        .card h2 { margin-bottom: 10px; font-size: 1.1em; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 8px 12px; text-align: left; border: 1px solid #333; }
+        th { background: #0f3460; }
+        input, select { background: #1a1a2e; color: #00ff41; border: 1px solid #00ff41; padding: 6px 10px; font-family: 'Courier New', monospace; }
+        button, .btn { background: #0f3460; color: #00ff41; border: 1px solid #00ff41; padding: 8px 16px; cursor: pointer; font-family: 'Courier New', monospace; text-decoration: none; display: inline-block; }
+        button:hover, .btn:hover { background: #00ff41; color: #1a1a2e; }
+        .error { color: #ff4444; border-color: #ff4444; }
+        .success { color: #44ff44; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: inline-block; width: 200px; }
+        .pagination { margin-top: 15px; }
+        .pagination a { margin-right: 10px; }
+        .footer { background: #16213e; padding: 10px 20px; border-top: 1px solid #00ff41; text-align: center; font-size: 0.8em; position: fixed; bottom: 0; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AWS CardDemo - Credit Card Management System</h1>
+        <div class="user-info" th:if="${session != null}">
+            <span th:text="'User: ' + (${session.userId} ?: 'Guest')"></span>
+        </div>
+    </div>
+    <div class="nav" th:fragment="nav">
+        <a href="/menu">Main Menu</a>
+        <a href="/accounts/view">Accounts</a>
+        <a href="/cards/list">Cards</a>
+        <a href="/transactions/list">Transactions</a>
+        <a href="/reports">Reports</a>
+        <a href="/billing/payment">Bill Pay</a>
+        <a href="/login" style="float:right;">Logout</a>
+    </div>
+    <div class="content" th:fragment="content">
+        <!-- Page content inserted here -->
+    </div>
+    <div class="footer">
+        CardDemo - Migrated from COBOL/CICS/VSAM to Java 17 + Spring Boot
+    </div>
+</body>
+</html>

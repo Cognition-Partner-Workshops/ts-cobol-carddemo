@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CardDemo - Main Menu</title>
+    <link th:replace="~{layout :: head}" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; min-height: 100vh; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #00ff41; }
+        .content { padding: 20px; max-width: 900px; margin: 0 auto; }
+        .menu-item { display: block; padding: 10px 15px; margin: 5px 0; border: 1px solid #333; color: #00ff41; text-decoration: none; }
+        .menu-item:hover { background: #0f3460; border-color: #00ff41; }
+        .menu-item .num { display: inline-block; width: 40px; }
+        .admin-section { border-top: 2px solid #ff8800; margin-top: 20px; padding-top: 10px; }
+        .admin-section h3 { color: #ff8800; margin-bottom: 10px; }
+        h1 { margin-bottom: 5px; }
+        h2 { margin-bottom: 15px; color: #aaa; font-size: 1em; }
+    </style>
+</head>
+<body>
+    <!-- Replaces BMS map COMEN01 (Main Menu) and COADM01 (Admin Menu) -->
+    <div class="header">
+        <h1>AWS CardDemo - Main Menu</h1>
+    </div>
+    <div class="content">
+        <h2>Select an option:</h2>
+
+        <a class="menu-item" href="/accounts/view"><span class="num">01.</span> Account View (CAVW)</a>
+        <a class="menu-item" href="/accounts/update"><span class="num">02.</span> Account Update (CAUP)</a>
+        <a class="menu-item" href="/cards/list"><span class="num">03.</span> Credit Card List (CCLI)</a>
+        <a class="menu-item" href="/cards/view"><span class="num">04.</span> Credit Card View (CCDL)</a>
+        <a class="menu-item" href="/cards/update"><span class="num">05.</span> Credit Card Update (CCUP)</a>
+        <a class="menu-item" href="/transactions/list"><span class="num">06.</span> Transaction List (CT00)</a>
+        <a class="menu-item" href="/transactions/view"><span class="num">07.</span> Transaction View (CT01)</a>
+        <a class="menu-item" href="/transactions/add"><span class="num">08.</span> Transaction Add (CT02)</a>
+        <a class="menu-item" href="/reports"><span class="num">09.</span> Transaction Reports (CR00)</a>
+        <a class="menu-item" href="/billing/payment"><span class="num">10.</span> Bill Payment (CB00)</a>
+        <a class="menu-item" href="/authorizations/summary"><span class="num">11.</span> Pending Authorizations (CPVS)</a>
+
+        <div class="admin-section" th:if="${isAdmin}">
+            <h3>Admin Functions</h3>
+            <a class="menu-item" href="/admin/users"><span class="num">12.</span> List Users (CU00)</a>
+            <a class="menu-item" href="/admin/users/add"><span class="num">13.</span> Add User (CU01)</a>
+            <a class="menu-item" href="/admin/transaction-types"><span class="num">14.</span> Transaction Type List (CTLI)</a>
+            <a class="menu-item" href="/admin/transaction-types/edit"><span class="num">15.</span> Transaction Type Add/Edit (CTTU)</a>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <a href="/login" style="color: #ff4444;">Sign Off</a>
+        </div>
+    </div>
+</body>
+</html>

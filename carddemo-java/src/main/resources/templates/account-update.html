@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CardDemo - Account Update</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; min-height: 100vh; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #00ff41; }
+        .nav { background: #0f3460; padding: 8px 20px; border-bottom: 1px solid #00ff41; }
+        .nav a { color: #00ff41; text-decoration: none; margin-right: 15px; }
+        .content { padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .card { background: #16213e; border: 1px solid #00ff41; padding: 15px; margin-bottom: 15px; }
+        .card h2 { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .form-group { margin-bottom: 8px; }
+        .form-group label { display: inline-block; width: 220px; }
+        input, select, button { background: #1a1a2e; color: #00ff41; border: 1px solid #00ff41; padding: 6px 10px; font-family: 'Courier New', monospace; }
+        button { cursor: pointer; margin-top: 10px; }
+        button:hover { background: #00ff41; color: #1a1a2e; }
+        .error { color: #ff4444; margin-bottom: 10px; }
+        .success { color: #44ff44; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Replaces BMS map COACTUP (Account Update) -->
+    <div class="header"><h1>Account Update (CAUP)</h1></div>
+    <div class="nav"><a href="/menu">Main Menu</a><a href="/accounts/view">Account View</a></div>
+    <div class="content">
+        <div class="card">
+            <h2>Enter Account ID to Update</h2>
+            <form method="get" action="/accounts/update">
+                <div class="form-group">
+                    <label for="acctId">Account ID:</label>
+                    <input type="text" id="acctId" name="acctId" th:value="${acctId}" required>
+                    <button type="submit">Load</button>
+                </div>
+            </form>
+        </div>
+        <div class="error" th:if="${error}" th:text="${error}"></div>
+        <div class="success" th:if="${success}" th:text="${success}"></div>
+        <div class="card" th:if="${account != null}">
+            <h2>Update Account Details</h2>
+            <form method="post" action="/accounts/update">
+                <input type="hidden" name="acctId" th:value="${account.acctId}">
+                <div class="form-group"><label>Account ID:</label><span th:text="${account.acctId}"></span></div>
+                <div class="form-group"><label for="activeStatus">Active Status:</label>
+                    <select id="activeStatus" name="activeStatus"><option value="Y" th:selected="${account.activeStatus == 'Y'}">Y - Active</option><option value="N" th:selected="${account.activeStatus == 'N'}">N - Inactive</option></select></div>
+                <div class="form-group"><label for="creditLimit">Credit Limit:</label>
+                    <input type="text" id="creditLimit" name="creditLimit" th:value="${account.creditLimit}"></div>
+                <div class="form-group"><label for="cashCreditLimit">Cash Credit Limit:</label>
+                    <input type="text" id="cashCreditLimit" name="cashCreditLimit" th:value="${account.cashCreditLimit}"></div>
+                <div class="form-group"><label for="expirationDate">Expiration Date:</label>
+                    <input type="text" id="expirationDate" name="expirationDate" th:value="${account.expirationDate}"></div>
+                <div class="form-group"><label for="groupId">Group ID:</label>
+                    <input type="text" id="groupId" name="groupId" th:value="${account.groupId}"></div>
+                <button type="submit">Update Account</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

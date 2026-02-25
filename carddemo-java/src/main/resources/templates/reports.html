@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CardDemo - Transaction Reports</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; min-height: 100vh; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #00ff41; }
+        .nav { background: #0f3460; padding: 8px 20px; border-bottom: 1px solid #00ff41; }
+        .nav a { color: #00ff41; text-decoration: none; margin-right: 15px; }
+        .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: #16213e; border: 1px solid #00ff41; padding: 15px; margin-bottom: 15px; }
+        .card h2 { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 6px 10px; text-align: left; border: 1px solid #333; }
+        th { background: #0f3460; }
+        input, button { background: #1a1a2e; color: #00ff41; border: 1px solid #00ff41; padding: 6px 10px; font-family: 'Courier New', monospace; }
+        button { cursor: pointer; }
+        button:hover { background: #00ff41; color: #1a1a2e; }
+        .form-group { margin-bottom: 8px; }
+        .form-group label { display: inline-block; width: 150px; }
+        .summary { background: #0f3460; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Replaces BMS map CORPT00 (Transaction Reports) -->
+    <div class="header"><h1>Transaction Reports (CR00)</h1></div>
+    <div class="nav"><a href="/menu">Main Menu</a><a href="/transactions/list">Transactions</a></div>
+    <div class="content">
+        <div class="card">
+            <h2>Generate Report</h2>
+            <form method="get" action="/reports">
+                <div class="form-group"><label for="cardNum">Card Number:</label>
+                    <input type="text" id="cardNum" name="cardNum" th:value="${cardNum}" maxlength="16" required></div>
+                <div class="form-group"><label for="startDate">Start Date:</label>
+                    <input type="text" id="startDate" name="startDate" th:value="${startDate}" placeholder="YYYY-MM-DD"></div>
+                <div class="form-group"><label for="endDate">End Date:</label>
+                    <input type="text" id="endDate" name="endDate" th:value="${endDate}" placeholder="YYYY-MM-DD"></div>
+                <button type="submit">Generate Report</button>
+            </form>
+        </div>
+        <div class="card" th:if="${report != null}">
+            <h2>Transaction Report</h2>
+            <div class="summary">
+                <div>Card: <span th:text="${report.cardNum}"></span></div>
+                <div>Period: <span th:text="${report.startDate}"></span> to <span th:text="${report.endDate}"></span></div>
+                <div>Total Transactions: <span th:text="${report.totalCount}"></span></div>
+                <div>Grand Total: <span th:text="${report.grandTotal}"></span></div>
+            </div>
+            <h3 style="margin-top:10px;">Totals by Type</h3>
+            <table th:if="${report.totalsByType != null}">
+                <thead><tr><th>Type Code</th><th>Total Amount</th></tr></thead>
+                <tbody>
+                    <tr th:each="entry : ${report.totalsByType}">
+                        <td th:text="${entry.key}"></td>
+                        <td th:text="${entry.value}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

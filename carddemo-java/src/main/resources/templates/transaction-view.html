@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CardDemo - Transaction View</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; min-height: 100vh; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #00ff41; }
+        .nav { background: #0f3460; padding: 8px 20px; border-bottom: 1px solid #00ff41; }
+        .nav a { color: #00ff41; text-decoration: none; margin-right: 15px; }
+        .content { padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .card { background: #16213e; border: 1px solid #00ff41; padding: 15px; margin-bottom: 15px; }
+        .card h2 { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .form-group { margin-bottom: 8px; }
+        .form-group label { display: inline-block; width: 220px; }
+        .form-group span { color: #fff; }
+        input, button { background: #1a1a2e; color: #00ff41; border: 1px solid #00ff41; padding: 6px 10px; font-family: 'Courier New', monospace; }
+        button { cursor: pointer; }
+        button:hover { background: #00ff41; color: #1a1a2e; }
+        .error { color: #ff4444; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Replaces BMS map COTRN01 (Transaction View) -->
+    <div class="header"><h1>Transaction View (CT01)</h1></div>
+    <div class="nav"><a href="/menu">Main Menu</a><a href="/transactions/list">Transaction List</a></div>
+    <div class="content">
+        <div class="card">
+            <h2>Enter Transaction ID</h2>
+            <form method="get" action="/transactions/view">
+                <div class="form-group">
+                    <label for="tranId">Transaction ID:</label>
+                    <input type="text" id="tranId" name="tranId" th:value="${tranId}" required>
+                    <button type="submit">View</button>
+                </div>
+            </form>
+        </div>
+        <div class="error" th:if="${error}" th:text="${error}"></div>
+        <div class="card" th:if="${transaction != null}">
+            <h2>Transaction Details</h2>
+            <div class="form-group"><label>Transaction ID:</label><span th:text="${transaction.tranId}"></span></div>
+            <div class="form-group"><label>Type Code:</label><span th:text="${transaction.tranTypeCd}"></span></div>
+            <div class="form-group"><label>Category Code:</label><span th:text="${transaction.tranCatCd}"></span></div>
+            <div class="form-group"><label>Source:</label><span th:text="${transaction.tranSource}"></span></div>
+            <div class="form-group"><label>Description:</label><span th:text="${transaction.tranDesc}"></span></div>
+            <div class="form-group"><label>Amount:</label><span th:text="${transaction.tranAmt}"></span></div>
+            <div class="form-group"><label>Card Number:</label><span th:text="${transaction.cardNum}"></span></div>
+            <div class="form-group"><label>Merchant Name:</label><span th:text="${transaction.merchantName}"></span></div>
+            <div class="form-group"><label>Merchant City:</label><span th:text="${transaction.merchantCity}"></span></div>
+            <div class="form-group"><label>Merchant ZIP:</label><span th:text="${transaction.merchantZip}"></span></div>
+            <div class="form-group"><label>Original Timestamp:</label><span th:text="${transaction.origTimestamp}"></span></div>
+            <div class="form-group"><label>Process Timestamp:</label><span th:text="${transaction.procTimestamp}"></span></div>
+        </div>
+    </div>
+</body>
+</html>

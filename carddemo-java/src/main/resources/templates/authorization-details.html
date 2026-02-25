@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CardDemo - Pending Authorization Details</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; min-height: 100vh; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #00ff41; }
+        .nav { background: #0f3460; padding: 8px 20px; border-bottom: 1px solid #00ff41; }
+        .nav a { color: #00ff41; text-decoration: none; margin-right: 15px; }
+        .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: #16213e; border: 1px solid #00ff41; padding: 15px; margin-bottom: 15px; }
+        .card h2 { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 6px 8px; text-align: left; border: 1px solid #333; font-size: 0.85em; }
+        th { background: #0f3460; }
+        a { color: #00ff41; }
+        .btn-danger { color: #ff4444; }
+    </style>
+</head>
+<body>
+    <!-- Replaces BMS map COPAU01 (Pending Authorization Details) -->
+    <div class="header"><h1>Pending Authorization Details (CPVD)</h1></div>
+    <div class="nav"><a href="/menu">Main Menu</a><a href="/authorizations/summary">Auth Summary</a></div>
+    <div class="content">
+        <div class="card" th:if="${details != null and !details.empty}">
+            <h2>Authorization Details</h2>
+            <table>
+                <thead><tr><th>ID</th><th>Date</th><th>Time</th><th>Card</th><th>Type</th><th>Amount</th><th>Approved</th><th>Resp</th><th>Merchant</th><th>Status</th><th>Fraud</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr th:each="d : ${details}">
+                        <td th:text="${d.id}"></td>
+                        <td th:text="${d.authDate}"></td>
+                        <td th:text="${d.authTime}"></td>
+                        <td th:text="${d.cardNum}"></td>
+                        <td th:text="${d.authType}"></td>
+                        <td th:text="${d.transactionAmt}"></td>
+                        <td th:text="${d.approvedAmt}"></td>
+                        <td th:text="${d.authRespCode}"></td>
+                        <td th:text="${d.merchantName}"></td>
+                        <td th:text="${d.matchStatus}"></td>
+                        <td th:text="${d.authFraud}"></td>
+                        <td><a th:href="@{/authorizations/{id}/fraud(id=${d.id})}" class="btn-danger" onclick="return confirm('Mark as fraud?');">Flag Fraud</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div th:if="${details == null or details.empty}">
+            <p>No authorization details found.</p>
+        </div>
+    </div>
+</body>
+</html>

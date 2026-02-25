@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CardDemo - Transaction Type Add/Edit</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; min-height: 100vh; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #ff8800; }
+        .header h1 { color: #ff8800; }
+        .nav { background: #0f3460; padding: 8px 20px; border-bottom: 1px solid #00ff41; }
+        .nav a { color: #00ff41; text-decoration: none; margin-right: 15px; }
+        .content { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .card { background: #16213e; border: 1px solid #ff8800; padding: 15px; margin-bottom: 15px; }
+        .card h2 { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; color: #ff8800; }
+        .form-group { margin-bottom: 8px; }
+        .form-group label { display: inline-block; width: 180px; }
+        input, button { background: #1a1a2e; color: #00ff41; border: 1px solid #00ff41; padding: 6px 10px; font-family: 'Courier New', monospace; }
+        button { cursor: pointer; margin-top: 10px; }
+        button:hover { background: #00ff41; color: #1a1a2e; }
+        .error { color: #ff4444; margin-bottom: 10px; }
+        .success { color: #44ff44; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Replaces BMS map COTRTUP (Transaction Type Add/Edit) -->
+    <div class="header"><h1>Transaction Type Add/Edit (CTTU)</h1></div>
+    <div class="nav"><a href="/menu">Main Menu</a><a href="/admin/transaction-types">Type List</a></div>
+    <div class="content">
+        <div class="error" th:if="${error}" th:text="${error}"></div>
+        <div class="success" th:if="${success}" th:text="${success}"></div>
+        <div class="card">
+            <h2 th:text="${isEdit ? 'Edit Transaction Type' : 'Add Transaction Type'}">Add/Edit Transaction Type</h2>
+            <form method="post" action="/admin/transaction-types/edit">
+                <div class="form-group"><label for="typeCd">Type Code:</label>
+                    <input type="text" id="typeCd" name="typeCd" maxlength="2" th:value="${type != null ? type.typeCd : ''}" th:readonly="${isEdit}" required></div>
+                <div class="form-group"><label for="typeDesc">Description:</label>
+                    <input type="text" id="typeDesc" name="typeDesc" maxlength="50" th:value="${type != null ? type.typeDesc : ''}" style="width:300px;" required></div>
+                <input type="hidden" name="isEdit" th:value="${isEdit}">
+                <button type="submit" th:text="${isEdit ? 'Update Type' : 'Add Type'}">Submit</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

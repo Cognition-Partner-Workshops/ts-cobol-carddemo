@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CardDemo - Transaction List</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; min-height: 100vh; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #00ff41; }
+        .nav { background: #0f3460; padding: 8px 20px; border-bottom: 1px solid #00ff41; }
+        .nav a { color: #00ff41; text-decoration: none; margin-right: 15px; }
+        .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: #16213e; border: 1px solid #00ff41; padding: 15px; margin-bottom: 15px; }
+        .card h2 { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 6px 10px; text-align: left; border: 1px solid #333; font-size: 0.9em; }
+        th { background: #0f3460; }
+        input, button { background: #1a1a2e; color: #00ff41; border: 1px solid #00ff41; padding: 6px 10px; font-family: 'Courier New', monospace; }
+        button { cursor: pointer; }
+        button:hover { background: #00ff41; color: #1a1a2e; }
+        a { color: #00ff41; }
+        .form-group { margin-bottom: 8px; }
+        .form-group label { display: inline-block; width: 150px; }
+        .pagination { margin-top: 10px; }
+        .pagination a { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Replaces BMS map COTRN00 (Transaction List) -->
+    <div class="header"><h1>Transaction List (CT00)</h1></div>
+    <div class="nav"><a href="/menu">Main Menu</a><a href="/transactions/list">Transactions</a><a href="/transactions/add">Add Transaction</a></div>
+    <div class="content">
+        <div class="card">
+            <h2>Search Transactions by Card Number</h2>
+            <form method="get" action="/transactions/list">
+                <div class="form-group">
+                    <label for="cardNum">Card Number:</label>
+                    <input type="text" id="cardNum" name="cardNum" th:value="${cardNum}" maxlength="16">
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+        <div class="card" th:if="${transactions != null and !transactions.empty}">
+            <h2>Transactions</h2>
+            <table>
+                <thead><tr><th>Tran ID</th><th>Type</th><th>Card Number</th><th>Amount</th><th>Description</th><th>Merchant</th><th>Timestamp</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr th:each="t : ${transactions}">
+                        <td th:text="${t.tranId}"></td>
+                        <td th:text="${t.tranTypeCd}"></td>
+                        <td th:text="${t.cardNum}"></td>
+                        <td th:text="${t.tranAmt}"></td>
+                        <td th:text="${t.tranDesc}"></td>
+                        <td th:text="${t.merchantName}"></td>
+                        <td th:text="${t.origTimestamp}"></td>
+                        <td><a th:href="@{/transactions/view(tranId=${t.tranId})}">View</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

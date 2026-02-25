@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CardDemo - Credit Card List</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; min-height: 100vh; }
+        .header { background: #16213e; padding: 10px 20px; border-bottom: 2px solid #00ff41; }
+        .nav { background: #0f3460; padding: 8px 20px; border-bottom: 1px solid #00ff41; }
+        .nav a { color: #00ff41; text-decoration: none; margin-right: 15px; }
+        .content { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .card { background: #16213e; border: 1px solid #00ff41; padding: 15px; margin-bottom: 15px; }
+        .card h2 { margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px 12px; text-align: left; border: 1px solid #333; }
+        th { background: #0f3460; }
+        input, button { background: #1a1a2e; color: #00ff41; border: 1px solid #00ff41; padding: 6px 10px; font-family: 'Courier New', monospace; }
+        button { cursor: pointer; }
+        button:hover { background: #00ff41; color: #1a1a2e; }
+        a { color: #00ff41; }
+        .form-group { margin-bottom: 8px; }
+        .form-group label { display: inline-block; width: 150px; }
+    </style>
+</head>
+<body>
+    <!-- Replaces BMS map COCRDLI (Credit Card List) -->
+    <div class="header"><h1>Credit Card List (CCLI)</h1></div>
+    <div class="nav"><a href="/menu">Main Menu</a><a href="/accounts/view">Accounts</a><a href="/cards/list">Cards</a></div>
+    <div class="content">
+        <div class="card">
+            <h2>Search Cards by Account</h2>
+            <form method="get" action="/cards/list">
+                <div class="form-group">
+                    <label for="acctId">Account ID:</label>
+                    <input type="text" id="acctId" name="acctId" th:value="${acctId}" required>
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+        <div class="card" th:if="${cards != null and !cards.empty}">
+            <h2>Cards for Account <span th:text="${acctId}"></span></h2>
+            <table>
+                <thead><tr><th>Card Number</th><th>Embossed Name</th><th>Expiration</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>
+                    <tr th:each="card : ${cards}">
+                        <td th:text="${card.cardNum}"></td>
+                        <td th:text="${card.embossedName}"></td>
+                        <td th:text="${card.expirationDate}"></td>
+                        <td th:text="${card.activeStatus == 'Y' ? 'Active' : 'Inactive'}"></td>
+                        <td><a th:href="@{/cards/view(cardNum=${card.cardNum})}">View</a> | <a th:href="@{/cards/update(cardNum=${card.cardNum})}">Update</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

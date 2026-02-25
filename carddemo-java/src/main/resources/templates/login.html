@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>CardDemo - Sign On</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #00ff41; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .login-box { background: #16213e; border: 2px solid #00ff41; padding: 30px; width: 450px; }
+        .login-box h1 { text-align: center; margin-bottom: 5px; font-size: 1.4em; }
+        .login-box h2 { text-align: center; margin-bottom: 20px; font-size: 1em; color: #aaa; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 8px; background: #1a1a2e; color: #00ff41; border: 1px solid #00ff41; font-family: 'Courier New', monospace; }
+        button { width: 100%; padding: 10px; background: #0f3460; color: #00ff41; border: 1px solid #00ff41; cursor: pointer; font-family: 'Courier New', monospace; font-size: 1em; }
+        button:hover { background: #00ff41; color: #1a1a2e; }
+        .error { color: #ff4444; margin-bottom: 10px; text-align: center; }
+        .info { text-align: center; margin-top: 15px; font-size: 0.8em; color: #666; }
+    </style>
+</head>
+<body>
+    <!-- Replaces BMS map COSGN00 (Sign-on Screen) -->
+    <div class="login-box">
+        <h1>AWS CardDemo</h1>
+        <h2>Credit Card Management System</h2>
+        <div class="error" th:if="${error}" th:text="${error}"></div>
+        <form id="loginForm" method="post" action="/login">
+            <div class="form-group">
+                <label for="userId">User ID:</label>
+                <input type="text" id="userId" name="userId" maxlength="8" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" maxlength="8" required>
+            </div>
+            <button type="submit">Sign On</button>
+        </form>
+        <div class="info">Enter your User ID and Password to sign on</div>
+    </div>
+</body>
+</html>

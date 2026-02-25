@@ -1,0 +1,159 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: data-validation-service
+
+# ---------------------------------------------------------------------------
+# Data-source configuration
+# ---------------------------------------------------------------------------
+  datasource:
+    # Target PostgreSQL database (modernized)
+    postgres:
+      url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/carddemo}
+      username: ${POSTGRES_USERNAME:carddemo}
+      password: ${POSTGRES_PASSWORD:}
+      driver-class-name: org.postgresql.Driver
+
+    # Source DB2/legacy database
+    legacy:
+      url: ${LEGACY_DB_URL:jdbc:db2://localhost:50000/CARDDB}
+      username: ${LEGACY_DB_USERNAME:db2admin}
+      password: ${LEGACY_DB_PASSWORD:}
+      driver-class-name: com.ibm.db2.jcc.DB2Driver
+
+# ---------------------------------------------------------------------------
+# Validation configuration
+# ---------------------------------------------------------------------------
+validation:
+  # Maximum number of sample records to include in diff reports
+  max-sample-records: 10
+
+  # Directory containing mainframe output files for file-based validation
+  mainframe-output-dir: /opt/carddemo/mainframe-output
+
+  # Base URL of the modernized microservice API for API-based validation
+  api-base-url: http://localhost:8081/api
+
+  # Table pair definitions and their validation rules
+  table-pairs:
+    # ----- Tier 1: Master / lookup tables -----
+    - name: TransactionType
+      source-table: TRANTYPE
+      target-table: transaction_type
+      source-type: DB2
+      primary-key: TRTYP_CD
+      rules:
+        - ROW_COUNT
+        - CHECKSUM
+        - SAMPLE_DIFF
+      mainframe-file: trantype.txt
+      api-endpoint: /transaction-types
+
+    - name: TransactionCategory
+      source-table: TRANCATG
+      target-table: transaction_category
+      source-type: DB2
+      primary-key: TRCAT_CD
+      rules:
+        - ROW_COUNT
+        - CHECKSUM
+        - SAMPLE_DIFF
+      mainframe-file: trancatg.txt
+      api-endpoint: /transaction-categories
+
+    - name: DisclosureGroup
+      source-table: DISCGRP
+      target-table: disclosure_group
+      source-type: DB2
+      primary-key: DIS_GROUP_CD
+      rules:
+        - ROW_COUNT
+        - CHECKSUM
+        - SAMPLE_DIFF
+      mainframe-file: discgrp.txt
+      api-endpoint: /disclosure-groups
+
+    # ----- Tier 2: Parent tables -----
+    - name: Customer
+      source-table: CUSTDATA
+      target-table: customer
+      source-type: DB2
+      primary-key: CUST_ID
+      rules:
+        - ROW_COUNT
+        - CHECKSUM
+        - SAMPLE_DIFF
+      mainframe-file: custdata.txt
+      api-endpoint: /customers
+
+    - name: Account
+      source-table: ACCTDATA
+      target-table: account
+      source-type: DB2
+      primary-key: ACCT_ID
+      rules:
+        - ROW_COUNT
+        - CHECKSUM
+        - SAMPLE_DIFF
+      mainframe-file: acctdata.txt
+      api-endpoint: /accounts
+
+    # ----- Tier 3: Child / dependent tables -----
+    - name: Card
+      source-table: CARDDATA
+      target-table: card
+      source-type: DB2
+      primary-key: CARD_NUM
+      rules:
+        - ROW_COUNT
+        - CHECKSUM
+        - SAMPLE_DIFF
+      mainframe-file: carddata.txt
+      api-endpoint: /cards
+
+    - name: CardXref
+      source-table: CARDXREF
+      target-table: card_xref
+      source-type: DB2
+      primary-key: XREF_CARD_NUM
+      rules:
+        - ROW_COUNT
+        - CHECKSUM
+        - SAMPLE_DIFF
+      mainframe-file: cardxref.txt
+      api-endpoint: /card-xrefs
+
+    - name: Transaction
+      source-table: DAILYTRAN
+      target-table: transaction
+      source-type: DB2
+      primary-key: TRAN_ID
+      rules:
+        - ROW_COUNT
+        - CHECKSUM
+        - SAMPLE_DIFF
+      mainframe-file: dailytran.txt
+      api-endpoint: /transactions
+
+    - name: CategoryBalance
+      source-table: TCATBAL
+      target-table: category_balance
+      source-type: DB2
+      primary-key: BAL_ID
+      rules:
+        - ROW_COUNT
+        - CHECKSUM
+        - SAMPLE_DIFF
+      mainframe-file: tcatbal.txt
+      api-endpoint: /category-balances
+
+# ---------------------------------------------------------------------------
+# Actuator / management
+# ---------------------------------------------------------------------------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

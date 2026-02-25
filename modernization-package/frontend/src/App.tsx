@@ -1,34 +1,22 @@
-import { Routes, Route, Navigate, NavLink } from 'react-router-dom'
-import TransactionList from './pages/TransactionList'
-import TransactionView from './pages/TransactionView'
-import TransactionAdd from './pages/TransactionAdd'
-import MainMenu from './pages/MainMenu'
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import AppLayout from "@/components/layout/AppLayout"
+import Dashboard from "@/pages/Dashboard"
+import TransactionList from "@/pages/TransactionList"
+import TransactionView from "@/pages/TransactionView"
+import TransactionAdd from "@/pages/TransactionAdd"
 
-function App() {
+export default function App() {
   return (
-    <>
-      <nav className="nav-bar">
-        <span className="brand">CardDemo</span>
-        <NavLink to="/menu" className={({ isActive }) => isActive ? 'active' : ''}>
-          Menu
-        </NavLink>
-        <NavLink to="/transactions" className={({ isActive }) => isActive ? 'active' : ''}>
-          List (CT00)
-        </NavLink>
-        <NavLink to="/transactions/add" className={({ isActive }) => isActive ? 'active' : ''}>
-          Add (CT02)
-        </NavLink>
-      </nav>
+    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/menu" replace />} />
-        <Route path="/menu" element={<MainMenu />} />
-        <Route path="/transactions" element={<TransactionList />} />
-        <Route path="/transactions/view/:transactionId" element={<TransactionView />} />
-        <Route path="/transactions/view" element={<TransactionView />} />
-        <Route path="/transactions/add" element={<TransactionAdd />} />
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/transactions" element={<TransactionList />} />
+          <Route path="/transactions/view" element={<TransactionView />} />
+          <Route path="/transactions/view/:id" element={<TransactionView />} />
+          <Route path="/transactions/add" element={<TransactionAdd />} />
+        </Route>
       </Routes>
-    </>
+    </BrowserRouter>
   )
 }
-
-export default App

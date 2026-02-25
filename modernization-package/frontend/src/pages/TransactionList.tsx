@@ -1,42 +1,73 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { listTransactions, TransactionListResponse, ErrorResponse } from '../services/api'
+import { useState, useEffect, useCallback } from "react"
+import { useNavigate } from "react-router-dom"
+import {
+  listTransactions,
+  viewTransaction,
+  TransactionListResponse,
+  TransactionDetail,
+  ErrorResponse,
+} from "@/services/api"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
+import { Separator } from "@/components/ui/separator"
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  Eye,
+  ArrowUpDown,
+  AlertCircle,
+  Loader2,
+  CreditCard,
+} from "lucide-react"
 
-/**
- * Transaction List page (CT00) - replaces legacy COTRN00C.
- * 
- * Business Rules implemented:
- * - BR-LT-01: Page size fixed at 10
- * - BR-LT-02: Numeric filter validation
- * - BR-LT-03: Valid selection value ('S' only)
- * - BR-LT-04: Empty filter browses from start
- * - BR-LT-05: Forward pagination boundary
- * - BR-LT-06: Backward pagination boundary
- * - BR-LT-07: Page state preservation
- * - BR-LT-08: Selection triggers detail view
- * - BR-CF-03: Invalid key handling
- */
-function TransactionList() {
+type SortField = "transactionId" | "amount" | "originationTimestamp"
+type SortDir = "asc" | "desc"
+
+export default function TransactionList() {
   const navigate = useNavigate()
   const [data, setData] = useState<TransactionListResponse | null>(null)
   const [currentPage, setCurrentPage] = useState(0)
-  const [filterValue, setFilterValue] = useState('')
+  const [filterValue, setFilterValue] = useState("")
   const [activeFilter, setActiveFilter] = useState<string | undefined>(undefined)
-  const [selections, setSelections] = useState<Record<number, string>>({})
-  const [message, setMessage] = useState<{ text: string; type: 'info' | 'error' | 'warning' }>({ text: '', type: 'info' })
+  const [message, setMessage] = useState<{ text: string; type: "error" | "warning" | "info" } | null>(null)
   const [loading, setLoading] = useState(false)
+  const [sortField, setSortField] = useState<SortField>("transactionId")
+  const [sortDir, setSortDir] = useState<SortDir>("asc")
+
+  // Side drawer state for CT01
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<TransactionDetail | null>(null)
+  const [drawerLoading, setDrawerLoading] = useState(false)
 
   const fetchData = useCallback(async (page: number, startId?: string) => {
     setLoading(true)
-    setMessage({ text: '', type: 'info' })
+    setMessage(null)
     try {
       const result = await listTransactions(page, 10, startId)
       setData(result)
       setCurrentPage(result.page)
-      setSelections({})
     } catch (err) {
       const error = err as ErrorResponse
-      setMessage({ text: error.message || 'Error loading transactions', type: 'error' })
+      setMessage({ text: error.message || "Error loading transactions", type: "error" })
     } finally {
       setLoading(false)
     }
@@ -46,195 +77,350 @@ function TransactionList() {
     fetchData(0)
   }, [fetchData])
 
-  // PF8 - Next Page (BR-LT-05)
-  const handleNextPage = () => {
-    if (!data) return
-    if (data.last) {
-      setMessage({ text: 'You are already at the bottom of the page...', type: 'warning' })
-      return
-    }
-    fetchData(currentPage + 1, activeFilter)
-  }
-
-  // PF7 - Previous Page (BR-LT-06)
-  const handlePrevPage = () => {
-    if (!data) return
-    if (data.first) {
-      setMessage({ text: 'You are already at the top of the page...', type: 'warning' })
-      return
-    }
-    fetchData(currentPage - 1, activeFilter)
-  }
-
-  // ENTER - Apply filter (BR-LT-02, BR-LT-04)
-  const handleApplyFilter = () => {
-    if (filterValue.trim() === '') {
-      // BR-LT-04: Empty filter browses from start
+  const handleSearch = () => {
+    if (filterValue.trim() === "") {
       setActiveFilter(undefined)
       fetchData(0)
       return
     }
-    // BR-LT-02: Numeric validation (client-side check; server also validates)
     if (!/^\d+$/.test(filterValue.trim())) {
-      setMessage({ text: 'Tran ID must be Numeric ...', type: 'error' })
+      setMessage({ text: "Transaction ID must be numeric", type: "error" })
       return
     }
     setActiveFilter(filterValue.trim())
     fetchData(0, filterValue.trim())
   }
 
-  // Handle selection input change
-  const handleSelectionChange = (index: number, value: string) => {
-    setSelections(prev => ({ ...prev, [index]: value.toUpperCase() }))
-  }
-
-  // Process selection (BR-LT-03, BR-LT-08)
-  const handleProcessSelection = () => {
-    if (!data) return
-    setMessage({ text: '', type: 'info' })
-
-    for (let i = 0; i < data.content.length; i++) {
-      const sel = selections[i]
-      if (sel && sel.trim() !== '') {
-        if (sel.trim() === 'S') {
-          // BR-LT-08: Selection triggers detail view
-          const txId = data.content[i].transactionId
-          navigate(`/transactions/view/${txId}`)
-          return
-        } else {
-          // BR-LT-03: Invalid selection value
-          setMessage({ text: 'Invalid selection. Valid value is S', type: 'error' })
-          return
-        }
-      }
+  const handleNextPage = () => {
+    if (!data || data.last) {
+      setMessage({ text: "You are on the last page", type: "warning" })
+      return
     }
-
-    // No selection - refresh list (BR-LT-08 - ENTER refreshes)
-    fetchData(currentPage, activeFilter)
+    fetchData(currentPage + 1, activeFilter)
   }
 
-  // PF3 - Back to Menu (BR-CF-01)
-  const handleBackToMenu = () => {
-    navigate('/menu')
+  const handlePrevPage = () => {
+    if (!data || data.first) {
+      setMessage({ text: "You are on the first page", type: "warning" })
+      return
+    }
+    fetchData(currentPage - 1, activeFilter)
   }
 
-  // Format date from timestamp
+  const handleViewTransaction = async (txId: string) => {
+    setDrawerOpen(true)
+    setDrawerLoading(true)
+    setSelectedTransaction(null)
+    try {
+      const detail = await viewTransaction(txId)
+      setSelectedTransaction(detail)
+    } catch (err) {
+      const error = err as ErrorResponse
+      setMessage({ text: error.message || "Error loading transaction", type: "error" })
+      setDrawerOpen(false)
+    } finally {
+      setDrawerLoading(false)
+    }
+  }
+
+  const handleViewFullPage = (txId: string) => {
+    navigate(`/transactions/view/${txId}`)
+  }
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDir("asc")
+    }
+  }
+
+  const sortedContent = data?.content ? [...data.content].sort((a, b) => {
+    const modifier = sortDir === "asc" ? 1 : -1
+    if (sortField === "transactionId") return a.transactionId.localeCompare(b.transactionId) * modifier
+    if (sortField === "amount") return (a.amount - b.amount) * modifier
+    if (sortField === "originationTimestamp") return a.originationTimestamp.localeCompare(b.originationTimestamp) * modifier
+    return 0
+  }) : []
+
   const formatDate = (ts: string) => {
-    if (!ts) return ''
-    const d = new Date(ts)
-    const mm = String(d.getMonth() + 1).padStart(2, '0')
-    const dd = String(d.getDate()).padStart(2, '0')
-    const yy = String(d.getFullYear()).slice(-2)
-    return `${mm}/${dd}/${yy}`
+    if (!ts) return "—"
+    try {
+      return new Date(ts).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+    } catch {
+      return ts
+    }
   }
 
-  // Format amount
   const formatAmount = (amount: number) => {
-    const sign = amount >= 0 ? '+' : ''
-    return sign + amount.toFixed(2)
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", signDisplay: "always" }).format(amount)
   }
 
   return (
-    <div className="terminal-screen">
-      <div className="terminal-header">
-        Transaction List (CT00)
-      </div>
+    <div className="space-y-6">
+      {/* Search and filters */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Filter by Transaction ID..."
+                value={filterValue}
+                onChange={(e) => setFilterValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSearch() }}
+                className="pl-10"
+              />
+            </div>
+            <Button onClick={handleSearch}>Search</Button>
+            {activeFilter && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setFilterValue(""); setActiveFilter(undefined); fetchData(0) }}
+              >
+                Clear filter
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Filter row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-        <label style={{ color: '#00ccff' }}>Transaction ID Filter:</label>
-        <input
-          type="text"
-          value={filterValue}
-          onChange={(e) => setFilterValue(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleApplyFilter() }}
-          style={{ width: '200px' }}
-          placeholder="Enter Tran ID..."
-        />
-        <button onClick={handleApplyFilter}>Enter</button>
-      </div>
-
-      {/* Message area */}
-      {message.text && (
-        <div className={`message-${message.type}`}>
+      {/* Alert message */}
+      {message && (
+        <div className={`flex items-center gap-2 rounded-lg border px-4 py-3 text-sm ${
+          message.type === "error" ? "border-red-200 bg-red-50 text-red-700" :
+          message.type === "warning" ? "border-yellow-200 bg-yellow-50 text-yellow-700" :
+          "border-blue-200 bg-blue-50 text-blue-700"
+        }`}>
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {message.text}
         </div>
       )}
 
-      {/* Transaction table */}
-      {loading ? (
-        <div className="message-info">Loading...</div>
-      ) : data ? (
-        <>
-          <table>
-            <thead>
-              <tr>
-                <th>Sel</th>
-                <th>Transaction ID</th>
-                <th>Date</th>
-                <th>Card Number</th>
-                <th>Type</th>
-                <th>Cat</th>
-                <th>Source</th>
-                <th>Description</th>
-                <th style={{ textAlign: 'right' }}>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.content.map((tx, idx) => (
-                <tr key={tx.transactionId} className={selections[idx] === 'S' ? 'selected' : ''}>
-                  <td>
-                    <input
-                      className="sel-input"
-                      type="text"
-                      maxLength={1}
-                      value={selections[idx] || ''}
-                      onChange={(e) => handleSelectionChange(idx, e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') handleProcessSelection() }}
-                    />
-                  </td>
-                  <td>{tx.transactionId}</td>
-                  <td>{formatDate(tx.originationTimestamp)}</td>
-                  <td>{tx.cardNumber}</td>
-                  <td>{tx.typeCode}</td>
-                  <td>{tx.categoryCode}</td>
-                  <td>{tx.source}</td>
-                  <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {tx.description}
-                  </td>
-                  <td style={{ textAlign: 'right' }}>{formatAmount(tx.amount)}</td>
-                </tr>
-              ))}
-              {data.content.length === 0 && (
-                <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', color: '#666' }}>
-                    No transactions found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {/* Page info (BR-LT-07) */}
-          <div className="page-info">
-            Page {data.page + 1} of {data.totalPages} | Total: {data.totalElements} transactions
+      {/* Data table */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Transactions</CardTitle>
+            {data && (
+              <span className="text-sm text-muted-foreground">
+                {data.totalElements} total records
+              </span>
+            )}
           </div>
-        </>
-      ) : null}
+        </CardHeader>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-sm text-muted-foreground">Loading transactions...</span>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort("transactionId")}>
+                    <div className="flex items-center gap-1">
+                      Transaction ID
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead>Card Number</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort("amount")}>
+                    <div className="flex items-center gap-1">
+                      Amount
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => handleSort("originationTimestamp")}>
+                    <div className="flex items-center gap-1">
+                      Date
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedContent.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+                      No transactions found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  sortedContent.map((tx) => (
+                    <TableRow
+                      key={tx.transactionId}
+                      className="cursor-pointer"
+                      onClick={() => handleViewTransaction(tx.transactionId)}
+                    >
+                      <TableCell className="font-mono text-xs font-medium">{tx.transactionId}</TableCell>
+                      <TableCell className="font-mono text-xs">{tx.cardNumber}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-xs">{tx.typeCode}</Badge>
+                      </TableCell>
+                      <TableCell className="text-xs">{tx.categoryCode}</TableCell>
+                      <TableCell className="text-xs">{tx.source}</TableCell>
+                      <TableCell className="text-xs max-w-[200px] truncate">{tx.description}</TableCell>
+                      <TableCell className={`text-right font-mono text-xs font-medium ${tx.amount >= 0 ? "text-green-700" : "text-red-700"}`}>
+                        {formatAmount(tx.amount)}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{formatDate(tx.originationTimestamp)}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            className="h-8 w-8 p-0 flex items-center justify-center rounded-md hover:bg-muted"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => handleViewTransaction(tx.transactionId)}>
+                              <Eye className="mr-2 h-4 w-4" /> View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewFullPage(tx.transactionId)}>
+                              <CreditCard className="mr-2 h-4 w-4" /> Full Page View
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
 
-      {/* Function key buttons */}
-      <div className="terminal-footer">
-        <button onClick={handleBackToMenu}>PF3 - Back to Menu</button>
-        <button onClick={handlePrevPage} disabled={!data || data.first}>
-          PF7 - Previous Page
-        </button>
-        <button onClick={handleNextPage} disabled={!data || data.last}>
-          PF8 - Next Page
-        </button>
-        <button onClick={handleProcessSelection}>Enter - Process</button>
-      </div>
+          {/* Pagination */}
+          {data && (
+            <div className="flex items-center justify-between border-t px-6 py-4">
+              <span className="text-sm text-muted-foreground">
+                Page {data.page + 1} of {Math.max(data.totalPages, 1)}
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrevPage}
+                  disabled={data.first}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={data.last}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Side Drawer for Transaction Detail (CT01) */}
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent side="right" onClose={() => setDrawerOpen(false)}>
+          <SheetHeader>
+            <SheetTitle>Transaction Details</SheetTitle>
+            <SheetDescription>
+              {selectedTransaction ? `ID: ${selectedTransaction.transactionId}` : "Loading..."}
+            </SheetDescription>
+          </SheetHeader>
+
+          {drawerLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : selectedTransaction ? (
+            <div className="mt-6 space-y-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+              {/* Identity */}
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Identity</h4>
+                <div className="space-y-3">
+                  <DetailRow label="Transaction ID" value={selectedTransaction.transactionId} mono />
+                  <DetailRow label="Account ID" value={selectedTransaction.accountId || "N/A"} mono />
+                  <DetailRow label="Card Number" value={selectedTransaction.cardNumber} mono />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Classification */}
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Classification</h4>
+                <div className="space-y-3">
+                  <DetailRow label="Type Code" value={selectedTransaction.typeCode} />
+                  <DetailRow label="Category Code" value={String(selectedTransaction.categoryCode)} />
+                  <DetailRow label="Source" value={selectedTransaction.source} />
+                  <DetailRow label="Description" value={selectedTransaction.description} />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Financial */}
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Financial</h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Amount</span>
+                    <span className={`text-lg font-bold font-mono ${selectedTransaction.amount >= 0 ? "text-green-700" : "text-red-700"}`}>
+                      {formatAmount(selectedTransaction.amount)}
+                    </span>
+                  </div>
+                  <DetailRow label="Origination Date" value={formatDate(selectedTransaction.originationTimestamp)} />
+                  <DetailRow label="Processing Date" value={formatDate(selectedTransaction.processingTimestamp)} />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Merchant */}
+              <div>
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Merchant</h4>
+                <div className="space-y-3">
+                  <DetailRow label="Merchant ID" value={String(selectedTransaction.merchantId)} mono />
+                  <DetailRow label="Merchant Name" value={selectedTransaction.merchantName} />
+                  <DetailRow label="Merchant City" value={selectedTransaction.merchantCity} />
+                  <DetailRow label="Merchant ZIP" value={selectedTransaction.merchantZip} />
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="pt-4">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => { setDrawerOpen(false); handleViewFullPage(selectedTransaction.transactionId) }}
+                >
+                  Open Full Page View
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
 
-export default TransactionList
+function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="flex justify-between items-center">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className={`text-sm font-medium ${mono ? "font-mono" : ""}`}>{value}</span>
+    </div>
+  )
+}

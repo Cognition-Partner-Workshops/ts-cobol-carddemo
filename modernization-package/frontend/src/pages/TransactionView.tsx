@@ -1,189 +1,297 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { viewTransaction, TransactionDetail, ErrorResponse } from '../services/api'
+import { useState, useEffect } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { viewTransaction, TransactionDetail, ErrorResponse } from "@/services/api"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import {
+  ArrowLeft,
+  Search,
+  Eraser,
+  AlertCircle,
+  Loader2,
+  CreditCard,
+  Building,
+  Calendar,
+  DollarSign,
+  Hash,
+  FileText,
+} from "lucide-react"
 
-/**
- * Transaction View page (CT01) - replaces legacy COTRN01C.
- * 
- * Business Rules implemented:
- * - BR-VT-01: Transaction ID required
- * - BR-VT-02: Transaction must exist
- * - BR-VT-03: Pre-selected auto-load (13 fields displayed)
- * - BR-VT-04: Read-only display
- * - BR-VT-05: PF5 returns to list
- * - BR-CF-03: Invalid key handling
- */
-function TransactionView() {
+export default function TransactionView() {
+  const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { transactionId: paramTxId } = useParams<{ transactionId: string }>()
-  
-  const [txIdInput, setTxIdInput] = useState(paramTxId || '')
+  const [transactionId, setTransactionId] = useState(id || "")
   const [transaction, setTransaction] = useState<TransactionDetail | null>(null)
-  const [message, setMessage] = useState<{ text: string; type: 'info' | 'error' | 'success' }>({ text: '', type: 'info' })
   const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<{ text: string; type: "error" | "info" } | null>(null)
 
-  // BR-VT-03: Auto-load from list selection
   useEffect(() => {
-    if (paramTxId) {
-      setTxIdInput(paramTxId)
-      fetchTransaction(paramTxId)
+    if (id) {
+      setTransactionId(id)
+      fetchTransaction(id)
     }
-  }, [paramTxId])
+  }, [id])
 
   const fetchTransaction = async (txId: string) => {
     if (!txId.trim()) {
-      setMessage({ text: 'Tran ID can NOT be empty...', type: 'error' })
+      setMessage({ text: "Please enter a Transaction ID", type: "error" })
       return
     }
-    
+    if (!/^\d+$/.test(txId.trim())) {
+      setMessage({ text: "Transaction ID must be numeric", type: "error" })
+      return
+    }
     setLoading(true)
-    setMessage({ text: '', type: 'info' })
+    setMessage(null)
+    setTransaction(null)
     try {
-      const result = await viewTransaction(txId.trim())
-      setTransaction(result)
+      const detail = await viewTransaction(txId.trim())
+      setTransaction(detail)
     } catch (err) {
       const error = err as ErrorResponse
-      setMessage({ text: error.message || 'Error loading transaction', type: 'error' })
-      setTransaction(null)
+      setMessage({ text: error.message || "Transaction not found", type: "error" })
     } finally {
       setLoading(false)
     }
   }
 
-  // ENTER - Manual lookup (BR-VT-01, BR-VT-02)
-  const handleLookup = () => {
-    fetchTransaction(txIdInput)
+  const handleSearch = () => {
+    fetchTransaction(transactionId)
   }
 
-  // PF4 - Clear screen (US-VT-03)
   const handleClear = () => {
-    setTxIdInput('')
+    setTransactionId("")
     setTransaction(null)
-    setMessage({ text: '', type: 'info' })
+    setMessage(null)
   }
 
-  // PF5 - Return to list (BR-VT-05)
-  const handleBackToList = () => {
-    navigate('/transactions')
+  const formatDate = (ts: string) => {
+    if (!ts) return "—"
+    try {
+      return new Date(ts).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    } catch {
+      return ts
+    }
   }
 
-  // PF3 - Back to menu
-  const handleBackToMenu = () => {
-    navigate('/menu')
-  }
-
-  // Format timestamp for display
-  const formatTimestamp = (ts: string) => {
-    if (!ts) return ''
-    return ts.replace('T', ' ')
-  }
-
-  // Format amount as +99999999.99
   const formatAmount = (amount: number) => {
-    const sign = amount >= 0 ? '+' : ''
-    return sign + amount.toFixed(2)
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      signDisplay: "always",
+    }).format(amount)
   }
 
   return (
-    <div className="terminal-screen">
-      <div className="terminal-header">
-        View Transaction (CT01) — Read Only
-      </div>
+    <div className="space-y-6 max-w-4xl">
+      {/* Lookup card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Look Up Transaction</CardTitle>
+          <CardDescription>Enter a Transaction ID to view its details</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 max-w-xs">
+              <Label htmlFor="txId" className="sr-only">Transaction ID</Label>
+              <div className="relative">
+                <Hash className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="txId"
+                  placeholder="Enter Transaction ID"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleSearch() }}
+                  className="pl-10 font-mono"
+                />
+              </div>
+            </div>
+            <Button onClick={handleSearch} disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
+              Search
+            </Button>
+            <Button variant="outline" onClick={handleClear}>
+              <Eraser className="h-4 w-4 mr-2" />
+              Clear
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/transactions")}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to List
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Transaction ID input */}
-      <div className="form-row">
-        <label>Transaction ID:</label>
-        <input
-          type="text"
-          value={txIdInput}
-          onChange={(e) => setTxIdInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleLookup() }}
-          maxLength={16}
-          style={{ width: '200px' }}
-          placeholder="Enter Transaction ID..."
-        />
-        <button onClick={handleLookup}>Enter - Lookup</button>
-      </div>
-
-      {/* Message area */}
-      {message.text && (
-        <div className={`message-${message.type}`} style={{ marginTop: '10px' }}>
+      {/* Alert message */}
+      {message && (
+        <div className={`flex items-center gap-2 rounded-lg border px-4 py-3 text-sm ${
+          message.type === "error"
+            ? "border-red-200 bg-red-50 text-red-700"
+            : "border-blue-200 bg-blue-50 text-blue-700"
+        }`}>
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {message.text}
         </div>
       )}
 
-      {loading && <div className="message-info" style={{ marginTop: '10px' }}>Loading...</div>}
-
-      {/* Transaction detail - all 13 fields (BR-VT-03, BR-VT-04: read-only) */}
-      {transaction && (
-        <div style={{ marginTop: '15px', borderTop: '1px solid #003300', paddingTop: '10px' }}>
-          <div className="form-row">
-            <label>Transaction ID:</label>
-            <span className="field-value">{transaction.transactionId}</span>
-          </div>
-          <div className="form-row">
-            <label>Account ID:</label>
-            <span className="field-value">{transaction.accountId || 'N/A'}</span>
-          </div>
-          <div className="form-row">
-            <label>Card Number:</label>
-            <span className="field-value">{transaction.cardNumber}</span>
-          </div>
-          <div className="form-row">
-            <label>Type Code:</label>
-            <span className="field-value">{transaction.typeCode}</span>
-          </div>
-          <div className="form-row">
-            <label>Category Code:</label>
-            <span className="field-value">{transaction.categoryCode}</span>
-          </div>
-          <div className="form-row">
-            <label>Source:</label>
-            <span className="field-value">{transaction.source}</span>
-          </div>
-          <div className="form-row">
-            <label>Description:</label>
-            <span className="field-value">{transaction.description}</span>
-          </div>
-          <div className="form-row">
-            <label>Amount:</label>
-            <span className="field-value">{formatAmount(transaction.amount)}</span>
-          </div>
-          <div className="form-row">
-            <label>Origination Timestamp:</label>
-            <span className="field-value">{formatTimestamp(transaction.originationTimestamp)}</span>
-          </div>
-          <div className="form-row">
-            <label>Processing Timestamp:</label>
-            <span className="field-value">{formatTimestamp(transaction.processingTimestamp)}</span>
-          </div>
-          <div className="form-row">
-            <label>Merchant ID:</label>
-            <span className="field-value">{transaction.merchantId}</span>
-          </div>
-          <div className="form-row">
-            <label>Merchant Name:</label>
-            <span className="field-value">{transaction.merchantName}</span>
-          </div>
-          <div className="form-row">
-            <label>Merchant City:</label>
-            <span className="field-value">{transaction.merchantCity}</span>
-          </div>
-          <div className="form-row">
-            <label>Merchant Zip:</label>
-            <span className="field-value">{transaction.merchantZip}</span>
-          </div>
+      {/* Loading state */}
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-sm text-muted-foreground">Loading transaction details...</span>
         </div>
       )}
 
-      {/* Function key buttons */}
-      <div className="terminal-footer">
-        <button onClick={handleBackToMenu}>PF3 - Back to Menu</button>
-        <button onClick={handleClear}>PF4 - Clear</button>
-        <button onClick={handleBackToList}>PF5 - Back to List</button>
-      </div>
+      {/* Transaction details */}
+      {transaction && !loading && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Identity Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Identity</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Transaction ID</Label>
+                <p className="font-mono font-medium mt-1">{transaction.transactionId}</p>
+              </div>
+              <Separator />
+              <div>
+                <Label className="text-xs text-muted-foreground">Account ID</Label>
+                <p className="font-mono font-medium mt-1">{transaction.accountId || "N/A"}</p>
+              </div>
+              <Separator />
+              <div>
+                <Label className="text-xs text-muted-foreground">Card Number</Label>
+                <p className="font-mono font-medium mt-1">{transaction.cardNumber}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Classification Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Classification</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Type Code</Label>
+                  <p className="font-medium mt-1">{transaction.typeCode}</p>
+                </div>
+                <Badge variant="outline">{transaction.typeCode}</Badge>
+              </div>
+              <Separator />
+              <div>
+                <Label className="text-xs text-muted-foreground">Category Code</Label>
+                <p className="font-medium mt-1">{String(transaction.categoryCode)}</p>
+              </div>
+              <Separator />
+              <div>
+                <Label className="text-xs text-muted-foreground">Source</Label>
+                <p className="font-medium mt-1">{transaction.source}</p>
+              </div>
+              <Separator />
+              <div>
+                <Label className="text-xs text-muted-foreground">Description</Label>
+                <p className="font-medium mt-1">{transaction.description}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Financial Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Financial</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Amount</Label>
+                <p className={`text-2xl font-bold font-mono mt-1 ${transaction.amount >= 0 ? "text-green-700" : "text-red-700"}`}>
+                  {formatAmount(transaction.amount)}
+                </p>
+              </div>
+              <Separator />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> Origination Date
+                  </Label>
+                  <p className="text-sm font-medium mt-1">{formatDate(transaction.originationTimestamp)}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Calendar className="h-3 w-3" /> Processing Date
+                  </Label>
+                  <p className="text-sm font-medium mt-1">{formatDate(transaction.processingTimestamp)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Merchant Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Building className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Merchant</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Merchant ID</Label>
+                <p className="font-mono font-medium mt-1">{String(transaction.merchantId)}</p>
+              </div>
+              <Separator />
+              <div>
+                <Label className="text-xs text-muted-foreground">Merchant Name</Label>
+                <p className="font-medium mt-1">{transaction.merchantName}</p>
+              </div>
+              <Separator />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-muted-foreground">City</Label>
+                  <p className="font-medium mt-1">{transaction.merchantCity}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">ZIP Code</Label>
+                  <p className="font-mono font-medium mt-1">{transaction.merchantZip}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!transaction && !loading && !message && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <Search className="h-12 w-12 text-muted-foreground/30 mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground">No Transaction Selected</h3>
+            <p className="text-sm text-muted-foreground mt-1">Enter a Transaction ID above to view its details</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
-
-export default TransactionView

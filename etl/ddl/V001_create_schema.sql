@@ -156,7 +156,7 @@ CREATE TABLE carddemo.customer (
         PRIMARY KEY (cust_id),
     CONSTRAINT chk_cust_fico_range
         CHECK (cust_fico_credit_score IS NULL
-            OR (cust_fico_credit_score BETWEEN 300 AND 850))
+            OR (cust_fico_credit_score BETWEEN 0 AND 999))
 );
 
 COMMENT ON TABLE  carddemo.customer IS

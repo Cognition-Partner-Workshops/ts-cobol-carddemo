@@ -3,10 +3,10 @@
 -- Staging-to-Target Extraction with Signed Overpunch Decoding
 -- ============================================================================
 -- Bind parameters:
---   $1  = load_batch_id   (BIGINT)  – filter by ETL batch
---   $2  = date_range_start (DATE)   – optional lower-bound filter
---   $3  = date_range_end   (DATE)   – optional upper-bound filter
---   $4  = account_id       (BIGINT) – optional account filter
+--   :batch_id  = load_batch_id   (BIGINT)  – filter by ETL batch
+--   :date_from  = date_range_start (DATE)   – optional lower-bound filter
+--   :date_to  = date_range_end   (DATE)   – optional upper-bound filter
+--   :account_id  = account_id       (BIGINT) – optional account filter
 -- ============================================================================
 
 SET search_path TO carddemo;
@@ -89,7 +89,7 @@ SELECT
     SUBSTRING(s.raw_record FROM 1 FOR 2)                     AS tran_type_cd,
     RTRIM(SUBSTRING(s.raw_record FROM 3 FOR 50))             AS tran_type_desc
 FROM carddemo.stg_tran_type s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
 ON CONFLICT (tran_type_cd) DO UPDATE
     SET tran_type_desc = EXCLUDED.tran_type_desc,
         updated_ts     = now();
@@ -110,7 +110,7 @@ SELECT
     SUBSTRING(s.raw_record FROM 3 FOR 4)::SMALLINT           AS tran_cat_cd,
     RTRIM(SUBSTRING(s.raw_record FROM 7 FOR 50))             AS tran_cat_type_desc
 FROM carddemo.stg_tran_category s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
 ON CONFLICT (tran_type_cd, tran_cat_cd) DO UPDATE
     SET tran_cat_type_desc = EXCLUDED.tran_cat_type_desc,
         updated_ts         = now();
@@ -178,7 +178,7 @@ SELECT
         ELSE NULL
     END                                                              AS cust_fico_credit_score
 FROM carddemo.stg_customer s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
 ON CONFLICT (cust_id) DO UPDATE
     SET cust_first_name          = EXCLUDED.cust_first_name,
         cust_middle_name         = EXCLUDED.cust_middle_name,
@@ -261,9 +261,9 @@ SELECT
     NULLIF(RTRIM(SUBSTRING(s.raw_record FROM 103 FOR 10)), '')      AS acct_addr_zip,
     NULLIF(RTRIM(SUBSTRING(s.raw_record FROM 113 FOR 10)), '')      AS acct_group_id
 FROM carddemo.stg_account s
-WHERE s.load_batch_id = $1
-    AND ($4::BIGINT IS NULL
-         OR SUBSTRING(s.raw_record FROM 1 FOR 11)::BIGINT = $4)
+WHERE s.load_batch_id = :batch_id
+    AND (:account_id::BIGINT IS NULL
+         OR SUBSTRING(s.raw_record FROM 1 FOR 11)::BIGINT = :account_id)
 ON CONFLICT (acct_id) DO UPDATE
     SET acct_active_status     = EXCLUDED.acct_active_status,
         acct_curr_bal          = EXCLUDED.acct_curr_bal,
@@ -306,9 +306,9 @@ SELECT
         ELSE TRUE
     END                                                              AS card_active_status
 FROM carddemo.stg_card s
-WHERE s.load_batch_id = $1
-    AND ($4::BIGINT IS NULL
-         OR SUBSTRING(s.raw_record FROM 17 FOR 11)::BIGINT = $4)
+WHERE s.load_batch_id = :batch_id
+    AND (:account_id::BIGINT IS NULL
+         OR SUBSTRING(s.raw_record FROM 17 FOR 11)::BIGINT = :account_id)
 ON CONFLICT (card_num) DO UPDATE
     SET card_acct_id        = EXCLUDED.card_acct_id,
         card_cvv_cd         = EXCLUDED.card_cvv_cd,
@@ -331,9 +331,9 @@ SELECT
     SUBSTRING(s.raw_record FROM 17 FOR 9)::BIGINT                   AS xref_cust_id,
     SUBSTRING(s.raw_record FROM 26 FOR 11)::BIGINT                  AS xref_acct_id
 FROM carddemo.stg_card_xref s
-WHERE s.load_batch_id = $1
-    AND ($4::BIGINT IS NULL
-         OR SUBSTRING(s.raw_record FROM 26 FOR 11)::BIGINT = $4)
+WHERE s.load_batch_id = :batch_id
+    AND (:account_id::BIGINT IS NULL
+         OR SUBSTRING(s.raw_record FROM 26 FOR 11)::BIGINT = :account_id)
 ON CONFLICT (xref_card_num) DO UPDATE
     SET xref_cust_id = EXCLUDED.xref_cust_id,
         xref_acct_id = EXCLUDED.xref_acct_id,
@@ -358,7 +358,7 @@ SELECT
         SUBSTRING(s.raw_record FROM 17 FOR 6)
     ) / 100.0                                                        AS dis_int_rate
 FROM carddemo.stg_disclosure_group s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
 ON CONFLICT (dis_acct_group_id, dis_tran_type_cd, dis_tran_cat_cd) DO UPDATE
     SET dis_int_rate = EXCLUDED.dis_int_rate,
         updated_ts   = now();
@@ -382,9 +382,9 @@ SELECT
         SUBSTRING(s.raw_record FROM 18 FOR 11)
     ) / 100.0                                                        AS tran_cat_bal
 FROM carddemo.stg_tran_cat_bal s
-WHERE s.load_batch_id = $1
-    AND ($4::BIGINT IS NULL
-         OR SUBSTRING(s.raw_record FROM 1 FOR 11)::BIGINT = $4)
+WHERE s.load_batch_id = :batch_id
+    AND (:account_id::BIGINT IS NULL
+         OR SUBSTRING(s.raw_record FROM 1 FOR 11)::BIGINT = :account_id)
 ON CONFLICT (trancat_acct_id, trancat_type_cd, trancat_cd) DO UPDATE
     SET tran_cat_bal = EXCLUDED.tran_cat_bal,
         updated_ts   = now();
@@ -439,19 +439,19 @@ SELECT
         ELSE NULL
     END                                                              AS tran_proc_ts
 FROM carddemo.stg_transaction s
-WHERE s.load_batch_id = $1
-    AND ($2::DATE IS NULL
+WHERE s.load_batch_id = :batch_id
+    AND (:date_from::DATE IS NULL
          OR CASE
                 WHEN RTRIM(SUBSTRING(s.raw_record FROM 279 FOR 26)) ~ '^\d{4}-\d{2}-\d{2}'
                 THEN SUBSTRING(s.raw_record FROM 279 FOR 10)::DATE
                 ELSE NULL
-            END >= $2)
-    AND ($3::DATE IS NULL
+            END >= :date_from)
+    AND (:date_to::DATE IS NULL
          OR CASE
                 WHEN RTRIM(SUBSTRING(s.raw_record FROM 279 FOR 26)) ~ '^\d{4}-\d{2}-\d{2}'
                 THEN SUBSTRING(s.raw_record FROM 279 FOR 10)::DATE
                 ELSE NULL
-            END <= $3)
+            END <= :date_to)
 ON CONFLICT (tran_id) DO UPDATE
     SET tran_type_cd       = EXCLUDED.tran_type_cd,
         tran_cat_cd        = EXCLUDED.tran_cat_cd,
@@ -472,7 +472,7 @@ ON CONFLICT (tran_id) DO UPDATE
 -- ============================================================================
 
 -- 9a. Account summary with customer info, filtered by account ID
---     Bind: $4 = account_id
+--     Bind: :account_id = account_id
 SELECT
     a.acct_id,
     a.acct_active_status,
@@ -487,10 +487,10 @@ SELECT
 FROM carddemo.account       a
 JOIN carddemo.card_xref     cx ON cx.xref_acct_id = a.acct_id
 JOIN carddemo.customer      c  ON c.cust_id       = cx.xref_cust_id
-WHERE ($4::BIGINT IS NULL OR a.acct_id = $4);
+WHERE (:account_id::BIGINT IS NULL OR a.acct_id = :account_id);
 
 -- 9b. Transaction detail with lookups, filtered by date range and account
---     Bind: $2 = date_range_start, $3 = date_range_end, $4 = account_id
+--     Bind: :date_from = date_range_start, :date_to = date_range_end, :account_id = account_id
 SELECT
     t.tran_id,
     t.tran_orig_ts,
@@ -507,13 +507,13 @@ JOIN carddemo.transaction_type        tt ON tt.tran_type_cd = t.tran_type_cd
 JOIN carddemo.transaction_category    tc ON tc.tran_type_cd = t.tran_type_cd
                                         AND tc.tran_cat_cd  = t.tran_cat_cd
 JOIN carddemo.card_xref               cx ON cx.xref_card_num = t.tran_card_num
-WHERE ($2::DATE IS NULL OR t.tran_orig_ts::DATE >= $2)
-  AND ($3::DATE IS NULL OR t.tran_orig_ts::DATE <= $3)
-  AND ($4::BIGINT IS NULL OR cx.xref_acct_id = $4)
+WHERE (:date_from::DATE IS NULL OR t.tran_orig_ts::DATE >= :date_from)
+  AND (:date_to::DATE IS NULL OR t.tran_orig_ts::DATE <= :date_to)
+  AND (:account_id::BIGINT IS NULL OR cx.xref_acct_id = :account_id)
 ORDER BY t.tran_orig_ts;
 
 -- 9c. Disclosure group interest rates for an account's group
---     Bind: $4 = account_id
+--     Bind: :account_id = account_id
 SELECT
     dg.dis_acct_group_id,
     tt.tran_type_desc,
@@ -526,6 +526,6 @@ JOIN carddemo.transaction_category    tc ON tc.tran_type_cd = dg.dis_tran_type_c
 WHERE dg.dis_acct_group_id = (
     SELECT a.acct_group_id
     FROM carddemo.account a
-    WHERE a.acct_id = $4
+    WHERE a.acct_id = :account_id
 )
 ORDER BY dg.dis_tran_type_cd, dg.dis_tran_cat_cd;

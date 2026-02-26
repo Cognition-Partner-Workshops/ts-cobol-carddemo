@@ -305,15 +305,32 @@ run_sql_cmd "
     WHERE batch_id = ${BATCH_ID};
 " >> "$LOGFILE" 2>&1
 
-# Build bind parameter values
-PARAM_DATE_FROM="${DATE_FROM:-}"
-PARAM_DATE_TO="${DATE_TO:-}"
-PARAM_ACCOUNT_ID="${ACCOUNT_ID:-}"
+# Build psql variable values for the SQL scripts.
+# The SQL files use :batch_id, :date_from, :date_to, :account_id via psql -v.
+# For optional parameters, pass NULL when not provided so that
+# SQL expressions like  :date_from::DATE IS NULL  evaluate correctly.
+if [[ -n "$DATE_FROM" ]]; then
+    PV_DATE_FROM="'${DATE_FROM}'"
+else
+    PV_DATE_FROM="NULL"
+fi
+if [[ -n "$DATE_TO" ]]; then
+    PV_DATE_TO="'${DATE_TO}'"
+else
+    PV_DATE_TO="NULL"
+fi
+if [[ -n "$ACCOUNT_ID" ]]; then
+    PV_ACCOUNT_ID="${ACCOUNT_ID}"
+else
+    PV_ACCOUNT_ID="NULL"
+fi
 
-# Execute the staging-to-target queries with bind parameters
-# The query file uses $1=batch_id, $2=date_from, $3=date_to, $4=account_id
+# Execute the staging-to-target queries with psql variables
 psql "$PG_CONN" -v ON_ERROR_STOP=1 \
-    -c "\\set batch_id ${BATCH_ID}" \
+    -v "batch_id=${BATCH_ID}" \
+    -v "date_from=${PV_DATE_FROM}" \
+    -v "date_to=${PV_DATE_TO}" \
+    -v "account_id=${PV_ACCOUNT_ID}" \
     -f "${QUERY_FILE}" >> "$LOGFILE" 2>&1 || {
         log_error "Load step failed"
         run_sql_cmd "

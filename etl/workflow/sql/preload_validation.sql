@@ -4,7 +4,7 @@
 -- Validates staged raw records for structural integrity, type coercion,
 -- null checks, and referential readiness.
 -- ============================================================================
--- Bind: $1 = batch_id (BIGINT)
+-- Bind: :batch_id = batch_id (BIGINT)
 -- ============================================================================
 
 SET search_path TO carddemo;
@@ -14,7 +14,7 @@ SET search_path TO carddemo;
 -- ============================================================================
 UPDATE carddemo.etl_batch_log
 SET    status = 'VALIDATING'
-WHERE  batch_id = $1;
+WHERE  batch_id = :batch_id;
 
 -- ============================================================================
 -- 1. TRANSACTION TYPE validation  (trantype.txt, RECLN=60)
@@ -37,7 +37,7 @@ SELECT
         ELSE 'Unknown validation failure'
     END
 FROM carddemo.stg_tran_type s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
   AND (
       LENGTH(s.raw_record) < 52
       OR RTRIM(SUBSTRING(s.raw_record FROM 1 FOR 2)) = ''
@@ -70,7 +70,7 @@ SELECT
             WHERE t.tran_type_cd = SUBSTRING(s.raw_record FROM 1 FOR 2)
         ) AND NOT EXISTS (
             SELECT 1 FROM carddemo.stg_tran_type st
-            WHERE st.load_batch_id = $1
+            WHERE st.load_batch_id = :batch_id
               AND SUBSTRING(st.raw_record FROM 1 FOR 2) =
                   SUBSTRING(s.raw_record FROM 1 FOR 2)
         ) THEN
@@ -80,7 +80,7 @@ SELECT
         ELSE 'Unknown validation failure'
     END
 FROM carddemo.stg_tran_category s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
   AND (
       LENGTH(s.raw_record) < 56
       OR RTRIM(SUBSTRING(s.raw_record FROM 1 FOR 2)) = ''
@@ -93,7 +93,7 @@ WHERE s.load_batch_id = $1
           )
           AND NOT EXISTS (
               SELECT 1 FROM carddemo.stg_tran_type st
-              WHERE st.load_batch_id = $1
+              WHERE st.load_batch_id = :batch_id
                 AND SUBSTRING(st.raw_record FROM 1 FOR 2) =
                     SUBSTRING(s.raw_record FROM 1 FOR 2)
           )
@@ -134,7 +134,7 @@ SELECT
         ELSE 'Unknown validation failure'
     END
 FROM carddemo.stg_customer s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
   AND (
       LENGTH(s.raw_record) < 332
       OR SUBSTRING(s.raw_record FROM 1 FOR 9) !~ '^\d{9}$'
@@ -178,7 +178,7 @@ SELECT
         ELSE 'Unknown validation failure'
     END
 FROM carddemo.stg_account s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
   AND (
       LENGTH(s.raw_record) < 122
       OR SUBSTRING(s.raw_record FROM 1 FOR 11) !~ '^\d{11}$'
@@ -224,7 +224,7 @@ SELECT
             WHERE a.acct_id = SUBSTRING(s.raw_record FROM 17 FOR 11)::BIGINT
         ) AND NOT EXISTS (
             SELECT 1 FROM carddemo.stg_account sa
-            WHERE sa.load_batch_id = $1
+            WHERE sa.load_batch_id = :batch_id
               AND SUBSTRING(sa.raw_record FROM 1 FOR 11) =
                   SUBSTRING(s.raw_record FROM 17 FOR 11)
         ) THEN
@@ -234,7 +234,7 @@ SELECT
         ELSE 'Unknown validation failure'
     END
 FROM carddemo.stg_card s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
   AND (
       LENGTH(s.raw_record) < 91
       OR RTRIM(SUBSTRING(s.raw_record FROM 1 FOR 16)) = ''
@@ -252,7 +252,7 @@ WHERE s.load_batch_id = $1
           )
           AND NOT EXISTS (
               SELECT 1 FROM carddemo.stg_account sa
-              WHERE sa.load_batch_id = $1
+              WHERE sa.load_batch_id = :batch_id
                 AND SUBSTRING(sa.raw_record FROM 1 FOR 11) =
                     SUBSTRING(s.raw_record FROM 17 FOR 11)
           )
@@ -286,7 +286,7 @@ SELECT
             WHERE c.card_num = RTRIM(SUBSTRING(s.raw_record FROM 1 FOR 16))
         ) AND NOT EXISTS (
             SELECT 1 FROM carddemo.stg_card sc
-            WHERE sc.load_batch_id = $1
+            WHERE sc.load_batch_id = :batch_id
               AND RTRIM(SUBSTRING(sc.raw_record FROM 1 FOR 16)) =
                   RTRIM(SUBSTRING(s.raw_record FROM 1 FOR 16))
         ) THEN
@@ -299,7 +299,7 @@ SELECT
             WHERE cu.cust_id = SUBSTRING(s.raw_record FROM 17 FOR 9)::BIGINT
         ) AND NOT EXISTS (
             SELECT 1 FROM carddemo.stg_customer sc
-            WHERE sc.load_batch_id = $1
+            WHERE sc.load_batch_id = :batch_id
               AND SUBSTRING(sc.raw_record FROM 1 FOR 9) =
                   SUBSTRING(s.raw_record FROM 17 FOR 9)
         ) THEN
@@ -312,7 +312,7 @@ SELECT
             WHERE a.acct_id = SUBSTRING(s.raw_record FROM 26 FOR 11)::BIGINT
         ) AND NOT EXISTS (
             SELECT 1 FROM carddemo.stg_account sa
-            WHERE sa.load_batch_id = $1
+            WHERE sa.load_batch_id = :batch_id
               AND SUBSTRING(sa.raw_record FROM 1 FOR 11) =
                   SUBSTRING(s.raw_record FROM 26 FOR 11)
         ) THEN
@@ -322,7 +322,7 @@ SELECT
         ELSE 'Unknown validation failure'
     END
 FROM carddemo.stg_card_xref s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
   AND (
       LENGTH(s.raw_record) < 36
       OR RTRIM(SUBSTRING(s.raw_record FROM 1 FOR 16)) = ''
@@ -335,7 +335,7 @@ WHERE s.load_batch_id = $1
           )
           AND NOT EXISTS (
               SELECT 1 FROM carddemo.stg_card sc
-              WHERE sc.load_batch_id = $1
+              WHERE sc.load_batch_id = :batch_id
                 AND RTRIM(SUBSTRING(sc.raw_record FROM 1 FOR 16)) =
                     RTRIM(SUBSTRING(s.raw_record FROM 1 FOR 16))
           )
@@ -347,7 +347,7 @@ WHERE s.load_batch_id = $1
           )
           AND NOT EXISTS (
               SELECT 1 FROM carddemo.stg_customer sc
-              WHERE sc.load_batch_id = $1
+              WHERE sc.load_batch_id = :batch_id
                 AND SUBSTRING(sc.raw_record FROM 1 FOR 9) =
                     SUBSTRING(s.raw_record FROM 17 FOR 9)
           )
@@ -359,7 +359,7 @@ WHERE s.load_batch_id = $1
           )
           AND NOT EXISTS (
               SELECT 1 FROM carddemo.stg_account sa
-              WHERE sa.load_batch_id = $1
+              WHERE sa.load_batch_id = :batch_id
                 AND SUBSTRING(sa.raw_record FROM 1 FOR 11) =
                     SUBSTRING(s.raw_record FROM 26 FOR 11)
           )
@@ -393,7 +393,7 @@ SELECT
         ELSE 'Unknown validation failure'
     END
 FROM carddemo.stg_disclosure_group s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
   AND (
       LENGTH(s.raw_record) < 22
       OR RTRIM(SUBSTRING(s.raw_record FROM 1 FOR 10)) = ''
@@ -431,7 +431,7 @@ SELECT
         ELSE 'Unknown validation failure'
     END
 FROM carddemo.stg_tran_cat_bal s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
   AND (
       LENGTH(s.raw_record) < 28
       OR SUBSTRING(s.raw_record FROM 1 FOR 11) !~ '^\d{11}$'
@@ -478,7 +478,7 @@ SELECT
             WHERE t.tran_type_cd = SUBSTRING(s.raw_record FROM 17 FOR 2)
         ) AND NOT EXISTS (
             SELECT 1 FROM carddemo.stg_tran_type st
-            WHERE st.load_batch_id = $1
+            WHERE st.load_batch_id = :batch_id
               AND SUBSTRING(st.raw_record FROM 1 FOR 2) =
                   SUBSTRING(s.raw_record FROM 17 FOR 2)
         ) THEN
@@ -491,7 +491,7 @@ SELECT
             WHERE c.card_num = RTRIM(SUBSTRING(s.raw_record FROM 263 FOR 16))
         ) AND NOT EXISTS (
             SELECT 1 FROM carddemo.stg_card sc
-            WHERE sc.load_batch_id = $1
+            WHERE sc.load_batch_id = :batch_id
               AND RTRIM(SUBSTRING(sc.raw_record FROM 1 FOR 16)) =
                   RTRIM(SUBSTRING(s.raw_record FROM 263 FOR 16))
         ) THEN
@@ -501,7 +501,7 @@ SELECT
         ELSE 'Unknown validation failure'
     END
 FROM carddemo.stg_transaction s
-WHERE s.load_batch_id = $1
+WHERE s.load_batch_id = :batch_id
   AND (
       LENGTH(s.raw_record) < 330
       OR RTRIM(SUBSTRING(s.raw_record FROM 1 FOR 16)) = ''
@@ -522,7 +522,7 @@ WHERE s.load_batch_id = $1
           )
           AND NOT EXISTS (
               SELECT 1 FROM carddemo.stg_tran_type st
-              WHERE st.load_batch_id = $1
+              WHERE st.load_batch_id = :batch_id
                 AND SUBSTRING(st.raw_record FROM 1 FOR 2) =
                     SUBSTRING(s.raw_record FROM 17 FOR 2)
           )
@@ -534,7 +534,7 @@ WHERE s.load_batch_id = $1
           )
           AND NOT EXISTS (
               SELECT 1 FROM carddemo.stg_card sc
-              WHERE sc.load_batch_id = $1
+              WHERE sc.load_batch_id = :batch_id
                 AND RTRIM(SUBSTRING(sc.raw_record FROM 1 FOR 16)) =
                     RTRIM(SUBSTRING(s.raw_record FROM 263 FOR 16))
           )
@@ -548,6 +548,6 @@ UPDATE carddemo.etl_batch_log
 SET    records_rejected = (
            SELECT COUNT(*)
            FROM   carddemo.etl_rejected_records r
-           WHERE  r.batch_id = $1
+           WHERE  r.batch_id = :batch_id
        )
-WHERE  batch_id = $1;
+WHERE  batch_id = :batch_id;

@@ -3,7 +3,7 @@
 -- Informatica-style post-session SQL executed after staging-to-target load.
 -- Verifies row counts, referential integrity, and data quality.
 -- ============================================================================
--- Bind: $1 = batch_id (BIGINT)
+-- Bind: :batch_id = batch_id (BIGINT)
 -- ============================================================================
 
 SET search_path TO carddemo;
@@ -19,9 +19,9 @@ SET    records_validated = sub.cnt
 FROM (
     SELECT COUNT(*) AS cnt
     FROM   carddemo.stg_tran_type
-    WHERE  load_batch_id = $1
+    WHERE  load_batch_id = :batch_id
 ) sub
-WHERE  batch_id = $1
+WHERE  batch_id = :batch_id
   AND  entity_name = 'transaction_type';
 
 -- Customer
@@ -30,9 +30,9 @@ SET    records_validated = sub.cnt
 FROM (
     SELECT COUNT(*) AS cnt
     FROM   carddemo.stg_customer
-    WHERE  load_batch_id = $1
+    WHERE  load_batch_id = :batch_id
 ) sub
-WHERE  batch_id = $1
+WHERE  batch_id = :batch_id
   AND  entity_name = 'customer';
 
 -- Account
@@ -41,9 +41,9 @@ SET    records_validated = sub.cnt
 FROM (
     SELECT COUNT(*) AS cnt
     FROM   carddemo.stg_account
-    WHERE  load_batch_id = $1
+    WHERE  load_batch_id = :batch_id
 ) sub
-WHERE  batch_id = $1
+WHERE  batch_id = :batch_id
   AND  entity_name = 'account';
 
 -- ============================================================================
@@ -55,7 +55,7 @@ WHERE  batch_id = $1
 INSERT INTO carddemo.etl_rejected_records
     (batch_id, entity_name, raw_record, rejection_reason)
 SELECT
-    $1,
+    :batch_id,
     'card (post-load orphan)',
     c.card_num || '|' || c.card_acct_id::TEXT,
     'Post-load orphan: card_acct_id ' || c.card_acct_id
@@ -68,7 +68,7 @@ WHERE a.acct_id IS NULL;
 INSERT INTO carddemo.etl_rejected_records
     (batch_id, entity_name, raw_record, rejection_reason)
 SELECT
-    $1,
+    :batch_id,
     'card_xref (post-load orphan)',
     cx.xref_card_num || '|' || cx.xref_cust_id::TEXT || '|' || cx.xref_acct_id::TEXT,
     'Post-load orphan: xref_card_num "' || cx.xref_card_num
@@ -81,7 +81,7 @@ WHERE c.card_num IS NULL;
 INSERT INTO carddemo.etl_rejected_records
     (batch_id, entity_name, raw_record, rejection_reason)
 SELECT
-    $1,
+    :batch_id,
     'card_xref (post-load orphan)',
     cx.xref_card_num || '|' || cx.xref_cust_id::TEXT || '|' || cx.xref_acct_id::TEXT,
     'Post-load orphan: xref_cust_id ' || cx.xref_cust_id
@@ -94,7 +94,7 @@ WHERE cu.cust_id IS NULL;
 INSERT INTO carddemo.etl_rejected_records
     (batch_id, entity_name, raw_record, rejection_reason)
 SELECT
-    $1,
+    :batch_id,
     'transaction (post-load orphan)',
     t.tran_id || '|' || t.tran_card_num,
     'Post-load orphan: tran_card_num "' || t.tran_card_num
@@ -107,7 +107,7 @@ WHERE c.card_num IS NULL;
 INSERT INTO carddemo.etl_rejected_records
     (batch_id, entity_name, raw_record, rejection_reason)
 SELECT
-    $1,
+    :batch_id,
     'transaction (post-load orphan)',
     t.tran_id || '|' || t.tran_type_cd || '|' || t.tran_cat_cd::TEXT,
     'Post-load orphan: tran_type_cd/tran_cat_cd ('
@@ -123,7 +123,7 @@ WHERE tc.tran_type_cd IS NULL;
 INSERT INTO carddemo.etl_rejected_records
     (batch_id, entity_name, raw_record, rejection_reason)
 SELECT
-    $1,
+    :batch_id,
     'tran_cat_balance (post-load orphan)',
     tcb.trancat_acct_id::TEXT || '|' || tcb.trancat_type_cd || '|' || tcb.trancat_cd::TEXT,
     'Post-load orphan: trancat_acct_id ' || tcb.trancat_acct_id
@@ -193,9 +193,9 @@ SET    status       = 'COMPLETED',
        records_rejected = (
            SELECT COUNT(*)
            FROM   carddemo.etl_rejected_records r
-           WHERE  r.batch_id = $1
+           WHERE  r.batch_id = :batch_id
        )
-WHERE  batch_id = $1;
+WHERE  batch_id = :batch_id;
 
 -- ============================================================================
 -- 5. Summary report
@@ -212,5 +212,5 @@ SELECT
     completed_ts,
     completed_ts - started_ts AS duration
 FROM carddemo.etl_batch_log
-WHERE batch_id = $1
+WHERE batch_id = :batch_id
 ORDER BY entity_name;

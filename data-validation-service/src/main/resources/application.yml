@@ -1,0 +1,184 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: data-validation-service
+  # Disable auto-configuration of a single default datasource –
+  # we manage named datasources ourselves in DataSourceConfig.
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# ---------------------------------------------------------------------------
+# Named datasources – one entry per database.
+# In production, override these via environment variables or a secrets
+# manager (e.g. AWS Secrets Manager).
+# ---------------------------------------------------------------------------
+datasources:
+  legacy-db2:
+    url: ${DB2_JDBC_URL:jdbc:db2://localhost:50000/CARDDB}
+    username: ${DB2_USERNAME:db2admin}
+    password: ${DB2_PASSWORD:changeme}
+    driver-class-name: com.ibm.db2.jcc.DB2Driver
+  target-postgres:
+    url: ${POSTGRES_JDBC_URL:jdbc:postgresql://localhost:5432/carddemo}
+    username: ${POSTGRES_USERNAME:pgadmin}
+    password: ${POSTGRES_PASSWORD:changeme}
+    driver-class-name: org.postgresql.Driver
+
+# ---------------------------------------------------------------------------
+# Validation configuration
+# ---------------------------------------------------------------------------
+validation:
+  enabled: true
+  max-sample-records: 10
+
+  table-pairs:
+    # ---- Tier 1: Master / reference tables --------------------------------
+    - name: TransactionType
+      source-datasource: legacy-db2
+      source-table: CARDDEMO.TRAN_TYPE
+      target-datasource: target-postgres
+      target-table: public.transaction_type
+      primary-key-columns: [TRAN_TYPE_CD]
+      checksum-columns: [TRAN_TYPE_CD, TRAN_TYPE_DESC]
+      rules:
+        row-count: true
+        checksum: true
+        sample-record-diff: true
+        mainframe-file-comparison: false
+
+    - name: TransactionCategory
+      source-datasource: legacy-db2
+      source-table: CARDDEMO.TRAN_CAT
+      target-datasource: target-postgres
+      target-table: public.transaction_category
+      primary-key-columns: [TRAN_CAT_CD]
+      checksum-columns: [TRAN_CAT_CD, TRAN_CAT_DESC]
+      rules:
+        row-count: true
+        checksum: true
+        sample-record-diff: true
+        mainframe-file-comparison: false
+
+    - name: DisclosureGroup
+      source-datasource: legacy-db2
+      source-table: CARDDEMO.DISCGRP
+      target-datasource: target-postgres
+      target-table: public.disclosure_group
+      primary-key-columns: [DISCGRP_ID]
+      checksum-columns: [DISCGRP_ID, DISCGRP_NAME]
+      rules:
+        row-count: true
+        checksum: true
+        sample-record-diff: true
+        mainframe-file-comparison: false
+
+    # ---- Tier 2: Parent entity tables --------------------------------------
+    - name: Customer
+      source-datasource: legacy-db2
+      source-table: CARDDEMO.CUSTOMER
+      target-datasource: target-postgres
+      target-table: public.customer
+      primary-key-columns: [CUST_ID]
+      mainframe-file-path: ${MAINFRAME_OUTPUT_DIR:/data/mainframe}/CUSTFILE.dat
+      rules:
+        row-count: true
+        checksum: true
+        sample-record-diff: true
+        mainframe-file-comparison: true
+
+    - name: Account
+      source-datasource: legacy-db2
+      source-table: CARDDEMO.ACCOUNT
+      target-datasource: target-postgres
+      target-table: public.account
+      primary-key-columns: [ACCT_ID]
+      mainframe-file-path: ${MAINFRAME_OUTPUT_DIR:/data/mainframe}/ACCTFILE.dat
+      rules:
+        row-count: true
+        checksum: true
+        sample-record-diff: true
+        mainframe-file-comparison: true
+
+    # ---- Tier 3: Child / dependent tables ----------------------------------
+    - name: Card
+      source-datasource: legacy-db2
+      source-table: CARDDEMO.CARD
+      target-datasource: target-postgres
+      target-table: public.card
+      primary-key-columns: [CARD_NUM]
+      mainframe-file-path: ${MAINFRAME_OUTPUT_DIR:/data/mainframe}/CARDFILE.dat
+      rules:
+        row-count: true
+        checksum: true
+        sample-record-diff: true
+        mainframe-file-comparison: true
+
+    - name: CardXref
+      source-datasource: legacy-db2
+      source-table: CARDDEMO.CARD_XREF
+      target-datasource: target-postgres
+      target-table: public.card_xref
+      primary-key-columns: [CARD_NUM, CUST_ID]
+      mainframe-file-path: ${MAINFRAME_OUTPUT_DIR:/data/mainframe}/XREFFILE.dat
+      rules:
+        row-count: true
+        checksum: true
+        sample-record-diff: true
+        mainframe-file-comparison: true
+
+    - name: Transaction
+      source-datasource: legacy-db2
+      source-table: CARDDEMO.TRANSACTION
+      target-datasource: target-postgres
+      target-table: public.transaction
+      primary-key-columns: [TRAN_ID]
+      mainframe-file-path: ${MAINFRAME_OUTPUT_DIR:/data/mainframe}/TRANFILE.dat
+      rules:
+        row-count: true
+        checksum: true
+        sample-record-diff: true
+        mainframe-file-comparison: true
+
+    - name: CategoryBalance
+      source-datasource: legacy-db2
+      source-table: CARDDEMO.TRAN_CAT_BAL
+      target-datasource: target-postgres
+      target-table: public.category_balance
+      primary-key-columns: [ACCT_ID, TRAN_CAT_CD]
+      mainframe-file-path: ${MAINFRAME_OUTPUT_DIR:/data/mainframe}/TCATBALF.dat
+      rules:
+        row-count: true
+        checksum: true
+        sample-record-diff: true
+        mainframe-file-comparison: true
+
+  # --------------------------------------------------------------------------
+  # Mainframe output file vs. microservice API comparisons
+  # --------------------------------------------------------------------------
+  mainframe-api-comparisons:
+    - name: CustomerApi
+      mainframe-file-path: ${MAINFRAME_OUTPUT_DIR:/data/mainframe}/CUSTFILE.dat
+      api-url: ${CUSTOMER_API_URL:http://localhost:8081/api/customers}
+      http-method: GET
+      key-fields: [CUST_ID]
+
+    - name: AccountApi
+      mainframe-file-path: ${MAINFRAME_OUTPUT_DIR:/data/mainframe}/ACCTFILE.dat
+      api-url: ${ACCOUNT_API_URL:http://localhost:8081/api/accounts}
+      http-method: GET
+      key-fields: [ACCT_ID]
+
+    - name: TransactionApi
+      mainframe-file-path: ${MAINFRAME_OUTPUT_DIR:/data/mainframe}/TRANFILE.dat
+      api-url: ${TRANSACTION_API_URL:http://localhost:8081/api/transactions}
+      http-method: GET
+      key-fields: [TRAN_ID]

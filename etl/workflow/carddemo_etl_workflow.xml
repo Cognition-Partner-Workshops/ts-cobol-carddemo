@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ====================================================================== -->
+<!-- CardDemo ETL Workflow Definition                                        -->
+<!-- Informatica PowerCenter-style XML workflow definition                   -->
+<!-- Describes the end-to-end ETL pipeline for mainframe data migration     -->
+<!-- ====================================================================== -->
+<POWERMART CREATION_DATE="2026-02-26" REPOSITORY_VERSION="186.95">
+<REPOSITORY NAME="CARDDEMO_REPO" VERSION="1" DATABASETYPE="PostgreSQL">
+<FOLDER NAME="CARDDEMO_MIGRATION" GROUP="" OWNER="ETL_ADMIN"
+        SHARED="NOTSHARED" DESCRIPTION="CardDemo Mainframe to Postgres Migration"
+        PERMISSIONS="rwx------" UUID="cd-etl-001">
+
+  <!-- ================================================================== -->
+  <!-- SOURCE DEFINITIONS (Fixed-width flat files from mainframe)          -->
+  <!-- ================================================================== -->
+  <SOURCE DBDTYPE="" DESCRIPTION="Transaction Type Reference" NAME="SRC_TRANTYPE"
+          OBJECTVERSION="1" OWNERNAME="" VERSIONNUMBER="1">
+    <SOURCEFIELD BUSINESSNAME="Record Line" DATATYPE="string"
+                 FIELDNUMBER="1" FIELDTYPE="ELEMITEM" LENGTH="60"
+                 NAME="RAW_RECORD" OFFSET="0" PICTURETEXT="X(60)"
+                 PRECISION="60" SCALE="0"/>
+  </SOURCE>
+
+  <SOURCE DBDTYPE="" DESCRIPTION="Transaction Category Reference" NAME="SRC_TRANCATG"
+          OBJECTVERSION="1" OWNERNAME="" VERSIONNUMBER="1">
+    <SOURCEFIELD BUSINESSNAME="Record Line" DATATYPE="string"
+                 FIELDNUMBER="1" FIELDTYPE="ELEMITEM" LENGTH="60"
+                 NAME="RAW_RECORD" OFFSET="0" PICTURETEXT="X(60)"
+                 PRECISION="60" SCALE="0"/>
+  </SOURCE>
+
+  <SOURCE DBDTYPE="" DESCRIPTION="Customer Master" NAME="SRC_CUSTDATA"
+          OBJECTVERSION="1" OWNERNAME="" VERSIONNUMBER="1">
+    <SOURCEFIELD BUSINESSNAME="Record Line" DATATYPE="string"
+                 FIELDNUMBER="1" FIELDTYPE="ELEMITEM" LENGTH="500"
+                 NAME="RAW_RECORD" OFFSET="0" PICTURETEXT="X(500)"
+                 PRECISION="500" SCALE="0"/>
+  </SOURCE>
+
+  <SOURCE DBDTYPE="" DESCRIPTION="Account Master" NAME="SRC_ACCTDATA"
+          OBJECTVERSION="1" OWNERNAME="" VERSIONNUMBER="1">
+    <SOURCEFIELD BUSINESSNAME="Record Line" DATATYPE="string"
+                 FIELDNUMBER="1" FIELDTYPE="ELEMITEM" LENGTH="300"
+                 NAME="RAW_RECORD" OFFSET="0" PICTURETEXT="X(300)"
+                 PRECISION="300" SCALE="0"/>
+  </SOURCE>
+
+  <SOURCE DBDTYPE="" DESCRIPTION="Card Master" NAME="SRC_CARDDATA"
+          OBJECTVERSION="1" OWNERNAME="" VERSIONNUMBER="1">
+    <SOURCEFIELD BUSINESSNAME="Record Line" DATATYPE="string"
+                 FIELDNUMBER="1" FIELDTYPE="ELEMITEM" LENGTH="150"
+                 NAME="RAW_RECORD" OFFSET="0" PICTURETEXT="X(150)"
+                 PRECISION="150" SCALE="0"/>
+  </SOURCE>
+
+  <SOURCE DBDTYPE="" DESCRIPTION="Card Cross-Reference" NAME="SRC_CARDXREF"
+          OBJECTVERSION="1" OWNERNAME="" VERSIONNUMBER="1">
+    <SOURCEFIELD BUSINESSNAME="Record Line" DATATYPE="string"
+                 FIELDNUMBER="1" FIELDTYPE="ELEMITEM" LENGTH="50"
+                 NAME="RAW_RECORD" OFFSET="0" PICTURETEXT="X(50)"
+                 PRECISION="50" SCALE="0"/>
+  </SOURCE>
+
+  <SOURCE DBDTYPE="" DESCRIPTION="Disclosure Group" NAME="SRC_DISCGRP"
+          OBJECTVERSION="1" OWNERNAME="" VERSIONNUMBER="1">
+    <SOURCEFIELD BUSINESSNAME="Record Line" DATATYPE="string"
+                 FIELDNUMBER="1" FIELDTYPE="ELEMITEM" LENGTH="50"
+                 NAME="RAW_RECORD" OFFSET="0" PICTURETEXT="X(50)"
+                 PRECISION="50" SCALE="0"/>
+  </SOURCE>
+
+  <SOURCE DBDTYPE="" DESCRIPTION="Transaction Category Balance" NAME="SRC_TCATBAL"
+          OBJECTVERSION="1" OWNERNAME="" VERSIONNUMBER="1">
+    <SOURCEFIELD BUSINESSNAME="Record Line" DATATYPE="string"
+                 FIELDNUMBER="1" FIELDTYPE="ELEMITEM" LENGTH="50"
+                 NAME="RAW_RECORD" OFFSET="0" PICTURETEXT="X(50)"
+                 PRECISION="50" SCALE="0"/>
+  </SOURCE>
+
+  <SOURCE DBDTYPE="" DESCRIPTION="Daily Transactions" NAME="SRC_DAILYTRAN"
+          OBJECTVERSION="1" OWNERNAME="" VERSIONNUMBER="1">
+    <SOURCEFIELD BUSINESSNAME="Record Line" DATATYPE="string"
+                 FIELDNUMBER="1" FIELDTYPE="ELEMITEM" LENGTH="350"
+                 NAME="RAW_RECORD" OFFSET="0" PICTURETEXT="X(350)"
+                 PRECISION="350" SCALE="0"/>
+  </SOURCE>
+
+  <!-- ================================================================== -->
+  <!-- TARGET DEFINITIONS (PostgreSQL tables)                              -->
+  <!-- ================================================================== -->
+  <TARGET BUSINESSNAME="Transaction Type" CONSTRAINT="" DATABASETYPE="PostgreSQL"
+          DESCRIPTION="Target: carddemo.transaction_type" NAME="TGT_TRANSACTION_TYPE"
+          OBJECTVERSION="1" TABLENAME="carddemo.transaction_type" VERSIONNUMBER="1">
+    <TARGETFIELD BUSINESSNAME="" DATATYPE="string" FIELDNUMBER="1"
+                 KEYTYPE="PRIMARY KEY" NAME="tran_type_cd" NULLABLE="NOTNULL"
+                 PICTURETEXT="" PRECISION="2" SCALE="0"/>
+    <TARGETFIELD BUSINESSNAME="" DATATYPE="string" FIELDNUMBER="2"
+                 KEYTYPE="NOT A KEY" NAME="tran_type_desc" NULLABLE="NOTNULL"
+                 PICTURETEXT="" PRECISION="50" SCALE="0"/>
+  </TARGET>
+
+  <TARGET BUSINESSNAME="Transaction Category" DATABASETYPE="PostgreSQL"
+          DESCRIPTION="Target: carddemo.transaction_category" NAME="TGT_TRANSACTION_CATEGORY"
+          OBJECTVERSION="1" TABLENAME="carddemo.transaction_category" VERSIONNUMBER="1">
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="1" KEYTYPE="PRIMARY KEY"
+                 NAME="tran_type_cd" NULLABLE="NOTNULL" PRECISION="2" SCALE="0"/>
+    <TARGETFIELD DATATYPE="smallint" FIELDNUMBER="2" KEYTYPE="PRIMARY KEY"
+                 NAME="tran_cat_cd" NULLABLE="NOTNULL" PRECISION="4" SCALE="0"/>
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="3" KEYTYPE="NOT A KEY"
+                 NAME="tran_cat_type_desc" NULLABLE="NOTNULL" PRECISION="50" SCALE="0"/>
+  </TARGET>
+
+  <TARGET BUSINESSNAME="Customer" DATABASETYPE="PostgreSQL"
+          DESCRIPTION="Target: carddemo.customer" NAME="TGT_CUSTOMER"
+          OBJECTVERSION="1" TABLENAME="carddemo.customer" VERSIONNUMBER="1">
+    <TARGETFIELD DATATYPE="bigint" FIELDNUMBER="1" KEYTYPE="PRIMARY KEY"
+                 NAME="cust_id" NULLABLE="NOTNULL" PRECISION="9" SCALE="0"/>
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="2" KEYTYPE="NOT A KEY"
+                 NAME="cust_first_name" NULLABLE="NOTNULL" PRECISION="25" SCALE="0"/>
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="3" KEYTYPE="NOT A KEY"
+                 NAME="cust_last_name" NULLABLE="NOTNULL" PRECISION="25" SCALE="0"/>
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="4" KEYTYPE="NOT A KEY"
+                 NAME="cust_ssn" NULLABLE="NOTNULL" PRECISION="11" SCALE="0"/>
+    <!-- Additional fields omitted for brevity; see DDL for full schema -->
+  </TARGET>
+
+  <TARGET BUSINESSNAME="Account" DATABASETYPE="PostgreSQL"
+          DESCRIPTION="Target: carddemo.account" NAME="TGT_ACCOUNT"
+          OBJECTVERSION="1" TABLENAME="carddemo.account" VERSIONNUMBER="1">
+    <TARGETFIELD DATATYPE="bigint" FIELDNUMBER="1" KEYTYPE="PRIMARY KEY"
+                 NAME="acct_id" NULLABLE="NOTNULL" PRECISION="11" SCALE="0"/>
+    <TARGETFIELD DATATYPE="boolean" FIELDNUMBER="2" KEYTYPE="NOT A KEY"
+                 NAME="acct_active_status" NULLABLE="NOTNULL" PRECISION="1" SCALE="0"/>
+    <TARGETFIELD DATATYPE="decimal" FIELDNUMBER="3" KEYTYPE="NOT A KEY"
+                 NAME="acct_curr_bal" NULLABLE="NOTNULL" PRECISION="12" SCALE="2"/>
+  </TARGET>
+
+  <TARGET BUSINESSNAME="Card" DATABASETYPE="PostgreSQL"
+          DESCRIPTION="Target: carddemo.card" NAME="TGT_CARD"
+          OBJECTVERSION="1" TABLENAME="carddemo.card" VERSIONNUMBER="1">
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="1" KEYTYPE="PRIMARY KEY"
+                 NAME="card_num" NULLABLE="NOTNULL" PRECISION="16" SCALE="0"/>
+    <TARGETFIELD DATATYPE="bigint" FIELDNUMBER="2" KEYTYPE="FOREIGN KEY"
+                 NAME="card_acct_id" NULLABLE="NOTNULL" PRECISION="11" SCALE="0"/>
+  </TARGET>
+
+  <TARGET BUSINESSNAME="Card Cross-Reference" DATABASETYPE="PostgreSQL"
+          DESCRIPTION="Target: carddemo.card_xref" NAME="TGT_CARD_XREF"
+          OBJECTVERSION="1" TABLENAME="carddemo.card_xref" VERSIONNUMBER="1">
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="1" KEYTYPE="PRIMARY KEY"
+                 NAME="xref_card_num" NULLABLE="NOTNULL" PRECISION="16" SCALE="0"/>
+    <TARGETFIELD DATATYPE="bigint" FIELDNUMBER="2" KEYTYPE="FOREIGN KEY"
+                 NAME="xref_cust_id" NULLABLE="NOTNULL" PRECISION="9" SCALE="0"/>
+    <TARGETFIELD DATATYPE="bigint" FIELDNUMBER="3" KEYTYPE="FOREIGN KEY"
+                 NAME="xref_acct_id" NULLABLE="NOTNULL" PRECISION="11" SCALE="0"/>
+  </TARGET>
+
+  <TARGET BUSINESSNAME="Transaction" DATABASETYPE="PostgreSQL"
+          DESCRIPTION="Target: carddemo.transaction" NAME="TGT_TRANSACTION"
+          OBJECTVERSION="1" TABLENAME="carddemo.transaction" VERSIONNUMBER="1">
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="1" KEYTYPE="PRIMARY KEY"
+                 NAME="tran_id" NULLABLE="NOTNULL" PRECISION="16" SCALE="0"/>
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="2" KEYTYPE="FOREIGN KEY"
+                 NAME="tran_type_cd" NULLABLE="NOTNULL" PRECISION="2" SCALE="0"/>
+    <TARGETFIELD DATATYPE="decimal" FIELDNUMBER="3" KEYTYPE="NOT A KEY"
+                 NAME="tran_amt" NULLABLE="NOTNULL" PRECISION="11" SCALE="2"/>
+    <TARGETFIELD DATATYPE="string" FIELDNUMBER="4" KEYTYPE="FOREIGN KEY"
+                 NAME="tran_card_num" NULLABLE="NOTNULL" PRECISION="16" SCALE="0"/>
+  </TARGET>
+
+  <!-- ================================================================== -->
+  <!-- TRANSFORMATIONS (Expression / Mapping logic)                        -->
+  <!-- ================================================================== -->
+
+  <!-- Signed Overpunch Decoder Expression -->
+  <TRANSFORMATION DESCRIPTION="Decodes ASCII signed overpunch from zoned decimal fields"
+                  NAME="EXP_SIGNED_OVERPUNCH" OBJECTVERSION="1"
+                  REUSABLE="YES" TYPE="Expression" VERSIONNUMBER="1">
+    <TRANSFORMFIELD DATATYPE="string" NAME="IN_RAW_VALUE"
+                    PORTTYPE="INPUT" PRECISION="12"/>
+    <TRANSFORMFIELD DATATYPE="decimal" NAME="OUT_DECODED_VALUE"
+                    PORTTYPE="OUTPUT" PRECISION="12" SCALE="2"
+                    EXPRESSION="
+      IIF(
+        IN(SUBSTR(IN_RAW_VALUE, LENGTH(IN_RAW_VALUE), 1),
+           '{','A','B','C','D','E','F','G','H','I'),
+        TO_DECIMAL(
+          CONCAT(
+            SUBSTR(IN_RAW_VALUE, 1, LENGTH(IN_RAW_VALUE)-1),
+            DECODE(SUBSTR(IN_RAW_VALUE, LENGTH(IN_RAW_VALUE), 1),
+              '{','0','A','1','B','2','C','3','D','4',
+              'E','5','F','6','G','7','H','8','I','9','0')
+          )
+        ) / 100,
+      IIF(
+        IN(SUBSTR(IN_RAW_VALUE, LENGTH(IN_RAW_VALUE), 1),
+           '}','J','K','L','M','N','O','P','Q','R'),
+        -1 * TO_DECIMAL(
+          CONCAT(
+            SUBSTR(IN_RAW_VALUE, 1, LENGTH(IN_RAW_VALUE)-1),
+            DECODE(SUBSTR(IN_RAW_VALUE, LENGTH(IN_RAW_VALUE), 1),
+              '}','0','J','1','K','2','L','3','M','4',
+              'N','5','O','6','P','7','Q','8','R','9','0')
+          )
+        ) / 100,
+        TO_DECIMAL(IN_RAW_VALUE) / 100
+      ))
+    "/>
+  </TRANSFORMATION>
+
+  <!-- Date Parser Expression -->
+  <TRANSFORMATION DESCRIPTION="Parses YYYY-MM-DD date strings with validation"
+                  NAME="EXP_DATE_PARSER" OBJECTVERSION="1"
+                  REUSABLE="YES" TYPE="Expression" VERSIONNUMBER="1">
+    <TRANSFORMFIELD DATATYPE="string" NAME="IN_DATE_STRING"
+                    PORTTYPE="INPUT" PRECISION="10"/>
+    <TRANSFORMFIELD DATATYPE="date/time" NAME="OUT_DATE"
+                    PORTTYPE="OUTPUT"
+                    EXPRESSION="
+      IIF(REG_MATCH(IN_DATE_STRING, '^\d{4}-\d{2}-\d{2}$'),
+          TO_DATE(IN_DATE_STRING, 'YYYY-MM-DD'),
+          NULL)
+    "/>
+  </TRANSFORMATION>
+
+  <!-- Timestamp Parser Expression -->
+  <TRANSFORMATION DESCRIPTION="Parses YYYY-MM-DD HH:MI:SS.ffffff timestamp strings"
+                  NAME="EXP_TIMESTAMP_PARSER" OBJECTVERSION="1"
+                  REUSABLE="YES" TYPE="Expression" VERSIONNUMBER="1">
+    <TRANSFORMFIELD DATATYPE="string" NAME="IN_TS_STRING"
+                    PORTTYPE="INPUT" PRECISION="26"/>
+    <TRANSFORMFIELD DATATYPE="date/time" NAME="OUT_TIMESTAMP"
+                    PORTTYPE="OUTPUT"
+                    EXPRESSION="
+      IIF(REG_MATCH(IN_TS_STRING, '^\d{4}-\d{2}-\d{2}'),
+          TO_DATE(IN_TS_STRING, 'YYYY-MM-DD HH24:MI:SS.US'),
+          NULL)
+    "/>
+  </TRANSFORMATION>
+
+  <!-- Boolean Mapper Expression -->
+  <TRANSFORMATION DESCRIPTION="Maps Y/N character fields to boolean"
+                  NAME="EXP_BOOLEAN_MAP" OBJECTVERSION="1"
+                  REUSABLE="YES" TYPE="Expression" VERSIONNUMBER="1">
+    <TRANSFORMFIELD DATATYPE="string" NAME="IN_INDICATOR"
+                    PORTTYPE="INPUT" PRECISION="1"/>
+    <TRANSFORMFIELD DATATYPE="integer" NAME="OUT_BOOLEAN"
+                    PORTTYPE="OUTPUT"
+                    EXPRESSION="
+      IIF(UPPER(IN_INDICATOR) = 'Y', 1,
+      IIF(UPPER(IN_INDICATOR) = 'N', 0, NULL))
+    "/>
+  </TRANSFORMATION>
+
+  <!-- SSN Formatter Expression -->
+  <TRANSFORMATION DESCRIPTION="Formats 9-digit SSN as XXX-XX-XXXX"
+                  NAME="EXP_SSN_FORMAT" OBJECTVERSION="1"
+                  REUSABLE="YES" TYPE="Expression" VERSIONNUMBER="1">
+    <TRANSFORMFIELD DATATYPE="string" NAME="IN_SSN_RAW"
+                    PORTTYPE="INPUT" PRECISION="9"/>
+    <TRANSFORMFIELD DATATYPE="string" NAME="OUT_SSN_FORMATTED"
+                    PORTTYPE="OUTPUT" PRECISION="11"
+                    EXPRESSION="
+      IIF(REG_MATCH(IN_SSN_RAW, '^\d{9}$'),
+          CONCAT(CONCAT(CONCAT(CONCAT(
+            SUBSTR(IN_SSN_RAW,1,3), '-'),
+            SUBSTR(IN_SSN_RAW,4,2)), '-'),
+            SUBSTR(IN_SSN_RAW,6,4)),
+          NULL)
+    "/>
+  </TRANSFORMATION>
+
+  <!-- Fixed-Width Field Extractor (substring + rtrim) -->
+  <TRANSFORMATION DESCRIPTION="Extracts and trims a field from a fixed-width record"
+                  NAME="EXP_FIELD_EXTRACT" OBJECTVERSION="1"
+                  REUSABLE="YES" TYPE="Expression" VERSIONNUMBER="1">
+    <TRANSFORMFIELD DATATYPE="string" NAME="IN_RAW_RECORD"
+                    PORTTYPE="INPUT" PRECISION="500"/>
+    <TRANSFORMFIELD DATATYPE="integer" NAME="IN_OFFSET"
+                    PORTTYPE="INPUT" PRECISION="5"/>
+    <TRANSFORMFIELD DATATYPE="integer" NAME="IN_LENGTH"
+                    PORTTYPE="INPUT" PRECISION="5"/>
+    <TRANSFORMFIELD DATATYPE="string" NAME="OUT_FIELD_VALUE"
+                    PORTTYPE="OUTPUT" PRECISION="500"
+                    EXPRESSION="
+      RTRIM(SUBSTR(IN_RAW_RECORD, IN_OFFSET + 1, IN_LENGTH))
+    "/>
+  </TRANSFORMATION>
+
+  <!-- ================================================================== -->
+  <!-- MAPPINGS                                                            -->
+  <!-- ================================================================== -->
+
+  <!-- M_LOAD_TRANSACTION_TYPE -->
+  <MAPPING DESCRIPTION="Load transaction type reference data from trantype.txt"
+           ISVALID="YES" NAME="M_LOAD_TRANSACTION_TYPE"
+           OBJECTVERSION="1" VERSIONNUMBER="1">
+    <CONNECTOR FROMFIELD="RAW_RECORD" FROMINSTANCE="SRC_TRANTYPE"
+               TOFIELD="IN_RAW_RECORD" TOINSTANCE="EXP_FIELD_EXTRACT"/>
+    <CONNECTOR FROMFIELD="OUT_FIELD_VALUE" FROMINSTANCE="EXP_FIELD_EXTRACT"
+               TOFIELD="tran_type_cd" TOINSTANCE="TGT_TRANSACTION_TYPE"
+               NOTES="SUBSTR(RAW_RECORD,1,2) -> tran_type_cd"/>
+    <CONNECTOR FROMFIELD="OUT_FIELD_VALUE" FROMINSTANCE="EXP_FIELD_EXTRACT"
+               TOFIELD="tran_type_desc" TOINSTANCE="TGT_TRANSACTION_TYPE"
+               NOTES="RTRIM(SUBSTR(RAW_RECORD,3,50)) -> tran_type_desc"/>
+  </MAPPING>
+
+  <!-- M_LOAD_CUSTOMER -->
+  <MAPPING DESCRIPTION="Load customer master data from custdata.txt"
+           ISVALID="YES" NAME="M_LOAD_CUSTOMER"
+           OBJECTVERSION="1" VERSIONNUMBER="1">
+    <CONNECTOR FROMFIELD="RAW_RECORD" FROMINSTANCE="SRC_CUSTDATA"
+               TOFIELD="IN_RAW_RECORD" TOINSTANCE="EXP_FIELD_EXTRACT"/>
+    <MAPPINGVARIABLE DATATYPE="string" NAME="$$BATCH_ID" PRECISION="20"
+                     ISEXPRVAR="NO" USERDEFINED="YES"/>
+    <!-- Field extraction for all 18 customer fields via EXP_FIELD_EXTRACT -->
+    <!-- SSN passes through EXP_SSN_FORMAT -->
+    <!-- DOB passes through EXP_DATE_PARSER -->
+    <!-- PRI_CARD_HOLDER_IND passes through EXP_BOOLEAN_MAP -->
+  </MAPPING>
+
+  <!-- M_LOAD_ACCOUNT -->
+  <MAPPING DESCRIPTION="Load account master data from acctdata.txt"
+           ISVALID="YES" NAME="M_LOAD_ACCOUNT"
+           OBJECTVERSION="1" VERSIONNUMBER="1">
+    <CONNECTOR FROMFIELD="RAW_RECORD" FROMINSTANCE="SRC_ACCTDATA"
+               TOFIELD="IN_RAW_RECORD" TOINSTANCE="EXP_FIELD_EXTRACT"/>
+    <!-- Monetary fields pass through EXP_SIGNED_OVERPUNCH for decode+V99 -->
+    <!-- Date fields pass through EXP_DATE_PARSER -->
+    <!-- Status field passes through EXP_BOOLEAN_MAP -->
+  </MAPPING>
+
+  <!-- M_LOAD_CARD -->
+  <MAPPING DESCRIPTION="Load card master data from carddata.txt"
+           ISVALID="YES" NAME="M_LOAD_CARD"
+           OBJECTVERSION="1" VERSIONNUMBER="1">
+    <CONNECTOR FROMFIELD="RAW_RECORD" FROMINSTANCE="SRC_CARDDATA"
+               TOFIELD="IN_RAW_RECORD" TOINSTANCE="EXP_FIELD_EXTRACT"/>
+  </MAPPING>
+
+  <!-- M_LOAD_TRANSACTION -->
+  <MAPPING DESCRIPTION="Load daily transaction data from dailytran.txt"
+           ISVALID="YES" NAME="M_LOAD_TRANSACTION"
+           OBJECTVERSION="1" VERSIONNUMBER="1">
+    <CONNECTOR FROMFIELD="RAW_RECORD" FROMINSTANCE="SRC_DAILYTRAN"
+               TOFIELD="IN_RAW_RECORD" TOINSTANCE="EXP_FIELD_EXTRACT"/>
+    <!-- TRAN-AMT passes through EXP_SIGNED_OVERPUNCH -->
+    <!-- Timestamp fields pass through EXP_TIMESTAMP_PARSER -->
+    <MAPPINGVARIABLE DATATYPE="date/time" NAME="$$DATE_FROM" PRECISION="10"
+                     ISEXPRVAR="NO" USERDEFINED="YES"/>
+    <MAPPINGVARIABLE DATATYPE="date/time" NAME="$$DATE_TO" PRECISION="10"
+                     ISEXPRVAR="NO" USERDEFINED="YES"/>
+    <MAPPINGVARIABLE DATATYPE="bigint" NAME="$$ACCOUNT_ID" PRECISION="11"
+                     ISEXPRVAR="NO" USERDEFINED="YES"/>
+  </MAPPING>
+
+  <!-- ================================================================== -->
+  <!-- SESSIONS                                                            -->
+  <!-- ================================================================== -->
+
+  <SESSION DESCRIPTION="Load Transaction Types" ISVALID="YES"
+           MAPPINGNAME="M_LOAD_TRANSACTION_TYPE" NAME="S_LOAD_TRAN_TYPE"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <SESSIONEXTENSION NAME="Relational Writer" SINSTANCENAME="TGT_TRANSACTION_TYPE"
+                      SUBTYPE="Relational Writer" TYPE="WRITER">
+      <ATTRIBUTE NAME="Target Load Type" VALUE="Upsert"/>
+      <ATTRIBUTE NAME="Update Strategy" VALUE="DD_UPDATE"/>
+    </SESSIONEXTENSION>
+    <CONFIGREFERENCE REFOBJECTNAME="default_session_config" TYPE="Session Config"/>
+    <ATTRIBUTE NAME="Pre-session SQL"
+               VALUE="-- Truncate staging; log batch start
+                      TRUNCATE TABLE carddemo.stg_tran_type;"/>
+    <ATTRIBUTE NAME="Post-session SQL"
+               VALUE="-- Update batch log with counts
+                      UPDATE carddemo.etl_batch_log
+                      SET records_inserted = (SELECT COUNT(*) FROM carddemo.transaction_type),
+                          status = 'COMPLETED', completed_ts = now()
+                      WHERE entity_name = 'transaction_type'
+                        AND status = 'LOADING';"/>
+  </SESSION>
+
+  <SESSION DESCRIPTION="Load Transaction Categories" ISVALID="YES"
+           MAPPINGNAME="M_LOAD_TRANSACTION_CATEGORY" NAME="S_LOAD_TRAN_CATEGORY"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Pre-session SQL"
+               VALUE="TRUNCATE TABLE carddemo.stg_tran_category;"/>
+  </SESSION>
+
+  <SESSION DESCRIPTION="Load Customer Master" ISVALID="YES"
+           MAPPINGNAME="M_LOAD_CUSTOMER" NAME="S_LOAD_CUSTOMER"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Pre-session SQL"
+               VALUE="TRUNCATE TABLE carddemo.stg_customer;"/>
+  </SESSION>
+
+  <SESSION DESCRIPTION="Load Account Master" ISVALID="YES"
+           MAPPINGNAME="M_LOAD_ACCOUNT" NAME="S_LOAD_ACCOUNT"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Pre-session SQL"
+               VALUE="TRUNCATE TABLE carddemo.stg_account;"/>
+  </SESSION>
+
+  <SESSION DESCRIPTION="Load Card Master" ISVALID="YES"
+           MAPPINGNAME="M_LOAD_CARD" NAME="S_LOAD_CARD"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Pre-session SQL"
+               VALUE="TRUNCATE TABLE carddemo.stg_card;"/>
+  </SESSION>
+
+  <SESSION DESCRIPTION="Load Card Cross-Reference" ISVALID="YES"
+           MAPPINGNAME="M_LOAD_CARD_XREF" NAME="S_LOAD_CARD_XREF"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Pre-session SQL"
+               VALUE="TRUNCATE TABLE carddemo.stg_card_xref;"/>
+  </SESSION>
+
+  <SESSION DESCRIPTION="Load Disclosure Groups" ISVALID="YES"
+           MAPPINGNAME="M_LOAD_DISCLOSURE_GROUP" NAME="S_LOAD_DISCLOSURE_GROUP"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Pre-session SQL"
+               VALUE="TRUNCATE TABLE carddemo.stg_disclosure_group;"/>
+  </SESSION>
+
+  <SESSION DESCRIPTION="Load Transaction Category Balances" ISVALID="YES"
+           MAPPINGNAME="M_LOAD_TRAN_CAT_BALANCE" NAME="S_LOAD_TRAN_CAT_BAL"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Pre-session SQL"
+               VALUE="TRUNCATE TABLE carddemo.stg_tran_cat_bal;"/>
+  </SESSION>
+
+  <SESSION DESCRIPTION="Load Daily Transactions" ISVALID="YES"
+           MAPPINGNAME="M_LOAD_TRANSACTION" NAME="S_LOAD_TRANSACTION"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Pre-session SQL"
+               VALUE="TRUNCATE TABLE carddemo.stg_transaction;"/>
+  </SESSION>
+
+  <!-- Pre-load validation session (runs SQL script) -->
+  <SESSION DESCRIPTION="Pre-load validation: null checks, type coercion, referential integrity"
+           ISVALID="YES" NAME="S_PRELOAD_VALIDATION"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Command Type" VALUE="SQL Script"/>
+    <ATTRIBUTE NAME="SQL Script File" VALUE="sql/preload_validation.sql"/>
+    <ATTRIBUTE NAME="Parameters" VALUE="$1=$$BATCH_ID"/>
+  </SESSION>
+
+  <!-- Post-load verification session -->
+  <SESSION DESCRIPTION="Post-load verification: orphan detection, data quality, count reconciliation"
+           ISVALID="YES" NAME="S_POSTLOAD_VERIFICATION"
+           SORTORDER="Binary" VERSIONNUMBER="1">
+    <ATTRIBUTE NAME="Command Type" VALUE="SQL Script"/>
+    <ATTRIBUTE NAME="SQL Script File" VALUE="sql/postload_verification.sql"/>
+    <ATTRIBUTE NAME="Parameters" VALUE="$1=$$BATCH_ID"/>
+  </SESSION>
+
+  <!-- ================================================================== -->
+  <!-- WORKFLOW                                                            -->
+  <!-- ================================================================== -->
+  <WORKFLOW DESCRIPTION="CardDemo Mainframe-to-Postgres ETL Pipeline"
+            ISVALID="YES" NAME="WF_CARDDEMO_ETL" SCHEDULERTYPE="MANUAL"
+            SERVERNAME="INFA_SERVER" VERSIONNUMBER="1">
+
+    <!--
+      Execution order (dependency chain):
+      ====================================================================
+      Phase 1: Reference Data (parallel)
+        START -> S_LOAD_TRAN_TYPE
+        START -> S_LOAD_TRAN_CATEGORY  (depends on S_LOAD_TRAN_TYPE)
+
+      Phase 2: Master Data (parallel, after Phase 1)
+        S_LOAD_TRAN_CATEGORY -> S_LOAD_CUSTOMER
+        S_LOAD_TRAN_CATEGORY -> S_LOAD_ACCOUNT
+
+      Phase 3: Card & Xref (sequential, after Phase 2)
+        S_LOAD_ACCOUNT -> S_LOAD_CARD
+        S_LOAD_CARD    -> S_LOAD_CARD_XREF  (needs card + customer + account)
+
+      Phase 4: Dependent Data (parallel, after Phase 2)
+        S_LOAD_ACCOUNT -> S_LOAD_DISCLOSURE_GROUP
+        S_LOAD_ACCOUNT -> S_LOAD_TRAN_CAT_BAL
+
+      Phase 5: Transactions (after Phase 3 card data loaded)
+        S_LOAD_CARD_XREF -> S_LOAD_TRANSACTION
+
+      Phase 6: Validation
+        (all loads) -> S_PRELOAD_VALIDATION -> (all loads complete)
+        (all loads complete) -> S_POSTLOAD_VERIFICATION
+      ====================================================================
+    -->
+
+    <!-- Phase 1: Reference data -->
+    <TASKINSTANCE DESCRIPTION="Start workflow" NAME="START"
+                  TASKTYPE="Start" VERSIONNUMBER="1"/>
+
+    <TASKINSTANCE DESCRIPTION="Shell: Pre-load file validation"
+                  NAME="CMD_VALIDATE_FILES" TASKTYPE="Command"
+                  VERSIONNUMBER="1">
+      <ATTRIBUTE NAME="Command"
+                 VALUE="scripts/carddemo_etl_run.sh -d $$DATA_DIR -c $$PG_CONN"/>
+    </TASKINSTANCE>
+
+    <TASKINSTANCE DESCRIPTION="Load transaction types"
+                  NAME="S_LOAD_TRAN_TYPE" REUSABLE="NO"
+                  SESSIONNAME="S_LOAD_TRAN_TYPE" TASKTYPE="Session"/>
+
+    <TASKINSTANCE DESCRIPTION="Load transaction categories"
+                  NAME="S_LOAD_TRAN_CATEGORY" REUSABLE="NO"
+                  SESSIONNAME="S_LOAD_TRAN_CATEGORY" TASKTYPE="Session"/>
+
+    <!-- Phase 2: Master data -->
+    <TASKINSTANCE DESCRIPTION="Load customers"
+                  NAME="S_LOAD_CUSTOMER" REUSABLE="NO"
+                  SESSIONNAME="S_LOAD_CUSTOMER" TASKTYPE="Session"/>
+
+    <TASKINSTANCE DESCRIPTION="Load accounts"
+                  NAME="S_LOAD_ACCOUNT" REUSABLE="NO"
+                  SESSIONNAME="S_LOAD_ACCOUNT" TASKTYPE="Session"/>
+
+    <!-- Phase 3: Card data -->
+    <TASKINSTANCE DESCRIPTION="Load cards"
+                  NAME="S_LOAD_CARD" REUSABLE="NO"
+                  SESSIONNAME="S_LOAD_CARD" TASKTYPE="Session"/>
+
+    <TASKINSTANCE DESCRIPTION="Load card cross-references"
+                  NAME="S_LOAD_CARD_XREF" REUSABLE="NO"
+                  SESSIONNAME="S_LOAD_CARD_XREF" TASKTYPE="Session"/>
+
+    <!-- Phase 4: Dependent reference data -->
+    <TASKINSTANCE DESCRIPTION="Load disclosure groups"
+                  NAME="S_LOAD_DISCLOSURE_GROUP" REUSABLE="NO"
+                  SESSIONNAME="S_LOAD_DISCLOSURE_GROUP" TASKTYPE="Session"/>
+
+    <TASKINSTANCE DESCRIPTION="Load transaction category balances"
+                  NAME="S_LOAD_TRAN_CAT_BAL" REUSABLE="NO"
+                  SESSIONNAME="S_LOAD_TRAN_CAT_BAL" TASKTYPE="Session"/>
+
+    <!-- Phase 5: Transactions -->
+    <TASKINSTANCE DESCRIPTION="Load daily transactions"
+                  NAME="S_LOAD_TRANSACTION" REUSABLE="NO"
+                  SESSIONNAME="S_LOAD_TRANSACTION" TASKTYPE="Session"/>
+
+    <!-- Phase 6: Validation -->
+    <TASKINSTANCE DESCRIPTION="Pre-load validation"
+                  NAME="S_PRELOAD_VALIDATION" REUSABLE="NO"
+                  SESSIONNAME="S_PRELOAD_VALIDATION" TASKTYPE="Session"/>
+
+    <TASKINSTANCE DESCRIPTION="Post-load verification"
+                  NAME="S_POSTLOAD_VERIFICATION" REUSABLE="NO"
+                  SESSIONNAME="S_POSTLOAD_VERIFICATION" TASKTYPE="Session"/>
+
+    <!-- Workflow Links (execution dependencies) -->
+    <WORKFLOWLINK CONDITION="" FROMTASK="START" TOTASK="S_LOAD_TRAN_TYPE"/>
+
+    <WORKFLOWLINK CONDITION="" FROMTASK="S_LOAD_TRAN_TYPE"
+                  TOTASK="S_LOAD_TRAN_CATEGORY"/>
+
+    <WORKFLOWLINK CONDITION="" FROMTASK="S_LOAD_TRAN_CATEGORY"
+                  TOTASK="S_LOAD_CUSTOMER"/>
+    <WORKFLOWLINK CONDITION="" FROMTASK="S_LOAD_TRAN_CATEGORY"
+                  TOTASK="S_LOAD_ACCOUNT"/>
+
+    <WORKFLOWLINK CONDITION="" FROMTASK="S_LOAD_ACCOUNT"
+                  TOTASK="S_LOAD_CARD"/>
+    <WORKFLOWLINK CONDITION="" FROMTASK="S_LOAD_ACCOUNT"
+                  TOTASK="S_LOAD_DISCLOSURE_GROUP"/>
+    <WORKFLOWLINK CONDITION="" FROMTASK="S_LOAD_ACCOUNT"
+                  TOTASK="S_LOAD_TRAN_CAT_BAL"/>
+
+    <WORKFLOWLINK CONDITION="" FROMTASK="S_LOAD_CARD"
+                  TOTASK="S_LOAD_CARD_XREF"/>
+
+    <WORKFLOWLINK CONDITION="$S_LOAD_CARD_XREF.Status = SUCCEEDED AND $S_LOAD_CUSTOMER.Status = SUCCEEDED"
+                  FROMTASK="S_LOAD_CARD_XREF" TOTASK="S_LOAD_TRANSACTION"/>
+
+    <!-- All entity loads must complete before post-load verification -->
+    <WORKFLOWLINK CONDITION="$S_LOAD_TRANSACTION.Status = SUCCEEDED AND $S_LOAD_DISCLOSURE_GROUP.Status = SUCCEEDED AND $S_LOAD_TRAN_CAT_BAL.Status = SUCCEEDED"
+                  FROMTASK="S_LOAD_TRANSACTION"
+                  TOTASK="S_POSTLOAD_VERIFICATION"/>
+
+    <!-- Workflow variables -->
+    <WORKFLOWVARIABLE DATATYPE="string" DEFAULTVALUE=""
+                      DESCRIPTION="Postgres connection string"
+                      ISNULL="NO" ISPERSISTENT="NO" NAME="$$PG_CONN"/>
+    <WORKFLOWVARIABLE DATATYPE="string" DEFAULTVALUE=""
+                      DESCRIPTION="Path to ASCII data directory"
+                      ISNULL="NO" ISPERSISTENT="NO" NAME="$$DATA_DIR"/>
+    <WORKFLOWVARIABLE DATATYPE="bigint" DEFAULTVALUE=""
+                      DESCRIPTION="ETL batch ID"
+                      ISNULL="NO" ISPERSISTENT="YES" NAME="$$BATCH_ID"/>
+    <WORKFLOWVARIABLE DATATYPE="date/time" DEFAULTVALUE=""
+                      DESCRIPTION="Transaction date range start (optional)"
+                      ISNULL="YES" ISPERSISTENT="NO" NAME="$$DATE_FROM"/>
+    <WORKFLOWVARIABLE DATATYPE="date/time" DEFAULTVALUE=""
+                      DESCRIPTION="Transaction date range end (optional)"
+                      ISNULL="YES" ISPERSISTENT="NO" NAME="$$DATE_TO"/>
+    <WORKFLOWVARIABLE DATATYPE="bigint" DEFAULTVALUE=""
+                      DESCRIPTION="Filter by account ID (optional)"
+                      ISNULL="YES" ISPERSISTENT="NO" NAME="$$ACCOUNT_ID"/>
+
+  </WORKFLOW>
+
+</FOLDER>
+</REPOSITORY>
+</POWERMART>

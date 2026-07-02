@@ -51,11 +51,11 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
-      - name: Test
-        run: npm test
       - name: Prisma migrate
         run: npx prisma migrate deploy
         working-directory: modernized/backend
       - name: Prisma seed
         run: npx prisma db seed
         working-directory: modernized/backend
+      - name: Test
+        run: npm test

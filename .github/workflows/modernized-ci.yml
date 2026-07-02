@@ -1,0 +1,58 @@
+name: modernized-ci
+
+on:
+  push:
+    branches: [aws-transform]
+    paths:
+      - 'modernized/**'
+      - '.github/workflows/modernized-ci.yml'
+  pull_request:
+    paths:
+      - 'modernized/**'
+      - '.github/workflows/modernized-ci.yml'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: modernized
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: carddemo
+          POSTGRES_USER: carddemo
+          POSTGRES_PASSWORD: carddemo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U carddemo -d carddemo"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://carddemo:carddemo@localhost:5432/carddemo?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: modernized/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+      - name: Test
+        run: npm test
+      - name: Prisma migrate
+        run: npx prisma migrate deploy
+        working-directory: modernized/backend
+      - name: Prisma seed
+        run: npx prisma db seed
+        working-directory: modernized/backend

@@ -45,6 +45,8 @@ jobs:
       - name: Prisma generate
         run: npx prisma generate
         working-directory: modernized/backend
+      - name: Build shared
+        run: npm run build -w @carddemo/shared
       - name: Lint
         run: npm run lint
       - name: Typecheck

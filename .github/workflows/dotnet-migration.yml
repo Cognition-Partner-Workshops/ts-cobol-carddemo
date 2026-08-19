@@ -1,0 +1,45 @@
+name: dotnet-migration
+
+on:
+  pull_request:
+    branches: [dotnet-migration]
+    paths:
+      - "dotnet/**"
+      - ".github/workflows/dotnet-migration.yml"
+  push:
+    branches: [dotnet-migration]
+    paths:
+      - "dotnet/**"
+      - ".github/workflows/dotnet-migration.yml"
+
+jobs:
+  parity:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GnuCOBOL and faketime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnucobol3 faketime
+          cobc --version
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Format check
+        working-directory: dotnet/backend
+        run: dotnet format --verify-no-changes
+
+      - name: Build
+        working-directory: dotnet/backend
+        run: dotnet build -warnaserror
+
+      - name: Test
+        working-directory: dotnet/backend
+        run: dotnet test --no-build
+
+      - name: Parity gate (golden re-run)
+        run: bash dotnet/parity/scripts/verify-goldens.sh

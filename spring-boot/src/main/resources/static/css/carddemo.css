@@ -316,6 +316,75 @@ body {
     cursor: pointer;
 }
 
+/* CCRDSLA (card view) — single-column 3270-style label grid. */
+.card-view .view-title {
+    color: #ff0;
+    text-align: center;
+}
+
+.card-view .view-grid {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-view .view-row {
+    display: flex;
+    min-height: 1.2em;
+}
+
+.card-view .view-cell {
+    white-space: pre;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.card-view .field-label {
+    white-space: pre;
+    color: #40e0d0;
+}
+
+.card-view .field-value {
+    white-space: pre;
+    color: #0f0;
+    text-decoration: underline;
+    text-decoration-color: #0f0;
+}
+
+.card-view input {
+    background: #000;
+    color: #0f0;
+    border: none;
+    border-bottom: 1px solid #0f0;
+    font: inherit;
+}
+
+.card-view input[readonly] {
+    border-bottom-style: dotted;
+}
+
+.card-view input.field-red {
+    color: #f00;
+    border-bottom-color: #f00;
+}
+
+.card-view .info-line {
+    color: #40e0d0;
+    margin-top: 1.5em;
+}
+
+.card-view .key-hints {
+    color: #ff0;
+}
+
+.card-view .form-actions button {
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    font: inherit;
+    margin-right: 1em;
+    cursor: pointer;
+}
+
 .tran-add .screen-title {
     color: #ff0;
     text-align: center;
@@ -451,6 +520,354 @@ body {
 }
 
 .tran-list .form-actions button {
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    font: inherit;
+    margin-right: 1em;
+    cursor: pointer;
+}
+
+/* COCRDUPA (card update) — search keys then protected-able detail rows. */
+.card-update .screen-title {
+    color: #ff0;
+    text-align: center;
+}
+
+.card-update .form-row {
+    margin: 1em 0 0 4ch;
+}
+
+.card-update .field-label {
+    white-space: pre;
+    color: #40e0d0;
+}
+
+.card-update input {
+    background: #000;
+    color: #0f0;
+    border: none;
+    border-bottom: 1px solid #0f0;
+    font: inherit;
+}
+
+.card-update input[readonly] {
+    border-bottom: none;
+    color: #666;
+}
+
+.card-update input.field-error {
+    color: #f00;
+    border-bottom: 1px solid #f00;
+}
+
+/* EXPDAY is dark on the real map — shown but never editable. */
+.card-update input.day-field {
+    color: #333;
+    margin-left: 3ch;
+}
+
+.card-update .expiry-row .field-sep {
+    color: #40e0d0;
+}
+
+.card-update .info-line {
+    color: #0f0;
+    margin-left: 4ch;
+    min-height: 1.2em;
+}
+
+.card-update .error-line {
+    color: #f00;
+    margin-left: 4ch;
+    min-height: 1.2em;
+}
+
+.card-update .key-hints {
+    color: #ff0;
+    margin-left: 4ch;
+    white-space: pre;
+}
+
+.card-update .form-actions {
+    margin-left: 4ch;
+}
+
+.card-update .form-actions button {
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    font: inherit;
+    margin-right: 1em;
+    cursor: pointer;
+}
+
+/* COUSR0A–COUSR3A user admin screens (S-12) — same 3270 palette as the
+   transaction screens: turquoise labels/headers, green inputs, white row
+   data, yellow hints/titles (app/bms/COUSR0*.bms). */
+.user-list {
+    font-family: inherit;
+}
+
+.user-list .user-list-header {
+    display: flex;
+    justify-content: space-between;
+    max-width: 72ch;
+}
+
+.user-list .user-list-title {
+    margin: 0;
+}
+
+.user-list .user-list-page {
+    margin: 0;
+    color: #40e0d0;
+}
+
+.user-list .form-row {
+    margin: 1em 0;
+}
+
+.user-list .field-label {
+    color: #40e0d0;
+}
+
+.user-list input {
+    background: #000;
+    color: #0f0;
+    border: none;
+    border-bottom: 1px solid #0f0;
+    font: inherit;
+    text-transform: uppercase;
+}
+
+.user-list .user-table {
+    border-collapse: collapse;
+    color: #fff;
+}
+
+.user-list .user-heading th,
+.user-list .user-heading-dash td {
+    color: #40e0d0;
+    font-weight: normal;
+    text-align: left;
+    padding-right: 1ch;
+}
+
+.user-list .user-row td {
+    padding-right: 1ch;
+}
+
+.user-list .user-id,
+.user-list .user-fname,
+.user-list .user-lname,
+.user-list .user-type {
+    white-space: pre;
+}
+
+.user-list .sel-input {
+    width: 2ch;
+    text-transform: uppercase;
+}
+
+.user-list .user-echo {
+    display: none;
+}
+
+.user-list .user-instruction {
+    color: #ff0;
+    margin: 1em 0;
+}
+
+.user-list .key-hints {
+    color: #ff0;
+}
+
+.user-list .form-actions button {
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    font: inherit;
+    margin-right: 1em;
+    cursor: pointer;
+}
+
+.user-form .screen-title {
+    color: #ff0;
+    text-align: center;
+}
+
+.user-form .form-row {
+    margin: 0.8em 0 0 4ch;
+}
+
+.user-form .field-label {
+    white-space: pre;
+    color: #40e0d0;
+    margin-right: 0.5em;
+}
+
+.user-form .field-label + input {
+    margin-right: 2em;
+}
+
+.user-form .field-echo {
+    color: #00f;
+    text-decoration: underline;
+    margin-right: 2em;
+    white-space: pre;
+}
+
+.user-form .field-hint {
+    color: #40e0d0;
+    margin: 0 2em 0 0.5em;
+}
+
+.user-form input {
+    background: #000;
+    color: #0f0;
+    border: none;
+    border-bottom: 1px solid #0f0;
+    font: inherit;
+}
+
+.user-form .separator {
+    color: #40e0d0;
+    margin: 0.5em 0 0.5em 4ch;
+}
+
+.user-form .key-hints {
+    color: #ff0;
+    margin-left: 4ch;
+}
+
+.user-form .form-actions {
+    margin-left: 4ch;
+}
+
+.user-form .form-actions button {
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    font: inherit;
+    margin-right: 1em;
+    cursor: pointer;
+}
+
+
+/* COBIL0A (bill payment, S-11) — 3270 colours: green underlined inputs,
+   turquoise labels, blue balance, red error / green success message line
+   (app/bms/COBIL00.bms). */
+.bill-pay .screen-title {
+    color: #ff0;
+    text-align: center;
+}
+
+.bill-pay .form-row {
+    margin: 0.8em 0 0 4ch;
+}
+
+.bill-pay .field-label {
+    white-space: pre;
+    color: #40e0d0;
+    margin-right: 0.5em;
+}
+
+.bill-pay .field-label + input {
+    margin-right: 2em;
+}
+
+.bill-pay .curbal {
+    color: #00f;
+}
+
+.bill-pay .field-hint {
+    color: #40e0d0;
+    margin: 0 2em 0 0.5em;
+}
+
+.bill-pay input {
+    background: #000;
+    color: #0f0;
+    border: none;
+    border-bottom: 1px solid #0f0;
+    font: inherit;
+}
+
+.bill-pay .separator {
+    color: #40e0d0;
+    margin: 0.5em 0 0.5em 4ch;
+}
+
+.bill-pay .key-hints {
+    color: #ff0;
+    margin-left: 4ch;
+}
+
+.bill-pay .form-actions {
+    margin-left: 4ch;
+}
+
+.bill-pay .form-actions button {
+    background: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    font: inherit;
+    margin-right: 1em;
+    cursor: pointer;
+}
+
+
+/* COTRN1A (transaction view) — 3270-style label/value grid. */
+.tran-view .view-title {
+    color: #ff0;
+    text-align: center;
+}
+
+.tran-view .form-row {
+    margin: 1em 0;
+}
+
+.tran-view .view-grid {
+    display: flex;
+    flex-direction: column;
+}
+
+.tran-view .view-row {
+    display: flex;
+    min-height: 1.2em;
+}
+
+.tran-view .view-cell {
+    flex: 1;
+    white-space: pre;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.tran-view .field-label {
+    white-space: pre;
+    color: #40e0d0;
+}
+
+.tran-view .field-value {
+    white-space: pre;
+    color: #0f0;
+}
+
+.tran-view input {
+    background: #000;
+    color: #0f0;
+    border: none;
+    border-bottom: 1px solid #0f0;
+    font: inherit;
+}
+
+.tran-view .key-hints {
+    color: #ff0;
+}
+
+.tran-view .form-actions button {
     background: #000;
     color: #0f0;
     border: 1px solid #0f0;

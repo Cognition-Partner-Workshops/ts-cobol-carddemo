@@ -45,7 +45,7 @@ public class MenuService {
             option(8, "Transaction Add", "COTRN02C", "/api/transactions", "U", true),
             option(9, "Transaction Reports", "CORPT00C", "/api/reports", "U", true),
             option(10, "Bill Payment", "COBIL00C", "/api/billing/payments", "U", true),
-            option(11, "Pending Authorization View", "COPAUS0C", "/api/programs/COPAUS0C", "U", false));
+            option(11, "Pending Authorization View", "COPAUS0C", "/api/pending-auth/{acctId}", "U", true));
 
     private static final List<MenuOption> ADMIN = List.of(
             option(1, "User List (Security)", "COUSR00C", "/api/admin/users", "A", true),
@@ -106,15 +106,22 @@ public class MenuService {
     // the option's target answers GET on a concrete (non-templated) path
     // today. Everything else falls back to the not-installed idiom instead of
     // a dead link.
-    private static final Map<String, String> UI_ROUTES = Map.of(
-            "COCRDLIC", "/cards/list",
-            "COTRN00C", "/transactions/list",
-            "COTRN02C", "/transactions/add",
-            "COUSR00C", "/api/admin/users",
-            "COUSR01C", "/api/admin/users",
-            "COACTVWC", "/accounts/view",
-            "COTRTLIC", "/ui/tran-types",
-            "COTRTUPC", "/ui/tran-types/maint");
+    private static final Map<String, String> UI_ROUTES = Map.ofEntries(
+            Map.entry("COCRDLIC", "/cards/list"),
+            Map.entry("COTRN00C", "/transactions/list"),
+            Map.entry("COTRN01C", "/transactions/view"),
+            Map.entry("COTRN02C", "/transactions/add"),
+            Map.entry("COUSR00C", "/admin/users"),
+            Map.entry("COUSR01C", "/admin/users/add"),
+            Map.entry("COUSR02C", "/admin/users/update"),
+            Map.entry("COUSR03C", "/admin/users/delete"),
+            Map.entry("COCRDSLC", "/cards/view"),
+            Map.entry("COCRDUPC", "/cards/update"),
+            Map.entry("COBIL00C", "/bill-payment"),
+            Map.entry("COPAUS0C", "/ui/pending-auth"),
+            Map.entry("COACTVWC", "/accounts/view"),
+            Map.entry("COTRTLIC", "/ui/tran-types"),
+            Map.entry("COTRTUPC", "/ui/tran-types/maint"));
 
     public String uiRoute(MenuSelectionResponse selection) {
         if (!selection.implemented() || !selection.available()) {

@@ -96,6 +96,26 @@ public final class CobolMessages {
         "Orig Date should be in format YYYY-MM-DD";
     public static final String TRANSACTION_PROC_DATE_INVALID =
         "Proc Date should be in format YYYY-MM-DD";
+    public static final String TRANSACTION_ACCOUNT_NUMERIC =
+        "Account ID must be Numeric...";
+    public static final String TRANSACTION_ACCOUNT_LOOKUP_FAILED =
+        "Unable to lookup Acct in XREF AIX file...";
+    public static final String TRANSACTION_CARD_LOOKUP_FAILED =
+        "Unable to lookup Card # in XREF file...";
+    public static final String TRANSACTION_AMOUNT_FORMAT =
+        "Amount should be in format -99999999.99";
+    public static final String TRANSACTION_ORIG_DATE_NOT_VALID =
+        "Orig Date - Not a valid date...";
+    public static final String TRANSACTION_PROC_DATE_NOT_VALID =
+        "Proc Date - Not a valid date...";
+    public static final String TRANSACTION_MERCHANT_ID_NUMERIC =
+        "Merchant ID must be Numeric...";
+    public static final String TRANSACTION_CONFIRM_INVALID =
+        "Invalid value. Valid values are (Y/N)...";
+    public static final String TRANSACTION_ADD_LOOKUP_FAILED =
+        "Unable to lookup Transaction...";
+    public static final String TRANSACTION_DUPLICATE = "Tran ID already exist...";
+    public static final String TRANSACTION_ADD_FAILED = "Unable to Add Transaction...";
     public static final String UPDATE_FAILED = "Update of record failed";
     public static final String ACCOUNT_NUMBER_INVALID =
         "Account number must be a non zero 11 digit number";
@@ -109,6 +129,16 @@ public final class CobolMessages {
     public static final String FIELD_ALPHA_SUFFIX = " can have alphabets only.";
     public static final String FIELD_ALPHANUM_SUFFIX =
         " can have numbers or alphabets only.";
+    public static final String TRANSACTION_ID_NOT_NUMERIC = "Tran ID must be Numeric ...";
+    public static final String TRANSACTION_AT_TOP = "You are at the top of the page...";
+    public static final String TRANSACTION_ALREADY_TOP =
+        "You are already at the top of the page...";
+    public static final String TRANSACTION_ALREADY_BOTTOM =
+        "You are already at the bottom of the page...";
+    public static final String TRANSACTION_LOOKUP_FAILED =
+        "Unable to lookup transaction...";
+    public static final String TRANSACTION_SELECTION_INVALID =
+        "Invalid selection. Valid value is S";
 
     private CobolMessages() {
     }
@@ -118,12 +148,11 @@ public final class CobolMessages {
     }
 
     public static String optionComingSoon(String optionName) {
-        // COMEN01C.cbl:172-175 — the option name is STRINGed DELIMITED BY
-        // SPACE, so only its first word survives ("Transaction Reports" ->
-        // "This option Transactionis coming soon ...").
-        int space = optionName.indexOf(' ');
-        return "This option " + (space < 0 ? optionName : optionName.substring(0, space))
-                + "is coming soon ...";
+        // COMEN01C.cbl:172-176 emits the option name DELIMITED BY SPACE, so
+        // only its first word reaches the message ("Transaction View" ->
+        // "Transactionis coming soon ...").
+        String firstWord = optionName == null ? "" : optionName.split(" ", 2)[0];
+        return "This option " + firstWord + "is coming soon ...";
     }
 
     // NOTFND texts are the exact X(75) STRING-truncated forms shared by
@@ -171,5 +200,10 @@ public final class CobolMessages {
 
     public static String unknownBatchJob(String jobName) {
         return "Unknown batch job: " + jobName;
+    }
+
+    // COTRN02C.cbl:728-733 — two spaces before "Your".
+    public static String transactionAdded(String tranId) {
+        return "Transaction added successfully.  Your Tran ID is " + tranId + ".";
     }
 }

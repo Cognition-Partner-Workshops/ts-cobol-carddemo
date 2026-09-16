@@ -7,10 +7,14 @@ import com.carddemo.api.CobolMessages;
 import com.carddemo.api.MenuResponse;
 import com.carddemo.api.MenuSelectRequest;
 import com.carddemo.api.MenuSelectionResponse;
+import com.carddemo.api.TransactionAddScreen;
+import com.carddemo.api.TransactionCreateRequest;
 import com.carddemo.service.AccountViewScreen;
 import com.carddemo.service.AccountViewService;
 import com.carddemo.service.AuthService;
 import com.carddemo.service.MenuService;
+import com.carddemo.service.TransactionListService;
+import com.carddemo.service.TransactionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
@@ -41,12 +45,18 @@ public class UiController {
     private final AuthService authService;
     private final MenuService menuService;
     private final AccountViewService accountViewService;
+    private final TransactionListService transactionListService;
+    private final TransactionService transactionService;
 
     public UiController(AuthService authService, MenuService menuService,
-                        AccountViewService accountViewService) {
+                        AccountViewService accountViewService,
+                        TransactionListService transactionListService,
+                        TransactionService transactionService) {
         this.authService = authService;
         this.menuService = menuService;
         this.accountViewService = accountViewService;
+        this.transactionListService = transactionListService;
+        this.transactionService = transactionService;
     }
 
     @ModelAttribute
@@ -120,6 +130,75 @@ public class UiController {
         return selectOption(aid, option, model, request, "menu",
                 () -> menuService.selectMain(new MenuSelectRequest(option), authentication),
                 () -> menuService.mainMenu(authentication));
+    }
+
+    // COTRN00C web surface (tran CT00): the first display is an ENTER on an
+    // empty map — page 1 browsed from the start of the file (COTRN00C.cbl:
+    // 112-116). Unsigned navigation is bounced to sign-on by the security
+    // entry point (EIBCALEN=0, :107-109).
+    @GetMapping("/transactions/list")
+    public String transactionList(Model model) {
+        model.addAttribute("page", transactionListService.firstDisplay());
+        return "transaction-list";
+    }
+
+    // Pseudo-conversational turn: the form carries the screen back (every map
+    // field is FSET) plus the CDEMO-CT00-INFO paging state as hidden fields
+    // (:62-70, S07-B5). ENTER runs the selection scan and forward browse,
+    // PF7/PF8 page backward/forward, PF3 transfers to the menu (:122-124).
+    @PostMapping("/transactions/list")
+    public String submitTransactionList(
+            @RequestParam(name = "aid", defaultValue = "ENTER") String aid,
+            @RequestParam(name = "trnIdIn", required = false) String trnIdIn,
+            @RequestParam(name = "sel", required = false) java.util.List<String> sels,
+            @RequestParam(name = "trnId", required = false) java.util.List<String> trnIds,
+            @RequestParam(name = "tdate", required = false) java.util.List<String> tdates,
+            @RequestParam(name = "tdesc", required = false) java.util.List<String> tdescs,
+            @RequestParam(name = "tamt", required = false) java.util.List<String> tamts,
+            @RequestParam(name = "pageDisplay", required = false) String pageDisplay,
+            @RequestParam(name = "firstId", required = false) String firstId,
+            @RequestParam(name = "lastId", required = false) String lastId,
+            @RequestParam(name = "pageNum", required = false) String pageNum,
+            @RequestParam(name = "nextPage", required = false) String nextPage,
+            Model model) {
+        if ("PF3".equals(aid)) {
+            return "redirect:/menu";
+        }
+        TransactionListService.Form form = new TransactionListService.Form(
+                trnIdIn == null ? "" : trnIdIn,
+                TransactionListService.Form.selections(sels),
+                TransactionListService.Form.rows(trnIds, tdates, tdescs, tamts),
+                pageDisplay == null ? "" : pageDisplay,
+                firstId, lastId, pageNum, nextPage);
+        TransactionListService.Page page;
+        switch (aid) {
+            case "ENTER" -> {
+                TransactionListService.EnterOutcome outcome =
+                        transactionListService.enter(form);
+                if (outcome.selectedId() != null) {
+                    // XCTL COTRN01C (:186-195) resolved through the route
+                    // registry (S07-B1): browsable -> /transactions/view with
+                    // the id, otherwise the coming-soon idiom.
+                    String route = menuService.uiRouteForProgram("COTRN01C");
+                    if (route != null) {
+                        return "redirect:" + route + "?tranId=" + outcome.selectedId();
+                    }
+                    page = TransactionListService.Page.unchanged(form, form.state(),
+                            CobolMessages.optionComingSoon(
+                                    menuService.programName("COTRN01C")),
+                            true);
+                } else {
+                    page = outcome.page();
+                }
+            }
+            case "PF7" -> page = transactionListService.pf7(form);
+            case "PF8" -> page = transactionListService.pf8(form);
+            default -> page = transactionListService.invalidAid(form);
+        }
+        model.addAttribute("page", page);
+        model.addAttribute("message", page.message());
+        model.addAttribute("messageStyle", page.info() ? "info" : null);
+        return "transaction-list";
     }
 
     @PostMapping("/admin/menu/select")
@@ -212,5 +291,78 @@ public class UiController {
             return returnUrl;
         }
         return "/menu";
+    }
+
+    // COTRN02C web surface (tran CT02). The COMMAREA card lands as the
+    // cardNumber query param and runs ENTER processing at once
+    // (COTRN02C.cbl:124-129); a bare entry shows the empty map.
+    @GetMapping("/transactions/add")
+    public String tranAdd(@RequestParam(name = "cardNumber", required = false) String cardNumber,
+                          Model model) {
+        TransactionAddScreen screen = TransactionAddScreen.blank();
+        if (cardNumber != null && !cardNumber.isBlank()) {
+            screen = transactionService.enter(new TransactionCreateRequest(
+                    null, cardNumber, null, null, null, null, null, null, null,
+                    null, null, null, null, null));
+        }
+        return tranAddView(screen, model);
+    }
+
+    // AID map (COTRN02C.cbl:133-152): ENTER validates and writes, PF3 backs
+    // out to the menu, PF4 clears the map, PF5 copies the last transaction,
+    // anything else redisplays with the invalid-key message.
+    @PostMapping("/transactions/add")
+    public String submitTranAdd(
+            @RequestParam(name = "aid", defaultValue = "ENTER") String aid,
+            @RequestParam(name = "accountId", required = false) String accountId,
+            @RequestParam(name = "cardNumber", required = false) String cardNumber,
+            @RequestParam(name = "transactionTypeCode", required = false) String typeCode,
+            @RequestParam(name = "transactionCategoryCode", required = false) String categoryCode,
+            @RequestParam(name = "source", required = false) String source,
+            @RequestParam(name = "description", required = false) String description,
+            @RequestParam(name = "amount", required = false) String amount,
+            @RequestParam(name = "originDate", required = false) String originDate,
+            @RequestParam(name = "processDate", required = false) String processDate,
+            @RequestParam(name = "merchantId", required = false) String merchantId,
+            @RequestParam(name = "merchantName", required = false) String merchantName,
+            @RequestParam(name = "merchantCity", required = false) String merchantCity,
+            @RequestParam(name = "merchantZip", required = false) String merchantZip,
+            @RequestParam(name = "confirmation", required = false) String confirmation,
+            Model model) {
+        if ("PF3".equals(aid)) {
+            return "redirect:/menu";
+        }
+        if ("PF4".equals(aid)) {
+            return tranAddView(TransactionAddScreen.blank(), model);
+        }
+        TransactionCreateRequest request = new TransactionCreateRequest(
+                accountId, cardNumber, typeCode, categoryCode, source, description,
+                amount, originDate, processDate, merchantId, merchantName,
+                merchantCity, merchantZip, confirmation);
+        TransactionAddScreen screen;
+        if ("ENTER".equals(aid)) {
+            screen = runTranAdd(request, transactionService::enter);
+        } else if ("PF5".equals(aid)) {
+            screen = runTranAdd(request, transactionService::copyLast);
+        } else {
+            screen = TransactionAddScreen.preserved(request, CobolMessages.INVALID_KEY_PRESSED);
+        }
+        return tranAddView(screen, model);
+    }
+
+    private TransactionAddScreen runTranAdd(TransactionCreateRequest request,
+            java.util.function.Function<TransactionCreateRequest, TransactionAddScreen> action) {
+        try {
+            return action.apply(request);
+        } catch (CobolApiException exception) {
+            return TransactionAddScreen.preserved(request, exception.getMessage());
+        }
+    }
+
+    private String tranAddView(TransactionAddScreen screen, Model model) {
+        model.addAttribute("screen", screen);
+        model.addAttribute("message", screen.message());
+        model.addAttribute("messageStyle", screen.messageStyle());
+        return "transaction-add";
     }
 }

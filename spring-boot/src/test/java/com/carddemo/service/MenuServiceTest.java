@@ -81,8 +81,8 @@ class MenuServiceTest {
 
         var selection = service.selectMain(new MenuSelectRequest("1"), authentication);
 
-        // COMEN01C.cbl:172-175 — the option name is STRINGed DELIMITED BY
-        // SPACE, so only its first word survives.
+        // COMEN01C.cbl:172-176 emits the name DELIMITED BY SPACE: only the
+        // first word reaches the message.
         assertEquals("This option Futureis coming soon ...", selection.message());
         assertNull(service.uiRoute(selection));
     }
@@ -100,7 +100,7 @@ class MenuServiceTest {
 
         assertEquals("/api/cards", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("3"), authentication)));
-        assertEquals("/api/transactions", service.uiRoute(
+        assertEquals("/transactions/list", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("6"), authentication)));
         assertEquals("/accounts/view", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("1"), authentication)));

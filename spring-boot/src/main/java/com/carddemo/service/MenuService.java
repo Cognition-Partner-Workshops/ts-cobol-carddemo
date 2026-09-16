@@ -112,6 +112,7 @@ public class MenuService {
             "COTRN02C", "/transactions/add",
             "COUSR00C", "/api/admin/users",
             "COUSR01C", "/api/admin/users",
+            "COBIL00C", "/bill-payment",
             "COACTVWC", "/accounts/view");
 
     public String uiRoute(MenuSelectionResponse selection) {

@@ -108,10 +108,11 @@ public class MenuService {
     // a dead link.
     private static final Map<String, String> UI_ROUTES = Map.of(
             "COCRDLIC", "/cards/list",
-            "COTRN00C", "/api/transactions",
-            "COTRN02C", "/api/transactions",
+            "COTRN00C", "/transactions/list",
+            "COTRN02C", "/transactions/add",
             "COUSR00C", "/api/admin/users",
-            "COUSR01C", "/api/admin/users");
+            "COUSR01C", "/api/admin/users",
+            "COACTVWC", "/accounts/view");
 
     public String uiRoute(MenuSelectionResponse selection) {
         if (!selection.implemented() || !selection.available()) {
@@ -120,9 +121,10 @@ public class MenuService {
         return UI_ROUTES.get(selection.program());
     }
 
-    // S04-B1 — an XCTL hand-off target resolves through the same registry the
-    // menu uses; a missing route is the disabled target, handled by the
-    // caller with the coming-soon idiom instead of a dead link.
+    // S04-B1/S07-B1 — cross-program hand-offs (XCTL, row selection) resolve
+    // a target's UI route and catalogue name through this registry; a
+    // missing route is the disabled target, handled by the caller with the
+    // coming-soon idiom instead of a dead link.
     public String uiRouteForProgram(String program) {
         return UI_ROUTES.get(program);
     }
@@ -132,6 +134,14 @@ public class MenuService {
                 .filter(option -> option.program().equals(program))
                 .findFirst()
                 .map(MenuOption::name)
+                .orElse(program);
+    }
+
+    public String programName(String program) {
+        return java.util.stream.Stream.concat(mainOptions.stream(), adminOptions.stream())
+                .filter(option -> program.equals(option.program()))
+                .map(MenuOption::name)
+                .findFirst()
                 .orElse(program);
     }
 

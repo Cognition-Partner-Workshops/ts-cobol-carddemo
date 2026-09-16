@@ -44,6 +44,11 @@ public final class CobolMessages {
     public static final String ADMIN_ONLY = "No access - Admin Only option... ";
     public static final String ACCOUNT_FILTER_INVALID =
         "Account Filter must  be a non-zero 11 digit number";
+    // COACTVWC verbatim (X(75) receiver): NO-SEARCH-CRITERIA-RECEIVED
+    // (cbl:98-99) and the fixed prompt (cbl:107-108, :528-530).
+    public static final String NO_INPUT_RECEIVED = "No input received";
+    public static final String ACCOUNT_VIEW_PROMPT =
+        "Enter or update id of account to display";
     public static final String CARD_FILTER_INVALID =
         "CARD ID FILTER,IF SUPPLIED MUST BE A 16 DIGIT NUMBER";
     public static final String CARD_ACCOUNT_FILTER_INVALID =
@@ -91,6 +96,26 @@ public final class CobolMessages {
         "Orig Date should be in format YYYY-MM-DD";
     public static final String TRANSACTION_PROC_DATE_INVALID =
         "Proc Date should be in format YYYY-MM-DD";
+    public static final String TRANSACTION_ACCOUNT_NUMERIC =
+        "Account ID must be Numeric...";
+    public static final String TRANSACTION_ACCOUNT_LOOKUP_FAILED =
+        "Unable to lookup Acct in XREF AIX file...";
+    public static final String TRANSACTION_CARD_LOOKUP_FAILED =
+        "Unable to lookup Card # in XREF file...";
+    public static final String TRANSACTION_AMOUNT_FORMAT =
+        "Amount should be in format -99999999.99";
+    public static final String TRANSACTION_ORIG_DATE_NOT_VALID =
+        "Orig Date - Not a valid date...";
+    public static final String TRANSACTION_PROC_DATE_NOT_VALID =
+        "Proc Date - Not a valid date...";
+    public static final String TRANSACTION_MERCHANT_ID_NUMERIC =
+        "Merchant ID must be Numeric...";
+    public static final String TRANSACTION_CONFIRM_INVALID =
+        "Invalid value. Valid values are (Y/N)...";
+    public static final String TRANSACTION_ADD_LOOKUP_FAILED =
+        "Unable to lookup Transaction...";
+    public static final String TRANSACTION_DUPLICATE = "Tran ID already exist...";
+    public static final String TRANSACTION_ADD_FAILED = "Unable to Add Transaction...";
     public static final String UPDATE_FAILED = "Update of record failed";
     public static final String ACCOUNT_NUMBER_INVALID =
         "Account number must be a non zero 11 digit number";
@@ -104,6 +129,16 @@ public final class CobolMessages {
     public static final String FIELD_ALPHA_SUFFIX = " can have alphabets only.";
     public static final String FIELD_ALPHANUM_SUFFIX =
         " can have numbers or alphabets only.";
+    public static final String TRANSACTION_ID_NOT_NUMERIC = "Tran ID must be Numeric ...";
+    public static final String TRANSACTION_AT_TOP = "You are at the top of the page...";
+    public static final String TRANSACTION_ALREADY_TOP =
+        "You are already at the top of the page...";
+    public static final String TRANSACTION_ALREADY_BOTTOM =
+        "You are already at the bottom of the page...";
+    public static final String TRANSACTION_LOOKUP_FAILED =
+        "Unable to lookup transaction...";
+    public static final String TRANSACTION_SELECTION_INVALID =
+        "Invalid selection. Valid value is S";
 
     // COCRDLIC verbatim messages (S-04; COCRDLIC.cbl:112-126, :153-171).
     // CARD_FILE_ERROR_READ is the 75-byte WS-FILE-ERROR-MESSAGE for
@@ -127,19 +162,38 @@ public final class CobolMessages {
     }
 
     public static String optionComingSoon(String optionName) {
-        return "This option " + optionName + "is coming soon ...";
+        // COMEN01C.cbl:172-176 emits the option name DELIMITED BY SPACE, so
+        // only its first word reaches the message ("Transaction View" ->
+        // "Transactionis coming soon ...").
+        String firstWord = optionName == null ? "" : optionName.split(" ", 2)[0];
+        return "This option " + firstWord + "is coming soon ...";
     }
 
+    // NOTFND texts are the exact X(75) STRING-truncated forms shared by
+    // COACTVWC (:747-757, :796-806, :846-856) and COACTUPC (:3674-3684,
+    // :3723-3733, :3773-3783): ERROR-RESP/RESP2 are X(10) = 9 digits + space,
+    // and the 75-char receiver cuts RESP2 to 4 digits (Reas:) or 7 (REAS:).
     public static String xrefNotFound(String accountId) {
-        return "Account:" + accountId + " not found in Cross ref file. Resp:13 Reas:0";
+        return "Account:" + accountId + " not found in Cross ref file.  Resp:000000013  Reas:0000";
     }
 
     public static String accountNotFound(String accountId) {
-        return "Account:" + accountId + " not found in Acct Master file.Resp:13 Reas:0";
+        return "Account:" + accountId + " not found in Acct Master file.Resp:000000013  Reas:0000";
     }
 
     public static String customerNotFound(String customerId) {
-        return "CustId:" + customerId + " not found in customer master.Resp:13 REAS:0";
+        return "CustId:" + customerId + " not found in customer master.Resp: 000000013  REAS:0000000";
+    }
+
+    // WS-FILE-ERROR-MESSAGE (cbl:86-105) as laid into the X(75) receiver:
+    // 'File Error: ' + op X(8) + ' on ' + file X(9) + ' returned RESP ' +
+    // resp X(10) + ',RESP2 ' + resp2 X(10). RESP/RESP2 have no target
+    // equivalent; per S02-B2 they render the fixed IOERR codes.
+    public static String fileError(String file) {
+        String padded = file.length() >= 9 ? file.substring(0, 9)
+                : file + " ".repeat(9 - file.length());
+        return "File Error: " + "READ    " + " on " + padded
+                + " returned RESP " + "000000017 " + ",RESP2 " + "000000120 ";
     }
 
     public static String fieldAlpha(String field) {
@@ -160,5 +214,10 @@ public final class CobolMessages {
 
     public static String unknownBatchJob(String jobName) {
         return "Unknown batch job: " + jobName;
+    }
+
+    // COTRN02C.cbl:728-733 — two spaces before "Your".
+    public static String transactionAdded(String tranId) {
+        return "Transaction added successfully.  Your Tran ID is " + tranId + ".";
     }
 }

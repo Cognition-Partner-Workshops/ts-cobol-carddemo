@@ -71,6 +71,9 @@ public final class CobolMessages {
         "Original values must be supplied for update.";
     public static final String TRANSACTION_ID_INVALID = "Tran ID must be Numeric...";
     public static final String TRANSACTION_NOT_FOUND = "Transaction ID NOT found...";
+    public static final String TRANSACTION_ID_REQUIRED = "Tran ID can NOT be empty...";
+    public static final String TRANSACTION_VIEW_LOOKUP_FAILED =
+        "Unable to lookup Transaction...";
     public static final String TRANSACTION_ACCOUNT_OR_CARD_REQUIRED =
         "Account or Card Number must be entered...";
     public static final String TRANSACTION_ACCOUNT_NOT_FOUND =
@@ -163,6 +166,18 @@ public final class CobolMessages {
     public static final String CARD_ACCOUNT_REQUIRED = "Account number not provided";
     public static final String CARD_NUMBER_REQUIRED = "Card number not provided";
 
+
+    // COBIL00C verbatim messages (S-11; COBIL00C.cbl:161-540).
+    public static final String BILL_ACCOUNT_EMPTY = "Acct ID can NOT be empty...";
+    public static final String BILL_ACCOUNT_LOOKUP_FAILED =
+        "Unable to lookup Account...";
+    public static final String BILL_XREF_LOOKUP_FAILED =
+        "Unable to lookup XREF AIX file...";
+    public static final String BILL_TRANSACTION_ADD_FAILED =
+        "Unable to Add Bill pay Transaction...";
+    public static final String BILL_ACCOUNT_UPDATE_FAILED =
+        "Unable to Update Account...";
+
     private CobolMessages() {
     }
 
@@ -228,5 +243,11 @@ public final class CobolMessages {
     // COTRN02C.cbl:728-733 — two spaces before "Your".
     public static String transactionAdded(String tranId) {
         return "Transaction added successfully.  Your Tran ID is " + tranId + ".";
+    }
+
+    // COBIL00C.cbl:526-530 — 'Payment successful. ' + ' Your Transaction ID
+    // is ' + TRAN-ID + '.', so two spaces before "Your".
+    public static String billPaymentSuccess(String tranId) {
+        return "Payment successful.  Your Transaction ID is " + tranId + ".";
     }
 }

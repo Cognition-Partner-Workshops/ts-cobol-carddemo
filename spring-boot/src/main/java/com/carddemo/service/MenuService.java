@@ -109,11 +109,13 @@ public class MenuService {
     private static final Map<String, String> UI_ROUTES = Map.of(
             "COCRDLIC", "/cards/list",
             "COTRN00C", "/transactions/list",
+            "COTRN01C", "/transactions/view",
             "COTRN02C", "/transactions/add",
             "COUSR00C", "/api/admin/users",
             "COUSR01C", "/api/admin/users",
-            "COACTVWC", "/accounts/view",
-            "COCRDSLC", "/cards/view");
+            "COCRDSLC", "/cards/view",
+            "COBIL00C", "/bill-payment",
+            "COACTVWC", "/accounts/view");
 
     public String uiRoute(MenuSelectionResponse selection) {
         if (!selection.implemented() || !selection.available()) {

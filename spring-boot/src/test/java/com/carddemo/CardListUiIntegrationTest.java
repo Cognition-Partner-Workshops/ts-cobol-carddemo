@@ -276,19 +276,21 @@ class CardListUiIntegrationTest {
         MockHttpSession session = signon();
         CardListPageState state = stateOf(page(session));
 
-        // COCRDSLC has no UI route yet — the coming-soon idiom, not a dead link.
+        // COCRDSLC has no UI route yet — the coming-soon idiom, not a dead
+        // link. The message emits the option name DELIMITED BY SPACE
+        // (COMEN01C.cbl:172-176), so only the first word reaches the screen.
         press(session, "ENTER", state, null, null, "S", "", "", "", "", "", "")
                 .andExpect(status().isOk())
                 .andExpect(view().name("card-list"))
                 .andExpect(model().attribute("messageStyle", "info"))
                 .andExpect(model().attribute("message",
-                        "This option Credit Card Viewis coming soon ..."));
+                        "This option Creditis coming soon ..."));
 
         press(session, "ENTER", state, null, null, "", "", "U", "", "", "", "")
                 .andExpect(status().isOk())
                 .andExpect(view().name("card-list"))
                 .andExpect(model().attribute("message",
-                        "This option Credit Card Updateis coming soon ..."));
+                        "This option Creditis coming soon ..."));
     }
 
     @Test

@@ -96,7 +96,7 @@ class MenuServiceTest {
         var authentication = UsernamePasswordAuthenticationToken.authenticated(
                 "ADMIN001", null, List.of());
 
-        assertEquals("/api/cards", service.uiRoute(
+        assertEquals("/cards/list", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("3"), authentication)));
         assertEquals("/api/transactions", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("6"), authentication)));

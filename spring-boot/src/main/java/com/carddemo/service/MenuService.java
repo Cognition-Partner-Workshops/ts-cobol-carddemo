@@ -107,7 +107,7 @@ public class MenuService {
     // today. Everything else falls back to the not-installed idiom instead of
     // a dead link.
     private static final Map<String, String> UI_ROUTES = Map.of(
-            "COCRDLIC", "/api/cards",
+            "COCRDLIC", "/cards/list",
             "COTRN00C", "/api/transactions",
             "COTRN02C", "/api/transactions",
             "COUSR00C", "/api/admin/users",
@@ -118,6 +118,21 @@ public class MenuService {
             return null;
         }
         return UI_ROUTES.get(selection.program());
+    }
+
+    // S04-B1 — an XCTL hand-off target resolves through the same registry the
+    // menu uses; a missing route is the disabled target, handled by the
+    // caller with the coming-soon idiom instead of a dead link.
+    public String uiRouteForProgram(String program) {
+        return UI_ROUTES.get(program);
+    }
+
+    public String optionNameForProgram(String program) {
+        return mainOptions.stream()
+                .filter(option -> option.program().equals(program))
+                .findFirst()
+                .map(MenuOption::name)
+                .orElse(program);
     }
 
     private List<MenuOption> authorize(List<MenuOption> options, Authentication authentication) {

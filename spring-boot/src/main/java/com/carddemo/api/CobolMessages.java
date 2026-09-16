@@ -71,6 +71,9 @@ public final class CobolMessages {
         "Original values must be supplied for update.";
     public static final String TRANSACTION_ID_INVALID = "Tran ID must be Numeric...";
     public static final String TRANSACTION_NOT_FOUND = "Transaction ID NOT found...";
+    public static final String TRANSACTION_ID_REQUIRED = "Tran ID can NOT be empty...";
+    public static final String TRANSACTION_VIEW_LOOKUP_FAILED =
+        "Unable to lookup Transaction...";
     public static final String TRANSACTION_ACCOUNT_OR_CARD_REQUIRED =
         "Account or Card Number must be entered...";
     public static final String TRANSACTION_ACCOUNT_NOT_FOUND =
@@ -172,6 +175,27 @@ public final class CobolMessages {
         "Press PF5 key to save your updates ...";
     public static final String USER_MODIFY_TO_UPDATE = "Please modify to update ...";
 
+    // COCRDSLC verbatim (S-05): WS-INFO-MSG 88-levels (cbl:127-133) and the
+    // per-field prompts of 2210/2220-EDIT (cbl:656-660, :695-700).
+    public static final String CARD_VIEW_PROMPT =
+        "Please enter Account and Card Number";
+    public static final String CARD_VIEW_FOUND =
+        "   Displaying requested details";
+    public static final String CARD_ACCOUNT_REQUIRED = "Account number not provided";
+    public static final String CARD_NUMBER_REQUIRED = "Card number not provided";
+
+
+    // COBIL00C verbatim messages (S-11; COBIL00C.cbl:161-540).
+    public static final String BILL_ACCOUNT_EMPTY = "Acct ID can NOT be empty...";
+    public static final String BILL_ACCOUNT_LOOKUP_FAILED =
+        "Unable to lookup Account...";
+    public static final String BILL_XREF_LOOKUP_FAILED =
+        "Unable to lookup XREF AIX file...";
+    public static final String BILL_TRANSACTION_ADD_FAILED =
+        "Unable to Add Bill pay Transaction...";
+    public static final String BILL_ACCOUNT_UPDATE_FAILED =
+        "Unable to Update Account...";
+
     private CobolMessages() {
     }
 
@@ -259,5 +283,11 @@ public final class CobolMessages {
         }
         int space = value.indexOf(' ');
         return space < 0 ? value : value.substring(0, space);
+    }
+
+    // COBIL00C.cbl:526-530 — 'Payment successful. ' + ' Your Transaction ID
+    // is ' + TRAN-ID + '.', so two spaces before "Your".
+    public static String billPaymentSuccess(String tranId) {
+        return "Payment successful.  Your Transaction ID is " + tranId + ".";
     }
 }

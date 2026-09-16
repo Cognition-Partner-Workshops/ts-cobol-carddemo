@@ -107,11 +107,11 @@ class MenuServiceTest {
         // POST-only or unimplemented endpoints have no browsable route today.
         assertNull(service.uiRoute(
                 service.selectMain(new MenuSelectRequest("2"), authentication)));
-        assertNull(service.uiRoute(
+        assertEquals("/bill-payment", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("10"), authentication)));
         assertNull(service.uiRoute(
                 service.selectMain(new MenuSelectRequest("11"), authentication)));
-        assertEquals("/api/admin/users", service.uiRoute(
+        assertEquals("/admin/users", service.uiRoute(
                 service.selectAdmin(new MenuSelectRequest("1"))));
         assertNull(service.uiRoute(
                 service.selectAdmin(new MenuSelectRequest("5"))));

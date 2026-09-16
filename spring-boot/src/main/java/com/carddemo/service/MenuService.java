@@ -45,7 +45,7 @@ public class MenuService {
             option(8, "Transaction Add", "COTRN02C", "/api/transactions", "U", true),
             option(9, "Transaction Reports", "CORPT00C", "/api/reports", "U", true),
             option(10, "Bill Payment", "COBIL00C", "/api/billing/payments", "U", true),
-            option(11, "Pending Authorization View", "COPAUS0C", "/api/programs/COPAUS0C", "U", false));
+            option(11, "Pending Authorization View", "COPAUS0C", "/api/pending-auth/{acctId}", "U", true));
 
     private static final List<MenuOption> ADMIN = List.of(
             option(1, "User List (Security)", "COUSR00C", "/api/admin/users", "A", true),
@@ -112,7 +112,8 @@ public class MenuService {
             "COTRN02C", "/transactions/add",
             "COUSR00C", "/api/admin/users",
             "COUSR01C", "/api/admin/users",
-            "COACTVWC", "/accounts/view");
+            "COACTVWC", "/accounts/view",
+            "COPAUS0C", "/ui/pending-auth");
 
     public String uiRoute(MenuSelectionResponse selection) {
         if (!selection.implemented() || !selection.available()) {

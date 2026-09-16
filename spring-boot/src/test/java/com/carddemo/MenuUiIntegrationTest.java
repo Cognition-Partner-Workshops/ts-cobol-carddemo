@@ -77,8 +77,7 @@ class MenuUiIntegrationTest {
                 .andExpect(content().string(containsString("11. Pending Authorization View")))
                 .andExpect(content().string(containsString("Please select an option :")))
                 .andExpect(content().string(containsString("name=\"option\"")))
-                .andExpect(content().string(containsString("ENTER=Continue  F3=Exit")))
-                .andExpect(content().string(containsString("not installed")));
+                .andExpect(content().string(containsString("ENTER=Continue  F3=Exit")));
     }
 
     @Test
@@ -116,22 +115,22 @@ class MenuUiIntegrationTest {
         // Implemented target without a browsable route yet: the menu
         // redisplays the not-installed idiom instead of a dead link.
         mockMvc.perform(post("/menu/select").session(session)
-                        .param("aid", "ENTER").param("option", "10"))
+                        .param("aid", "ENTER").param("option", "9"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("menu"))
                 .andExpect(model().attribute("message",
-                        "This option Bill Payment is not installed..."));
+                        "This option Transaction Reports is not installed..."));
     }
 
     @Test
-    void pendingAuthorizationShowsNotInstalledMessage_frS0114() throws Exception {
+    void pendingAuthorizationRoutesToScreen_frS0114() throws Exception {
         MockHttpSession session = signon("USER0001", "PASSWORD", "/menu");
+        // S-19 flipped the catalogue flag: option 11 now resolves its UI
+        // route instead of the not-installed idiom.
         mockMvc.perform(post("/menu/select").session(session)
                         .param("aid", "ENTER").param("option", "11"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("menu"))
-                .andExpect(model().attribute("message",
-                        "This option Pending Authorization View is not installed..."));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/ui/pending-auth"));
     }
 
     @Test
@@ -165,8 +164,7 @@ class MenuUiIntegrationTest {
                 .andExpect(content().string(containsString("05. Transaction Type List/Update (Db2)")))
                 .andExpect(content().string(containsString("06. Transaction Type Maintenance (Db2)")))
                 .andExpect(content().string(containsString("Please select an option :")))
-                .andExpect(content().string(containsString("ENTER=Continue  F3=Exit")))
-                .andExpect(content().string(containsString("not installed")));
+                .andExpect(content().string(containsString("ENTER=Continue  F3=Exit")));
     }
 
     @Test
@@ -188,13 +186,15 @@ class MenuUiIntegrationTest {
         mockMvc.perform(post("/admin/menu/select").session(session)
                         .param("aid", "ENTER").param("option", "1"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/api/admin/users"));
+                .andExpect(redirectedUrl("/admin/users"));
         mockMvc.perform(post("/admin/menu/select").session(session)
                         .param("aid", "ENTER").param("option", "5"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("admin-menu"))
-                .andExpect(model().attribute("message",
-                        "This option Transaction Type List/Update (Db2) is not installed..."));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/ui/tran-types"));
+        mockMvc.perform(post("/admin/menu/select").session(session)
+                        .param("aid", "ENTER").param("option", "6"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/ui/tran-types/maint"));
     }
 
     @Test

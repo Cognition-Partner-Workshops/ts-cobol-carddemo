@@ -2,6 +2,10 @@ package com.carddemo.ui;
 
 import com.carddemo.api.AuthRequest;
 import com.carddemo.api.AuthResponse;
+import com.carddemo.api.BillPaymentScreen;
+import com.carddemo.api.CardUpdateCommarea;
+import com.carddemo.api.CardUpdateForm;
+import com.carddemo.api.CardUpdateScreen;
 import com.carddemo.api.CobolApiException;
 import com.carddemo.api.CobolMessages;
 import com.carddemo.api.MenuResponse;
@@ -16,9 +20,13 @@ import com.carddemo.service.AccountUpdateSnapshot;
 import com.carddemo.service.AccountViewScreen;
 import com.carddemo.service.AccountViewService;
 import com.carddemo.service.AuthService;
+import com.carddemo.service.BillingService;
+import com.carddemo.service.CardService;
+import com.carddemo.service.CardViewScreen;
 import com.carddemo.service.MenuService;
 import com.carddemo.service.TransactionListService;
 import com.carddemo.service.TransactionService;
+import com.carddemo.service.TransactionViewScreen;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
@@ -55,18 +63,24 @@ public class UiController {
     private final AccountUpdateService accountUpdateService;
     private final TransactionListService transactionListService;
     private final TransactionService transactionService;
+    private final BillingService billingService;
+    private final CardService cardService;
 
     public UiController(AuthService authService, MenuService menuService,
                         AccountViewService accountViewService,
                         AccountUpdateService accountUpdateService,
                         TransactionListService transactionListService,
-                        TransactionService transactionService) {
+                        TransactionService transactionService,
+                        BillingService billingService,
+                        CardService cardService) {
         this.authService = authService;
         this.menuService = menuService;
         this.accountViewService = accountViewService;
         this.accountUpdateService = accountUpdateService;
         this.transactionListService = transactionListService;
         this.transactionService = transactionService;
+        this.billingService = billingService;
+        this.cardService = cardService;
     }
 
     @ModelAttribute
@@ -259,6 +273,66 @@ public class UiController {
         return view;
     }
 
+    // COCRDUPC web surface (tran CCUP): lookup-then-update of a credit
+    // card (S-06). First display is the empty search screen — the source
+    // sends the map without receiving one (COCRDUPC.cbl:502-511), so a
+    // bare GET never runs the search edits. The list-entry seam (S06-B2)
+    // pre-fetches when the keys arrive on the URL; the plan spells them
+    // acctId/cardNum, COCRDLIC's U-select spells accountId/cardNumber.
+    @GetMapping("/cards/update")
+    public String cardUpdate(
+            @RequestParam(name = "acctId", required = false) String acctId,
+            @RequestParam(name = "cardNum", required = false) String cardNum,
+            @RequestParam(name = "accountId", required = false) String accountId,
+            @RequestParam(name = "cardNumber", required = false) String cardNumber,
+            Model model) {
+        String acct = acctId != null ? acctId : accountId;
+        String card = cardNum != null ? cardNum : cardNumber;
+        CardUpdateScreen screen = acct == null || acct.isBlank()
+                || card == null || card.isBlank()
+                ? cardService.initialCardUpdate()
+                : cardService.cardUpdate(CardUpdateForm.search(acct, card));
+        model.addAttribute("screen", screen);
+        return "card-update";
+    }
+
+    // One AID press (COCRDUPC.cbl:429-543): PF3 transfers to the menu
+    // (S06-B3); every other AID posts the map fields plus the echoed
+    // WS-THIS-PROGCOMMAREA through the six-state machine. PF5/PF12
+    // validity and the remap-to-ENTER live in the service (:413-424).
+    @PostMapping("/cards/update")
+    public String submitCardUpdate(
+            @RequestParam(name = "aid", defaultValue = "ENTER") String aid,
+            @RequestParam(name = "acctsid", required = false) String acctsid,
+            @RequestParam(name = "cardsid", required = false) String cardsid,
+            @RequestParam(name = "crdname", required = false) String crdname,
+            @RequestParam(name = "crdstcd", required = false) String crdstcd,
+            @RequestParam(name = "expmon", required = false) String expmon,
+            @RequestParam(name = "expyear", required = false) String expyear,
+            @RequestParam(name = "expday", required = false) String expday,
+            @RequestParam(name = "changeAction", required = false) String changeAction,
+            @RequestParam(name = "oldAcctId", required = false) String oldAcctId,
+            @RequestParam(name = "oldCardNum", required = false) String oldCardNum,
+            @RequestParam(name = "oldName", required = false) String oldName,
+            @RequestParam(name = "oldStatus", required = false) String oldStatus,
+            @RequestParam(name = "oldYear", required = false) String oldYear,
+            @RequestParam(name = "oldMonth", required = false) String oldMonth,
+            @RequestParam(name = "oldDay", required = false) String oldDay,
+            Model model) {
+        if ("PF3".equals(aid) || "F3".equals(aid)) {
+            return "redirect:/menu";
+        }
+        CardUpdateCommarea commarea = changeAction == null
+                ? CardUpdateCommarea.fresh()
+                : new CardUpdateCommarea(changeAction, oldAcctId, oldCardNum,
+                        oldName, oldStatus, oldYear, oldMonth, oldDay);
+        CardUpdateScreen screen = cardService.cardUpdate(new CardUpdateForm(
+                aid, acctsid, cardsid, crdname, crdstcd, expmon, expyear, expday,
+                commarea));
+        model.addAttribute("screen", screen);
+        return "card-update";
+    }
+
     // COACTVWC web surface (tran CAVW): view an account plus its customer.
     // First display is the fixed prompt with an empty field
     // (COACTVWC.cbl:353-360); the info line is always the prompt because
@@ -288,6 +362,53 @@ public class UiController {
     }
 
     private void renderAccountView(Model model, AccountViewScreen screen, String returnUrl) {
+        model.addAttribute("screen", screen);
+        model.addAttribute("message", screen.errorMessage());
+        model.addAttribute("returnUrl", internalRoute(returnUrl));
+    }
+
+    // COCRDSLC web surface (tran CCDL, map CCRDSLA). S05-B2: a menu entry
+    // is the first display; accountId + cardNumber together are the
+    // card-list XCTL contract (COCRDSLC.cbl:339-348) — the edits are
+    // skipped, the read runs at once and the inputs render protected.
+    @GetMapping("/cards/view")
+    public String cardView(@RequestParam(name = "accountId", required = false) String accountId,
+                           @RequestParam(name = "cardNumber", required = false) String cardNumber,
+                           @RequestParam(name = "returnUrl", required = false) String returnUrl,
+                           Model model) {
+        boolean cardListContext = accountId != null && !accountId.isBlank()
+                && cardNumber != null && !cardNumber.isBlank();
+        CardViewScreen screen = cardListContext
+                ? cardService.cardListScreen(accountId, cardNumber)
+                : cardService.initialScreen();
+        // S05-B3: the PF3 caller is COCRDLIC when the card list handed us
+        // its keys (CDEMO-FROM-PROGRAM); a supplied returnUrl wins.
+        String caller = returnUrl == null && cardListContext
+                ? menuService.uiRouteForProgram("COCRDLIC") : returnUrl;
+        renderCardView(model, screen, caller);
+        return "card-view";
+    }
+
+    // AID handling (COCRDSLC.cbl:284-299): PF3 exits to the caller route.
+    // Every other AID is forced to ENTER — this program has no
+    // invalid-key message, unlike the S-01 screens.
+    @PostMapping("/cards/view")
+    public String submitCardView(
+            @RequestParam(name = "aid", defaultValue = "ENTER") String aid,
+            @RequestParam(name = "accountId", required = false) String accountId,
+            @RequestParam(name = "cardNumber", required = false) String cardNumber,
+            @RequestParam(name = "cardListContext", defaultValue = "false") boolean cardListContext,
+            @RequestParam(name = "returnUrl", required = false) String returnUrl,
+            Model model) {
+        if ("PF3".equals(aid)) {
+            return "redirect:" + internalRoute(returnUrl);
+        }
+        renderCardView(model,
+                cardService.viewScreen(accountId, cardNumber, cardListContext), returnUrl);
+        return "card-view";
+    }
+
+    private void renderCardView(Model model, CardViewScreen screen, String returnUrl) {
         model.addAttribute("screen", screen);
         model.addAttribute("message", screen.errorMessage());
         model.addAttribute("returnUrl", internalRoute(returnUrl));
@@ -549,5 +670,132 @@ public class UiController {
         model.addAttribute("message", screen.message());
         model.addAttribute("messageStyle", screen.messageStyle());
         return "transaction-add";
+    }
+
+    // COBIL00C web surface (tran CB00): the first display is the empty map
+    // (COBIL00C.cbl:112-122); a CDEMO-CB00-TRN-SELECTED lands as the
+    // accountId query param and runs ENTER processing at once (S11-B5).
+    // Unsigned access is bounced to sign-on by the security entry point
+    // (EIBCALEN=0, :107-109).
+    @GetMapping("/bill-payment")
+    public String billPayment(@RequestParam(name = "accountId", required = false) String accountId,
+                              Model model) {
+        BillPaymentScreen screen = BillPaymentScreen.blank();
+        if (accountId != null && !accountId.isBlank()) {
+            screen = billingService.enter(accountId, null, null);
+        }
+        return billPaymentView(screen, model);
+    }
+
+    // AID map (COBIL00C.cbl:126-141): ENTER runs PROCESS-ENTER-KEY, PF3
+    // transfers back to the menu (S11-B4), PF4 clears the map, and every
+    // other key redisplays the screen unchanged with the invalid-key
+    // message — this program does emit it, unlike COACTVWC.
+    @PostMapping("/bill-payment")
+    public String submitBillPayment(
+            @RequestParam(name = "aid", defaultValue = "ENTER") String aid,
+            @RequestParam(name = "acctId", required = false) String acctId,
+            @RequestParam(name = "currentBalance", required = false) String currentBalance,
+            @RequestParam(name = "confirmation", required = false) String confirmation,
+            Model model) {
+        if ("PF3".equals(aid)) {
+            return "redirect:/menu";
+        }
+        if ("PF4".equals(aid)) {
+            return billPaymentView(BillPaymentScreen.blank(), model);
+        }
+        BillPaymentScreen screen = "ENTER".equals(aid)
+                ? billingService.enter(acctId, confirmation, currentBalance)
+                : BillPaymentScreen.preserved(acctId, currentBalance, confirmation,
+                        CobolMessages.INVALID_KEY_PRESSED);
+        return billPaymentView(screen, model);
+    }
+
+    private String billPaymentView(BillPaymentScreen screen, Model model) {
+        model.addAttribute("screen", screen);
+        model.addAttribute("message", screen.message());
+        model.addAttribute("messageStyle", screen.messageStyle());
+        return "bill-payment";
+    }
+
+
+    // COTRN01C web surface (tran CT01): one transaction by its verbatim
+    // Tran ID. First entry honors the CDEMO-CT01-TRN-SELECTED slot, which
+    // arrives as the tranId query parameter (S08-B2); a bare entry shows
+    // the empty map (COTRN01C.cbl:98-109).
+    @GetMapping("/transactions/view")
+    public String transactionView(
+            @RequestParam(name = "tranId", required = false) String tranId,
+            @RequestParam(name = "returnUrl", required = false) String returnUrl,
+            Model model) {
+        renderTransactionView(model, transactionService.openView(tranId), returnUrl);
+        return "transaction-view";
+    }
+
+    // AID map (COTRN01C.cbl:112-132): ENTER runs the keyed read, PF3
+    // exits to the caller (CDEMO-FROM-PROGRAM, the returnUrl slot) or the
+    // menu, PF4 clears the map, PF5 transfers to COTRN00C, any other key
+    // redisplays with the invalid-key message. Every detail field is
+    // FSET, so the posted fields rebuild the shown record — kept on a
+    // blank-id rejection, an invalid AID or the coming-soon fallback
+    // (:147-152, :128-131, S08-B4).
+    @PostMapping("/transactions/view")
+    public String submitTransactionView(
+            @RequestParam(name = "aid", defaultValue = "ENTER") String aid,
+            @RequestParam(name = "trnIdIn", required = false) String trnIdIn,
+            @RequestParam(name = "trnid", required = false) String trnid,
+            @RequestParam(name = "cardnum", required = false) String cardnum,
+            @RequestParam(name = "ttypcd", required = false) String ttypcd,
+            @RequestParam(name = "tcatcd", required = false) String tcatcd,
+            @RequestParam(name = "trnsrc", required = false) String trnsrc,
+            @RequestParam(name = "tdesc", required = false) String tdesc,
+            @RequestParam(name = "trnamt", required = false) String trnamt,
+            @RequestParam(name = "torigdt", required = false) String torigdt,
+            @RequestParam(name = "tprocdt", required = false) String tprocdt,
+            @RequestParam(name = "mid", required = false) String mid,
+            @RequestParam(name = "mname", required = false) String mname,
+            @RequestParam(name = "mcity", required = false) String mcity,
+            @RequestParam(name = "mzip", required = false) String mzip,
+            @RequestParam(name = "returnUrl", required = false) String returnUrl,
+            Model model) {
+        if ("PF3".equals(aid)) {
+            return "redirect:" + internalRoute(returnUrl);
+        }
+        if ("PF4".equals(aid)) {
+            renderTransactionView(model, TransactionViewScreen.blank(), returnUrl);
+            return "transaction-view";
+        }
+        TransactionViewScreen.Details displayed = TransactionViewScreen.Details.posted(
+                trnid, cardnum, ttypcd, tcatcd, trnsrc, tdesc, trnamt,
+                torigdt, tprocdt, mid, mname, mcity, mzip);
+        TransactionViewScreen screen;
+        switch (aid) {
+            case "ENTER" -> screen = transactionService.enterView(trnIdIn, displayed);
+            case "PF5" -> {
+                // XCTL COTRN00C (:120-124) resolved through the route
+                // registry (S08-B4): browsable -> /transactions/list,
+                // otherwise the coming-soon idiom, screen retained.
+                String route = menuService.uiRouteForProgram("COTRN00C");
+                if (route != null) {
+                    return "redirect:" + route;
+                }
+                screen = TransactionViewScreen.retained(trnIdIn,
+                        CobolMessages.optionComingSoon(
+                                menuService.programName("COTRN00C")),
+                        "info", displayed);
+            }
+            default -> screen = TransactionViewScreen.retained(trnIdIn,
+                    CobolMessages.INVALID_KEY_PRESSED, null, displayed);
+        }
+        renderTransactionView(model, screen, returnUrl);
+        return "transaction-view";
+    }
+
+    private void renderTransactionView(Model model, TransactionViewScreen screen,
+                                       String returnUrl) {
+        model.addAttribute("screen", screen);
+        model.addAttribute("message", screen.message());
+        model.addAttribute("messageStyle", screen.messageStyle());
+        model.addAttribute("returnUrl", internalRoute(returnUrl));
     }
 }

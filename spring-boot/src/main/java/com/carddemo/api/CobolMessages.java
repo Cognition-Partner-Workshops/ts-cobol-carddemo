@@ -71,6 +71,9 @@ public final class CobolMessages {
         "Original values must be supplied for update.";
     public static final String TRANSACTION_ID_INVALID = "Tran ID must be Numeric...";
     public static final String TRANSACTION_NOT_FOUND = "Transaction ID NOT found...";
+    public static final String TRANSACTION_ID_REQUIRED = "Tran ID can NOT be empty...";
+    public static final String TRANSACTION_VIEW_LOOKUP_FAILED =
+        "Unable to lookup Transaction...";
     public static final String TRANSACTION_ACCOUNT_OR_CARD_REQUIRED =
         "Account or Card Number must be entered...";
     public static final String TRANSACTION_ACCOUNT_NOT_FOUND =
@@ -174,6 +177,135 @@ public final class CobolMessages {
     public static final String COULD_NOT_LOCK_CUSTOMER =
         "Could not lock customer record for update";
 
+    // COTRTLIC verbatim messages (S-21; COTRTLIC.cbl:236-262, :1115-1117,
+    // :1253-1265, :1534-1548, :1867-1938).
+    public static final String TRTYPE_FILTER_INVALID =
+        "TYPE CODE FILTER,IF SUPPLIED MUST BE A 2 DIGIT NUMBER";
+    public static final String TRTYPE_SELECT_ONLY_ONE = "Please select only 1 action";
+    public static final String TRTYPE_ACTION_INVALID = "Action code selected is invalid";
+    public static final String TRTYPE_NO_RECORDS_FILTERS =
+        "No Records found for these filter conditions";
+    public static final String TRTYPE_NO_PREVIOUS_PAGES = "No previous pages to display";
+    public static final String TRTYPE_NO_MORE_PAGES = "No more pages to display";
+    public static final String TRTYPE_NO_MORE_RECORDS =
+        "No more pages for these search conditions";
+    public static final String TRTYPE_NO_RECORDS_FOUND =
+        "No records found for this search condition.";
+    public static final String TRTYPE_RECORD_GONE =
+        "Record not found. Deleted by others ? ";
+    public static final String TRTYPE_DEADLOCK = "Deadlock. Someone else updating ?";
+    public static final String TRTYPE_CHILD_RECORDS =
+        "Please delete associated child records first:";
+    public static final String TRTYPE_INFO_ACTIONS =
+        "Type U to update, D to delete any record";
+    public static final String TRTYPE_CONFIRM_DELETE =
+        "Delete HIGHLIGHTED row ? Press F10 to confirm";
+    public static final String TRTYPE_CONFIRM_UPDATE =
+        "Update HIGHLIGHTED row. Press F10 to save";
+    public static final String TRTYPE_DELETE_DONE =
+        "HIGHLIGHTED row deleted.Hit Enter to continue";
+    public static final String TRTYPE_UPDATE_DONE = "HIGHLIGHTED row was updated";
+    public static final String TRTYPE_NO_CHANGES =
+        "No change detected with respect to database values.";
+
+    // COTRTUPC verbatim messages (S-21; COTRTUPC.cbl:140-195, :1640-1661).
+    public static final String TTUP_SEARCH_KEYS =
+        "Enter transaction type to be maintained";
+    public static final String TTUP_CREATE_PROMPT = "Press F05 to add. F12 to cancel";
+    public static final String TTUP_CHANGES_PROMPT =
+        "Update transaction type details shown.";
+    public static final String TTUP_DELETE_CONFIRM =
+        "Delete this record ? Press F4 to confirm";
+    public static final String TTUP_DELETE_DONE = "Delete successful.";
+    public static final String TTUP_NEW_DATA = "Enter new transaction type details.";
+    public static final String TTUP_CONFIRM_SAVE = "Changes validated.Press F5 to save";
+    public static final String TTUP_COMMIT_DONE = "Changes committed to database";
+    public static final String TTUP_FAILURE = "Changes unsuccessful";
+    public static final String TTUP_RECORD_NOT_FOUND =
+        "No record found for this key in database";
+    public static final String TTUP_NO_INPUT = "No input received";
+    public static final String TTUP_INVALID_KEY = "Invalid key pressed";
+    public static final String TTUP_EXIT = "PF03 pressed.Exiting";
+    public static final String TTUP_LOCK_FAILED = "Could not lock record for update";
+    public static final String TTUP_UPDATE_CANCELLED = "Update was cancelled";
+    public static final String TTUP_DELETE_CANCELLED = "Delete was cancelled";
+    public static final String TTUP_CODE_REQUIRED = "Tran Type code must be supplied.";
+    public static final String TTUP_CODE_NUMERIC = "Tran Type code must be numeric.";
+    public static final String TTUP_CODE_NOT_ZERO = "Tran Type code must not be zero.";
+    public static final String TTUP_DESC_REQUIRED = "Transaction Desc must be supplied.";
+    public static final String TTUP_DESC_ALPHANUM =
+        "Transaction Desc can have numbers or alphabets only.";
+    public static final String TTUP_UPDATE_FAILED_PREFIX =
+        "Error updating: TRANSACTION_TYPE Table. SQLCODE:";
+    public static final String TTUP_INSERT_FAILED_PREFIX =
+        "Error inserting record into: TRANSACTION_TYPE Table. SQLCODE:";
+    public static final String TTUP_DELETE_FAILED_PREFIX =
+        "Delete failed with message:SQLCODE :";
+
+    // COCRDUPC verbatim messages (S-06; COCRDUPC.cbl:146-212). The
+    // WS-FILE-ERROR-MESSAGE layout (:133-152) renders READ on CARDDAT with
+    // the fixed IOERR codes — RESP/RESP2 have no target equivalent
+    // (FR-S06-12 assumption: 000000017 / 000000000).
+    public static final String CARD_ACCOUNT_NOT_PROVIDED =
+        "Account number not provided";
+    public static final String CARD_NUMBER_NOT_PROVIDED =
+        "Card number not provided";
+    public static final String CARD_COULD_NOT_LOCK =
+        "Could not lock record for update";
+    public static final String CARD_UPDATE_FILE_ERROR_READ =
+        "File Error: READ     on CARDDAT   returned RESP 000000017 ,RESP2 000000000 ";
+    public static final String CARD_UPDATE_PROMPT_KEYS =
+        "Please enter Account and Card Number";
+    public static final String CARD_UPDATE_DETAILS_SHOWN =
+        "Details of selected card shown above";
+    public static final String CARD_UPDATE_PROMPT_CHANGES =
+        "Update card details presented above.";
+    public static final String CARD_UPDATE_PROMPT_CONFIRM =
+        "Changes validated.Press F5 to save";
+    public static final String CARD_UPDATE_COMMITTED =
+        "Changes committed to database";
+    public static final String CARD_UPDATE_UNSUCCESSFUL =
+        "Changes unsuccessful. Please try again";
+
+    // COUSR00C–COUSR03C verbatim messages (S-12; the STRING-delimited forms
+    // use SEC-USR-ID DELIMITED BY SPACE, so the id stops at its first blank).
+    public static final String USER_INVALID_SELECTION =
+        "Invalid selection. Valid values are U and D";
+    public static final String USER_ALREADY_TOP =
+        "You are already at the top of the page...";
+    public static final String USER_ALREADY_BOTTOM =
+        "You are already at the bottom of the page...";
+    public static final String USER_AT_TOP = "You are at the top of the page...";
+    public static final String USER_REACHED_BOTTOM =
+        "You have reached the bottom of the page...";
+    public static final String USER_REACHED_TOP =
+        "You have reached the top of the page...";
+    public static final String USER_LOOKUP_FAILED = "Unable to lookup User...";
+    public static final String USER_SAVE_PROMPT =
+        "Press PF5 key to save your updates ...";
+    public static final String USER_MODIFY_TO_UPDATE = "Please modify to update ...";
+
+    // COCRDSLC verbatim (S-05): WS-INFO-MSG 88-levels (cbl:127-133) and the
+    // per-field prompts of 2210/2220-EDIT (cbl:656-660, :695-700).
+    public static final String CARD_VIEW_PROMPT =
+        "Please enter Account and Card Number";
+    public static final String CARD_VIEW_FOUND =
+        "   Displaying requested details";
+    public static final String CARD_ACCOUNT_REQUIRED = "Account number not provided";
+    public static final String CARD_NUMBER_REQUIRED = "Card number not provided";
+
+
+    // COBIL00C verbatim messages (S-11; COBIL00C.cbl:161-540).
+    public static final String BILL_ACCOUNT_EMPTY = "Acct ID can NOT be empty...";
+    public static final String BILL_ACCOUNT_LOOKUP_FAILED =
+        "Unable to lookup Account...";
+    public static final String BILL_XREF_LOOKUP_FAILED =
+        "Unable to lookup XREF AIX file...";
+    public static final String BILL_TRANSACTION_ADD_FAILED =
+        "Unable to Add Bill pay Transaction...";
+    public static final String BILL_ACCOUNT_UPDATE_FAILED =
+        "Unable to Update Account...";
+
     private CobolMessages() {
     }
 
@@ -239,5 +371,96 @@ public final class CobolMessages {
     // COTRN02C.cbl:728-733 — two spaces before "Your".
     public static String transactionAdded(String tranId) {
         return "Transaction added successfully.  Your Tran ID is " + tranId + ".";
+    }
+
+    // COPAUS0C/COPAUS1C/COPAUS2C verbatim messages (S-19).
+    public static final String PENDING_AUTH_ACCT_REQUIRED = "Please enter Acct Id...";
+    public static final String PENDING_AUTH_ACCT_NUMERIC = "Acct Id must be Numeric ...";
+    public static final String PENDING_AUTH_LAST_AUTH =
+        "Already at the last Authorization...";
+    public static final String PENDING_AUTH_FRAUD_MARKED = "AUTH MARKED FRAUD...";
+    public static final String PENDING_AUTH_FRAUD_REMOVED = "AUTH FRAUD REMOVED...";
+    public static final String PENDING_AUTH_ADD_SUCCESS = "ADD SUCCESS";
+    public static final String PENDING_AUTH_UPDT_SUCCESS = "UPDT SUCCESS";
+
+    // COPAUS0C STRING messages (:833-960): RESP/RESP2 render as 9(09).
+    // NOTFND uses fixed RESP 13/REAS 0; store errors use the S02-B2 IOERR
+    // convention (RESP 17, RESP2 120) since a relational read has no RESP.
+    public static String pendingAuthXrefNotFound(String acctId) {
+        return "Account:" + acctId + " not found in XREF file. Resp:000000013"
+                + " Reas:000000000";
+    }
+
+    public static String pendingAuthAcctNotFound(String acctId) {
+        return "Account:" + acctId + " not found in ACCT file. Resp:000000013"
+                + " Reas:000000000";
+    }
+
+    public static String pendingAuthCustNotFound(String custId) {
+        return "Customer:" + custId + " not found in CUST file. Resp:000000013"
+                + " Reas:000000000";
+    }
+
+    public static String pendingAuthXrefError(String acctId) {
+        return "Account:" + acctId + " System error while reading XREF file."
+                + " Resp:000000017 Reas:000000120";
+    }
+
+    public static String pendingAuthAcctError(String acctId) {
+        return "Account:" + acctId + " System error while reading ACCT file."
+                + " Resp:000000017 Reas:000000120";
+    }
+
+    public static String pendingAuthCustError(String custId) {
+        return "Customer:" + custId + " System error while reading CUST file."
+                + " Resp:000000017 Reas:000000120";
+    }
+
+    // IMS DIBSTAT has no relational equivalent; a failed store read reports
+    // code 'EX' in place of the two-character status (COPAUS0C.cbl:476-514,
+    // COPAUS1C.cbl:455-485).
+    public static String pendingAuthSummaryError(String code) {
+        return " System error while reading AUTH Summary: Code:" + code;
+    }
+
+    public static String pendingAuthDetailsError(String code) {
+        return " System error while reading AUTH Details: Code:" + code;
+    }
+
+    public static String pendingAuthFraudTagError(String code) {
+        return " System error while FRAUD Tagging, ROLLBACK||" + code;
+    }
+
+    // COPAUS2C.cbl:206-213, :234-241 — SQLCODE/SQLSTATE text for the journal.
+    public static String pendingAuthDb2Error(String code, String state) {
+        return " SYSTEM ERROR DB2: CODE:" + code + ", STATE: " + state;
+    }
+
+    // COUSR01C.cbl:255-258, COUSR02C.cbl:366-371, COUSR03C.cbl:319-324 —
+    // 'User ' + SEC-USR-ID DELIMITED BY SPACE + ' has been <verb> ...'.
+    public static String userAdded(String userId) {
+        return "User " + delimitedBySpace(userId) + " has been added ...";
+    }
+
+    public static String userUpdated(String userId) {
+        return "User " + delimitedBySpace(userId) + " has been updated ...";
+    }
+
+    public static String userDeleted(String userId) {
+        return "User " + delimitedBySpace(userId) + " has been deleted ...";
+    }
+
+    private static String delimitedBySpace(String value) {
+        if (value == null) {
+            return "";
+        }
+        int space = value.indexOf(' ');
+        return space < 0 ? value : value.substring(0, space);
+    }
+
+    // COBIL00C.cbl:526-530 — 'Payment successful. ' + ' Your Transaction ID
+    // is ' + TRAN-ID + '.', so two spaces before "Your".
+    public static String billPaymentSuccess(String tranId) {
+        return "Payment successful.  Your Transaction ID is " + tranId + ".";
     }
 }

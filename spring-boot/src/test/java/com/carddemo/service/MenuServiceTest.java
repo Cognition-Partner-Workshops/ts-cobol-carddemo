@@ -49,7 +49,7 @@ class MenuServiceTest {
                 new MenuOption(10, "Bill Payment", "COBIL00C",
                         "/api/billing/payments", "U", true, true),
                 new MenuOption(11, "Pending Authorization View", "COPAUS0C",
-                        "/api/programs/COPAUS0C", "U", false, true));
+                        "/api/pending-auth/{acctId}", "U", true, true));
 
         assertThat(service.adminMenu().options()).containsExactly(
                 new MenuOption(1, "User List (Security)", "COUSR00C",
@@ -61,9 +61,9 @@ class MenuServiceTest {
                 new MenuOption(4, "User Delete (Security)", "COUSR03C",
                         "/api/admin/users/{userId}", "A", true, true),
                 new MenuOption(5, "Transaction Type List/Update (Db2)", "COTRTLIC",
-                        "/api/programs/COTRTLIC", "A", false, true),
+                        "/api/programs/COTRTLIC", "A", true, true),
                 new MenuOption(6, "Transaction Type Maintenance (Db2)", "COTRTUPC",
-                        "/api/programs/COTRTUPC", "A", false, true));
+                        "/api/programs/COTRTUPC", "A", true, true));
     }
 
     @Test
@@ -106,15 +106,19 @@ class MenuServiceTest {
                 service.selectMain(new MenuSelectRequest("1"), authentication)));
         assertEquals("/accounts/update", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("2"), authentication)));
-        // POST-only or unimplemented endpoints have no browsable route today.
-        assertNull(service.uiRoute(
+        assertEquals("/bill-payment", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("10"), authentication)));
-        assertNull(service.uiRoute(
+        assertEquals("/ui/pending-auth", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("11"), authentication)));
-        assertEquals("/api/admin/users", service.uiRoute(
-                service.selectAdmin(new MenuSelectRequest("1"))));
+        // Implemented but unported: no browsable route today.
         assertNull(service.uiRoute(
+                service.selectMain(new MenuSelectRequest("9"), authentication)));
+        assertEquals("/admin/users", service.uiRoute(
+                service.selectAdmin(new MenuSelectRequest("1"))));
+        assertEquals("/ui/tran-types", service.uiRoute(
                 service.selectAdmin(new MenuSelectRequest("5"))));
+        assertEquals("/ui/tran-types/maint", service.uiRoute(
+                service.selectAdmin(new MenuSelectRequest("6"))));
     }
 
     @Test

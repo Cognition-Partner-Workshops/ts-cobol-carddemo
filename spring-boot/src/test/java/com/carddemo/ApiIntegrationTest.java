@@ -17,6 +17,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -122,11 +123,23 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.screen.rows[0].cardNumber")
                         .value("1111222233334444"))
                 .andExpect(jsonPath("$.pageState.screenNumber").value(1));
-        mockMvc.perform(get("/api/cards/1111222233334444").session(session))
+        mockMvc.perform(get("/api/cards/1111222233334444")
+                        .param("accountId", "00000000001").session(session))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accountId").value(1))
                 .andExpect(jsonPath("$.cvvCode").value("123"))
                 .andExpect(jsonPath("$.embossedName").value(containsString("Byron")));
+        // S-05 / COCRDSLC edits (:651-660): a missing account is the
+        // field's blank edit, not a lookup — the read is gated on both.
+        mockMvc.perform(get("/api/cards/1111222233334444").session(session))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Account number not provided"));
+        // FR-S05-12: the keyed read uses the card number alone — the
+        // account is never cross-checked against the card's owner.
+        mockMvc.perform(get("/api/cards/1111222233334444")
+                        .param("accountId", "00000000002").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountId").value(1));
         // A filter complaint redisplays on the screen, like the 3270 map.
         mockMvc.perform(get("/api/cards").param("cardNumber", "123")
                         .session(session))
@@ -139,7 +152,8 @@ class ApiIntegrationTest {
     void cardUpdateValidatesAndRejectsConcurrentChange() throws Exception {
         MockHttpSession session = signon("ADMIN001", "PASSWORD", "/api/admin/menu");
         JsonNode detail = objectMapper.readTree(mockMvc.perform(
-                        get("/api/cards/1111222233334444").session(session))
+                        get("/api/cards/1111222233334444")
+                                .param("accountId", "00000000001").session(session))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
         ObjectNode stale = cardUpdate(detail);
         ((ObjectNode) stale.get("original")).put("embossedName", "Someone Else");
@@ -238,8 +252,8 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.transactionCategoryCode").value("0001"));
         mockMvc.perform(post("/api/billing/payments").session(admin)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"accountId\":\"1\",\"confirmation\":\"N\"}"))
-                .andExpect(status().isBadRequest())
+                        .content("{\"accountId\":\"00000000001\",\"confirmation\":\"\"}"))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Confirm to make a bill payment..."));
         mockMvc.perform(post("/api/reports").session(admin)
                         .contentType(MediaType.APPLICATION_JSON).content("""
@@ -256,22 +270,25 @@ class ApiIntegrationTest {
                                  "password":"PASSWORD","userType":"U"}
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value("NEWUSER1"));
+                .andExpect(jsonPath("$.userId").value("newuser1"));
     }
 
+    // S12-B2: values are stored as typed — sign-on's upper-casing lookup
+    // can never reach a lower-case user, matching USRSEC parity.
     @Test
-    void adminCreatedPasswordsUseSignonNormalization() throws Exception {
+    void adminCreatedUsersAreStoredAsTyped() throws Exception {
         MockHttpSession admin = signon("ADMIN001", "PASSWORD", "/api/admin/menu");
         mockMvc.perform(post("/api/admin/users").session(admin)
                         .contentType(MediaType.APPLICATION_JSON).content("""
                                 {"userId":"lower01","firstName":"Lower","lastName":"Case",
                                  "password":"lowerpas","userType":"U"}
                                 """))
-                .andExpect(status().isOk());
-        mockMvc.perform(post("/api/auth/signoff").session(admin))
-                .andExpect(status().isOk());
-
-        signon("LOWER01", "lowerpas", "/api/menu");
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value("lower01"));
+        SecurityUser stored = userRepository.findById("lower01").orElseThrow();
+        assertThat(stored.getFirstName()).isEqualTo("Lower");
+        assertThat(stored.getPassword()).isEqualTo("lowerpas");
+        assertThat(userRepository.findById("LOWER01")).isEmpty();
     }
 
     @Test

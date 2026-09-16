@@ -71,6 +71,9 @@ public final class CobolMessages {
         "Original values must be supplied for update.";
     public static final String TRANSACTION_ID_INVALID = "Tran ID must be Numeric...";
     public static final String TRANSACTION_NOT_FOUND = "Transaction ID NOT found...";
+    public static final String TRANSACTION_ID_REQUIRED = "Tran ID can NOT be empty...";
+    public static final String TRANSACTION_VIEW_LOOKUP_FAILED =
+        "Unable to lookup Transaction...";
     public static final String TRANSACTION_ACCOUNT_OR_CARD_REQUIRED =
         "Account or Card Number must be entered...";
     public static final String TRANSACTION_ACCOUNT_NOT_FOUND =
@@ -153,6 +156,45 @@ public final class CobolMessages {
         "TYPE S FOR DETAIL, U TO UPDATE ANY RECORD";
     public static final String CARD_FILE_ERROR_READ =
         "File Error: READ     on CARDDAT   returned RESP 000000020 ,RESP2 000000090 ";
+
+    // COUSR00C–COUSR03C verbatim messages (S-12; the STRING-delimited forms
+    // use SEC-USR-ID DELIMITED BY SPACE, so the id stops at its first blank).
+    public static final String USER_INVALID_SELECTION =
+        "Invalid selection. Valid values are U and D";
+    public static final String USER_ALREADY_TOP =
+        "You are already at the top of the page...";
+    public static final String USER_ALREADY_BOTTOM =
+        "You are already at the bottom of the page...";
+    public static final String USER_AT_TOP = "You are at the top of the page...";
+    public static final String USER_REACHED_BOTTOM =
+        "You have reached the bottom of the page...";
+    public static final String USER_REACHED_TOP =
+        "You have reached the top of the page...";
+    public static final String USER_LOOKUP_FAILED = "Unable to lookup User...";
+    public static final String USER_SAVE_PROMPT =
+        "Press PF5 key to save your updates ...";
+    public static final String USER_MODIFY_TO_UPDATE = "Please modify to update ...";
+
+    // COCRDSLC verbatim (S-05): WS-INFO-MSG 88-levels (cbl:127-133) and the
+    // per-field prompts of 2210/2220-EDIT (cbl:656-660, :695-700).
+    public static final String CARD_VIEW_PROMPT =
+        "Please enter Account and Card Number";
+    public static final String CARD_VIEW_FOUND =
+        "   Displaying requested details";
+    public static final String CARD_ACCOUNT_REQUIRED = "Account number not provided";
+    public static final String CARD_NUMBER_REQUIRED = "Card number not provided";
+
+
+    // COBIL00C verbatim messages (S-11; COBIL00C.cbl:161-540).
+    public static final String BILL_ACCOUNT_EMPTY = "Acct ID can NOT be empty...";
+    public static final String BILL_ACCOUNT_LOOKUP_FAILED =
+        "Unable to lookup Account...";
+    public static final String BILL_XREF_LOOKUP_FAILED =
+        "Unable to lookup XREF AIX file...";
+    public static final String BILL_TRANSACTION_ADD_FAILED =
+        "Unable to Add Bill pay Transaction...";
+    public static final String BILL_ACCOUNT_UPDATE_FAILED =
+        "Unable to Update Account...";
 
     private CobolMessages() {
     }
@@ -282,5 +324,33 @@ public final class CobolMessages {
     // COPAUS2C.cbl:206-213, :234-241 — SQLCODE/SQLSTATE text for the journal.
     public static String pendingAuthDb2Error(String code, String state) {
         return " SYSTEM ERROR DB2: CODE:" + code + ", STATE: " + state;
+    }
+
+    // COUSR01C.cbl:255-258, COUSR02C.cbl:366-371, COUSR03C.cbl:319-324 —
+    // 'User ' + SEC-USR-ID DELIMITED BY SPACE + ' has been <verb> ...'.
+    public static String userAdded(String userId) {
+        return "User " + delimitedBySpace(userId) + " has been added ...";
+    }
+
+    public static String userUpdated(String userId) {
+        return "User " + delimitedBySpace(userId) + " has been updated ...";
+    }
+
+    public static String userDeleted(String userId) {
+        return "User " + delimitedBySpace(userId) + " has been deleted ...";
+    }
+
+    private static String delimitedBySpace(String value) {
+        if (value == null) {
+            return "";
+        }
+        int space = value.indexOf(' ');
+        return space < 0 ? value : value.substring(0, space);
+    }
+
+    // COBIL00C.cbl:526-530 — 'Payment successful. ' + ' Your Transaction ID
+    // is ' + TRAN-ID + '.', so two spaces before "Your".
+    public static String billPaymentSuccess(String tranId) {
+        return "Payment successful.  Your Transaction ID is " + tranId + ".";
     }
 }

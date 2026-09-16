@@ -81,7 +81,9 @@ class MenuServiceTest {
 
         var selection = service.selectMain(new MenuSelectRequest("1"), authentication);
 
-        assertEquals("This option Future Featureis coming soon ...", selection.message());
+        // COMEN01C.cbl:172-175 — the option name is STRINGed DELIMITED BY
+        // SPACE, so only its first word survives.
+        assertEquals("This option Futureis coming soon ...", selection.message());
         assertNull(service.uiRoute(selection));
     }
 
@@ -100,9 +102,11 @@ class MenuServiceTest {
                 service.selectMain(new MenuSelectRequest("3"), authentication)));
         assertEquals("/api/transactions", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("6"), authentication)));
-        // Templated or POST-only endpoints have no browsable route today.
-        assertNull(service.uiRoute(
+        assertEquals("/accounts/view", service.uiRoute(
                 service.selectMain(new MenuSelectRequest("1"), authentication)));
+        // POST-only or unimplemented endpoints have no browsable route today.
+        assertNull(service.uiRoute(
+                service.selectMain(new MenuSelectRequest("2"), authentication)));
         assertNull(service.uiRoute(
                 service.selectMain(new MenuSelectRequest("10"), authentication)));
         assertNull(service.uiRoute(

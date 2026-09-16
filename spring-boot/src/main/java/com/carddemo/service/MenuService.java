@@ -111,7 +111,8 @@ public class MenuService {
             "COTRN00C", "/api/transactions",
             "COTRN02C", "/api/transactions",
             "COUSR00C", "/api/admin/users",
-            "COUSR01C", "/api/admin/users");
+            "COUSR01C", "/api/admin/users",
+            "COACTVWC", "/accounts/view");
 
     public String uiRoute(MenuSelectionResponse selection) {
         if (!selection.implemented() || !selection.available()) {

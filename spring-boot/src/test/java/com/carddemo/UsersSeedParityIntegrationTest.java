@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringBootTest
 @TestPropertySource(properties = {
+        "spring.datasource.generate-unique-name=true",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
 class UsersSeedParityIntegrationTest {

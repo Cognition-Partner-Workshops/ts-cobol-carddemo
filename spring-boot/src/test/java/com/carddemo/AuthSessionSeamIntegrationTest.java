@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
         "carddemo.seed.data-dir=classpath:seed",
+        "spring.datasource.generate-unique-name=true",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
 class AuthSessionSeamIntegrationTest {

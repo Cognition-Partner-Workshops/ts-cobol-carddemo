@@ -274,7 +274,7 @@ public class TransactionService {
         try {
             last = transactionRepository.findTopByOrderByTranIdDesc();
         } catch (DataAccessException e) {
-            return new Rejection(CobolMessages.TRANSACTION_LOOKUP_FAILED, "accountId");
+            return new Rejection(CobolMessages.TRANSACTION_ADD_LOOKUP_FAILED, "accountId");
         }
         if (last != null) {
             fields.typeCode = pad(first(last.getTranTypeCode(), 2), Fields.TYPE_WIDTH);
@@ -304,7 +304,7 @@ public class TransactionService {
             tranId = idGenerator.nextId();
         } catch (DataAccessException e) {
             return rejectScreen(fields,
-                    new Rejection(CobolMessages.TRANSACTION_LOOKUP_FAILED, "accountId"));
+                    new Rejection(CobolMessages.TRANSACTION_ADD_LOOKUP_FAILED, "accountId"));
         }
         Transaction value = new Transaction();
         value.setTranId(tranId);

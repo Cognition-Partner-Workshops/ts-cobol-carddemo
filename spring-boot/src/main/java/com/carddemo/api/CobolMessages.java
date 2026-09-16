@@ -154,6 +154,15 @@ public final class CobolMessages {
     public static final String CARD_FILE_ERROR_READ =
         "File Error: READ     on CARDDAT   returned RESP 000000020 ,RESP2 000000090 ";
 
+    // COCRDSLC verbatim (S-05): WS-INFO-MSG 88-levels (cbl:127-133) and the
+    // per-field prompts of 2210/2220-EDIT (cbl:656-660, :695-700).
+    public static final String CARD_VIEW_PROMPT =
+        "Please enter Account and Card Number";
+    public static final String CARD_VIEW_FOUND =
+        "   Displaying requested details";
+    public static final String CARD_ACCOUNT_REQUIRED = "Account number not provided";
+    public static final String CARD_NUMBER_REQUIRED = "Card number not provided";
+
     private CobolMessages() {
     }
 

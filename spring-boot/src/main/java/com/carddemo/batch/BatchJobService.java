@@ -20,12 +20,26 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class BatchJobService {
     private static final DateTimeFormatter EXPORT_TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+
+    /**
+     * Documented job-order config for scheduler chains (B-008): each entry is
+     * a legacy chain whose order is contractual, not enforced — operators
+     * launch each job via `POST /api/admin/jobs/{jobName}` only after the
+     * previous one completes successfully.
+     * "SCHID-030-READ-VERIFY" is the CA-7 chain CLOSEFIL->READACCT->READCARD->
+     * READCUST->READXREF->WAITSTEP->OPENFIL (app/scheduler/CardDemo.ca7:340-453);
+     * only the four S-17 verify jobs are migrated.
+     */
+    public static final Map<String, List<String>> JOB_ORDER = Map.of(
+            "SCHID-030-READ-VERIFY",
+            List.of("readacctJob", "readcardJob", "readcustJob", "readxrefJob"));
     private final AccountRepository accounts;
     private final CardRepository cards;
     private final CardXrefRepository xrefs;

@@ -110,8 +110,10 @@ public class MenuService {
             "COCRDLIC", "/cards/list",
             "COTRN00C", "/transactions/list",
             "COTRN02C", "/transactions/add",
-            "COUSR00C", "/api/admin/users",
-            "COUSR01C", "/api/admin/users",
+            "COUSR00C", "/admin/users",
+            "COUSR01C", "/admin/users/add",
+            "COUSR02C", "/admin/users/update",
+            "COUSR03C", "/admin/users/delete",
             "COACTVWC", "/accounts/view");
 
     public String uiRoute(MenuSelectionResponse selection) {

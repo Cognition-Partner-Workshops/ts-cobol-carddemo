@@ -154,6 +154,24 @@ public final class CobolMessages {
     public static final String CARD_FILE_ERROR_READ =
         "File Error: READ     on CARDDAT   returned RESP 000000020 ,RESP2 000000090 ";
 
+    // COUSR00C–COUSR03C verbatim messages (S-12; the STRING-delimited forms
+    // use SEC-USR-ID DELIMITED BY SPACE, so the id stops at its first blank).
+    public static final String USER_INVALID_SELECTION =
+        "Invalid selection. Valid values are U and D";
+    public static final String USER_ALREADY_TOP =
+        "You are already at the top of the page...";
+    public static final String USER_ALREADY_BOTTOM =
+        "You are already at the bottom of the page...";
+    public static final String USER_AT_TOP = "You are at the top of the page...";
+    public static final String USER_REACHED_BOTTOM =
+        "You have reached the bottom of the page...";
+    public static final String USER_REACHED_TOP =
+        "You have reached the top of the page...";
+    public static final String USER_LOOKUP_FAILED = "Unable to lookup User...";
+    public static final String USER_SAVE_PROMPT =
+        "Press PF5 key to save your updates ...";
+    public static final String USER_MODIFY_TO_UPDATE = "Please modify to update ...";
+
     private CobolMessages() {
     }
 
@@ -219,5 +237,27 @@ public final class CobolMessages {
     // COTRN02C.cbl:728-733 — two spaces before "Your".
     public static String transactionAdded(String tranId) {
         return "Transaction added successfully.  Your Tran ID is " + tranId + ".";
+    }
+
+    // COUSR01C.cbl:255-258, COUSR02C.cbl:366-371, COUSR03C.cbl:319-324 —
+    // 'User ' + SEC-USR-ID DELIMITED BY SPACE + ' has been <verb> ...'.
+    public static String userAdded(String userId) {
+        return "User " + delimitedBySpace(userId) + " has been added ...";
+    }
+
+    public static String userUpdated(String userId) {
+        return "User " + delimitedBySpace(userId) + " has been updated ...";
+    }
+
+    public static String userDeleted(String userId) {
+        return "User " + delimitedBySpace(userId) + " has been deleted ...";
+    }
+
+    private static String delimitedBySpace(String value) {
+        if (value == null) {
+            return "";
+        }
+        int space = value.indexOf(' ');
+        return space < 0 ? value : value.substring(0, space);
     }
 }

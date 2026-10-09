@@ -1,0 +1,42 @@
+name: backend-ci
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: carddemo
+          POSTGRES_USER: carddemo
+          POSTGRES_PASSWORD: carddemo
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U carddemo"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Build and verify (unit on H2, integration on Testcontainers PostgreSQL 16)
+        working-directory: backend
+        env:
+          CARDDEMO_DB_USER: carddemo
+          CARDDEMO_DB_PASSWORD: carddemo
+        run: mvn -B clean verify

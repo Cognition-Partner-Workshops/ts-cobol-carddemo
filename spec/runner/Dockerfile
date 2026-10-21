@@ -1,6 +1,7 @@
 # GnuCOBOL runner for the batch path. Build from the repository root:
 #   docker build -f spec/runner/Dockerfile -t carddemo-cobol-runner .
-FROM public.ecr.aws/docker/library/ubuntu:22.04
+ARG REGISTRY=public.ecr.aws/docker/library
+FROM ${REGISTRY}/ubuntu:22.04
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       gnucobol3 python3 python3-yaml python3-pytest \

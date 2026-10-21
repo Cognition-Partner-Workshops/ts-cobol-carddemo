@@ -117,6 +117,7 @@ jobs:
       - name: Reset the before namespace on kind and fetch the pages
         env:
           SDD_RUN: sdd-ci
+          SDD_IMAGE_REGISTRY: docker.io/library
         run: |
           scripts/sdd/reset.sh before
           curl -fsS http://before.sdd-ci.localtest.me:8080/ | grep -q "CardDemo"

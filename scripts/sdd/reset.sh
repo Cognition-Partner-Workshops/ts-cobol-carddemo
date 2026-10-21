@@ -17,7 +17,9 @@ SRC="$WORK/src-$STATE"
 TIMES="$WORK/reset-$STATE.json"
 EXPIRES=$(date -u -d '+3 days' +%Y-%m-%d)
 LABEL="CardDemo batch path, $STATE"
-BASE_IMAGES="public.ecr.aws/docker/library/postgres:16-alpine=carddemo-postgres:16 public.ecr.aws/docker/library/nginx:1.27-alpine=carddemo-nginx:1.27"
+# ECR Public by default (Docker Hub rate-limits Devin machines); CI sets docker.io/library.
+REGISTRY=${SDD_IMAGE_REGISTRY:-public.ecr.aws/docker/library}
+BASE_IMAGES="$REGISTRY/postgres:16-alpine=carddemo-postgres:16 $REGISTRY/nginx:1.27-alpine=carddemo-nginx:1.27"
 export NS RUN STATE HOST JOBS EXPIRES LABEL
 mkdir -p "$WORK"
 echo "{" > "$TIMES"
@@ -46,8 +48,8 @@ images() {
   git -C "$ROOT" worktree prune
   git -C "$ROOT" worktree add --detach "$SRC" "$REF" >/dev/null
   (cd "$SRC/java" && mvn -q -B package -DskipTests)
-  docker build -q -f "$SRC/spec/runner/Dockerfile" -t "carddemo-cobol-runner:$STATE" "$SRC"
-  docker build -q -t "carddemo-java:$STATE" "$SRC/java"
+  docker build -q --build-arg REGISTRY="$REGISTRY" -f "$SRC/spec/runner/Dockerfile" -t "carddemo-cobol-runner:$STATE" "$SRC"
+  docker build -q --build-arg REGISTRY="$REGISTRY" -t "carddemo-java:$STATE" "$SRC/java"
   # The node pulls anonymously and public registries rate-limit it, so the base images go in from the host.
   # kind cannot import multi-platform indexes, so each base image is rebuilt as a local single-platform tag.
   for pair in $BASE_IMAGES; do

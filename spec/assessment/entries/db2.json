@@ -5,16 +5,16 @@
   "method": {
     "score": "paragraphs + 2 x io_verbs + 3 x external_calls",
     "paragraphs": "paragraph headers in Area A of the program member's PROCEDURE DIVISION (procedure copybooks not expanded; their paragraphs are listed under copybook_contributions)",
-    "io_verbs": "native OPEN/CLOSE/READ/WRITE/REWRITE/DELETE/START on files, EXEC CICS file commands, and every executable EXEC SQL statement in the member (SELECT INTO, FETCH, OPEN/CLOSE cursor, INSERT, UPDATE, DELETE). EXEC SQL INCLUDE and DECLARE CURSOR are not counted.",
-    "external_calls": "static CALL statements plus EXEC CICS LINK and XCTL statements",
-    "bands": "low < 40, medium 40-79, high >= 80"
+    "external_calls": "CALL, EXEC CICS XCTL and EXEC CICS LINK statements",
+    "bands": "low < 40, medium 40-79, high >= 80",
+    "file_io_verbs": "native OPEN/CLOSE/READ/WRITE/REWRITE/DELETE/START on files, EXEC CICS file commands (none present), and every executable EXEC SQL statement in the member (SELECT INTO, FETCH, OPEN/CLOSE cursor, INSERT, UPDATE, DELETE). EXEC SQL INCLUDE and DECLARE CURSOR are not counted."
   },
   "programs": [
     {
       "name": "COBTUPDT",
       "type": "batch-db2",
       "group": "db2",
-      "path": "app/app-transaction-type-db2/cbl/COBTUPDT.cbl",
+      "source": "app/app-transaction-type-db2/cbl/COBTUPDT.cbl",
       "jcl": [
         "MNTTRDB2"
       ],
@@ -93,19 +93,20 @@
       "external_calls": [],
       "complexity": {
         "paragraphs": 9,
-        "io_verbs": 6,
+        "file_io_verbs": 6,
         "external_calls": 0,
         "score": 21,
         "band": "low"
       },
       "unreferenced": false,
-      "wave": ""
+      "wave": "",
+      "called_by": []
     },
     {
       "name": "COTRTLIC",
       "type": "cics-db2",
       "group": "db2",
-      "path": "app/app-transaction-type-db2/cbl/COTRTLIC.cbl",
+      "source": "app/app-transaction-type-db2/cbl/COTRTLIC.cbl",
       "jcl": [],
       "jcl_steps": [
         {
@@ -253,19 +254,22 @@
       ],
       "complexity": {
         "paragraphs": 57,
-        "io_verbs": 10,
+        "file_io_verbs": 10,
         "external_calls": 2,
         "score": 83,
         "band": "high"
       },
       "unreferenced": false,
-      "wave": ""
+      "wave": "",
+      "called_by": [
+        "COADM01C"
+      ]
     },
     {
       "name": "COTRTUPC",
       "type": "cics-db2",
       "group": "db2",
-      "path": "app/app-transaction-type-db2/cbl/COTRTUPC.cbl",
+      "source": "app/app-transaction-type-db2/cbl/COTRTUPC.cbl",
       "jcl": [],
       "jcl_steps": [],
       "plan": "CARDDEMO (CSD DB2ENTRY CARDDEMO via DB2TRAN CTTUTRAN)",
@@ -363,13 +367,17 @@
       ],
       "complexity": {
         "paragraphs": 63,
-        "io_verbs": 4,
+        "file_io_verbs": 4,
         "external_calls": 1,
         "score": 74,
         "band": "medium"
       },
       "unreferenced": false,
-      "wave": ""
+      "wave": "",
+      "called_by": [
+        "COTRTLIC",
+        "COADM01C"
+      ]
     }
   ],
   "module": {
@@ -538,7 +546,6 @@
     "No DB2 precompile or BIND JCL for COBTUPDT, COTRTLIC or COTRTUPC exists in the repository; plan CARDDEMO package membership is not recorded.",
     "DB2FREE frees PLAN(COTRTLIC), but nothing binds or references a COTRTLIC plan; CSD routes CTLI to PLAN(CARDDEMO).",
     "COTRTLIC defines LIT-DSNTIAC but never calls DSNTIAC.",
-    "Complexity band thresholds were not specified on the ticket; chosen as low < 40, medium 40-79, high >= 80. Raw components are kept so the merge step can re-band.",
     "COTRTLIC 2000-SEND-MAP header (line 1274) has no terminating period; counted as a paragraph."
   ]
 }

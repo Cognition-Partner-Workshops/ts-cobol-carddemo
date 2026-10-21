@@ -1,0 +1,36 @@
+# Fallback for a machine without kind: scripts/sdd/reset.sh <state> with SDD_RUNTIME=compose.
+name: ${NS}
+services:
+  postgres:
+    image: carddemo-postgres:16
+    environment: {POSTGRES_DB: carddemo, POSTGRES_USER: carddemo, POSTGRES_PASSWORD: carddemo-local}
+    healthcheck: {test: [CMD, pg_isready, -U, carddemo], interval: 2s, retries: 30}
+  cobol:
+    image: carddemo-cobol-runner:${STATE}
+    entrypoint: [sh, -c, "python3 -m harness inputs /data && python3 -m harness cobol /data --jobs ${JOBS}"]
+    volumes: [run-data:/data]
+  java:
+    image: carddemo-java:${STATE}
+    command: ["--carddemo.input-dir=/data/input", "--carddemo.output-dir=/data/java", "--carddemo.jobs=${JOBS}"]
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/carddemo
+      SPRING_DATASOURCE_USERNAME: carddemo
+      SPRING_DATASOURCE_PASSWORD: carddemo-local
+    volumes: [run-data:/data]
+    depends_on:
+      postgres: {condition: service_healthy}
+      cobol: {condition: service_completed_successfully}
+  report:
+    image: carddemo-cobol-runner:${STATE}
+    entrypoint: [sh, -c, "python3 -m harness compare /data --label '${LABEL}' || true; python3 -m harness site /data --label '${LABEL}'"]
+    volumes: [run-data:/data]
+    depends_on:
+      java: {condition: service_completed_successfully}
+  site:
+    image: carddemo-nginx:1.27
+    ports: ["${PORT:-8081}:80"]
+    volumes: [{type: volume, source: run-data, target: /usr/share/nginx/html, volume: {subpath: site}}]
+    depends_on:
+      report: {condition: service_completed_successfully}
+volumes:
+  run-data:

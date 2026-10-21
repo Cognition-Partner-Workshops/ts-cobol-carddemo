@@ -99,3 +99,30 @@ jobs:
             spec/runs/pg/java
             spec/runs/pg/report
             spec/runs/pg/site
+
+  kind-smoke:
+    runs-on: ubuntu-22.04
+    needs: [spec, java]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Install kind
+        run: |
+          curl -fsSLo kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+          sudo install kind /usr/local/bin/kind
+      - name: Reset the before namespace on kind and fetch the pages
+        env:
+          SDD_RUN: sdd-ci
+        run: |
+          scripts/sdd/reset.sh before
+          curl -fsS http://before.sdd-ci.localtest.me:8080/ | grep -q "CardDemo"
+          curl -fsS http://before.sdd-ci.localtest.me:8080/comparison.html | grep -q "pass"
+      - name: Teardown
+        if: always()
+        env:
+          SDD_RUN: sdd-ci
+        run: scripts/sdd/teardown.sh

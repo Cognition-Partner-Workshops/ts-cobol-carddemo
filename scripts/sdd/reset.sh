@@ -83,6 +83,22 @@ pages() {
   return 1
 }
 
+compose() {
+  envsubst < "$ROOT/deploy/compose.yaml" > "$WORK/compose-$STATE.yaml"
+  docker compose -f "$WORK/compose-$STATE.yaml" down -v --remove-orphans >/dev/null 2>&1 || true
+  PORT=${SDD_PORT:-8081} docker compose -f "$WORK/compose-$STATE.yaml" up -d --wait site
+}
+
+if [ "${SDD_RUNTIME:-kind}" = compose ]; then
+  HOST=localhost
+  kind() { :; }
+  stage images images
+  stage compose compose
+  echo "  \"run_namespace\": \"$NS\"" >> "$TIMES"; echo "}" >> "$TIMES"
+  echo "   http://localhost:${SDD_PORT:-8081}/"
+  exit 0
+fi
+
 stage cluster cluster
 stage images images
 stage namespace namespace
@@ -90,6 +106,6 @@ stage cobol job cobol
 stage java job java
 stage report job report
 stage pages pages
-echo "  \"namespace\": \"$NS\"" >> "$TIMES"
+echo "  \"run_namespace\": \"$NS\"" >> "$TIMES"
 echo "}" >> "$TIMES"
 cat "$TIMES"

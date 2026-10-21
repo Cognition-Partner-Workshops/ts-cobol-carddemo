@@ -11,6 +11,10 @@ on:
         description: batch path job order for the COBOL run
         default: POSTTRAN,INTCALC
 
+# Hosted runners pull Docker Hub reliably; anonymous ECR Public returns 429 there.
+env:
+  SDD_IMAGE_REGISTRY: docker.io/library
+
 jobs:
   spec:
     runs-on: ubuntu-22.04
@@ -73,7 +77,7 @@ jobs:
         working-directory: java
         run: |
           docker run -d --name pg -e POSTGRES_DB=carddemo -e POSTGRES_USER=carddemo -e POSTGRES_PASSWORD=carddemo-local \
-            -p 5432:5432 public.ecr.aws/docker/library/postgres:16-alpine
+            -p 5432:5432 "$SDD_IMAGE_REGISTRY/postgres:16-alpine"
           for i in $(seq 30); do docker exec pg pg_isready -U carddemo && break; sleep 2; done
           java -jar target/carddemo-batch-0.1.0.jar \
             --spring.datasource.url=jdbc:postgresql://localhost:5432/carddemo \
@@ -117,7 +121,6 @@ jobs:
       - name: Reset the before namespace on kind and fetch the pages
         env:
           SDD_RUN: sdd-ci
-          SDD_IMAGE_REGISTRY: docker.io/library
         run: |
           scripts/sdd/reset.sh before
           curl -fsS http://before.sdd-ci.localtest.me:8080/ | grep -q "CardDemo"

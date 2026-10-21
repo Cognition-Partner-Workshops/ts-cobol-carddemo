@@ -53,10 +53,7 @@ def main(argv=None):
             shutil.copy(f, run / "cobol" / f.name)
         print(f"copied the frozen COBOL outputs into {run / 'cobol'}")
     rc = 0
-    if a.cmd == "compare" and not ((run / a.left).exists() and (run / a.right).exists()):
-        print(f"compare needs both {run / a.left} and {run / a.right}", file=sys.stderr)
-        return 1
-    if a.cmd in ("compare", "all") and (run / a.right).exists():
+    if a.cmd == "compare" or (a.cmd == "all" and (run / a.right).exists()):
         report = compare.compare(run, a.left, a.right)
         print(json.dumps({d["dataset"]: d["verdict"] for d in report["datasets"]} | {"verdict": report["verdict"]}))
         failed = report["verdict"] != "pass"

@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata: {name: java-run, namespace: "${NS}"}
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: java
+          image: carddemo-java:${STATE}
+          imagePullPolicy: Never
+          args: ["--carddemo.input-dir=/data/input", "--carddemo.output-dir=/data/java", "--carddemo.jobs=${JOBS}"]
+          env:
+            - {name: SPRING_DATASOURCE_URL, value: "jdbc:postgresql://postgres:5432/carddemo"}
+            - {name: SPRING_DATASOURCE_USERNAME, value: carddemo}
+            - {name: SPRING_DATASOURCE_PASSWORD, value: carddemo-local}
+          volumeMounts: [{name: data, mountPath: /data}]
+      volumes: [{name: data, persistentVolumeClaim: {claimName: run-data}}]

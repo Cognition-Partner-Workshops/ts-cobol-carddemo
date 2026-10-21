@@ -1,0 +1,1053 @@
+{
+  "group": "ims-mq",
+  "baseline": "baseline/sdd-2610",
+  "scope": "Every COBOL program under app/app-authorization-ims-db2-mq/cbl and app/app-vsam-mq/cbl, with IMS DBDs/PSBs, MQ queues, Db2 tables, JCL steps and CICS transactions from the same modules. Inventory only.",
+  "complexity_convention": {
+    "formula": "paragraphs + 2 x file_io_verbs + 3 x external_calls",
+    "paragraphs": "paragraph and section labels in Area A of the PROCEDURE DIVISION",
+    "file_io_verbs": "occurrences in the PROCEDURE DIVISION (comments and literals excluded) of COBOL OPEN/CLOSE/READ/WRITE/REWRITE/DELETE/START, EXEC CICS file commands (READ, WRITE, REWRITE, DELETE, UNLOCK, STARTBR, READNEXT, READPREV, RESETBR, ENDBR), executable EXEC SQL statements (INCLUDE/DECLARE/WHENEVER excluded), DL/I calls (EXEC DLI and CALL 'CBLTDLI', including SCHD/TERM/CHKP) and MQ API calls (MQOPEN, MQGET, MQPUT, MQPUT1, MQCLOSE)",
+    "external_calls": "distinct targets of CALL (other than CBLTDLI and MQ API, counted as I/O), EXEC CICS XCTL and LINK; XCTL PROGRAM(CDEMO-TO-PROGRAM) resolved to the literal targets MOVEd into it",
+    "bands": {
+      "low": "score < 40",
+      "medium": "40 <= score < 80",
+      "high": "score >= 80"
+    }
+  },
+  "shared_resources": {
+    "ims_dbds": [
+      {
+        "name": "DBPAUTP0",
+        "access": "HIDAM,VSAM",
+        "dd": "DDPAUTP0",
+        "segments": [
+          {
+            "name": "PAUTSUM0",
+            "parent": null,
+            "bytes": 100,
+            "key": "ACCNTID"
+          },
+          {
+            "name": "PAUTDTL1",
+            "parent": "PAUTSUM0",
+            "bytes": 200,
+            "key": "PAUT9CTS"
+          }
+        ],
+        "source": "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd"
+      },
+      {
+        "name": "DBPAUTX0",
+        "access": "INDEX,VSAM,PROT",
+        "dd": "DDPAUTX0",
+        "indexes": "DBPAUTP0.PAUTSUM0",
+        "source": "app/app-authorization-ims-db2-mq/ims/DBPAUTX0.dbd"
+      },
+      {
+        "name": "PASFLDBD",
+        "access": "GSAM,BSAM",
+        "dd": [
+          "PASFILIP",
+          "PASFILOP"
+        ],
+        "record": 100,
+        "source": "app/app-authorization-ims-db2-mq/ims/PASFLDBD.DBD"
+      },
+      {
+        "name": "PADFLDBD",
+        "access": "GSAM,BSAM",
+        "dd": [
+          "PADFILIP",
+          "PADFILOP"
+        ],
+        "record": 200,
+        "source": "app/app-authorization-ims-db2-mq/ims/PADFLDBD.DBD"
+      }
+    ],
+    "ims_psbs": [
+      {
+        "name": "PSBPAUTB",
+        "pcbs": [
+          "DBPAUTP0 PROCOPT=AP"
+        ],
+        "used_by": [
+          "CBPAUP0C",
+          "COPAUA0C",
+          "COPAUS0C",
+          "COPAUS1C",
+          "PAUDBLOD"
+        ],
+        "source": "app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb"
+      },
+      {
+        "name": "PAUTBUNL",
+        "pcbs": [
+          "DBPAUTP0 PROCOPT=GOTP"
+        ],
+        "used_by": [
+          "PAUDBUNL"
+        ],
+        "source": "app/app-authorization-ims-db2-mq/ims/PAUTBUNL.PSB"
+      },
+      {
+        "name": "DLIGSAMP",
+        "pcbs": [
+          "DBPAUTP0 PROCOPT=GOTP",
+          "GSAM PASFLDBD PROCOPT=LS",
+          "GSAM PADFLDBD PROCOPT=LS"
+        ],
+        "used_by": [
+          "DBUNLDGS"
+        ],
+        "source": "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB"
+      },
+      {
+        "name": "PSBPAUTL",
+        "pcbs": [
+          "DBPAUTP0 PROCOPT=L"
+        ],
+        "lang": "ASSEM",
+        "used_by": [],
+        "note": "load PSB; no program or JCL in scope references it",
+        "source": "app/app-authorization-ims-db2-mq/ims/PSBPAUTL.psb"
+      }
+    ],
+    "mq_queues": [
+      "AWS.M2.CARDDEMO.PAUTH.REQUEST (README; runtime name from trigger)",
+      "AWS.M2.CARDDEMO.PAUTH.REPLY (README; runtime name from MQMD-REPLYTOQ)",
+      "CARD.DEMO.REPLY.ACCT",
+      "CARD.DEMO.REPLY.DATE",
+      "CARD.DEMO.ERROR"
+    ],
+    "db2_tables": [
+      {
+        "name": "CARDDEMO.AUTHFRDS",
+        "primary_key": [
+          "CARD_NUM",
+          "AUTH_TS"
+        ],
+        "index": "CARDDEMO.XAUTHFRD",
+        "plan": "AWS01PLN"
+      }
+    ],
+    "cics_transactions": [
+      {
+        "tran": "CP00",
+        "program": "COPAUA0C",
+        "csd": "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd"
+      },
+      {
+        "tran": "CPVS",
+        "program": "COPAUS0C",
+        "csd": "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd"
+      },
+      {
+        "tran": "CPVD",
+        "program": "COPAUS1C",
+        "csd": "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd"
+      },
+      {
+        "tran": "CDRA",
+        "program": "COACCT01",
+        "csd": "app/app-vsam-mq/csd/CRDDEMOM.csd"
+      },
+      {
+        "tran": "CDRD",
+        "program": "CODATE01",
+        "csd": "app/app-vsam-mq/csd/CRDDEMOM.csd"
+      }
+    ],
+    "jcl_without_in_scope_program": [
+      {
+        "jcl": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl",
+        "steps": [
+          {
+            "step": "STEPDEL",
+            "pgm": "IEFBR14"
+          },
+          {
+            "step": "UNLOAD",
+            "pgm": "DFSRRC00",
+            "parm": "ULU,DFSURGU0,DBPAUTP0",
+            "note": "IMS HD reorganization unload utility, writes AWS.M2.CARDDEMO.IMSDATA.DBPAUTP0"
+          }
+        ]
+      }
+    ]
+  },
+  "open_points": [
+    "MQ request queue names are not in source: COPAUA0C, COACCT01 and CODATE01 take the input queue from the CICS trigger message (MQTM-QNAME); no MQ trigger/process/initiation-queue definitions are in the repo.",
+    "app-vsam-mq README lists CARDDEMO.REQUEST.QUEUE / CARDDEMO.RESPONSE.QUEUE, but COACCT01/CODATE01 hard-code reply queues CARD.DEMO.REPLY.ACCT / CARD.DEMO.REPLY.DATE and error queue CARD.DEMO.ERROR.",
+    "COPAUA0C declares CARDDAT and CARDAIX file names but only reads CCXREF, ACCTDAT and CUSTDAT.",
+    "PSBPAUTL has no user in scope (likely for an IMS load utility)."
+  ],
+  "programs": [
+    {
+      "name": "CBPAUP0C",
+      "type": "COBOL IMS BMP batch program",
+      "group": "ims-mq",
+      "source": "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl",
+      "purpose": "Purges expired pending authorizations: walks PAUTSUM0/PAUTDTL1, deletes expired details and empty summaries, checkpoints.",
+      "jcl": [
+        "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:CBPAUP0J.STEP01"
+      ],
+      "jcl_steps": [
+        {
+          "job": "CBPAUP0J",
+          "step": "STEP01",
+          "pgm": "DFSRRC00",
+          "parm": "BMP,CBPAUP0C,PSBPAUTB",
+          "note": "SYSIN instream control card"
+        }
+      ],
+      "copybooks": [
+        "CIPAUDTY",
+        "CIPAUSMY"
+      ],
+      "datasets": [
+        {
+          "ims_db": "DBPAUTP0",
+          "access": "read/delete (BMP, online IMS)"
+        }
+      ],
+      "ims": {
+        "psb": "PSBPAUTB",
+        "psb_source": "app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb",
+        "procopt": "AP",
+        "databases": [
+          {
+            "dbd": "DBPAUTP0",
+            "access": "HIDAM/VSAM",
+            "segments": [
+              "PAUTSUM0",
+              "PAUTDTL1"
+            ],
+            "index_dbd": "DBPAUTX0",
+            "source": "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd"
+          }
+        ]
+      },
+      "mq_queues": [],
+      "db2_tables": [],
+      "cics_transactions": [],
+      "external_calls": [],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 17,
+        "file_io_verbs": 5,
+        "external_calls": 0,
+        "score": 27,
+        "band": "low",
+        "io_breakdown": {
+          "cobol_file_verbs": 0,
+          "cics_file_commands": 0,
+          "dli_calls": 5,
+          "exec_sql": 0,
+          "mq_calls": 0
+        },
+        "dli_detail": {
+          "GN": 1,
+          "GNP": 1,
+          "DLET": 2,
+          "CHKP": 1
+        }
+      },
+      "wave": ""
+    },
+    {
+      "name": "COPAUA0C",
+      "type": "COBOL CICS MQ-triggered program (IMS DL/I)",
+      "group": "ims-mq",
+      "source": "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl",
+      "purpose": "Authorization decision engine: reads request from MQ, looks up xref/account/customer, approves/declines, replies on MQ and records summary+detail in IMS.",
+      "jcl": [],
+      "jcl_steps": [],
+      "copybooks": [
+        "CCPAUERY",
+        "CCPAURLY",
+        "CCPAURQY",
+        "CIPAUDTY",
+        "CIPAUSMY",
+        "CMQGMOV",
+        "CMQMDV",
+        "CMQODV",
+        "CMQPMOV",
+        "CMQTML",
+        "CMQV",
+        "CVACT01Y",
+        "CVACT03Y",
+        "CVCUS01Y"
+      ],
+      "datasets": [
+        {
+          "cics_file": "CCXREF",
+          "access": "read"
+        },
+        {
+          "cics_file": "ACCTDAT",
+          "access": "read"
+        },
+        {
+          "cics_file": "CUSTDAT",
+          "access": "read"
+        },
+        {
+          "ims_db": "DBPAUTP0",
+          "access": "read/insert/replace"
+        }
+      ],
+      "ims": {
+        "psb": "PSBPAUTB",
+        "psb_source": "app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb",
+        "procopt": "AP",
+        "databases": [
+          {
+            "dbd": "DBPAUTP0",
+            "access": "HIDAM/VSAM",
+            "segments": [
+              "PAUTSUM0",
+              "PAUTDTL1"
+            ],
+            "index_dbd": "DBPAUTX0",
+            "source": "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd"
+          }
+        ]
+      },
+      "mq_queues": [
+        {
+          "queue": "(request queue from trigger message MQTM-QNAME; README: AWS.M2.CARDDEMO.PAUTH.REQUEST)",
+          "ops": [
+            "MQOPEN",
+            "MQGET",
+            "MQCLOSE"
+          ]
+        },
+        {
+          "queue": "(reply queue from MQMD-REPLYTOQ of request; README: AWS.M2.CARDDEMO.PAUTH.REPLY)",
+          "ops": [
+            "MQPUT1"
+          ]
+        }
+      ],
+      "db2_tables": [],
+      "cics_transactions": [
+        "CP00"
+      ],
+      "external_calls": [],
+      "called_by": [
+        "MQ trigger (transaction CP00)"
+      ],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 43,
+        "file_io_verbs": 15,
+        "external_calls": 0,
+        "score": 73,
+        "band": "medium",
+        "io_breakdown": {
+          "cobol_file_verbs": 0,
+          "cics_file_commands": 3,
+          "dli_calls": 8,
+          "exec_sql": 0,
+          "mq_calls": 4
+        },
+        "dli_detail": {
+          "SCHD": 2,
+          "TERM": 2,
+          "GU": 1,
+          "REPL": 1,
+          "ISRT": 2
+        },
+        "mq_detail": {
+          "MQOPEN": 1,
+          "MQGET": 1,
+          "MQPUT1": 1,
+          "MQCLOSE": 1
+        }
+      },
+      "wave": "",
+      "other_resources": [
+        "CICS TD queue CSSL (error log via WRITEQ TD)"
+      ]
+    },
+    {
+      "name": "COPAUS0C",
+      "type": "COBOL CICS online program (BMS, IMS DL/I)",
+      "group": "ims-mq",
+      "source": "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl",
+      "purpose": "Pending-authorization summary list for an account (paged, PF7/PF8), select to view detail.",
+      "jcl": [],
+      "jcl_steps": [],
+      "copybooks": [
+        "CIPAUDTY",
+        "CIPAUSMY",
+        "COCOM01Y",
+        "COPAU00",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSMSG02Y",
+        "CVACT01Y",
+        "CVACT02Y",
+        "CVACT03Y",
+        "CVCUS01Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "datasets": [
+        {
+          "cics_file": "CXACAIX",
+          "access": "read"
+        },
+        {
+          "cics_file": "ACCTDAT",
+          "access": "read"
+        },
+        {
+          "cics_file": "CUSTDAT",
+          "access": "read"
+        },
+        {
+          "ims_db": "DBPAUTP0",
+          "access": "read"
+        }
+      ],
+      "ims": {
+        "psb": "PSBPAUTB",
+        "psb_source": "app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb",
+        "procopt": "AP",
+        "databases": [
+          {
+            "dbd": "DBPAUTP0",
+            "access": "HIDAM/VSAM",
+            "segments": [
+              "PAUTSUM0",
+              "PAUTDTL1"
+            ],
+            "index_dbd": "DBPAUTX0",
+            "source": "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd"
+          }
+        ]
+      },
+      "mq_queues": [],
+      "db2_tables": [],
+      "cics_transactions": [
+        "CPVS"
+      ],
+      "external_calls": [
+        "COPAUS1C (XCTL)",
+        "COMEN01C (XCTL)",
+        "COSGN00C (XCTL)"
+      ],
+      "called_by": [
+        "COMEN01C (menu option via app/cpy/COMEN02Y.cpy)",
+        "COPAUS1C (XCTL)"
+      ],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 20,
+        "file_io_verbs": 9,
+        "external_calls": 3,
+        "score": 47,
+        "band": "medium",
+        "io_breakdown": {
+          "cobol_file_verbs": 0,
+          "cics_file_commands": 3,
+          "dli_calls": 6,
+          "exec_sql": 0,
+          "mq_calls": 0
+        },
+        "dli_detail": {
+          "GNP": 2,
+          "GU": 1,
+          "SCHD": 2,
+          "TERM": 1
+        }
+      },
+      "wave": "",
+      "bms_mapset": "COPAU00"
+    },
+    {
+      "name": "COPAUS1C",
+      "type": "COBOL CICS online program (BMS, IMS DL/I)",
+      "group": "ims-mq",
+      "source": "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl",
+      "purpose": "Authorization detail view; PF5 marks/unmarks fraud (LINK COPAUS2C) and updates the IMS detail segment.",
+      "jcl": [],
+      "jcl_steps": [],
+      "copybooks": [
+        "CIPAUDTY",
+        "CIPAUSMY",
+        "COCOM01Y",
+        "COPAU01",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSMSG02Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "datasets": [
+        {
+          "ims_db": "DBPAUTP0",
+          "access": "read/replace"
+        }
+      ],
+      "ims": {
+        "psb": "PSBPAUTB",
+        "psb_source": "app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb",
+        "procopt": "AP",
+        "databases": [
+          {
+            "dbd": "DBPAUTP0",
+            "access": "HIDAM/VSAM",
+            "segments": [
+              "PAUTSUM0",
+              "PAUTDTL1"
+            ],
+            "index_dbd": "DBPAUTX0",
+            "source": "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd"
+          }
+        ]
+      },
+      "mq_queues": [],
+      "db2_tables": [],
+      "cics_transactions": [
+        "CPVD"
+      ],
+      "external_calls": [
+        "COPAUS2C (LINK)",
+        "COPAUS0C (XCTL)"
+      ],
+      "called_by": [
+        "COPAUS0C (XCTL)"
+      ],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 15,
+        "file_io_verbs": 7,
+        "external_calls": 2,
+        "score": 35,
+        "band": "low",
+        "io_breakdown": {
+          "cobol_file_verbs": 0,
+          "cics_file_commands": 0,
+          "dli_calls": 7,
+          "exec_sql": 0,
+          "mq_calls": 0
+        },
+        "dli_detail": {
+          "GU": 1,
+          "GNP": 2,
+          "REPL": 1,
+          "SCHD": 2,
+          "TERM": 1
+        }
+      },
+      "wave": "",
+      "bms_mapset": "COPAU01"
+    },
+    {
+      "name": "COPAUS2C",
+      "type": "COBOL CICS Db2 subprogram",
+      "group": "ims-mq",
+      "source": "app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl",
+      "purpose": "Records a fraud report for an authorization in Db2 (insert, update on duplicate key).",
+      "jcl": [],
+      "jcl_steps": [],
+      "copybooks": [
+        "AUTHFRDS",
+        "CIPAUDTY",
+        "SQLCA"
+      ],
+      "datasets": [],
+      "ims": null,
+      "mq_queues": [],
+      "db2_tables": [
+        {
+          "table": "CARDDEMO.AUTHFRDS",
+          "ops": [
+            "INSERT",
+            "UPDATE"
+          ],
+          "ddl": [
+            "app/app-authorization-ims-db2-mq/ddl/AUTHFRDS.ddl",
+            "app/app-authorization-ims-db2-mq/ddl/XAUTHFRD.ddl"
+          ],
+          "dclgen": "app/app-authorization-ims-db2-mq/dcl/AUTHFRDS.dcl",
+          "plan": "AWS01PLN (CSD DB2ENTRY, DB2TRAN CPVDTRAN for CPVD)"
+        }
+      ],
+      "cics_transactions": [
+        "CPVD (runs under COPAUS1C's transaction)"
+      ],
+      "external_calls": [],
+      "called_by": [
+        "COPAUS1C (LINK)"
+      ],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 2,
+        "file_io_verbs": 2,
+        "external_calls": 0,
+        "score": 6,
+        "band": "low",
+        "io_breakdown": {
+          "cobol_file_verbs": 0,
+          "cics_file_commands": 0,
+          "dli_calls": 0,
+          "exec_sql": 2,
+          "mq_calls": 0
+        },
+        "sql_detail": {
+          "INSERT": 1,
+          "UPDATE": 1
+        }
+      },
+      "wave": ""
+    },
+    {
+      "name": "DBUNLDGS",
+      "type": "COBOL IMS DL/I batch program (GSAM output)",
+      "group": "ims-mq",
+      "source": "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL",
+      "purpose": "Unloads the pending-authorization database to root and child GSAM files.",
+      "jcl": [
+        "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:UNLDGSAM.STEP01"
+      ],
+      "jcl_steps": [
+        {
+          "job": "UNLDGSAM",
+          "step": "STEP01",
+          "pgm": "DFSRRC00",
+          "parm": "DLI,DBUNLDGS,DLIGSAMP,,,,,,,,,,,N"
+        }
+      ],
+      "copybooks": [
+        "CIPAUDTY",
+        "CIPAUSMY",
+        "IMSFUNCS",
+        "PADFLPCB",
+        "PASFLPCB",
+        "PAUTBPCB"
+      ],
+      "datasets": [
+        {
+          "dd": "PASFILOP",
+          "dsn": "AWS.M2.CARDDEMO.PAUTDB.ROOT.GSAM",
+          "gsam_dbd": "PASFLDBD",
+          "access": "write"
+        },
+        {
+          "dd": "PADFILOP",
+          "dsn": "AWS.M2.CARDDEMO.PAUTDB.CHILD.GSAM",
+          "gsam_dbd": "PADFLDBD",
+          "access": "write"
+        },
+        {
+          "dd": "DDPAUTP0",
+          "dsn": "OEM.IMS.IMSP.PAUTHDB",
+          "ims_db": "DBPAUTP0",
+          "access": "read"
+        },
+        {
+          "dd": "DDPAUTX0",
+          "dsn": "OEM.IMS.IMSP.PAUTHDBX",
+          "ims_db": "DBPAUTX0",
+          "access": "read"
+        }
+      ],
+      "ims": {
+        "psb": "DLIGSAMP",
+        "psb_source": "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB",
+        "procopt": "GOTP (DB), LS (GSAM)",
+        "databases": [
+          {
+            "dbd": "DBPAUTP0",
+            "access": "HIDAM/VSAM",
+            "segments": [
+              "PAUTSUM0",
+              "PAUTDTL1"
+            ],
+            "index_dbd": "DBPAUTX0",
+            "source": "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd"
+          },
+          {
+            "dbd": "PASFLDBD",
+            "access": "GSAM/BSAM",
+            "source": "app/app-authorization-ims-db2-mq/ims/PASFLDBD.DBD"
+          },
+          {
+            "dbd": "PADFLDBD",
+            "access": "GSAM/BSAM",
+            "source": "app/app-authorization-ims-db2-mq/ims/PADFLDBD.DBD"
+          }
+        ]
+      },
+      "mq_queues": [],
+      "db2_tables": [],
+      "cics_transactions": [],
+      "external_calls": [],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 15,
+        "file_io_verbs": 4,
+        "external_calls": 0,
+        "score": 23,
+        "band": "low",
+        "io_breakdown": {
+          "cobol_file_verbs": 0,
+          "cics_file_commands": 0,
+          "dli_calls": 4,
+          "exec_sql": 0,
+          "mq_calls": 0
+        },
+        "dli_detail": {
+          "GN": 1,
+          "GNP": 1,
+          "ISRT": 2
+        }
+      },
+      "wave": ""
+    },
+    {
+      "name": "PAUDBLOD",
+      "type": "COBOL IMS BMP batch program",
+      "group": "ims-mq",
+      "source": "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL",
+      "purpose": "Reloads the pending-authorization database from the root and child sequential unload files.",
+      "jcl": [
+        "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:LOADPADB.STEP01"
+      ],
+      "jcl_steps": [
+        {
+          "job": "LOADPADB",
+          "step": "STEP01",
+          "pgm": "DFSRRC00",
+          "parm": "BMP,PAUDBLOD,PSBPAUTB"
+        }
+      ],
+      "copybooks": [
+        "CIPAUDTY",
+        "CIPAUSMY",
+        "IMSFUNCS",
+        "PAUTBPCB"
+      ],
+      "datasets": [
+        {
+          "dd": "INFILE1",
+          "dsn": "AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO",
+          "file": "INFILE1",
+          "access": "read"
+        },
+        {
+          "dd": "INFILE2",
+          "dsn": "AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO",
+          "file": "INFILE2",
+          "access": "read"
+        },
+        {
+          "ims_db": "DBPAUTP0",
+          "access": "insert (BMP, online IMS)"
+        }
+      ],
+      "ims": {
+        "psb": "PSBPAUTB",
+        "psb_source": "app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb",
+        "procopt": "AP",
+        "databases": [
+          {
+            "dbd": "DBPAUTP0",
+            "access": "HIDAM/VSAM",
+            "segments": [
+              "PAUTSUM0",
+              "PAUTDTL1"
+            ],
+            "index_dbd": "DBPAUTX0",
+            "source": "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd"
+          }
+        ]
+      },
+      "mq_queues": [],
+      "db2_tables": [],
+      "cics_transactions": [],
+      "external_calls": [],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 17,
+        "file_io_verbs": 9,
+        "external_calls": 0,
+        "score": 35,
+        "band": "low",
+        "io_breakdown": {
+          "cobol_file_verbs": 6,
+          "cics_file_commands": 0,
+          "dli_calls": 3,
+          "exec_sql": 0,
+          "mq_calls": 0
+        },
+        "dli_detail": {
+          "ISRT": 2,
+          "GU": 1
+        }
+      },
+      "wave": ""
+    },
+    {
+      "name": "PAUDBUNL",
+      "type": "COBOL IMS DL/I batch program",
+      "group": "ims-mq",
+      "source": "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL",
+      "purpose": "Unloads the pending-authorization database to root and child sequential files (input to PAUDBLOD).",
+      "jcl": [
+        "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:UNLDPADB.STEP01"
+      ],
+      "jcl_steps": [
+        {
+          "job": "UNLDPADB",
+          "step": "STEP0",
+          "pgm": "IEFBR14",
+          "note": "deletes previous unload files"
+        },
+        {
+          "job": "UNLDPADB",
+          "step": "STEP01",
+          "pgm": "DFSRRC00",
+          "parm": "DLI,PAUDBUNL,PAUTBUNL,,,,,,,,,,,N"
+        }
+      ],
+      "copybooks": [
+        "CIPAUDTY",
+        "CIPAUSMY",
+        "IMSFUNCS",
+        "PAUTBPCB"
+      ],
+      "datasets": [
+        {
+          "dd": "OUTFIL1",
+          "dsn": "AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO",
+          "file": "OPFILE1",
+          "access": "write"
+        },
+        {
+          "dd": "OUTFIL2",
+          "dsn": "AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO",
+          "file": "OPFILE2",
+          "access": "write"
+        },
+        {
+          "dd": "DDPAUTP0",
+          "dsn": "OEM.IMS.IMSP.PAUTHDB",
+          "ims_db": "DBPAUTP0",
+          "access": "read"
+        },
+        {
+          "dd": "DDPAUTX0",
+          "dsn": "OEM.IMS.IMSP.PAUTHDBX",
+          "ims_db": "DBPAUTX0",
+          "access": "read"
+        }
+      ],
+      "ims": {
+        "psb": "PAUTBUNL",
+        "psb_source": "app/app-authorization-ims-db2-mq/ims/PAUTBUNL.PSB",
+        "procopt": "GOTP",
+        "databases": [
+          {
+            "dbd": "DBPAUTP0",
+            "access": "HIDAM/VSAM",
+            "segments": [
+              "PAUTSUM0",
+              "PAUTDTL1"
+            ],
+            "index_dbd": "DBPAUTX0",
+            "source": "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd"
+          }
+        ]
+      },
+      "mq_queues": [],
+      "db2_tables": [],
+      "cics_transactions": [],
+      "external_calls": [],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 11,
+        "file_io_verbs": 8,
+        "external_calls": 0,
+        "score": 27,
+        "band": "low",
+        "io_breakdown": {
+          "cobol_file_verbs": 6,
+          "cics_file_commands": 0,
+          "dli_calls": 2,
+          "exec_sql": 0,
+          "mq_calls": 0
+        },
+        "dli_detail": {
+          "GN": 1,
+          "GNP": 1
+        }
+      },
+      "wave": ""
+    },
+    {
+      "name": "COACCT01",
+      "type": "COBOL CICS MQ-triggered program (VSAM)",
+      "group": "ims-mq",
+      "source": "app/app-vsam-mq/cbl/COACCT01.cbl",
+      "purpose": "Account inquiry over MQ: reads account id from request, reads ACCTDAT, replies with account details.",
+      "jcl": [],
+      "jcl_steps": [],
+      "copybooks": [
+        "CMQGMOV",
+        "CMQMDV",
+        "CMQODV",
+        "CMQPMOV",
+        "CMQTML",
+        "CMQV",
+        "CVACT01Y"
+      ],
+      "datasets": [
+        {
+          "cics_file": "ACCTDAT",
+          "access": "read"
+        }
+      ],
+      "ims": null,
+      "mq_queues": [
+        {
+          "queue": "(input queue from trigger message MQTM-QNAME)",
+          "ops": [
+            "MQOPEN",
+            "MQGET",
+            "MQCLOSE"
+          ]
+        },
+        {
+          "queue": "CARD.DEMO.REPLY.ACCT",
+          "ops": [
+            "MQOPEN",
+            "MQPUT",
+            "MQCLOSE"
+          ]
+        },
+        {
+          "queue": "CARD.DEMO.ERROR",
+          "ops": [
+            "MQOPEN",
+            "MQPUT",
+            "MQCLOSE"
+          ]
+        }
+      ],
+      "db2_tables": [],
+      "cics_transactions": [
+        "CDRA"
+      ],
+      "external_calls": [],
+      "called_by": [
+        "MQ trigger (transaction CDRA)"
+      ],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 13,
+        "file_io_verbs": 10,
+        "external_calls": 0,
+        "score": 33,
+        "band": "low",
+        "io_breakdown": {
+          "cobol_file_verbs": 0,
+          "cics_file_commands": 1,
+          "dli_calls": 0,
+          "exec_sql": 0,
+          "mq_calls": 9
+        },
+        "mq_detail": {
+          "MQOPEN": 3,
+          "MQGET": 1,
+          "MQPUT": 2,
+          "MQCLOSE": 3
+        }
+      },
+      "wave": ""
+    },
+    {
+      "name": "CODATE01",
+      "type": "COBOL CICS MQ-triggered program",
+      "group": "ims-mq",
+      "source": "app/app-vsam-mq/cbl/CODATE01.cbl",
+      "purpose": "System-date inquiry over MQ: replies with the CICS-formatted current date/time.",
+      "jcl": [],
+      "jcl_steps": [],
+      "copybooks": [
+        "CMQGMOV",
+        "CMQMDV",
+        "CMQODV",
+        "CMQPMOV",
+        "CMQTML",
+        "CMQV"
+      ],
+      "datasets": [],
+      "ims": null,
+      "mq_queues": [
+        {
+          "queue": "(input queue from trigger message MQTM-QNAME)",
+          "ops": [
+            "MQOPEN",
+            "MQGET",
+            "MQCLOSE"
+          ]
+        },
+        {
+          "queue": "CARD.DEMO.REPLY.DATE",
+          "ops": [
+            "MQOPEN",
+            "MQPUT",
+            "MQCLOSE"
+          ]
+        },
+        {
+          "queue": "CARD.DEMO.ERROR",
+          "ops": [
+            "MQOPEN",
+            "MQPUT",
+            "MQCLOSE"
+          ]
+        }
+      ],
+      "db2_tables": [],
+      "cics_transactions": [
+        "CDRD"
+      ],
+      "external_calls": [],
+      "called_by": [
+        "MQ trigger (transaction CDRD)"
+      ],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 13,
+        "file_io_verbs": 9,
+        "external_calls": 0,
+        "score": 31,
+        "band": "low",
+        "io_breakdown": {
+          "cobol_file_verbs": 0,
+          "cics_file_commands": 0,
+          "dli_calls": 0,
+          "exec_sql": 0,
+          "mq_calls": 9
+        },
+        "mq_detail": {
+          "MQOPEN": 3,
+          "MQGET": 1,
+          "MQPUT": 2,
+          "MQCLOSE": 3
+        }
+      },
+      "wave": ""
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+# Failure classes the seeded data is built to trigger, and where each one
+# should surface. The harness never branches on these names; they are here
+# so a reviewer can check that each class fired.
+classes:
+  - id: signed-display
+    what: zoned decimal fields carry the sign in the last byte (overpunch)
+    seeded_in: app/data/ASCII/*.txt and spec/fixtures/dailytran.txt (refunds, payments, credits)
+    surfaces: data load, decoded once in spec/harness/records.py for both runs
+  - id: truncation
+    what: interest is truncated to the cent, not rounded
+    seeded_in: spec/fixtures/overlay/tcatbal.txt account 53 balance 421.37 at 15.00 percent
+    surfaces: comparison report sampled value differences when a port rounds
+  - id: default-group-fallback
+    what: an account group with no disclosure rate falls back to DEFAULT
+    seeded_in: spec/fixtures/overlay/acctdata.txt account 51, group GOLDPROMO1
+    surfaces: rule coverage in the specification
+  - id: reject-reasons
+    what: invalid card, account not found, over limit, after expiration
+    seeded_in: spec/fixtures/dailytran.txt cards ...9001-9005, ...0099, ...0053, ...0052, ...0054
+    surfaces: reject file comparison, one rule and one test per reason
+  - id: job-order
+    what: INTCALC reads the category balances POSTTRAN updates
+    seeded_in: spec/manifest.yaml batch path order
+    surfaces: dependency graph and wave plan; CI negative control runs the jobs reversed
+  - id: unreferenced-members
+    what: members no JCL, program or transaction refers to
+    seeded_in: app/cpy (for example UNUSED1Y.cpy)
+    surfaces: inventory, marked and left out of the waves
+  - id: external-routine
+    what: the Language Environment abend service CEE3ABD
+    seeded_in: CBTRN02C and CBACT04C abend paragraphs
+    surfaces: compile stage, stubbed in spec/runner/stubs and listed as an assumption
+  - id: over-limit-reading
+    what: the over-limit check compares the limit with cycle credits minus cycle debits plus the amount, not the balance
+    seeded_in: spec/fixtures/dailytran.txt account 53 sequence 95.00, 30.00, 48.63, 0.01
+    surfaces: an amber rule with a business question until the business answers

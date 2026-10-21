@@ -1,36 +1,32 @@
 # https://docs.devin.ai/onboard-devin/environment-yaml
 # One-time setup (e.g., install system tools, global CLIs).
 initialize: |
-  sudo apt-get update && sudo apt-get install -y gnucobol
+  sudo apt-get update && sudo apt-get install -y gnucobol3 gettext-base
 # Install project dependencies (runs during builds, surfaced to agent at session start).
 maintenance: |
-  pip install jsonschema ruff
+  pip install -r spec/requirements.txt ruff
 knowledge:
-  - name: interest report extract
+  - name: batch path list
     contents: |
-      ./scripts/run_interest_report.sh   # writes app/data/reports/interest-summary.csv
-      python3 scripts/generate_interest_dashboard.py   # writes docs/reports/interest-dashboard.html
+      (cd spec && python3 -m harness programs)   # programs on the batch path, read from spec/manifest.yaml and the JCL
+  - name: cobol run
+    contents: |
+      (cd spec && python3 -m harness all runs/local)   # decoded inputs, GnuCOBOL run, comparison, pages under runs/local
   - name: test
     contents: |
-      python3 -m unittest discover -s tests
+      (cd spec && python3 -m pytest -q tests)                                       # against the frozen COBOL outputs
+      (cd spec && python3 -m pytest -q tests --run-dir runs/local --impl java)      # against a Java run
+      (cd java && ./mvnw -q -B verify)                                              # Java rules and parity, needs Java 21
   - name: lint
     contents: |
-      ruff check scripts/generate_interest_dashboard.py tests/
-  - name: build
+      ruff check spec
+  - name: kind
     contents: |
-      cobc -I app/cpy -fsign=EBCDIC -x app/cbl/<PROGRAM>.cbl
-      # committed copybooks are tab-indented; copy them to a scratch dir and
-      # re-indent to column 12 before compiling (see scripts/run_statement_json.sh)
-  - name: statement json extract
-    contents: |
-      ./scripts/run_statement_json.sh   # writes app/data/json/statements.json
-  - name: spring boot build
-    contents: |
-      (cd spring-boot && mvn -q clean verify)   # needs JAVA_HOME on a Java 21 JDK
-  - name: spring boot startup
-    contents: |
-      (cd spring-boot && mvn -q spring-boot:run)   # H2 in-memory, seeds from app/data on startup
+      scripts/sdd/reset.sh before|after [git-ref]   # kind cluster sdd-2610, namespace sdd-2610-<state>, pages at http://<state>.sdd-2610.localtest.me:8080/
+      scripts/sdd/teardown.sh                       # removes the cluster, containers, volumes and images, then prints the checks
   - name: notes
     contents: |
-      ASCII data in app/data/ASCII uses zoned-decimal overpunch signs, so compile with -fsign=EBCDIC.
-      /usr/bin/java is Java 8 on this image; the Spring Boot module requires Java 21 (JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64).
+      ASCII data in app/data/ASCII uses zoned-decimal overpunch signs; spec/harness/records.py decodes them once for every run.
+      Copybooks are tab-indented; the harness re-indents them before compiling with -fsign=EBCDIC.
+      Java 21 is under ~/.sdkman/candidates/java; /usr/bin/java may be an older JDK.
+      Docker Hub and Maven Central can rate-limit: images come from public.ecr.aws, and ~/.m2/settings.xml can mirror Central.

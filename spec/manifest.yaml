@@ -1,0 +1,26 @@
+# The batch path under specification, in JCL run order. The specification
+# workflow reads this list and the JCL members it points at; programs are
+# discovered from the EXEC PGM= statements, not typed here.
+batch_path:
+  - job: POSTTRAN
+    jcl: jcl/POSTTRAN.jcl
+  - job: INTCALC
+    jcl: jcl/INTCALC.jcl
+    reads_output_of: [POSTTRAN]
+  - job: CREASTMT
+    jcl: jcl/CREASTMT.JCL
+    optional: true
+    reads_output_of: [POSTTRAN, INTCALC]
+
+run:
+  interest_parm_date: from JCL PARM
+  current_date: "2022/07/18 01:00:00.00"
+
+datasets:
+  inputs: [accounts, cardxref, tcatbal, discgrp, dailytran]
+  outputs: [posted, rejects, accounts, tcatbal, interest]
+
+comparison:
+  measures: [record_count, field_profile, keyed_record_hash, sampled_value_differences]
+  sample_size: 10
+  expected_differences: expected-differences.yaml

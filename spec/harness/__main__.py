@@ -46,10 +46,13 @@ def main(argv=None):
         meta = json.loads((run / "cobol" / "run.json").read_text())
         meta.pop("stages", None)
         (GOLDEN / "run.json").write_text(json.dumps(meta, indent=2) + "\n")
+        (GOLDEN / "input").mkdir(exist_ok=True)
+        for f in (run / "input").glob("*.jsonl"):
+            shutil.copy(f, GOLDEN / "input" / f.name)
         print(f"froze {run / 'cobol'} into {GOLDEN}")
     if a.cmd == "golden":
         (run / "cobol").mkdir(parents=True, exist_ok=True)
-        for f in GOLDEN.glob("*"):
+        for f in GOLDEN.glob("*.*"):
             shutil.copy(f, run / "cobol" / f.name)
         print(f"copied the frozen COBOL outputs into {run / 'cobol'}")
     rc = 0

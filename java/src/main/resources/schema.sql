@@ -48,3 +48,8 @@ CREATE TABLE rejected_transaction (
   dalytran_merchant_name VARCHAR(50), dalytran_merchant_city VARCHAR(50), dalytran_merchant_zip VARCHAR(10),
   dalytran_card_num VARCHAR(16), dalytran_orig_ts VARCHAR(26), dalytran_proc_ts VARCHAR(26),
   validation_fail_reason NUMERIC(4,0), validation_fail_reason_desc VARCHAR(76));
+
+-- Deliberately retained across INTCALC runs to preserve promotion cycle state.
+CREATE TABLE IF NOT EXISTS promotion_cycle (
+  acct_id NUMERIC(11,0) NOT NULL, promo_group VARCHAR(10) NOT NULL, cycles_used INTEGER NOT NULL,
+  PRIMARY KEY (acct_id, promo_group));

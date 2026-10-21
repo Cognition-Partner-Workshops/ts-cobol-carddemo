@@ -73,15 +73,29 @@ class FrozenCobolParityTest {
                 continue;
             }
             List<String> fields = (List<String>) e.get("fields");
-            if (fields != null && !fields.contains(field) && !"*".equals(field)) {
+            if (fields != null && !fields.isEmpty() && !fields.contains(field) && !"*".equals(field)) {
                 continue;
             }
-            Map<String, Object> where = (Map<String, Object>) e.getOrDefault("where", Map.of());
+            List<?> keys = (List<?>) e.get("keys");
+            if (keys != null && !keys.isEmpty()) {
+                Map<String, String> rec = c != null ? c : j;
+                String key = keyedRecordKey(d, rec);
+                if (keys.stream().map(String::valueOf).noneMatch(key::equals)) {
+                    continue;
+                }
+            }
+            Map<String, Object> where = (Map<String, Object>) e.get("where");
+            if (where == null) {
+                where = Map.of();
+            }
             for (Map<String, String> rec : new Map[] {c, j}) {
-                if (rec != null && where.entrySet().stream()
+                if (rec != null && !rec.isEmpty() && where.entrySet().stream()
                         .allMatch(w -> String.valueOf(w.getValue()).equals(rec.get(w.getKey())))) {
                     return true;
                 }
+            }
+            if (where.isEmpty()) {
+                return true;
             }
         }
         return false;
@@ -101,8 +115,12 @@ class FrozenCobolParityTest {
                 continue;
             }
             Map<String, String> rec = JSON.readValue(line, new TypeReference<>() { });
-            out.put(String.join("|", KEYS.get(d).stream().map(rec::get).toList()), rec);
+            out.put(keyedRecordKey(d, rec), rec);
         }
         return out;
+    }
+
+    private static String keyedRecordKey(Datasets d, Map<String, String> rec) {
+        return String.join("|", KEYS.get(d).stream().map(rec::get).toList());
     }
 }

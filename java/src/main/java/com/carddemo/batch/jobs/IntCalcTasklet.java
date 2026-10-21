@@ -7,6 +7,7 @@ import com.carddemo.batch.domain.Account;
 import com.carddemo.batch.domain.CardXref;
 import com.carddemo.batch.domain.CategoryBalance;
 import com.carddemo.batch.domain.InterestRules;
+import com.carddemo.batch.domain.PurchasePromotion;
 import com.carddemo.batch.domain.Transaction;
 import com.carddemo.batch.store.BatchRepository;
 import com.carddemo.batch.store.Datasets;
@@ -18,6 +19,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 /**
  * INTCALC: walk the category balances in key order, compute monthly interest per category and
  * add each account's total to its balance when the account number changes.
+ * GOLDPROMO1 purchase interest uses the R19 promotional rate for the account's first three cycles.
  *
  * <p>The account update happens only on a change of account number. The COBOL loop exits
  * before its end-of-file branch runs, so the last account's interest is written as a
@@ -40,6 +42,7 @@ public class IntCalcTasklet implements Tasklet {
         Account account = null;
         CardXref xref = null;
         BigDecimal totalInterest = BigDecimal.ZERO;
+        int promoCycle = 0;
         int suffix = 0;
         for (CategoryBalance cat : repo.categoryBalancesInKeyOrder()) {
             if (lastAccountId == null || cat.accountId() != lastAccountId) {
@@ -51,8 +54,10 @@ public class IntCalcTasklet implements Tasklet {
                 final long id = cat.accountId();
                 account = repo.account(id).orElseThrow(() -> new IllegalStateException("account " + id + " missing"));
                 xref = repo.xrefByAccount(id).orElseThrow(() -> new IllegalStateException("no card for account " + id));
+                promoCycle = PurchasePromotion.isMember(account.groupId()) ? repo.startPromotionCycle(account.id()) : 0;
             }
-            BigDecimal rate = rateFor(account.groupId(), cat);
+            BigDecimal rate = PurchasePromotion.rate(account.groupId(), cat, promoCycle,
+                    rateFor(account.groupId(), cat));
             if (rate.signum() != 0) {
                 BigDecimal monthly = InterestRules.monthlyInterest(cat.balance(), rate, run.interestRounding());
                 totalInterest = totalInterest.add(monthly);

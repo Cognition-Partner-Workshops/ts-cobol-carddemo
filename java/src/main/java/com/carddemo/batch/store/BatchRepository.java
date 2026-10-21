@@ -9,6 +9,7 @@ import com.carddemo.batch.domain.Account;
 import com.carddemo.batch.domain.CardXref;
 import com.carddemo.batch.domain.CategoryBalance;
 import com.carddemo.batch.domain.DailyTransaction;
+import com.carddemo.batch.domain.PurchasePromotion;
 import com.carddemo.batch.domain.Transaction;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -75,6 +76,22 @@ public class BatchRepository {
         if (updated == 0) {
             jdbc.update("INSERT INTO category_balance VALUES (?, ?, ?, ?)", accountId, typeCode, categoryCode, amount);
         }
+    }
+
+    public int startPromotionCycle(long accountId) {
+        int updated = jdbc.update("UPDATE promotion_cycle SET cycles_used = cycles_used + 1 "
+                + "WHERE acct_id = ? AND promo_group = ?", accountId, PurchasePromotion.GROUP);
+        if (updated == 0) {
+            jdbc.update("INSERT INTO promotion_cycle (acct_id, promo_group, cycles_used) VALUES (?, ?, 1)",
+                    accountId, PurchasePromotion.GROUP);
+            return 1;
+        }
+        return promotionCyclesUsed(accountId);
+    }
+
+    public int promotionCyclesUsed(long accountId) {
+        return jdbc.query("SELECT cycles_used FROM promotion_cycle WHERE acct_id = ? AND promo_group = ?",
+                (rs, i) -> rs.getInt(1), accountId, PurchasePromotion.GROUP).stream().findFirst().orElse(0);
     }
 
     public Optional<BigDecimal> interestRate(String groupId, String typeCode, int categoryCode) {

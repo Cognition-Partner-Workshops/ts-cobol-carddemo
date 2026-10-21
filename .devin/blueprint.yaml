@@ -1,7 +1,7 @@
 # https://docs.devin.ai/onboard-devin/environment-yaml
 # One-time setup (e.g., install system tools, global CLIs).
 initialize: |
-  sudo apt-get update && sudo apt-get install -y gnucobol3 envsubst || sudo apt-get install -y gnucobol gettext-base
+  sudo apt-get update && sudo apt-get install -y gnucobol3 gettext-base
 # Install project dependencies (runs during builds, surfaced to agent at session start).
 maintenance: |
   pip install -r spec/requirements.txt ruff

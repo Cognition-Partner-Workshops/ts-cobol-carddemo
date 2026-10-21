@@ -7,6 +7,7 @@ change request that approved it. Anything else is unexplained and fails.
 """
 import hashlib
 import json
+from collections import Counter
 from decimal import Decimal
 from pathlib import Path
 
@@ -33,7 +34,7 @@ def _matches(entry, dataset, field, rec_left, rec_right, key):
     if entry.get("dataset") != dataset:
         return False
     fields = entry.get("fields")
-    if fields and field not in fields and field != "*":
+    if fields and (field == "*" or field not in fields):
         return False
     keys = entry.get("keys")
     if keys and key not in [str(k) for k in keys]:
@@ -66,13 +67,19 @@ def compare_dataset(name, left, right, expected, sample_size):
     lmap = {record_key(ds, r): r for r in left}
     rmap = {record_key(ds, r): r for r in right}
     diffs = []
+    for side, records in (("left", left), ("right", right)):
+        seen = Counter(record_key(ds, r) for r in records)
+        for key, n in sorted(seen.items()):
+            if n > 1:
+                diffs.append({"key": key, "field": f"duplicate key on {side}", "left": None, "right": None,
+                              "expected": None, "change_request": None})
     matched = 0
     for key in sorted(set(lmap) | set(rmap)):
         lr, rr = lmap.get(key), rmap.get(key)
         if lr is not None and rr is not None and digest(lr) == digest(rr):
             matched += 1
             continue
-        fields = ["*"] if lr is None or rr is None else [f for f in sorted(lr) if lr.get(f) != rr.get(f)]
+        fields = ["*"] if lr is None or rr is None else [f for f in sorted(set(lr) | set(rr)) if lr.get(f) != rr.get(f)]
         for field in fields:
             entry = next((e for e in expected if _matches(e, name, field, lr, rr, key)), None)
             diffs.append({
@@ -103,8 +110,14 @@ def compare(run_dir, left="cobol", right="java", expected_path=None, sample_size
     expected = load_expected(expected_path)
     datasets = []
     for name in OUTPUTS:
-        datasets.append(compare_dataset(name, read_jsonl(run_dir / left / f"{name}.jsonl"),
-                                        read_jsonl(run_dir / right / f"{name}.jsonl"), expected, sample_size))
+        paths = {side: run_dir / side / f"{name}.jsonl" for side in (left, right)}
+        d = compare_dataset(name, read_jsonl(paths[left]), read_jsonl(paths[right]), expected, sample_size)
+        missing = [side for side, p in paths.items() if not p.exists()]
+        if missing:
+            d["sampled_value_differences"].insert(0, {"key": "*", "field": f"no {name}.jsonl on {', '.join(missing)}",
+                                                      "left": None, "right": None, "expected": None, "change_request": None})
+            d.update(missing_output=missing, unexplained=d["unexplained"] + 1, verdict="missing output")
+        datasets.append(d)
     meta = {}
     for side in (left, right):
         p = run_dir / side / "run.json"

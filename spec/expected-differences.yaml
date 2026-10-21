@@ -2,4 +2,16 @@
 # approved. Each entry needs an id, the change request link, the dataset and
 # the fields it covers, and a where clause or key list that pins the records.
 # A difference no entry covers fails the comparison.
-expected_differences: []
+expected_differences:
+  - id: cr144-goldpromo1-promo-interest
+    change_request: https://github.com/Cognition-Partner-Workshops/ts-cobol-carddemo/issues/144
+    note: CBACT04C R19, account 51 type 01 category 0001 at 4.99 instead of 15.00 (18.64 -> 6.20)
+    dataset: interest
+    fields: [tran_amt]
+    keys: ["2022071800000083"]
+  - id: cr144-goldpromo1-account-balance
+    change_request: https://github.com/Cognition-Partner-Workshops/ts-cobol-carddemo/issues/144
+    note: CBACT04C R19, account 51 balance gains the promotional interest (1716.02 -> 1703.58)
+    dataset: accounts
+    fields: [acct_curr_bal]
+    keys: ["51"]

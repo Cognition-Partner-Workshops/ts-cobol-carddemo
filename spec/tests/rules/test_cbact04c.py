@@ -9,13 +9,26 @@ from collections import defaultdict
 from decimal import ROUND_DOWN, ROUND_HALF_UP, Decimal
 
 import pytest
-
 from harness.jcl import job_steps, manifest
 
 CENT = Decimal("0.01")
 ZERO = Decimal(0)
 DEFAULT_GROUP = "DEFAULT"
 ACCOUNT_FIELDS_UPDATED = {"acct_curr_bal", "acct_curr_cyc_credit", "acct_curr_cyc_debit"}
+
+CR144 = "https://github.com/Cognition-Partner-Workshops/ts-cobol-carddemo/issues/144"
+PROMO_GROUP = "GOLDPROMO1"
+PROMO_TYPE_CD = "01"
+PROMO_CAT_CD = 1
+PROMO_RATE = Decimal("4.99")
+PROMO_CYCLES = 3
+SEEDED_RUN_CYCLE = 1  # the seeded INTCALC run is the first that sees a GOLDPROMO1 account
+
+# R19 is approved by change request #144 but is not in the COBOL, which still charges the
+# DEFAULT rate; the assertions hold for any port and are expected to fail against the COBOL.
+r19_not_in_cobol = pytest.mark.xfail(
+    "config.getoption('--impl') == 'cobol'", strict=True,
+    reason=f"change request #144 is not implemented in CBACT04C (COBOL keeps the DEFAULT rate) {CR144}")
 
 
 def interest_parm():
@@ -89,6 +102,17 @@ def last_account(outputs):
     return tcatbal_in_key_order(outputs)[-1]["trancat_acct_id"]
 
 
+def is_promotional(run_inputs, cat, cycle=SEEDED_RUN_CYCLE):
+    """R19: GOLDPROMO1 purchases (type 01, category 0001) in the account's first three cycles."""
+    acct = run_inputs["accounts"][cat["trancat_acct_id"]]
+    return (acct["acct_group_id"] == PROMO_GROUP and cat["trancat_type_cd"] == PROMO_TYPE_CD
+            and int(cat["trancat_cd"]) == PROMO_CAT_CD and 1 <= cycle <= PROMO_CYCLES)
+
+
+def promo_accounts(run_inputs):
+    return sorted(a["acct_id"] for a in run_inputs["accounts"].values() if a["acct_group_id"] == PROMO_GROUP)
+
+
 def test_cbact04c_r01_one_transaction_per_rated_category_in_key_order(outputs, run_inputs):
     expected = expected_interest(outputs, run_inputs)
     actual = interest_in_id_order(outputs)
@@ -118,8 +142,8 @@ def test_cbact04c_r03_missing_group_rate_falls_back_to_default(outputs, run_inpu
     for exp, rec in zip(expected, interest_in_id_order(outputs)):
         cat = exp["cat"]
         group = run_inputs["accounts"][cat["trancat_acct_id"]]["acct_group_id"]
-        if f"{group}|{cat['trancat_type_cd']}|{cat['trancat_cd']}" in discgrp:
-            continue
+        if f"{group}|{cat['trancat_type_cd']}|{cat['trancat_cd']}" in discgrp or is_promotional(run_inputs, cat):
+            continue  # R19 owns the GOLDPROMO1 01/0001 rate
         default = Decimal(discgrp[f"{DEFAULT_GROUP}|{cat['trancat_type_cd']}|{cat['trancat_cd']}"]["dis_int_rate"])
         assert exp["rate"] == default
         assert Decimal(rec["tran_amt"]) == exact_interest(cat["tran_cat_bal"], default).quantize(CENT, rounding=ROUND_DOWN)
@@ -156,7 +180,7 @@ def test_cbact04c_r04_zero_rate_writes_no_transaction(outputs, run_inputs):
 def test_cbact04c_r05_monthly_interest_is_balance_times_rate_over_1200(outputs, run_inputs):
     checked = 0
     for exp, rec in zip(expected_interest(outputs, run_inputs), interest_in_id_order(outputs)):
-        if Decimal(exp["cat"]["tran_cat_bal"]) < 0:
+        if Decimal(exp["cat"]["tran_cat_bal"]) < 0 or is_promotional(run_inputs, exp["cat"]):
             continue
         assert Decimal(rec["tran_amt"]) == exp["amount"], rec["tran_id"]
         checked += 1
@@ -166,7 +190,7 @@ def test_cbact04c_r05_monthly_interest_is_balance_times_rate_over_1200(outputs, 
 def test_cbact04c_r06_interest_truncated_to_cents_not_rounded(outputs, run_inputs):
     differs = 0
     for exp, rec in zip(expected_interest(outputs, run_inputs), interest_in_id_order(outputs)):
-        if Decimal(exp["cat"]["tran_cat_bal"]) < 0:
+        if Decimal(exp["cat"]["tran_cat_bal"]) < 0 or is_promotional(run_inputs, exp["cat"]):
             continue
         rounded = exp["exact"].quantize(CENT, rounding=ROUND_HALF_UP)
         truncated = exp["exact"].quantize(CENT, rounding=ROUND_DOWN)
@@ -286,3 +310,80 @@ def test_cbact04c_r18_category_balances_not_changed_by_interest(outputs, run_inp
     for key, cat in outputs["tcatbal"].items():
         before = Decimal(run_inputs["tcatbal"][key]["tran_cat_bal"]) if key in run_inputs["tcatbal"] else ZERO
         assert Decimal(cat["tran_cat_bal"]) == before + posted[key], key
+
+
+@r19_not_in_cobol
+def test_cbact04c_r19_goldpromo1_purchases_at_promotional_rate(outputs, run_inputs):
+    checked = 0
+    for exp, rec in zip(expected_interest(outputs, run_inputs), interest_in_id_order(outputs)):
+        cat = exp["cat"]
+        if not is_promotional(run_inputs, cat):
+            continue
+        promo = exact_interest(cat["tran_cat_bal"], PROMO_RATE).quantize(CENT, rounding=ROUND_DOWN)
+        assert Decimal(rec["tran_amt"]) == promo, rec["tran_id"]
+        checked += 1
+    assert checked > 0, "seeded data must contain a GOLDPROMO1 type 01 category 0001 balance"
+
+
+def test_cbact04c_r19_goldpromo1_other_categories_keep_default_rate(outputs, run_inputs):
+    discgrp = run_inputs["discgrp"]
+    promo = set(promo_accounts(run_inputs))
+    assert promo
+    expected = expected_interest(outputs, run_inputs)
+    by_cat = {(e["cat"]["trancat_acct_id"], e["cat"]["trancat_type_cd"], e["cat"]["trancat_cd"]): rec
+              for e, rec in zip(expected, interest_in_id_order(outputs))}
+    others = [c for c in outputs["tcatbal"].values()
+              if c["trancat_acct_id"] in promo and not is_promotional(run_inputs, c)]
+    assert others
+    for cat in others:
+        default = Decimal(discgrp[f"{DEFAULT_GROUP}|{cat['trancat_type_cd']}|{cat['trancat_cd']}"]["dis_int_rate"])
+        rec = by_cat.get((cat["trancat_acct_id"], cat["trancat_type_cd"], cat["trancat_cd"]))
+        if default == 0:
+            assert rec is None
+        elif Decimal(cat["tran_cat_bal"]) >= 0:
+            assert Decimal(rec["tran_amt"]) == exact_interest(cat["tran_cat_bal"], default).quantize(
+                CENT, rounding=ROUND_DOWN), rec["tran_id"]
+        else:
+            assert rec is not None  # sign handling is R08
+    written = [r for r in outputs["interest"].values() if account_of_interest(r) in promo]
+    assert len(written) == sum(1 for e in expected if e["cat"]["trancat_acct_id"] in promo)
+
+
+def test_cbact04c_r19_other_accounts_unchanged(outputs, run_inputs):
+    promo = set(promo_accounts(run_inputs))
+    checked = 0
+    for exp, rec in zip(expected_interest(outputs, run_inputs), interest_in_id_order(outputs)):
+        cat = exp["cat"]
+        if cat["trancat_acct_id"] in promo:
+            continue
+        assert account_of_interest(rec) == cat["trancat_acct_id"]
+        if Decimal(cat["tran_cat_bal"]) >= 0:
+            assert Decimal(rec["tran_amt"]) == exp["amount"], rec["tran_id"]
+            checked += 1
+    assert checked > 0
+    cards = card_to_account(run_inputs)
+    interest = sums_by_account(outputs["interest"].values(), cards)
+    last = last_account(outputs)
+    for acct_id in {c["trancat_acct_id"] for c in outputs["tcatbal"].values()} - promo - {last}:
+        expected = balance_before_interest(outputs, run_inputs, acct_id) + interest[acct_id]
+        assert Decimal(outputs["accounts"][acct_id]["acct_curr_bal"]) == expected, acct_id
+
+
+@r19_not_in_cobol
+def test_cbact04c_r19_balance_gains_promotional_total(outputs, run_inputs):
+    promo = set(promo_accounts(run_inputs))
+    last = last_account(outputs)
+    assert promo - {last}, "seeded data must give a GOLDPROMO1 account that is not the last account (R17)"
+    total = defaultdict(Decimal)
+    for exp, rec in zip(expected_interest(outputs, run_inputs), interest_in_id_order(outputs)):
+        cat = exp["cat"]
+        if cat["trancat_acct_id"] not in promo:
+            continue
+        if is_promotional(run_inputs, cat):
+            total[cat["trancat_acct_id"]] += exact_interest(cat["tran_cat_bal"], PROMO_RATE).quantize(
+                CENT, rounding=ROUND_DOWN)
+        else:
+            total[cat["trancat_acct_id"]] += Decimal(rec["tran_amt"])
+    for acct_id in promo - {last}:
+        expected = balance_before_interest(outputs, run_inputs, acct_id) + total[acct_id]
+        assert Decimal(outputs["accounts"][acct_id]["acct_curr_bal"]) == expected, acct_id

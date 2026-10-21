@@ -1,0 +1,1504 @@
+{
+  "group": "cics",
+  "baseline": "baseline/sdd-2610",
+  "scope": "Every COBOL program under app/cbl that issues EXEC CICS (CO*C online programs). Transaction ids from app/csd/CARDDEMO.CSD, mapsets from app/bms, copybooks from app/cpy and app/cpy-bms, VSAM files via EXEC CICS file commands with DSN from CSD DEFINE FILE, XCTL/LINK/CALL targets as external_calls.",
+  "complexity_convention": {
+    "formula": "paragraphs + 2 x file_io_verbs + 3 x external_calls",
+    "paragraphs": "paragraph and section labels in Area A of the PROCEDURE DIVISION",
+    "file_io_verbs": "occurrences of EXEC CICS READ, WRITE, REWRITE, DELETE, STARTBR, READNEXT, READPREV, RESETBR, ENDBR, UNLOCK naming FILE/DATASET, plus WRITEQ/READQ/DELETEQ (comments excluded)",
+    "external_calls": "distinct XCTL/LINK targets (literals, LIT- constants, MOVE ... TO CDEMO-TO-PROGRAM / CCARD-NEXT-PROG, menu tables COMEN02Y/COADM02Y) plus distinct static CALL targets",
+    "bands": {
+      "low": "score < 40",
+      "medium": "40 <= score < 80",
+      "high": "score >= 80"
+    }
+  },
+  "issues": [
+    "COCRDSEC is defined as a PROGRAM in app/csd/CARDDEMO.CSD but has no source under app/cbl and no TRANSACTION; not inventoried.",
+    "XCTL/LINK targets without source in app/cbl (from menu tables COMEN02Y/COADM02Y): COPAUS0C, COTRTLIC, COTRTUPC; they appear only in external_calls.",
+    "CSUTLDTC (app/cbl/CSUTLDTC.cbl) is a static CALL from CORPT00C and COTRN02C; it has no EXEC CICS and is not a CO* program, so it is not given its own cics entry.",
+    "Return-to-caller XCTLs (MOVE CDEMO-FROM-PROGRAM TO CDEMO-TO-PROGRAM) are dynamic; they are listed per program in unresolved_calls and not as edges.",
+    "COBSWAIT matches CO* but has no EXEC CICS (batch wait utility calling MVSWAIT); left to the batch group.",
+    "CORPT00C submits report JCL by EXEC CICS WRITEQ TD QUEUE('JOBS') (internal reader); recorded as dataset TDQ:JOBS.",
+    "datasets entries are objects (same shape as batch.json); spec/harness/site.py joins datasets as strings, so the merge into inventory.json must flatten them."
+  ],
+  "programs": [
+    {
+      "name": "COACTUPC",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COACTUPC.cbl",
+      "jcl": [],
+      "copybooks": [
+        "CSUTLDWY",
+        "CVCRD01Y",
+        "CSLKPCDY",
+        "DFHBMSCA",
+        "DFHAID",
+        "COTTL01Y",
+        "COACTUP",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSMSG02Y",
+        "CSUSR01Y",
+        "CVACT01Y",
+        "CVACT03Y",
+        "CVCUS01Y",
+        "COCOM01Y",
+        "CSSETATY",
+        "CSSTRPFY",
+        "CSUTLDPY"
+      ],
+      "copybook_locations": {
+        "CSUTLDWY": "app/cpy",
+        "CVCRD01Y": "app/cpy",
+        "CSLKPCDY": "app/cpy",
+        "DFHBMSCA": "system (not in repo)",
+        "DFHAID": "system (not in repo)",
+        "COTTL01Y": "app/cpy",
+        "COACTUP": "app/cpy-bms",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSMSG02Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "CVACT01Y": "app/cpy",
+        "CVACT03Y": "app/cpy",
+        "CVCUS01Y": "app/cpy",
+        "COCOM01Y": "app/cpy",
+        "CSSETATY": "app/cpy",
+        "CSSTRPFY": "app/cpy",
+        "CSUTLDPY": "app/cpy"
+      },
+      "bms_mapset": [
+        "COACTUP"
+      ],
+      "bms_source": [
+        "app/bms/COACTUP.bms"
+      ],
+      "datasets": [
+        {
+          "file": "ACCTDAT",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+          "access": "read-write",
+          "ops": [
+            "READ",
+            "READ UPDATE",
+            "REWRITE"
+          ]
+        },
+        {
+          "file": "CUSTDAT",
+          "dsn": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+          "access": "read-write",
+          "ops": [
+            "READ",
+            "READ UPDATE",
+            "REWRITE"
+          ]
+        },
+        {
+          "file": "CXACAIX",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CAUP"
+      ],
+      "external_calls": [
+        "COMEN01C"
+      ],
+      "external_call_kinds": {
+        "COMEN01C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [
+        "XCTL PROGRAM(CDEMO-TO-PROGRAM) via CDEMO-FROM-PROGRAM"
+      ],
+      "complexity": {
+        "paragraphs": 85,
+        "file_io_verbs": 7,
+        "external_calls": 1,
+        "score": 102,
+        "band": "high"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COMEN01C"
+      ]
+    },
+    {
+      "name": "COACTVWC",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COACTVWC.cbl",
+      "jcl": [],
+      "copybooks": [
+        "CVCRD01Y",
+        "COCOM01Y",
+        "DFHBMSCA",
+        "DFHAID",
+        "COTTL01Y",
+        "COACTVW",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSMSG02Y",
+        "CSUSR01Y",
+        "CVACT01Y",
+        "CVACT02Y",
+        "CVACT03Y",
+        "CVCUS01Y",
+        "CSSTRPFY"
+      ],
+      "copybook_locations": {
+        "CVCRD01Y": "app/cpy",
+        "COCOM01Y": "app/cpy",
+        "DFHBMSCA": "system (not in repo)",
+        "DFHAID": "system (not in repo)",
+        "COTTL01Y": "app/cpy",
+        "COACTVW": "app/cpy-bms",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSMSG02Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "CVACT01Y": "app/cpy",
+        "CVACT02Y": "app/cpy",
+        "CVACT03Y": "app/cpy",
+        "CVCUS01Y": "app/cpy",
+        "CSSTRPFY": "app/cpy"
+      },
+      "bms_mapset": [
+        "COACTVW"
+      ],
+      "bms_source": [
+        "app/bms/COACTVW.bms"
+      ],
+      "datasets": [
+        {
+          "file": "ACCTDAT",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        },
+        {
+          "file": "CUSTDAT",
+          "dsn": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        },
+        {
+          "file": "CXACAIX",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CAVW"
+      ],
+      "external_calls": [
+        "COMEN01C"
+      ],
+      "external_call_kinds": {
+        "COMEN01C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [
+        "XCTL PROGRAM(CDEMO-TO-PROGRAM) via CDEMO-FROM-PROGRAM"
+      ],
+      "complexity": {
+        "paragraphs": 35,
+        "file_io_verbs": 3,
+        "external_calls": 1,
+        "score": 44,
+        "band": "medium"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COMEN01C"
+      ]
+    },
+    {
+      "name": "COADM01C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COADM01C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COADM02Y",
+        "COADM01",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSUSR01Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COADM02Y": "app/cpy",
+        "COADM01": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COADM01"
+      ],
+      "bms_source": [
+        "app/bms/COADM01.bms"
+      ],
+      "datasets": [],
+      "cics_transactions": [
+        "CA00"
+      ],
+      "external_calls": [
+        "COSGN00C",
+        "COTRTLIC",
+        "COTRTUPC",
+        "COUSR00C",
+        "COUSR01C",
+        "COUSR02C",
+        "COUSR03C"
+      ],
+      "external_call_kinds": {
+        "COSGN00C": [
+          "XCTL"
+        ],
+        "COTRTLIC": [
+          "XCTL"
+        ],
+        "COTRTUPC": [
+          "XCTL"
+        ],
+        "COUSR00C": [
+          "XCTL"
+        ],
+        "COUSR01C": [
+          "XCTL"
+        ],
+        "COUSR02C": [
+          "XCTL"
+        ],
+        "COUSR03C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [],
+      "complexity": {
+        "paragraphs": 8,
+        "file_io_verbs": 0,
+        "external_calls": 7,
+        "score": 29,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COSGN00C",
+        "COUSR00C",
+        "COUSR01C",
+        "COUSR02C",
+        "COUSR03C"
+      ]
+    },
+    {
+      "name": "COBIL00C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COBIL00C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COBIL00",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CVACT01Y",
+        "CVACT03Y",
+        "CVTRA05Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COBIL00": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CVACT01Y": "app/cpy",
+        "CVACT03Y": "app/cpy",
+        "CVTRA05Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COBIL00"
+      ],
+      "bms_source": [
+        "app/bms/COBIL00.bms"
+      ],
+      "datasets": [
+        {
+          "file": "ACCTDAT",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+          "access": "read-write",
+          "ops": [
+            "READ UPDATE",
+            "REWRITE"
+          ]
+        },
+        {
+          "file": "CXACAIX",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        },
+        {
+          "file": "TRANSACT",
+          "dsn": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+          "access": "read-write",
+          "ops": [
+            "ENDBR",
+            "READPREV",
+            "STARTBR",
+            "WRITE"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CB00"
+      ],
+      "external_calls": [
+        "COMEN01C",
+        "COSGN00C"
+      ],
+      "external_call_kinds": {
+        "COMEN01C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [
+        "XCTL PROGRAM(CDEMO-TO-PROGRAM) via CDEMO-FROM-PROGRAM"
+      ],
+      "complexity": {
+        "paragraphs": 16,
+        "file_io_verbs": 7,
+        "external_calls": 2,
+        "score": 36,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COMEN01C"
+      ]
+    },
+    {
+      "name": "COCRDLIC",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COCRDLIC.cbl",
+      "jcl": [],
+      "copybooks": [
+        "CVCRD01Y",
+        "COCOM01Y",
+        "DFHBMSCA",
+        "DFHAID",
+        "COTTL01Y",
+        "COCRDLI",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSUSR01Y",
+        "CVACT02Y",
+        "CSSTRPFY"
+      ],
+      "copybook_locations": {
+        "CVCRD01Y": "app/cpy",
+        "COCOM01Y": "app/cpy",
+        "DFHBMSCA": "system (not in repo)",
+        "DFHAID": "system (not in repo)",
+        "COTTL01Y": "app/cpy",
+        "COCRDLI": "app/cpy-bms",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "CVACT02Y": "app/cpy",
+        "CSSTRPFY": "app/cpy"
+      },
+      "bms_mapset": [
+        "COCRDLI"
+      ],
+      "bms_source": [
+        "app/bms/COCRDLI.bms"
+      ],
+      "datasets": [
+        {
+          "file": "CARDDAT",
+          "dsn": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+          "access": "read",
+          "ops": [
+            "ENDBR",
+            "READNEXT",
+            "READPREV",
+            "STARTBR"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CCLI"
+      ],
+      "external_calls": [
+        "COCRDSLC",
+        "COCRDUPC",
+        "COMEN01C"
+      ],
+      "external_call_kinds": {
+        "COCRDSLC": [
+          "XCTL"
+        ],
+        "COCRDUPC": [
+          "XCTL"
+        ],
+        "COMEN01C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [],
+      "complexity": {
+        "paragraphs": 39,
+        "file_io_verbs": 8,
+        "external_calls": 3,
+        "score": 64,
+        "band": "medium"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COMEN01C"
+      ]
+    },
+    {
+      "name": "COCRDSLC",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COCRDSLC.cbl",
+      "jcl": [],
+      "copybooks": [
+        "CVCRD01Y",
+        "COCOM01Y",
+        "DFHBMSCA",
+        "DFHAID",
+        "COTTL01Y",
+        "COCRDSL",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSMSG02Y",
+        "CSUSR01Y",
+        "CVACT02Y",
+        "CVCUS01Y",
+        "CSSTRPFY"
+      ],
+      "copybook_locations": {
+        "CVCRD01Y": "app/cpy",
+        "COCOM01Y": "app/cpy",
+        "DFHBMSCA": "system (not in repo)",
+        "DFHAID": "system (not in repo)",
+        "COTTL01Y": "app/cpy",
+        "COCRDSL": "app/cpy-bms",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSMSG02Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "CVACT02Y": "app/cpy",
+        "CVCUS01Y": "app/cpy",
+        "CSSTRPFY": "app/cpy"
+      },
+      "bms_mapset": [
+        "COCRDSL"
+      ],
+      "bms_source": [
+        "app/bms/COCRDSL.bms"
+      ],
+      "datasets": [
+        {
+          "file": "CARDAIX",
+          "dsn": "AWS.M2.CARDDEMO.CARDDATA.VSAM.AIX.PATH",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        },
+        {
+          "file": "CARDDAT",
+          "dsn": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CCDL"
+      ],
+      "external_calls": [
+        "COMEN01C"
+      ],
+      "external_call_kinds": {
+        "COMEN01C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [
+        "XCTL PROGRAM(CDEMO-TO-PROGRAM) via CDEMO-FROM-PROGRAM"
+      ],
+      "complexity": {
+        "paragraphs": 34,
+        "file_io_verbs": 2,
+        "external_calls": 1,
+        "score": 41,
+        "band": "medium"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COCRDLIC",
+        "COMEN01C"
+      ]
+    },
+    {
+      "name": "COCRDUPC",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COCRDUPC.cbl",
+      "jcl": [],
+      "copybooks": [
+        "CVCRD01Y",
+        "COCOM01Y",
+        "DFHBMSCA",
+        "DFHAID",
+        "COTTL01Y",
+        "COCRDUP",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSMSG02Y",
+        "CSUSR01Y",
+        "CVACT02Y",
+        "CVCUS01Y",
+        "CSSTRPFY"
+      ],
+      "copybook_locations": {
+        "CVCRD01Y": "app/cpy",
+        "COCOM01Y": "app/cpy",
+        "DFHBMSCA": "system (not in repo)",
+        "DFHAID": "system (not in repo)",
+        "COTTL01Y": "app/cpy",
+        "COCRDUP": "app/cpy-bms",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSMSG02Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "CVACT02Y": "app/cpy",
+        "CVCUS01Y": "app/cpy",
+        "CSSTRPFY": "app/cpy"
+      },
+      "bms_mapset": [
+        "COCRDUP"
+      ],
+      "bms_source": [
+        "app/bms/COCRDUP.bms"
+      ],
+      "datasets": [
+        {
+          "file": "CARDDAT",
+          "dsn": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+          "access": "read-write",
+          "ops": [
+            "READ",
+            "READ UPDATE",
+            "REWRITE"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CCUP"
+      ],
+      "external_calls": [
+        "COMEN01C"
+      ],
+      "external_call_kinds": {
+        "COMEN01C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [
+        "XCTL PROGRAM(CDEMO-TO-PROGRAM) via CDEMO-FROM-PROGRAM"
+      ],
+      "complexity": {
+        "paragraphs": 45,
+        "file_io_verbs": 3,
+        "external_calls": 1,
+        "score": 54,
+        "band": "medium"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COCRDLIC",
+        "COMEN01C"
+      ]
+    },
+    {
+      "name": "COMEN01C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COMEN01C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COMEN02Y",
+        "COMEN01",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSUSR01Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COMEN02Y": "app/cpy",
+        "COMEN01": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COMEN01"
+      ],
+      "bms_source": [
+        "app/bms/COMEN01.bms"
+      ],
+      "datasets": [],
+      "cics_transactions": [
+        "CM00"
+      ],
+      "external_calls": [
+        "COACTUPC",
+        "COACTVWC",
+        "COBIL00C",
+        "COCRDLIC",
+        "COCRDSLC",
+        "COCRDUPC",
+        "COPAUS0C",
+        "CORPT00C",
+        "COSGN00C",
+        "COTRN00C",
+        "COTRN01C",
+        "COTRN02C"
+      ],
+      "external_call_kinds": {
+        "COACTUPC": [
+          "XCTL"
+        ],
+        "COACTVWC": [
+          "XCTL"
+        ],
+        "COBIL00C": [
+          "XCTL"
+        ],
+        "COCRDLIC": [
+          "XCTL"
+        ],
+        "COCRDSLC": [
+          "XCTL"
+        ],
+        "COCRDUPC": [
+          "XCTL"
+        ],
+        "COPAUS0C": [
+          "XCTL"
+        ],
+        "CORPT00C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ],
+        "COTRN00C": [
+          "XCTL"
+        ],
+        "COTRN01C": [
+          "XCTL"
+        ],
+        "COTRN02C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [],
+      "complexity": {
+        "paragraphs": 7,
+        "file_io_verbs": 0,
+        "external_calls": 12,
+        "score": 43,
+        "band": "medium"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COACTUPC",
+        "COACTVWC",
+        "COBIL00C",
+        "COCRDLIC",
+        "COCRDSLC",
+        "COCRDUPC",
+        "CORPT00C",
+        "COSGN00C",
+        "COTRN00C",
+        "COTRN01C",
+        "COTRN02C"
+      ]
+    },
+    {
+      "name": "CORPT00C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/CORPT00C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "CORPT00",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CVTRA05Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "CORPT00": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CVTRA05Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "CORPT00"
+      ],
+      "bms_source": [
+        "app/bms/CORPT00.bms"
+      ],
+      "datasets": [
+        {
+          "queue": "TDQ:JOBS",
+          "dsn": "",
+          "access": "write",
+          "ops": [
+            "WRITEQ"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CR00"
+      ],
+      "external_calls": [
+        "COMEN01C",
+        "COSGN00C",
+        "CSUTLDTC"
+      ],
+      "external_call_kinds": {
+        "COMEN01C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ],
+        "CSUTLDTC": [
+          "CALL"
+        ]
+      },
+      "unresolved_calls": [],
+      "complexity": {
+        "paragraphs": 10,
+        "file_io_verbs": 1,
+        "external_calls": 3,
+        "score": 21,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COMEN01C"
+      ]
+    },
+    {
+      "name": "COSGN00C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COSGN00C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COSGN00",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSUSR01Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COSGN00": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COSGN00"
+      ],
+      "bms_source": [
+        "app/bms/COSGN00.bms"
+      ],
+      "datasets": [
+        {
+          "file": "USRSEC",
+          "dsn": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CC00"
+      ],
+      "external_calls": [
+        "COADM01C",
+        "COMEN01C"
+      ],
+      "external_call_kinds": {
+        "COADM01C": [
+          "XCTL"
+        ],
+        "COMEN01C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [],
+      "complexity": {
+        "paragraphs": 6,
+        "file_io_verbs": 1,
+        "external_calls": 2,
+        "score": 14,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COADM01C",
+        "COBIL00C",
+        "COMEN01C",
+        "CORPT00C",
+        "COTRN00C",
+        "COTRN01C",
+        "COTRN02C",
+        "COUSR00C",
+        "COUSR01C",
+        "COUSR02C",
+        "COUSR03C"
+      ]
+    },
+    {
+      "name": "COTRN00C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COTRN00C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COTRN00",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CVTRA05Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COTRN00": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CVTRA05Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COTRN00"
+      ],
+      "bms_source": [
+        "app/bms/COTRN00.bms"
+      ],
+      "datasets": [
+        {
+          "file": "TRANSACT",
+          "dsn": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+          "access": "read",
+          "ops": [
+            "ENDBR",
+            "READNEXT",
+            "READPREV",
+            "STARTBR"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CT00"
+      ],
+      "external_calls": [
+        "COMEN01C",
+        "COSGN00C",
+        "COTRN01C"
+      ],
+      "external_call_kinds": {
+        "COMEN01C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ],
+        "COTRN01C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [],
+      "complexity": {
+        "paragraphs": 16,
+        "file_io_verbs": 4,
+        "external_calls": 3,
+        "score": 33,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COMEN01C",
+        "COTRN01C"
+      ]
+    },
+    {
+      "name": "COTRN01C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COTRN01C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COTRN01",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CVTRA05Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COTRN01": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CVTRA05Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COTRN01"
+      ],
+      "bms_source": [
+        "app/bms/COTRN01.bms"
+      ],
+      "datasets": [
+        {
+          "file": "TRANSACT",
+          "dsn": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+          "access": "read-write",
+          "ops": [
+            "READ UPDATE"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CT01"
+      ],
+      "external_calls": [
+        "COMEN01C",
+        "COSGN00C",
+        "COTRN00C"
+      ],
+      "external_call_kinds": {
+        "COMEN01C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ],
+        "COTRN00C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [
+        "XCTL PROGRAM(CDEMO-TO-PROGRAM) via CDEMO-FROM-PROGRAM"
+      ],
+      "complexity": {
+        "paragraphs": 9,
+        "file_io_verbs": 1,
+        "external_calls": 3,
+        "score": 20,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COMEN01C",
+        "COTRN00C"
+      ]
+    },
+    {
+      "name": "COTRN02C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COTRN02C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COTRN02",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CVTRA05Y",
+        "CVACT01Y",
+        "CVACT03Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COTRN02": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CVTRA05Y": "app/cpy",
+        "CVACT01Y": "app/cpy",
+        "CVACT03Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COTRN02"
+      ],
+      "bms_source": [
+        "app/bms/COTRN02.bms"
+      ],
+      "datasets": [
+        {
+          "file": "CCXREF",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        },
+        {
+          "file": "CXACAIX",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+          "access": "read",
+          "ops": [
+            "READ"
+          ]
+        },
+        {
+          "file": "TRANSACT",
+          "dsn": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+          "access": "read-write",
+          "ops": [
+            "ENDBR",
+            "READPREV",
+            "STARTBR",
+            "WRITE"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CT02"
+      ],
+      "external_calls": [
+        "COMEN01C",
+        "COSGN00C",
+        "CSUTLDTC"
+      ],
+      "external_call_kinds": {
+        "COMEN01C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ],
+        "CSUTLDTC": [
+          "CALL"
+        ]
+      },
+      "unresolved_calls": [
+        "XCTL PROGRAM(CDEMO-TO-PROGRAM) via CDEMO-FROM-PROGRAM"
+      ],
+      "complexity": {
+        "paragraphs": 18,
+        "file_io_verbs": 6,
+        "external_calls": 3,
+        "score": 39,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COMEN01C"
+      ]
+    },
+    {
+      "name": "COUSR00C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COUSR00C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COUSR00",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSUSR01Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COUSR00": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COUSR00"
+      ],
+      "bms_source": [
+        "app/bms/COUSR00.bms"
+      ],
+      "datasets": [
+        {
+          "file": "USRSEC",
+          "dsn": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+          "access": "read",
+          "ops": [
+            "ENDBR",
+            "READNEXT",
+            "READPREV",
+            "STARTBR"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CU00"
+      ],
+      "external_calls": [
+        "COADM01C",
+        "COSGN00C",
+        "COUSR02C",
+        "COUSR03C"
+      ],
+      "external_call_kinds": {
+        "COADM01C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ],
+        "COUSR02C": [
+          "XCTL"
+        ],
+        "COUSR03C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [],
+      "complexity": {
+        "paragraphs": 16,
+        "file_io_verbs": 4,
+        "external_calls": 4,
+        "score": 36,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COADM01C"
+      ]
+    },
+    {
+      "name": "COUSR01C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COUSR01C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COUSR01",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSUSR01Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COUSR01": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COUSR01"
+      ],
+      "bms_source": [
+        "app/bms/COUSR01.bms"
+      ],
+      "datasets": [
+        {
+          "file": "USRSEC",
+          "dsn": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+          "access": "write",
+          "ops": [
+            "WRITE"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CU01"
+      ],
+      "external_calls": [
+        "COADM01C",
+        "COSGN00C"
+      ],
+      "external_call_kinds": {
+        "COADM01C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [],
+      "complexity": {
+        "paragraphs": 9,
+        "file_io_verbs": 1,
+        "external_calls": 2,
+        "score": 17,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COADM01C"
+      ]
+    },
+    {
+      "name": "COUSR02C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COUSR02C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COUSR02",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSUSR01Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COUSR02": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COUSR02"
+      ],
+      "bms_source": [
+        "app/bms/COUSR02.bms"
+      ],
+      "datasets": [
+        {
+          "file": "USRSEC",
+          "dsn": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+          "access": "read-write",
+          "ops": [
+            "READ UPDATE",
+            "REWRITE"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CU02"
+      ],
+      "external_calls": [
+        "COADM01C",
+        "COSGN00C"
+      ],
+      "external_call_kinds": {
+        "COADM01C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [
+        "XCTL PROGRAM(CDEMO-TO-PROGRAM) via CDEMO-FROM-PROGRAM"
+      ],
+      "complexity": {
+        "paragraphs": 11,
+        "file_io_verbs": 2,
+        "external_calls": 2,
+        "score": 21,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COADM01C",
+        "COUSR00C"
+      ]
+    },
+    {
+      "name": "COUSR03C",
+      "type": "COBOL CICS online",
+      "group": "cics",
+      "source": "app/cbl/COUSR03C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "COCOM01Y",
+        "COUSR03",
+        "COTTL01Y",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSUSR01Y",
+        "DFHAID",
+        "DFHBMSCA"
+      ],
+      "copybook_locations": {
+        "COCOM01Y": "app/cpy",
+        "COUSR03": "app/cpy-bms",
+        "COTTL01Y": "app/cpy",
+        "CSDAT01Y": "app/cpy",
+        "CSMSG01Y": "app/cpy",
+        "CSUSR01Y": "app/cpy",
+        "DFHAID": "system (not in repo)",
+        "DFHBMSCA": "system (not in repo)"
+      },
+      "bms_mapset": [
+        "COUSR03"
+      ],
+      "bms_source": [
+        "app/bms/COUSR03.bms"
+      ],
+      "datasets": [
+        {
+          "file": "USRSEC",
+          "dsn": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+          "access": "read-write",
+          "ops": [
+            "DELETE",
+            "READ UPDATE"
+          ]
+        }
+      ],
+      "cics_transactions": [
+        "CU03"
+      ],
+      "external_calls": [
+        "COADM01C",
+        "COSGN00C"
+      ],
+      "external_call_kinds": {
+        "COADM01C": [
+          "XCTL"
+        ],
+        "COSGN00C": [
+          "XCTL"
+        ]
+      },
+      "unresolved_calls": [
+        "XCTL PROGRAM(CDEMO-TO-PROGRAM) via CDEMO-FROM-PROGRAM"
+      ],
+      "complexity": {
+        "paragraphs": 11,
+        "file_io_verbs": 2,
+        "external_calls": 2,
+        "score": 21,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": "",
+      "called_by": [
+        "COADM01C",
+        "COUSR00C"
+      ]
+    }
+  ]
+}

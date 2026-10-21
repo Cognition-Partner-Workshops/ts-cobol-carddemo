@@ -7,6 +7,7 @@ ROOT=$(git rev-parse --show-toplevel)
 kind delete cluster --name "$RUN"
 docker ps -aq --filter "name=$RUN" | xargs -r docker rm -f
 docker volume ls -q --filter "name=$RUN" | xargs -r docker volume rm
+docker network ls -q --filter "name=$RUN" | xargs -r docker network rm >/dev/null
 for img in carddemo-cobol-runner:before carddemo-cobol-runner:after carddemo-java:before carddemo-java:after carddemo-postgres:16 carddemo-nginx:1.27; do
   docker image rm "$img" >/dev/null 2>&1 || true
 done
@@ -18,3 +19,4 @@ git -C "$ROOT" worktree prune
 echo "== kind get clusters"; kind get clusters 2>&1
 echo "== docker ps -a --filter name=$RUN"; docker ps -a --filter "name=$RUN"
 echo "== docker volume ls --filter name=$RUN"; docker volume ls --filter "name=$RUN"
+echo "== docker network ls --filter name=$RUN"; docker network ls --filter "name=$RUN"

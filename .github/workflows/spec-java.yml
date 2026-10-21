@@ -1,0 +1,58 @@
+name: spec and java
+
+on:
+  pull_request:
+    paths: ["spec/**", "java/**", "deploy/**", "scripts/sdd/**", ".github/workflows/spec-java.yml"]
+  push:
+    branches: [main, "baseline/**"]
+  workflow_dispatch:
+    inputs:
+      jobs:
+        description: batch path job order for the COBOL run
+        default: POSTTRAN,INTCALC
+
+jobs:
+  spec:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GnuCOBOL
+        run: sudo apt-get update -q && sudo apt-get install -y -q gnucobol3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r spec/requirements.txt
+      - name: Loader and shape tests against the frozen COBOL outputs
+        working-directory: spec
+        run: python -m pytest -q tests
+      - name: Run the batch path under GnuCOBOL
+        working-directory: spec
+        run: python -m harness all runs/ci --jobs "${{ github.event.inputs.jobs || 'POSTTRAN,INTCALC' }}"
+      - name: Acceptance suite against the live COBOL run
+        working-directory: spec
+        run: python -m pytest -q tests --run-dir runs/ci --impl cobol
+      - name: Frozen outputs still match the COBOL run
+        working-directory: spec
+        run: |
+          python -m harness golden runs/frozen
+          python -m harness inputs runs/frozen
+          cp -r runs/ci/cobol runs/frozen/live
+          python -m harness compare runs/frozen --left cobol --right live
+      - name: "Negative control: jobs reversed must not match"
+        working-directory: spec
+        run: |
+          python -m harness inputs runs/reversed
+          python -m harness cobol runs/reversed --jobs INTCALC,POSTTRAN
+          python -m harness golden runs/reversed-ref
+          python -m harness inputs runs/reversed-ref
+          cp -r runs/reversed/cobol runs/reversed-ref/reversed
+          python -m harness compare runs/reversed-ref --left cobol --right reversed --expect-fail
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spec-run
+          path: |
+            spec/runs/ci/cobol/*.jsonl
+            spec/runs/ci/cobol/run.json
+            spec/runs/ci/site
+            spec/runs/reversed-ref/report

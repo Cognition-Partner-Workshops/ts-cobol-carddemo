@@ -1,0 +1,5 @@
+# Differences between the COBOL run and the Java run that a change request
+# approved. Each entry needs an id, the change request link, the dataset and
+# the fields it covers, and a where clause or key list that pins the records.
+# A difference no entry covers fails the comparison.
+expected_differences: []

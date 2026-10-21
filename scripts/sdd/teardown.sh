@@ -7,7 +7,7 @@ ROOT=$(git rev-parse --show-toplevel)
 kind delete cluster --name "$RUN"
 docker ps -aq --filter "name=$RUN" | xargs -r docker rm -f
 docker volume ls -q --filter "name=$RUN" | xargs -r docker volume rm
-for img in carddemo-cobol-runner:before carddemo-cobol-runner:after carddemo-java:before carddemo-java:after; do
+for img in carddemo-cobol-runner:before carddemo-cobol-runner:after carddemo-java:before carddemo-java:after carddemo-postgres:16 carddemo-nginx:1.27; do
   docker image rm "$img" >/dev/null 2>&1 || true
 done
 for wt in "$ROOT"/spec/runs/src-*; do

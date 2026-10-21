@@ -17,7 +17,7 @@ SRC="$WORK/src-$STATE"
 TIMES="$WORK/reset-$STATE.json"
 EXPIRES=$(date -u -d '+3 days' +%Y-%m-%d)
 LABEL="CardDemo batch path, $STATE"
-BASE_IMAGES="public.ecr.aws/docker/library/postgres:16-alpine public.ecr.aws/docker/library/nginx:1.27-alpine"
+BASE_IMAGES="public.ecr.aws/docker/library/postgres:16-alpine=carddemo-postgres:16 public.ecr.aws/docker/library/nginx:1.27-alpine=carddemo-nginx:1.27"
 export NS RUN STATE HOST JOBS EXPIRES LABEL
 mkdir -p "$WORK"
 echo "{" > "$TIMES"
@@ -49,10 +49,13 @@ images() {
   docker build -q -f "$SRC/spec/runner/Dockerfile" -t "carddemo-cobol-runner:$STATE" "$SRC"
   docker build -q -t "carddemo-java:$STATE" "$SRC/java"
   # The node pulls anonymously and public registries rate-limit it, so the base images go in from the host.
-  for img in $BASE_IMAGES; do
-    docker image inspect "$img" >/dev/null 2>&1 || docker pull -q "$img"
+  # kind cannot import multi-platform indexes, so each base image is rebuilt as a local single-platform tag.
+  for pair in $BASE_IMAGES; do
+    local src=${pair%%=*} tag=${pair#*=}
+    docker image inspect "$src" >/dev/null 2>&1 || docker pull -q "$src"
+    echo "FROM $src" | docker build -q -t "$tag" - >/dev/null
   done
-  kind load docker-image --name "$RUN" "carddemo-cobol-runner:$STATE" "carddemo-java:$STATE" $BASE_IMAGES
+  kind load docker-image --name "$RUN" "carddemo-cobol-runner:$STATE" "carddemo-java:$STATE" carddemo-postgres:16 carddemo-nginx:1.27
 }
 
 namespace() {

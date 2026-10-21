@@ -22,7 +22,8 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: public.ecr.aws/docker/library/postgres:16-alpine
+          image: carddemo-postgres:16
+          imagePullPolicy: Never
           env:
             - {name: POSTGRES_DB, value: carddemo}
             - {name: POSTGRES_USER, value: carddemo}
@@ -45,7 +46,8 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: public.ecr.aws/docker/library/nginx:1.27-alpine
+          image: carddemo-nginx:1.27
+          imagePullPolicy: Never
           ports: [{containerPort: 80}]
           volumeMounts: [{name: data, mountPath: /usr/share/nginx/html, subPath: site}]
       volumes: [{name: data, persistentVolumeClaim: {claimName: run-data}}]

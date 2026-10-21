@@ -1,0 +1,544 @@
+{
+  "group": "db2",
+  "source": "app/app-transaction-type-db2",
+  "base": "baseline/sdd-2610",
+  "method": {
+    "score": "paragraphs + 2 x io_verbs + 3 x external_calls",
+    "paragraphs": "paragraph headers in Area A of the program member's PROCEDURE DIVISION (procedure copybooks not expanded; their paragraphs are listed under copybook_contributions)",
+    "io_verbs": "native OPEN/CLOSE/READ/WRITE/REWRITE/DELETE/START on files, EXEC CICS file commands, and every executable EXEC SQL statement in the member (SELECT INTO, FETCH, OPEN/CLOSE cursor, INSERT, UPDATE, DELETE). EXEC SQL INCLUDE and DECLARE CURSOR are not counted.",
+    "external_calls": "static CALL statements plus EXEC CICS LINK and XCTL statements",
+    "bands": "low < 40, medium 40-79, high >= 80"
+  },
+  "programs": [
+    {
+      "name": "COBTUPDT",
+      "type": "batch-db2",
+      "group": "db2",
+      "path": "app/app-transaction-type-db2/cbl/COBTUPDT.cbl",
+      "jcl": [
+        "MNTTRDB2"
+      ],
+      "jcl_steps": [
+        {
+          "job": "MNTTRDB2",
+          "step": "STEP1",
+          "pgm": "IKJEFT01",
+          "dsn": "DSN SYSTEM(DAZ1) RUN PROGRAM(COBTUPDT) PLAN(CARDDEMO)"
+        }
+      ],
+      "plan": "CARDDEMO",
+      "copybooks": [
+        "SQLCA",
+        "DCLTRTYP"
+      ],
+      "dcl": [
+        "DCLTRTYP"
+      ],
+      "db2_tables": [
+        {
+          "table": "CARDDEMO.TRANSACTION_TYPE",
+          "ddl": "app/app-transaction-type-db2/ddl/TRNTYPE.ddl",
+          "index_ddl": "app/app-transaction-type-db2/ddl/XTRNTYPE.ddl",
+          "ops": [
+            "INSERT",
+            "UPDATE",
+            "DELETE"
+          ]
+        }
+      ],
+      "datasets": [
+        {
+          "dd": "INPFILE",
+          "dsn": "INPFILE",
+          "use": "input, FB record: col1 action A/D/U/*, cols 2-3 type, cols 4-53 description"
+        },
+        {
+          "dd": "DBRMLIB",
+          "dsn": "AWS.M2.CARDDEMO.DBRMLIB"
+        },
+        {
+          "dd": "STEPLIB",
+          "dsn": "AWS.M2.CARDDEMO.LOADLIB"
+        }
+      ],
+      "sql_statements": [
+        {
+          "line": 137,
+          "stmt": "INSERT TRANSACTION_TYPE"
+        },
+        {
+          "line": 171,
+          "stmt": "UPDATE TRANSACTION_TYPE"
+        },
+        {
+          "line": 201,
+          "stmt": "DELETE TRANSACTION_TYPE"
+        }
+      ],
+      "file_io": [
+        {
+          "line": 83,
+          "verb": "OPEN INPUT TR-RECORD"
+        },
+        {
+          "line": 101,
+          "verb": "READ TR-RECORD"
+        },
+        {
+          "line": 235,
+          "verb": "CLOSE TR-RECORD"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [],
+      "complexity": {
+        "paragraphs": 9,
+        "io_verbs": 6,
+        "external_calls": 0,
+        "score": 21,
+        "band": "low"
+      },
+      "unreferenced": false,
+      "wave": ""
+    },
+    {
+      "name": "COTRTLIC",
+      "type": "cics-db2",
+      "group": "db2",
+      "path": "app/app-transaction-type-db2/cbl/COTRTLIC.cbl",
+      "jcl": [],
+      "jcl_steps": [
+        {
+          "job": "CREADB21",
+          "step": "FREEPLN",
+          "pgm": "IKJEFT01",
+          "dsn": "SYSTSIN DB2FREE: FREE PLAN(CARDDEMO), FREE PLAN(COTRTLIC)"
+        }
+      ],
+      "plan": "CARDDEMO (CSD DB2ENTRY CARDDEMO via DB2TRAN CTLITRAN)",
+      "copybooks": [
+        "CSDB2RWY",
+        "CVCRD01Y",
+        "SQLCA",
+        "DCLTRTYP",
+        "COCOM01Y",
+        "DFHBMSCA",
+        "DFHAID",
+        "COTTL01Y",
+        "COTRTLI",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSUSR01Y",
+        "CVACT02Y",
+        "CSDB2RPY",
+        "CSSTRPFY"
+      ],
+      "dcl": [
+        "DCLTRTYP"
+      ],
+      "db2_tables": [
+        {
+          "table": "CARDDEMO.TRANSACTION_TYPE",
+          "ddl": "app/app-transaction-type-db2/ddl/TRNTYPE.ddl",
+          "index_ddl": "app/app-transaction-type-db2/ddl/XTRNTYPE.ddl",
+          "ops": [
+            "SELECT COUNT",
+            "FETCH (cursors C-TR-TYPE-FORWARD, C-TR-TYPE-BACKWARD)",
+            "UPDATE",
+            "DELETE"
+          ]
+        },
+        {
+          "table": "SYSIBM.SYSDUMMY1",
+          "ddl": null,
+          "ops": [
+            "SELECT (priming query from CSDB2RPY)"
+          ]
+        }
+      ],
+      "datasets": [],
+      "sql_statements": [
+        {
+          "line": 1626,
+          "stmt": "FETCH C-TR-TYPE-FORWARD"
+        },
+        {
+          "line": 1661,
+          "stmt": "FETCH C-TR-TYPE-FORWARD"
+        },
+        {
+          "line": 1753,
+          "stmt": "FETCH C-TR-TYPE-BACKWARD"
+        },
+        {
+          "line": 1803,
+          "stmt": "SELECT COUNT(1) TRANSACTION_TYPE"
+        },
+        {
+          "line": 1846,
+          "stmt": "UPDATE TRANSACTION_TYPE"
+        },
+        {
+          "line": 1900,
+          "stmt": "DELETE TRANSACTION_TYPE"
+        },
+        {
+          "line": 1943,
+          "stmt": "OPEN C-TR-TYPE-FORWARD"
+        },
+        {
+          "line": 1971,
+          "stmt": "CLOSE C-TR-TYPE-FORWARD"
+        },
+        {
+          "line": 1998,
+          "stmt": "OPEN C-TR-TYPE-BACKWARD"
+        },
+        {
+          "line": 2027,
+          "stmt": "CLOSE C-TR-TYPE-BACKWARD"
+        }
+      ],
+      "cursors": [
+        {
+          "name": "C-TR-TYPE-FORWARD",
+          "line": 339,
+          "order": "TR_TYPE ASC"
+        },
+        {
+          "name": "C-TR-TYPE-BACKWARD",
+          "line": 355,
+          "order": "TR_TYPE DESC"
+        }
+      ],
+      "cics_transactions": [
+        "CTLI"
+      ],
+      "bms": {
+        "mapset": "COTRTLI",
+        "map": "CTRTLIA",
+        "source": "app/app-transaction-type-db2/bms/COTRTLI.bms"
+      },
+      "external_calls": [
+        {
+          "line": 620,
+          "kind": "XCTL",
+          "target": "CDEMO-TO-PROGRAM (COADM01C or calling program)"
+        },
+        {
+          "line": 648,
+          "kind": "XCTL",
+          "target": "COTRTUPC (LIT-ADDTPGM)"
+        }
+      ],
+      "copybook_contributions": {
+        "CSDB2RPY": {
+          "paragraphs": [
+            "9998-PRIMING-QUERY"
+          ],
+          "sql": [
+            "SELECT 1 FROM SYSIBM.SYSDUMMY1"
+          ]
+        },
+        "CSSTRPFY": {
+          "paragraphs": [
+            "YYYY-STORE-PFKEY",
+            "YYYY-STORE-PFKEY-EXIT"
+          ]
+        }
+      },
+      "referenced_by": [
+        "CSD CRDDEMOD (PROGRAM, TRANSACTION CTLI)",
+        "app/cpy/COADM02Y.cpy admin menu option"
+      ],
+      "complexity": {
+        "paragraphs": 57,
+        "io_verbs": 10,
+        "external_calls": 2,
+        "score": 83,
+        "band": "high"
+      },
+      "unreferenced": false,
+      "wave": ""
+    },
+    {
+      "name": "COTRTUPC",
+      "type": "cics-db2",
+      "group": "db2",
+      "path": "app/app-transaction-type-db2/cbl/COTRTUPC.cbl",
+      "jcl": [],
+      "jcl_steps": [],
+      "plan": "CARDDEMO (CSD DB2ENTRY CARDDEMO via DB2TRAN CTTUTRAN)",
+      "copybooks": [
+        "CSUTLDWY",
+        "CVCRD01Y",
+        "DFHBMSCA",
+        "DFHAID",
+        "COTTL01Y",
+        "COTRTUP",
+        "CSDAT01Y",
+        "CSMSG01Y",
+        "CSMSG02Y",
+        "CSUSR01Y",
+        "SQLCA",
+        "DCLTRTYP",
+        "DCLTRCAT",
+        "COCOM01Y",
+        "CSSETATY",
+        "CSSTRPFY"
+      ],
+      "dcl": [
+        "DCLTRTYP",
+        "DCLTRCAT"
+      ],
+      "db2_tables": [
+        {
+          "table": "CARDDEMO.TRANSACTION_TYPE",
+          "ddl": "app/app-transaction-type-db2/ddl/TRNTYPE.ddl",
+          "index_ddl": "app/app-transaction-type-db2/ddl/XTRNTYPE.ddl",
+          "ops": [
+            "SELECT",
+            "INSERT",
+            "UPDATE",
+            "DELETE"
+          ]
+        },
+        {
+          "table": "CARDDEMO.TRANSACTION_TYPE_CATEGORY",
+          "ddl": "app/app-transaction-type-db2/ddl/TRNTYCAT.ddl",
+          "index_ddl": "app/app-transaction-type-db2/ddl/XTRNTYCAT.ddl",
+          "ops": [],
+          "note": "DCLTRCAT included but no SQL references the table; FK ON DELETE RESTRICT from this table governs DELETE on TRANSACTION_TYPE"
+        }
+      ],
+      "datasets": [],
+      "sql_statements": [
+        {
+          "line": 1475,
+          "stmt": "SELECT TRANSACTION_TYPE"
+        },
+        {
+          "line": 1544,
+          "stmt": "UPDATE TRANSACTION_TYPE"
+        },
+        {
+          "line": 1597,
+          "stmt": "INSERT TRANSACTION_TYPE"
+        },
+        {
+          "line": 1627,
+          "stmt": "DELETE TRANSACTION_TYPE"
+        }
+      ],
+      "cics_transactions": [
+        "CTTU"
+      ],
+      "bms": {
+        "mapset": "COTRTUP",
+        "map": "CTRTUPA",
+        "source": "app/app-transaction-type-db2/bms/COTRTUP.bms"
+      },
+      "external_calls": [
+        {
+          "line": 457,
+          "kind": "XCTL",
+          "target": "CDEMO-TO-PROGRAM (COADM01C or calling program, e.g. COTRTLIC)"
+        }
+      ],
+      "copybook_contributions": {
+        "CSSTRPFY": {
+          "paragraphs": [
+            "YYYY-STORE-PFKEY",
+            "YYYY-STORE-PFKEY-EXIT"
+          ]
+        },
+        "CSSETATY": {
+          "paragraphs": []
+        }
+      },
+      "referenced_by": [
+        "CSD CRDDEMOD (PROGRAM, TRANSACTION CTTU)",
+        "app/cpy/COADM02Y.cpy admin menu option",
+        "COTRTLIC XCTL"
+      ],
+      "complexity": {
+        "paragraphs": 63,
+        "io_verbs": 4,
+        "external_calls": 1,
+        "score": 74,
+        "band": "medium"
+      },
+      "unreferenced": false,
+      "wave": ""
+    }
+  ],
+  "module": {
+    "ddl": [
+      {
+        "file": "app/app-transaction-type-db2/ddl/TRNTYPE.ddl",
+        "table": "CARDDEMO.TRANSACTION_TYPE",
+        "pk": [
+          "TR_TYPE"
+        ]
+      },
+      {
+        "file": "app/app-transaction-type-db2/ddl/TRNTYCAT.ddl",
+        "table": "CARDDEMO.TRANSACTION_TYPE_CATEGORY",
+        "pk": [
+          "TRC_TYPE_CODE",
+          "TRC_TYPE_CATEGORY"
+        ],
+        "fk": "TRC_TYPE_CODE -> TRANSACTION_TYPE.TR_TYPE ON DELETE RESTRICT"
+      },
+      {
+        "file": "app/app-transaction-type-db2/ddl/XTRNTYPE.ddl",
+        "index": "CARDDEMO.XTRAN_TYPE"
+      },
+      {
+        "file": "app/app-transaction-type-db2/ddl/XTRNTYCAT.ddl",
+        "index": "CARDDEMO.X_TRAN_TYPE_CATG"
+      }
+    ],
+    "dcl": [
+      {
+        "member": "DCLTRTYP",
+        "table": "CARDDEMO.TRANSACTION_TYPE",
+        "used_by": [
+          "COBTUPDT",
+          "COTRTLIC",
+          "COTRTUPC"
+        ]
+      },
+      {
+        "member": "DCLTRCAT",
+        "table": "CARDDEMO.TRANSACTION_TYPE_CATEGORY",
+        "used_by": [
+          "COTRTUPC"
+        ]
+      }
+    ],
+    "jobs": [
+      {
+        "name": "CREADB21",
+        "steps": [
+          {
+            "step": "FREEPLN",
+            "pgm": "IKJEFT01",
+            "ctl": [
+              "DB2FREE"
+            ]
+          },
+          {
+            "step": "CRCRDDB",
+            "pgm": "IKJEFT01 -> DSNTIAD",
+            "ctl": [
+              "DB2TIAD1",
+              "DB2CREAT"
+            ]
+          },
+          {
+            "step": "LDTTYPE",
+            "pgm": "IEFBR14"
+          },
+          {
+            "step": "RUNTEP2",
+            "pgm": "IKJEFT01 -> DSNTEP4",
+            "ctl": [
+              "DB2TEP41",
+              "DB2LTTYP"
+            ]
+          },
+          {
+            "step": "LDTCCAT",
+            "pgm": "IKJEFT01 -> DSNTEP4",
+            "ctl": [
+              "DB2TEP41",
+              "DB2LTCAT"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "TRANEXTR",
+        "steps": [
+          {
+            "step": "STEP10",
+            "pgm": "IEBGENER",
+            "datasets": [
+              "&HLQ..TRANTYPE.PS",
+              "&HLQ..TRANTYPE.BKUP(+1)"
+            ]
+          },
+          {
+            "step": "STEP20",
+            "pgm": "IEBGENER",
+            "datasets": [
+              "&HLQ..TRANCATG.PS",
+              "&HLQ..TRANCATG.PS.BKUP(+1)"
+            ]
+          },
+          {
+            "step": "STEP30",
+            "pgm": "IEFBR14",
+            "datasets": [
+              "&HLQ..TRANTYPE.PS",
+              "&HLQ..TRANCATG.PS"
+            ]
+          },
+          {
+            "step": "STEP40",
+            "pgm": "IKJEFT01 -> DSNTIAUL PLAN(DSNTIAUL)",
+            "datasets": [
+              "&HLQ..TRANTYPE.PS"
+            ]
+          },
+          {
+            "step": "STEP50",
+            "pgm": "IKJEFT01 -> DSNTIAUL PLAN(DSNTIAUL)",
+            "datasets": [
+              "&HLQ..TRANCATG.PS"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "MNTTRDB2",
+        "steps": [
+          {
+            "step": "STEP1",
+            "pgm": "IKJEFT01 -> COBTUPDT PLAN(CARDDEMO)"
+          }
+        ]
+      }
+    ],
+    "csd": {
+      "file": "app/app-transaction-type-db2/csd/CRDDEMOD.csd",
+      "group": "CARDDEMO",
+      "transactions": {
+        "CTLI": "COTRTLIC",
+        "CTTU": "COTRTUPC"
+      },
+      "mapsets": [
+        "COTRTLI",
+        "COTRTUP"
+      ],
+      "db2entry": {
+        "CARDDEMO": "PLAN(CARDDEMO)"
+      },
+      "db2tran": {
+        "CTLITRAN": "CTLI",
+        "CTTUTRAN": "CTTU"
+      }
+    },
+    "unused_ctl": [
+      "REPROCT"
+    ]
+  },
+  "unresolved": [
+    "No DB2 precompile or BIND JCL for COBTUPDT, COTRTLIC or COTRTUPC exists in the repository; plan CARDDEMO package membership is not recorded.",
+    "DB2FREE frees PLAN(COTRTLIC), but nothing binds or references a COTRTLIC plan; CSD routes CTLI to PLAN(CARDDEMO).",
+    "COTRTLIC defines LIT-DSNTIAC but never calls DSNTIAC.",
+    "Complexity band thresholds were not specified on the ticket; chosen as low < 40, medium 40-79, high >= 80. Raw components are kept so the merge step can re-band.",
+    "COTRTLIC 2000-SEND-MAP header (line 1274) has no terminating period; counted as a paragraph."
+  ]
+}

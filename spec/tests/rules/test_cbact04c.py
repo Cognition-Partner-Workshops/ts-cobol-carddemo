@@ -185,7 +185,7 @@ def test_cbact04c_r07_zero_balance_with_rate_writes_zero_amount(outputs, run_inp
     assert zero > 0
 
 
-@pytest.mark.xfail(strict=True, reason="amber: business question pending")
+@pytest.mark.xfail(strict=True, reason="amber: business question https://github.com/Cognition-Partner-Workshops/ts-cobol-carddemo/issues/141")
 def test_cbact04c_r08_negative_balance_earns_no_interest_credit(outputs, run_inputs):
     negative = [e for e in expected_interest(outputs, run_inputs) if Decimal(e["cat"]["tran_cat_bal"]) < 0]
     assert negative, "seeded data must contain a negative category balance with a non-zero rate"
@@ -266,7 +266,7 @@ def test_cbact04c_r16_other_account_fields_unchanged(outputs, run_inputs):
                 assert after[field] == value, (acct_id, field)
 
 
-@pytest.mark.xfail(strict=True, reason="amber: business question pending")
+@pytest.mark.xfail(strict=True, reason="amber: business question https://github.com/Cognition-Partner-Workshops/ts-cobol-carddemo/issues/142")
 def test_cbact04c_r17_last_account_is_updated_too(outputs, run_inputs):
     last = last_account(outputs)
     interest = sums_by_account(outputs["interest"].values(), card_to_account(run_inputs))

@@ -129,7 +129,7 @@ def _seeded_discriminating_cases(run_inputs):
     return [tid for tid in by_balance if by_balance[tid] != by_cycle[tid]]
 
 
-@pytest.mark.xfail(strict=True, reason="amber: business question pending")
+@pytest.mark.xfail(strict=True, reason="amber: business question https://github.com/Cognition-Partner-Workshops/ts-cobol-carddemo/issues/140")
 def test_cbtrn02c_r04_overlimit_judged_on_balance(outputs, run_inputs):
     """Business reading: reject as over limit when current balance + amount exceeds the credit limit.
 

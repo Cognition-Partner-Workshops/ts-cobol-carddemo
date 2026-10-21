@@ -13,8 +13,8 @@ import pytest
 SPEC = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SPEC))
 
-from harness import inputs as harness_inputs  # noqa: E402
-from harness.datasets import INPUTS, OUTPUTS, record_key  # noqa: E402
+from harness import inputs as harness_inputs
+from harness.datasets import INPUTS, OUTPUTS, record_key
 
 
 def pytest_addoption(parser):

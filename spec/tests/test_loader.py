@@ -1,7 +1,6 @@
 from decimal import Decimal
 
 import pytest
-
 from harness.datasets import INPUTS, OUTPUTS
 from harness.records import DecodeError, decode_zoned, encode_zoned
 

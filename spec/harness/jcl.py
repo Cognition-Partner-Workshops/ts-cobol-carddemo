@@ -1,17 +1,17 @@
 """Read job steps from the JCL members so the program list is discovered, never typed in."""
 import re
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 
 import yaml
 
 from . import APP_DIR, SPEC_DIR
 
-EXEC_RE = re.compile(r"^//(\S+)\s+EXEC\s+PGM=([A-Z0-9#@$]+)(?:,PARM='([^']*)')?", re.I)
+EXEC_RE = re.compile(r"^//(\S+)\s+EXEC\s+PGM=([A-Z0-9#@$]+)(?:,PARM='([^']*)')?", re.IGNORECASE)
 UTILITIES = {"IDCAMS", "IEFBR14", "SORT", "IEBGENER", "IKJEFT01", "IEBCOPY", "DFSRRC00"}
 
 
-@lru_cache(maxsize=None)
+@cache
 def manifest():
     return yaml.safe_load((SPEC_DIR / "manifest.yaml").read_text())
 

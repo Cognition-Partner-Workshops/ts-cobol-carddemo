@@ -17,6 +17,7 @@ SRC="$WORK/src-$STATE"
 TIMES="$WORK/reset-$STATE.json"
 EXPIRES=$(date -u -d '+3 days' +%Y-%m-%d)
 LABEL="CardDemo batch path, $STATE"
+BASE_IMAGES="public.ecr.aws/docker/library/postgres:16-alpine public.ecr.aws/docker/library/nginx:1.27-alpine"
 export NS RUN STATE HOST JOBS EXPIRES LABEL
 mkdir -p "$WORK"
 echo "{" > "$TIMES"
@@ -47,7 +48,11 @@ images() {
   (cd "$SRC/java" && mvn -q -B package -DskipTests)
   docker build -q -f "$SRC/spec/runner/Dockerfile" -t "carddemo-cobol-runner:$STATE" "$SRC"
   docker build -q -t "carddemo-java:$STATE" "$SRC/java"
-  kind load docker-image --name "$RUN" "carddemo-cobol-runner:$STATE" "carddemo-java:$STATE"
+  # The node pulls anonymously and public registries rate-limit it, so the base images go in from the host.
+  for img in $BASE_IMAGES; do
+    docker image inspect "$img" >/dev/null 2>&1 || docker pull -q "$img"
+  done
+  kind load docker-image --name "$RUN" "carddemo-cobol-runner:$STATE" "carddemo-java:$STATE" $BASE_IMAGES
 }
 
 namespace() {

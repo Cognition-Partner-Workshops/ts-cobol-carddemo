@@ -97,7 +97,7 @@ def loader_source(name, length, key_len, alt=None, unload=False):
 
 def _run(cmd, log, env=None, cwd=None):
     started = time.monotonic()
-    proc = subprocess.run(cmd, cwd=cwd, env=env, capture_output=True, text=True)
+    proc = subprocess.run(cmd, cwd=cwd, env=env, capture_output=True, text=True, check=False)
     log.write(f"$ {' '.join(map(str, cmd))}\n{proc.stdout}{proc.stderr}rc={proc.returncode}\n")
     return proc.returncode, round(time.monotonic() - started, 3), proc.stdout
 
@@ -161,7 +161,7 @@ class CobolRun:
             f"LD{ds_name[:4].upper()}{'A' if alt else ''}", layout.length, key_len, alt_spec), log)
         target = self.work / "data" / f"{ds_name}{'.alt' if alt else ''}.idx"
         env = dict(os.environ, DD_FLATFILE=str(self.run_dir / "input" / "ascii" / ds.seed), DD_IDXFILE=str(target))
-        rc, secs, _ = _run([str(tool)], log, env=env)
+        rc, _secs, _ = _run([str(tool)], log, env=env)
         if rc != 0:
             raise RuntimeError(f"load of {ds_name} failed")
         return target
@@ -227,8 +227,7 @@ class CobolRun:
                 n = ds.layout.length
                 rows = [decode_record(raw[i : i + n], ds.layout) for i in range(0, len(raw), n) if raw[i : i + n].strip()]
             with open(self.out / f"{name}.jsonl", "w") as fh:
-                for rec in rows:
-                    fh.write(json.dumps(rec, sort_keys=True) + "\n")
+                fh.writelines(json.dumps(rec, sort_keys=True) + "\n" for rec in rows)
             counts[name] = len(rows)
         self.stage("unload outputs", round(time.monotonic() - t0, 3))
         return counts

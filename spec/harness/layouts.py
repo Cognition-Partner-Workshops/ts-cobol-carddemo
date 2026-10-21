@@ -1,13 +1,13 @@
 """Record layouts read straight from the copybooks in app/cpy."""
 import re
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cache
 
 from . import APP_DIR
 
 PIC_RE = re.compile(
     r"^\s*(\d{2})\s+([A-Z0-9-]+)\s+PIC\s+(S?)([X9])\((\d+)\)(?:V9\((\d+)\)|V(9+))?",
-    re.I,
+    re.IGNORECASE,
 )
 
 
@@ -72,13 +72,13 @@ def parse_copybook_text(name, text):
     return Layout(name, tuple(fields))
 
 
-@lru_cache(maxsize=None)
+@cache
 def copybook(member):
     path = APP_DIR / "cpy" / f"{member}.cpy"
     return parse_copybook_text(member, path.read_text())
 
 
-@lru_cache(maxsize=None)
+@cache
 def reject_layout():
     """DALYREJS: the daily record followed by the 80-byte validation trailer (CBTRN02C)."""
     daily = copybook("CVTRA06Y")

@@ -11,9 +11,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
-from harness.datasets import INPUTS  # noqa: E402
-from harness.inputs import SEED_DIR, read_lines  # noqa: E402
-from harness.records import decode_record, encode_record  # noqa: E402
+from harness.datasets import INPUTS
+from harness.inputs import SEED_DIR, read_lines
+from harness.records import decode_record, encode_record
 
 D = Decimal
 rng = random.Random(2610)

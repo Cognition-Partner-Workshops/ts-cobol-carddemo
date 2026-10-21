@@ -34,7 +34,7 @@ def _matches(entry, dataset, field, rec_left, rec_right, key):
     if entry.get("dataset") != dataset:
         return False
     fields = entry.get("fields")
-    if fields and (field == "*" or field not in fields):
+    if fields and field not in fields:
         return False
     keys = entry.get("keys")
     if keys and key not in [str(k) for k in keys]:

@@ -1,0 +1,1513 @@
+{
+  "edges": [
+    {
+      "from": "POSTTRAN",
+      "to": "INTCALC",
+      "via": "reads AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS, AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS"
+    },
+    {
+      "from": "POSTTRAN",
+      "to": "CREASTMT",
+      "via": "reads AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS"
+    },
+    {
+      "from": "INTCALC",
+      "to": "CREASTMT",
+      "via": "reads AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS"
+    },
+    {
+      "from": "READACCT.STEP05",
+      "to": "CBACT01C",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBACT01C",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "CBACT01C",
+      "to": "COBDATFT",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "to": "CBACT01C",
+      "via": "read ACCTFILE"
+    },
+    {
+      "from": "CBACT01C",
+      "to": "AWS.M2.CARDDEMO.ACCTDATA.PSCOMP",
+      "via": "write OUTFILE"
+    },
+    {
+      "from": "CBACT01C",
+      "to": "AWS.M2.CARDDEMO.ACCTDATA.ARRYPS",
+      "via": "write ARRYFILE"
+    },
+    {
+      "from": "CBACT01C",
+      "to": "AWS.M2.CARDDEMO.ACCTDATA.VBPS",
+      "via": "write VBRCFILE"
+    },
+    {
+      "from": "READCARD.STEP05",
+      "to": "CBACT02C",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBACT02C",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+      "to": "CBACT02C",
+      "via": "read CARDFILE"
+    },
+    {
+      "from": "READXREF.STEP05",
+      "to": "CBACT03C",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBACT03C",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+      "to": "CBACT03C",
+      "via": "read XREFFILE"
+    },
+    {
+      "from": "INTCALC.STEP15",
+      "to": "CBACT04C",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBACT04C",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+      "to": "CBACT04C",
+      "via": "read TCATBALF"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+      "to": "CBACT04C",
+      "via": "read XREFFILE"
+    },
+    {
+      "from": "CBACT04C",
+      "to": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "via": "read-write ACCTFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "to": "CBACT04C",
+      "via": "read-write ACCTFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS",
+      "to": "CBACT04C",
+      "via": "read DISCGRP"
+    },
+    {
+      "from": "CBACT04C",
+      "to": "AWS.M2.CARDDEMO.SYSTRAN(+1)",
+      "via": "write TRANSACT"
+    },
+    {
+      "from": "READCUST.STEP05",
+      "to": "CBCUS01C",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBCUS01C",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+      "to": "CBCUS01C",
+      "via": "read CUSTFILE"
+    },
+    {
+      "from": "CBEXPORT.STEP02",
+      "to": "CBEXPORT",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBEXPORT",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+      "to": "CBEXPORT",
+      "via": "read CUSTFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "to": "CBEXPORT",
+      "via": "read ACCTFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+      "to": "CBEXPORT",
+      "via": "read XREFFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+      "to": "CBEXPORT",
+      "via": "read TRANSACT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+      "to": "CBEXPORT",
+      "via": "read CARDFILE"
+    },
+    {
+      "from": "CBEXPORT",
+      "to": "AWS.M2.CARDDEMO.EXPORT.DATA",
+      "via": "write EXPFILE"
+    },
+    {
+      "from": "CBIMPORT.STEP01",
+      "to": "CBIMPORT",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBIMPORT",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.EXPORT.DATA",
+      "to": "CBIMPORT",
+      "via": "read EXPFILE"
+    },
+    {
+      "from": "CBIMPORT",
+      "to": "AWS.M2.CARDDEMO.CUSTDATA.IMPORT",
+      "via": "write CUSTOUT"
+    },
+    {
+      "from": "CBIMPORT",
+      "to": "AWS.M2.CARDDEMO.ACCTDATA.IMPORT",
+      "via": "write ACCTOUT"
+    },
+    {
+      "from": "CBIMPORT",
+      "to": "AWS.M2.CARDDEMO.CARDXREF.IMPORT",
+      "via": "write XREFOUT"
+    },
+    {
+      "from": "CBIMPORT",
+      "to": "AWS.M2.CARDDEMO.TRANSACT.IMPORT",
+      "via": "write TRNXOUT"
+    },
+    {
+      "from": "CBIMPORT",
+      "to": "CARD-OUTPUT",
+      "via": "write CARDOUT"
+    },
+    {
+      "from": "CBIMPORT",
+      "to": "AWS.M2.CARDDEMO.IMPORT.ERRORS",
+      "via": "write ERROUT"
+    },
+    {
+      "from": "CREASTMT.STEP040",
+      "to": "CBSTM03A",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBSTM03A",
+      "to": "CBSTM03B",
+      "via": "CALL"
+    },
+    {
+      "from": "CBSTM03A",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "CBSTM03A",
+      "to": "AWS.M2.CARDDEMO.STATEMNT.PS",
+      "via": "write STMTFILE"
+    },
+    {
+      "from": "CBSTM03A",
+      "to": "AWS.M2.CARDDEMO.STATEMNT.HTML",
+      "via": "write HTMLFILE"
+    },
+    {
+      "from": "CREASTMT.STEP040",
+      "to": "CBSTM03B",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TRXFL.VSAM.KSDS",
+      "to": "CBSTM03B",
+      "via": "read TRNXFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+      "to": "CBSTM03B",
+      "via": "read XREFFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+      "to": "CBSTM03B",
+      "via": "read CUSTFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "to": "CBSTM03B",
+      "via": "read ACCTFILE"
+    },
+    {
+      "from": "CBTRN01C",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "DALYTRAN-FILE",
+      "to": "CBTRN01C",
+      "via": "read DALYTRAN"
+    },
+    {
+      "from": "CUSTOMER-FILE",
+      "to": "CBTRN01C",
+      "via": "read CUSTFILE"
+    },
+    {
+      "from": "XREF-FILE",
+      "to": "CBTRN01C",
+      "via": "read XREFFILE"
+    },
+    {
+      "from": "CARD-FILE",
+      "to": "CBTRN01C",
+      "via": "read CARDFILE"
+    },
+    {
+      "from": "ACCOUNT-FILE",
+      "to": "CBTRN01C",
+      "via": "read ACCTFILE"
+    },
+    {
+      "from": "TRANSACT-FILE",
+      "to": "CBTRN01C",
+      "via": "read TRANFILE"
+    },
+    {
+      "from": "POSTTRAN.STEP15",
+      "to": "CBTRN02C",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBTRN02C",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.DALYTRAN.PS",
+      "to": "CBTRN02C",
+      "via": "read DALYTRAN"
+    },
+    {
+      "from": "CBTRN02C",
+      "to": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+      "via": "write TRANFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+      "to": "CBTRN02C",
+      "via": "read XREFFILE"
+    },
+    {
+      "from": "CBTRN02C",
+      "to": "AWS.M2.CARDDEMO.DALYREJS(+1)",
+      "via": "write DALYREJS"
+    },
+    {
+      "from": "CBTRN02C",
+      "to": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "via": "read-write ACCTFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "to": "CBTRN02C",
+      "via": "read-write ACCTFILE"
+    },
+    {
+      "from": "CBTRN02C",
+      "to": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+      "via": "read-write TCATBALF"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+      "to": "CBTRN02C",
+      "via": "read-write TCATBALF"
+    },
+    {
+      "from": "TRANREPT.STEP10R",
+      "to": "CBTRN03C",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBTRN03C",
+      "to": "CEE3ABD",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TRANSACT.DALY(+1)",
+      "to": "CBTRN03C",
+      "via": "read TRANFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+      "to": "CBTRN03C",
+      "via": "read CARDXREF"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TRANTYPE.VSAM.KSDS",
+      "to": "CBTRN03C",
+      "via": "read TRANTYPE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TRANCATG.VSAM.KSDS",
+      "to": "CBTRN03C",
+      "via": "read TRANCATG"
+    },
+    {
+      "from": "CBTRN03C",
+      "to": "AWS.M2.CARDDEMO.TRANREPT(+1)",
+      "via": "write TRANREPT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.DATEPARM",
+      "to": "CBTRN03C",
+      "via": "read DATEPARM"
+    },
+    {
+      "from": "WAITSTEP.WAIT",
+      "to": "COBSWAIT",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "COBSWAIT",
+      "to": "MVSWAIT",
+      "via": "CALL"
+    },
+    {
+      "from": "TRAN:CAUP",
+      "to": "COACTUPC",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COACTUPC",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COACTUPC",
+      "to": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "via": "read-write ACCTDAT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "to": "COACTUPC",
+      "via": "read-write ACCTDAT"
+    },
+    {
+      "from": "COACTUPC",
+      "to": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+      "via": "read-write CUSTDAT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+      "to": "COACTUPC",
+      "via": "read-write CUSTDAT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+      "to": "COACTUPC",
+      "via": "read CXACAIX"
+    },
+    {
+      "from": "TRAN:CAVW",
+      "to": "COACTVWC",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COACTVWC",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "to": "COACTVWC",
+      "via": "read ACCTDAT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+      "to": "COACTVWC",
+      "via": "read CUSTDAT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+      "to": "COACTVWC",
+      "via": "read CXACAIX"
+    },
+    {
+      "from": "TRAN:CA00",
+      "to": "COADM01C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COADM01C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COADM01C",
+      "to": "COTRTLIC",
+      "via": "XCTL"
+    },
+    {
+      "from": "COADM01C",
+      "to": "COTRTUPC",
+      "via": "XCTL"
+    },
+    {
+      "from": "COADM01C",
+      "to": "COUSR00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COADM01C",
+      "to": "COUSR01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COADM01C",
+      "to": "COUSR02C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COADM01C",
+      "to": "COUSR03C",
+      "via": "XCTL"
+    },
+    {
+      "from": "TRAN:CB00",
+      "to": "COBIL00C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COBIL00C",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COBIL00C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COBIL00C",
+      "to": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "via": "read-write ACCTDAT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+      "to": "COBIL00C",
+      "via": "read-write ACCTDAT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+      "to": "COBIL00C",
+      "via": "read CXACAIX"
+    },
+    {
+      "from": "COBIL00C",
+      "to": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+      "via": "read-write TRANSACT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+      "to": "COBIL00C",
+      "via": "read-write TRANSACT"
+    },
+    {
+      "from": "TRAN:CCLI",
+      "to": "COCRDLIC",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COCRDLIC",
+      "to": "COCRDSLC",
+      "via": "XCTL"
+    },
+    {
+      "from": "COCRDLIC",
+      "to": "COCRDUPC",
+      "via": "XCTL"
+    },
+    {
+      "from": "COCRDLIC",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+      "to": "COCRDLIC",
+      "via": "read CARDDAT"
+    },
+    {
+      "from": "TRAN:CCDL",
+      "to": "COCRDSLC",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COCRDSLC",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDDATA.VSAM.AIX.PATH",
+      "to": "COCRDSLC",
+      "via": "read CARDAIX"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+      "to": "COCRDSLC",
+      "via": "read CARDDAT"
+    },
+    {
+      "from": "TRAN:CCUP",
+      "to": "COCRDUPC",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COCRDUPC",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COCRDUPC",
+      "to": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+      "via": "read-write CARDDAT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+      "to": "COCRDUPC",
+      "via": "read-write CARDDAT"
+    },
+    {
+      "from": "TRAN:CM00",
+      "to": "COMEN01C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COACTUPC",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COACTVWC",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COBIL00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COCRDLIC",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COCRDSLC",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COCRDUPC",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COPAUS0C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "CORPT00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COTRN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COTRN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COMEN01C",
+      "to": "COTRN02C",
+      "via": "XCTL"
+    },
+    {
+      "from": "TRAN:CR00",
+      "to": "CORPT00C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "CORPT00C",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "CORPT00C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "CORPT00C",
+      "to": "CSUTLDTC",
+      "via": "CALL"
+    },
+    {
+      "from": "CORPT00C",
+      "to": "TDQ:JOBS",
+      "via": "write TDQ:JOBS"
+    },
+    {
+      "from": "TRAN:CC00",
+      "to": "COSGN00C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COSGN00C",
+      "to": "COADM01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COSGN00C",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+      "to": "COSGN00C",
+      "via": "read USRSEC"
+    },
+    {
+      "from": "TRAN:CT00",
+      "to": "COTRN00C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COTRN00C",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COTRN00C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COTRN00C",
+      "to": "COTRN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+      "to": "COTRN00C",
+      "via": "read TRANSACT"
+    },
+    {
+      "from": "TRAN:CT01",
+      "to": "COTRN01C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COTRN01C",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COTRN01C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COTRN01C",
+      "to": "COTRN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COTRN01C",
+      "to": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+      "via": "read-write TRANSACT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+      "to": "COTRN01C",
+      "via": "read-write TRANSACT"
+    },
+    {
+      "from": "TRAN:CT02",
+      "to": "COTRN02C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COTRN02C",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COTRN02C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COTRN02C",
+      "to": "CSUTLDTC",
+      "via": "CALL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+      "to": "COTRN02C",
+      "via": "read CCXREF"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+      "to": "COTRN02C",
+      "via": "read CXACAIX"
+    },
+    {
+      "from": "COTRN02C",
+      "to": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+      "via": "read-write TRANSACT"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+      "to": "COTRN02C",
+      "via": "read-write TRANSACT"
+    },
+    {
+      "from": "TRAN:CU00",
+      "to": "COUSR00C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COUSR00C",
+      "to": "COADM01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COUSR00C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COUSR00C",
+      "to": "COUSR02C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COUSR00C",
+      "to": "COUSR03C",
+      "via": "XCTL"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+      "to": "COUSR00C",
+      "via": "read USRSEC"
+    },
+    {
+      "from": "TRAN:CU01",
+      "to": "COUSR01C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COUSR01C",
+      "to": "COADM01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COUSR01C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COUSR01C",
+      "to": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+      "via": "write USRSEC"
+    },
+    {
+      "from": "TRAN:CU02",
+      "to": "COUSR02C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COUSR02C",
+      "to": "COADM01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COUSR02C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COUSR02C",
+      "to": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+      "via": "read-write USRSEC"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+      "to": "COUSR02C",
+      "via": "read-write USRSEC"
+    },
+    {
+      "from": "TRAN:CU03",
+      "to": "COUSR03C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COUSR03C",
+      "to": "COADM01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COUSR03C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COUSR03C",
+      "to": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+      "via": "read-write USRSEC"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.USRSEC.VSAM.KSDS",
+      "to": "COUSR03C",
+      "via": "read-write USRSEC"
+    },
+    {
+      "from": "MNTTRDB2.STEP1",
+      "to": "COBTUPDT",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "INPFILE",
+      "to": "COBTUPDT",
+      "via": "INPFILE"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.DBRMLIB",
+      "to": "COBTUPDT",
+      "via": "DBRMLIB"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.LOADLIB",
+      "to": "COBTUPDT",
+      "via": "STEPLIB"
+    },
+    {
+      "from": "CREADB21.FREEPLN",
+      "to": "COTRTLIC",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRAN:CTLI",
+      "to": "COTRTLIC",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COTRTLIC",
+      "to": "COTRTUPC",
+      "via": "XCTL"
+    },
+    {
+      "from": "TRAN:CTTU",
+      "to": "COTRTUPC",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "CBPAUP0J.STEP01",
+      "to": "CBPAUP0C",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBPAUP0C",
+      "to": "IMS_DB:DBPAUTP0",
+      "via": "read/delete (BMP, online IMS) DBPAUTP0"
+    },
+    {
+      "from": "IMS_DB:DBPAUTP0",
+      "to": "CBPAUP0C",
+      "via": "read/delete (BMP, online IMS) DBPAUTP0"
+    },
+    {
+      "from": "TRAN:CP00",
+      "to": "COPAUA0C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "CICS_FILE:CCXREF",
+      "to": "COPAUA0C",
+      "via": "read CCXREF"
+    },
+    {
+      "from": "CICS_FILE:ACCTDAT",
+      "to": "COPAUA0C",
+      "via": "read ACCTDAT"
+    },
+    {
+      "from": "CICS_FILE:CUSTDAT",
+      "to": "COPAUA0C",
+      "via": "read CUSTDAT"
+    },
+    {
+      "from": "COPAUA0C",
+      "to": "IMS_DB:DBPAUTP0",
+      "via": "read/insert/replace DBPAUTP0"
+    },
+    {
+      "from": "IMS_DB:DBPAUTP0",
+      "to": "COPAUA0C",
+      "via": "read/insert/replace DBPAUTP0"
+    },
+    {
+      "from": "TRAN:CPVS",
+      "to": "COPAUS0C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COPAUS0C",
+      "to": "COPAUS1C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COPAUS0C",
+      "to": "COMEN01C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COPAUS0C",
+      "to": "COSGN00C",
+      "via": "XCTL"
+    },
+    {
+      "from": "CICS_FILE:CXACAIX",
+      "to": "COPAUS0C",
+      "via": "read CXACAIX"
+    },
+    {
+      "from": "CICS_FILE:ACCTDAT",
+      "to": "COPAUS0C",
+      "via": "read ACCTDAT"
+    },
+    {
+      "from": "CICS_FILE:CUSTDAT",
+      "to": "COPAUS0C",
+      "via": "read CUSTDAT"
+    },
+    {
+      "from": "IMS_DB:DBPAUTP0",
+      "to": "COPAUS0C",
+      "via": "read DBPAUTP0"
+    },
+    {
+      "from": "TRAN:CPVD",
+      "to": "COPAUS1C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "COPAUS1C",
+      "to": "COPAUS2C",
+      "via": "LINK"
+    },
+    {
+      "from": "COPAUS1C",
+      "to": "COPAUS0C",
+      "via": "XCTL"
+    },
+    {
+      "from": "COPAUS1C",
+      "to": "IMS_DB:DBPAUTP0",
+      "via": "read/replace DBPAUTP0"
+    },
+    {
+      "from": "IMS_DB:DBPAUTP0",
+      "to": "COPAUS1C",
+      "via": "read/replace DBPAUTP0"
+    },
+    {
+      "from": "TRAN:CPVD (runs under COPAUS1C's transaction)",
+      "to": "COPAUS2C",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "UNLDGSAM.STEP01",
+      "to": "DBUNLDGS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DBUNLDGS",
+      "to": "AWS.M2.CARDDEMO.PAUTDB.ROOT.GSAM",
+      "via": "write PASFILOP"
+    },
+    {
+      "from": "DBUNLDGS",
+      "to": "AWS.M2.CARDDEMO.PAUTDB.CHILD.GSAM",
+      "via": "write PADFILOP"
+    },
+    {
+      "from": "OEM.IMS.IMSP.PAUTHDB",
+      "to": "DBUNLDGS",
+      "via": "read DDPAUTP0"
+    },
+    {
+      "from": "OEM.IMS.IMSP.PAUTHDBX",
+      "to": "DBUNLDGS",
+      "via": "read DDPAUTX0"
+    },
+    {
+      "from": "LOADPADB.STEP01",
+      "to": "PAUDBLOD",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO",
+      "to": "PAUDBLOD",
+      "via": "read INFILE1"
+    },
+    {
+      "from": "AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO",
+      "to": "PAUDBLOD",
+      "via": "read INFILE2"
+    },
+    {
+      "from": "PAUDBLOD",
+      "to": "IMS_DB:DBPAUTP0",
+      "via": "insert (BMP, online IMS) DBPAUTP0"
+    },
+    {
+      "from": "UNLDPADB.STEP01",
+      "to": "PAUDBUNL",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "PAUDBUNL",
+      "to": "AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO",
+      "via": "write OUTFIL1"
+    },
+    {
+      "from": "PAUDBUNL",
+      "to": "AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO",
+      "via": "write OUTFIL2"
+    },
+    {
+      "from": "OEM.IMS.IMSP.PAUTHDB",
+      "to": "PAUDBUNL",
+      "via": "read DDPAUTP0"
+    },
+    {
+      "from": "OEM.IMS.IMSP.PAUTHDBX",
+      "to": "PAUDBUNL",
+      "via": "read DDPAUTX0"
+    },
+    {
+      "from": "TRAN:CDRA",
+      "to": "COACCT01",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "CICS_FILE:ACCTDAT",
+      "to": "COACCT01",
+      "via": "read ACCTDAT"
+    },
+    {
+      "from": "TRAN:CDRD",
+      "to": "CODATE01",
+      "via": "CICS transaction"
+    },
+    {
+      "from": "CSUTLDTC",
+      "to": "CEEDAYS",
+      "via": "CALL"
+    },
+    {
+      "from": "MVSWAIT",
+      "to": "STIMER",
+      "via": "CALL"
+    },
+    {
+      "from": "CBADMCDJ",
+      "to": "DFHCSDUP",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBPAUP0J",
+      "to": "DFSRRC00",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DBPAUTP0",
+      "to": "DFSRRC00",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "LOADPADB",
+      "to": "DFSRRC00",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "UNLDGSAM",
+      "to": "DFSRRC00",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "UNLDPADB",
+      "to": "DFSRRC00",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "FTPJCL",
+      "to": "FTP",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "ACCTFILE",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CARDFILE",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CBEXPORT",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "COMBTRAN",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CREASTMT",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CUSTFILE",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DALYREJS",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DEFCUST",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DEFGDGB",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DEFGDGD",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DISCGRP",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DUSRSECJ",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "ESDSRRDS",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "INTRDRJ1",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "INTRDRJ2",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "REPTFILE",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TCATBALF",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANBKP",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANCATG",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANFILE",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANIDX",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANTYPE",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "XREFFILE",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "REPROC",
+      "to": "IDCAMS",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANEXTR",
+      "to": "IEBGENER",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DEFGDGD",
+      "to": "IEBGENER",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DUSRSECJ",
+      "to": "IEBGENER",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "ESDSRRDS",
+      "to": "IEBGENER",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "INTRDRJ1",
+      "to": "IEBGENER",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DBPAUTP0",
+      "to": "IEFBR14",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "UNLDPADB",
+      "to": "IEFBR14",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CREADB21",
+      "to": "IEFBR14",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANEXTR",
+      "to": "IEFBR14",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CREASTMT",
+      "to": "IEFBR14",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "DUSRSECJ",
+      "to": "IEFBR14",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "ESDSRRDS",
+      "to": "IEFBR14",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "PRTCATBL",
+      "to": "IEFBR14",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "READACCT",
+      "to": "IEFBR14",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CREADB21",
+      "to": "IKJEFT01",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "MNTTRDB2",
+      "to": "IKJEFT01",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANEXTR",
+      "to": "IKJEFT01",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TXT2PDF1",
+      "to": "IKJEFT1B",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CARDFILE",
+      "to": "SDSF",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CLOSEFIL",
+      "to": "SDSF",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CUSTFILE",
+      "to": "SDSF",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "OPENFIL",
+      "to": "SDSF",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANFILE",
+      "to": "SDSF",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "COMBTRAN",
+      "to": "SORT",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "CREASTMT",
+      "to": "SORT",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "PRTCATBL",
+      "to": "SORT",
+      "via": "EXEC PGM"
+    },
+    {
+      "from": "TRANREPT",
+      "to": "SORT",
+      "via": "EXEC PGM"
+    }
+  ],
+  "waves": [
+    {
+      "name": "Wave 1: POSTTRAN",
+      "job": "POSTTRAN",
+      "jcl": "app/jcl/POSTTRAN.jcl",
+      "members": [
+        "CBTRN02C"
+      ],
+      "status": "specify and prove",
+      "after": []
+    },
+    {
+      "name": "Wave 2: INTCALC",
+      "job": "INTCALC",
+      "jcl": "app/jcl/INTCALC.jcl",
+      "members": [
+        "CBACT04C"
+      ],
+      "status": "specify and prove",
+      "after": [
+        {
+          "job": "POSTTRAN",
+          "datasets": [
+            "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+            "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wave 3: CREASTMT (deferred)",
+      "job": "CREASTMT",
+      "jcl": "app/jcl/CREASTMT.JCL",
+      "members": [
+        "CBSTM03A",
+        "CBSTM03B"
+      ],
+      "status": "deferred: inventoried, not specified or proven yet",
+      "after": [
+        {
+          "job": "POSTTRAN",
+          "datasets": [
+            "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS"
+          ]
+        },
+        {
+          "job": "INTCALC",
+          "datasets": [
+            "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS"
+          ]
+        }
+      ]
+    }
+  ]
+}

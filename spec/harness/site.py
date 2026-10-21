@@ -100,6 +100,65 @@ def md_table(headers, rows):
     return "\n".join(out) + "\n"
 
 
+def flat(items):
+    """Datasets and external calls may be strings or objects; the page shows one label per item."""
+    out = []
+    for x in items or []:
+        if isinstance(x, dict):
+            x = x.get("dsn") or x.get("queue") or x.get("cics_file") or x.get("ims_db") or x.get("file") or x.get("target") or x.get("dd") or ""
+        if x:
+            out.append(str(x))
+    return ", ".join(out)
+
+
+def complexity_cells(p):
+    c = p.get("complexity") or {}
+    if c.get("score") is None:
+        return ["", "", "", "", "n/a"]
+    return [c.get("paragraphs"), c.get("file_io_verbs"), c.get("external_calls"), c["score"], c.get("band", "")]
+
+
+BAND_CLS = {"low": "green", "medium": "amber", "high": "red"}
+
+
+def wave_svg(waves):
+    """Left-to-right job graph of the wave plan, arrows labelled with the datasets that order the jobs."""
+    if not waves:
+        return ""
+    w, h, gap = 230, 120, 120
+    pos = {wv["job"]: i * (w + gap) + 10 for i, wv in enumerate(waves)}
+    parts = []
+    for i, wv in enumerate(waves):
+        x = pos[wv["job"]]
+        deferred = "deferred" in wv.get("status", "")
+        parts.append(f"<rect x='{x}' y='40' width='{w}' height='{h}' rx='8' fill='{'#f6f7f9' if deferred else '#e8f0fe'}' "
+                     f"stroke='#14213d' stroke-dasharray='{'6 4' if deferred else '0'}'/>")
+        parts.append(f"<text x='{x + 10}' y='62' font-weight='bold' font-size='13'>{esc(wv['name'])}</text>")
+        for j, m in enumerate(wv.get("members", [])):
+            parts.append(f"<text x='{x + 14}' y='{86 + j * 18}' font-size='12'>{esc(m)}</text>")
+        if deferred:
+            parts.append(f"<text x='{x + 10}' y='{40 + h - 10}' font-size='11' fill='#b26a00'>deferred: inventoried only</text>")
+    for k, wv in enumerate(waves):
+        for a in wv.get("after", []):
+            if a["job"] not in pos:
+                continue
+            x1, x2 = pos[a["job"]] + w, pos[wv["job"]]
+            y = 100 if x2 - x1 == gap else 40 + h + 12 + 14 * k
+            if x2 - x1 == gap:
+                parts.append(f"<line x1='{x1}' y1='{y}' x2='{x2 - 4}' y2='{y}' stroke='#14213d' marker-end='url(#arr)'/>")
+                for j, d in enumerate(a["datasets"] or ["job order"]):
+                    parts.append(f"<text x='{x1 + 4}' y='{y - 8 - j * 12}' font-size='9'>{esc(d.replace('AWS.M2.CARDDEMO.', ''))}</text>")
+            else:
+                mid1, mid2 = pos[a["job"]] + w // 2, x2 + w // 2
+                parts.append(f"<path d='M{mid1},{40 + h} V{y} H{mid2} V{40 + h + 4}' fill='none' stroke='#6b7280' marker-end='url(#arr)'/>")
+                label = ", ".join(d.replace("AWS.M2.CARDDEMO.", "") for d in a["datasets"]) or "job order"
+                parts.append(f"<text x='{mid1 + 6}' y='{y - 3}' font-size='9' fill='#6b7280'>{esc(a['job'])} to {esc(wv['job'])}: {esc(label)}</text>")
+    width = len(waves) * (w + gap)
+    return (f"<svg width='{width}' height='{40 + h + 20 + 14 * len(waves)}' xmlns='http://www.w3.org/2000/svg' font-family='system-ui'>"
+            "<defs><marker id='arr' markerWidth='8' markerHeight='8' refX='7' refY='4' orient='auto'><path d='M0,0 L8,4 L0,8 z' fill='#14213d'/></marker></defs>"
+            + "".join(parts) + "</svg>")
+
+
 def assessment(run_dir, label):
     inv = load_json(SPEC_DIR / "assessment" / "inventory.json", {"programs": []})
     waves = load_json(SPEC_DIR / "assessment" / "waves.json", {"waves": [], "edges": []})
@@ -110,14 +169,46 @@ def assessment(run_dir, label):
     if report:
         tiles += f"<div class='tile'><b class='{'green' if report['verdict'] == 'pass' else 'red'}'>{esc(report['verdict'])}</b>COBOL and Java comparison</div>"
     progs = inv.get("programs", [])
-    inv_rows = [[esc(p.get("name")), esc(p.get("type")), esc(p.get("group")), esc(", ".join(p.get("jcl", []))),
-                 esc(", ".join(p.get("copybooks", []))), esc(", ".join(p.get("datasets", []))),
-                 esc(", ".join(p.get("external_calls", []))),
-                 "<span class='badge amber'>unreferenced</span>" if p.get("unreferenced") else esc(p.get("wave", ""))]
-                for p in progs]
-    edge_rows = [[esc(e.get("from")), esc(e.get("to")), esc(e.get("via"))] for e in waves.get("edges", [])]
+    inv_heads = ["Program", "Type", "Group", "JCL", "Copybooks", "Datasets", "External calls", "Complexity", "Wave"]
+
+    def inv_cells(p):
+        c = complexity_cells(p)
+        return [p.get("name"), p.get("type"), p.get("group"), ", ".join(p.get("jcl", [])), ", ".join(p.get("copybooks", [])),
+                flat(p.get("datasets")), flat(p.get("external_calls")), f"{c[3]} {c[4]}".strip(),
+                "unreferenced" if p.get("unreferenced") else p.get("wave", "")]
+
+    inv_rows = []
+    for p in progs:
+        cells = [esc(c) for c in inv_cells(p)]
+        band = (p.get("complexity") or {}).get("band")
+        if band:
+            cells[7] = f"{esc((p.get('complexity') or {}).get('score'))} <span class='badge {BAND_CLS.get(band, '')}'>{esc(band)}</span>"
+        if p.get("unreferenced"):
+            cells[8] = "<span class='badge amber'>unreferenced</span>"
+        inv_rows.append(cells)
+    cx_heads = ["Program", "Group", "Paragraphs", "I/O verbs", "External calls", "Score", "Band"]
+    cx_progs = sorted(progs, key=lambda p: -((p.get("complexity") or {}).get("score") or -1))
+    cx_md = [[p.get("name"), p.get("group"), *complexity_cells(p)] for p in cx_progs]
+    cx_rows = [[esc(c) for c in r[:-1]] + [f"<span class='badge {BAND_CLS.get(r[-1], '')}'>{esc(r[-1])}</span>"] for r in cx_md]
+    edges = waves.get("edges", [])
+    edge_rows = [[esc(e.get("from")), esc(e.get("to")), esc(e.get("via"))] for e in edges]
+    unref = [mb for mb in inv.get("members", []) if mb.get("unreferenced")]
+    if not inv.get("members"):
+        unref = [{"member": p.get("source") or p.get("name"), "kind": p.get("type"), "covered_by": p.get("evidence", "")}
+                 for p in progs if p.get("unreferenced")]
+    unref_md = [[u["member"], u.get("kind", ""), u.get("covered_by", ""), u.get("source", "")] for u in unref]
+    issues = inv.get("issues", [])
+    issue_md = [[i.get("group"), i.get("kind"), i.get("text")] for i in issues]
+    cov = inv.get("coverage")
+    cov_md = ([["members under app/", cov["members"]], ["not in any group file (covered by the merge cross-check)", len(cov["not_in_group_files"])],
+               ["unreferenced", len(cov["unreferenced"])], ["neither inventoried nor unreferenced", len(cov["neither"])]] if cov else [])
+    counts_md = [[g, n] for g, n in (inv.get("counts") or {}).items()]
     wave_html = "".join(
-        f"<div class='wave'><b>{esc(w.get('name'))}</b><ul>" + "".join(f"<li>{esc(x)}</li>" for x in w.get("members", [])) + "</ul></div>"
+        f"<div class='wave'><b>{esc(w.get('name'))}</b>"
+        + (" <span class='badge amber'>deferred</span>" if "deferred" in w.get("status", "") else " <span class='badge green'>in scope</span>")
+        + f"<p>{esc(w.get('status', ''))}</p><ul>" + "".join(f"<li>{esc(x)}</li>" for x in w.get("members", [])) + "</ul>"
+        + "".join(f"<p>after {esc(a['job'])}: reads {esc(', '.join(a['datasets']) or 'job order')}</p>" for a in w.get("after", []))
+        + "</div>"
         for w in waves.get("waves", [])) or "<p class='empty'>No wave plan yet.</p>"
     rule_rows_html = []
     for p in spec:
@@ -126,19 +217,29 @@ def assessment(run_dir, label):
             rule_rows_html.append([esc(p["program"]), esc(r.get("rule")), f"<code>{esc(r.get('cobol citation', ''))}</code>",
                                    f"<code>{esc(r.get('acceptance test', ''))}</code>", f"<span class='badge {st}'>{esc(st)}</span>"])
     body = (f"<div class='tiles'>{tiles}</div><br>"
-            f"<section><h2>Inventory</h2>{table(['Program', 'Type', 'Group', 'JCL', 'Copybooks', 'Datasets', 'External calls', 'Wave'], inv_rows)}</section>"
-            f"<section><h2>Dependencies</h2>{table(['From', 'To', 'Through'], edge_rows)}</section>"
+            f"<section><h2>Programs by group</h2>{table(['Group', 'Programs'], [[esc(c) for c in r] for r in counts_md])}</section>"
+            f"<section><h2>Inventory</h2>{table(inv_heads, inv_rows)}</section>"
+            f"<section><h2>Complexity per program</h2><p>{esc(inv.get('complexity', ''))}</p>{table(cx_heads, cx_rows)}</section>"
+            f"<section><h2>Dependency graph</h2>{wave_svg(waves.get('waves', []))}{table(['From', 'To', 'Through'], edge_rows)}</section>"
+            f"<section><h2>Unreferenced members</h2>{table(['Member', 'Kind', 'Evidence', 'Found by'], [[esc(c) for c in r] for r in unref_md])}</section>"
             f"<section><h2>Wave plan</h2><div class='waves'>{wave_html}</div></section>"
+            f"<section><h2>Open issues</h2>{table(['Group', 'Kind', 'Issue'], [[esc(c) for c in r] for r in issue_md])}</section>"
+            f"<section><h2>Coverage of app/</h2>{table(['Check', 'Members'], [[esc(c) for c in r] for r in cov_md])}</section>"
             f"<section><h2>Specification</h2>{table(['Program', 'Rule', 'COBOL citation', 'Acceptance test', 'Status'], rule_rows_html)}</section>")
     html_text = page("CardDemo assessment", f"{label} · specification in spec/specification", body)
     md = [f"# CardDemo assessment\n\n{label}\n\n## Measures\n"]
     md.append(md_table(["Measure", "Value"], [[k.replace("_", " "), v] for k, v in m.items()]))
-    md.append("\n## Inventory\n\n" + md_table(["Program", "Type", "Group", "JCL", "Copybooks", "Datasets", "External calls", "Wave"],
-              [[p.get("name"), p.get("type"), p.get("group"), ", ".join(p.get("jcl", [])), ", ".join(p.get("copybooks", [])),
-                ", ".join(p.get("datasets", [])), ", ".join(p.get("external_calls", [])),
-                "unreferenced" if p.get("unreferenced") else p.get("wave", "")] for p in progs]))
-    md.append("\n## Dependencies\n\n" + md_table(["From", "To", "Through"], [[e.get("from"), e.get("to"), e.get("via")] for e in waves.get("edges", [])]))
-    md.append("\n## Wave plan\n\n" + ("".join(f"- {w.get('name')}: {', '.join(w.get('members', []))}\n" for w in waves.get("waves", [])) or "Nothing here yet.\n"))
+    md.append("\n## Programs by group\n\n" + md_table(["Group", "Programs"], counts_md))
+    md.append("\n## Inventory\n\n" + md_table(inv_heads, [inv_cells(p) for p in progs]))
+    md.append("\n## Complexity per program\n\n" + md_table(cx_heads, cx_md))
+    md.append("\n## Dependency graph\n\n" + md_table(["From", "To", "Through"], [[e.get("from"), e.get("to"), e.get("via")] for e in edges]))
+    md.append("\n## Unreferenced members\n\n" + md_table(["Member", "Kind", "Evidence", "Found by"], unref_md))
+    md.append("\n## Wave plan\n\n" + ("".join(
+        f"- {w.get('name')}: {', '.join(w.get('members', []))} ({w.get('status', '')})"
+        + "".join(f"; after {a['job']}: reads {', '.join(a['datasets']) or 'job order'}" for a in w.get("after", [])) + "\n"
+        for w in waves.get("waves", [])) or "Nothing here yet.\n"))
+    md.append("\n## Open issues\n\n" + md_table(["Group", "Kind", "Issue"], issue_md))
+    md.append("\n## Coverage of app/\n\n" + md_table(["Check", "Members"], cov_md))
     md.append("\n## Specification\n\n" + md_table(["Program", "Rule", "COBOL citation", "Acceptance test", "Status"],
               [[p["program"], r.get("rule"), r.get("cobol citation", ""), r.get("acceptance test", ""), status_of(r)] for p in spec for r in p["rules"]]))
     return html_text, "".join(md), m

@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata: {name: report, namespace: "${NS}"}
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: report
+          image: carddemo-cobol-runner:${STATE}
+          imagePullPolicy: Never
+          command: [sh, -c, "python3 -m harness compare /data --label '${LABEL}' || true; python3 -m harness site /data --label '${LABEL}'"]
+          volumeMounts: [{name: data, mountPath: /data}]
+      volumes: [{name: data, persistentVolumeClaim: {claimName: run-data}}]

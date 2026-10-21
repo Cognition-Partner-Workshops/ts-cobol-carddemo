@@ -1,0 +1,711 @@
+{
+  "group": "batch",
+  "baseline": "baseline/sdd-2610",
+  "scope": "Every COBOL program under app/cbl run by EXEC PGM= in app/jcl or app/proc (system utilities excluded), plus the batch subprograms they CALL and batch programs no JCL runs.",
+  "complexity_convention": {
+    "formula": "paragraphs + 2 x file_io_verbs + 3 x external_calls",
+    "paragraphs": "paragraph and section labels in Area A of the PROCEDURE DIVISION",
+    "file_io_verbs": "occurrences of OPEN, CLOSE, READ, WRITE, REWRITE, DELETE, START in the PROCEDURE DIVISION (comments and literals excluded)",
+    "external_calls": "distinct static CALL targets",
+    "bands": {
+      "low": "score < 40",
+      "medium": "40 <= score < 80",
+      "high": "score >= 80"
+    }
+  },
+  "programs": [
+    {
+      "name": "CBACT01C",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBACT01C.cbl",
+      "jcl": [
+        "jcl/READACCT.jcl:READACCT.STEP05"
+      ],
+      "copybooks": [
+        "CODATECN",
+        "CVACT01Y"
+      ],
+      "datasets": [
+        {
+          "dd": "ACCTFILE",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+          "file": "ACCTFILE-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "OUTFILE",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.PSCOMP",
+          "file": "OUT-FILE",
+          "access": "write"
+        },
+        {
+          "dd": "ARRYFILE",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.ARRYPS",
+          "file": "ARRY-FILE",
+          "access": "write"
+        },
+        {
+          "dd": "VBRCFILE",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VBPS",
+          "file": "VBRC-FILE",
+          "access": "write"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD",
+        "COBDATFT"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 16,
+        "file_io_verbs": 10,
+        "external_calls": 2,
+        "score": 42,
+        "band": "medium"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBACT02C",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBACT02C.cbl",
+      "jcl": [
+        "jcl/READCARD.jcl:READCARD.STEP05"
+      ],
+      "copybooks": [
+        "CVACT02Y"
+      ],
+      "datasets": [
+        {
+          "dd": "CARDFILE",
+          "dsn": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+          "file": "CARDFILE-FILE",
+          "access": "read"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 5,
+        "file_io_verbs": 3,
+        "external_calls": 1,
+        "score": 14,
+        "band": "low"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBACT03C",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBACT03C.cbl",
+      "jcl": [
+        "jcl/READXREF.jcl:READXREF.STEP05"
+      ],
+      "copybooks": [
+        "CVACT03Y"
+      ],
+      "datasets": [
+        {
+          "dd": "XREFFILE",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+          "file": "XREFFILE-FILE",
+          "access": "read"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 5,
+        "file_io_verbs": 3,
+        "external_calls": 1,
+        "score": 14,
+        "band": "low"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBACT04C",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBACT04C.cbl",
+      "jcl": [
+        "jcl/INTCALC.jcl:INTCALC.STEP15"
+      ],
+      "copybooks": [
+        "CVACT01Y",
+        "CVACT03Y",
+        "CVTRA01Y",
+        "CVTRA02Y",
+        "CVTRA05Y"
+      ],
+      "datasets": [
+        {
+          "dd": "TCATBALF",
+          "dsn": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+          "file": "TCATBAL-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "XREFFILE",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+          "file": "XREF-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "ACCTFILE",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+          "file": "ACCOUNT-FILE",
+          "access": "read-write"
+        },
+        {
+          "dd": "DISCGRP",
+          "dsn": "AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS",
+          "file": "DISCGRP-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "TRANSACT",
+          "dsn": "AWS.M2.CARDDEMO.SYSTRAN(+1)",
+          "file": "TRANSACT-FILE",
+          "access": "write"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 22,
+        "file_io_verbs": 17,
+        "external_calls": 1,
+        "score": 59,
+        "band": "medium"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBCUS01C",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBCUS01C.cbl",
+      "jcl": [
+        "jcl/READCUST.jcl:READCUST.STEP05"
+      ],
+      "copybooks": [
+        "CVCUS01Y"
+      ],
+      "datasets": [
+        {
+          "dd": "CUSTFILE",
+          "dsn": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+          "file": "CUSTFILE-FILE",
+          "access": "read"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 5,
+        "file_io_verbs": 3,
+        "external_calls": 1,
+        "score": 14,
+        "band": "low"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBEXPORT",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBEXPORT.cbl",
+      "jcl": [
+        "jcl/CBEXPORT.jcl:CBEXPORT.STEP02"
+      ],
+      "copybooks": [
+        "CVACT01Y",
+        "CVACT02Y",
+        "CVACT03Y",
+        "CVCUS01Y",
+        "CVEXPORT",
+        "CVTRA05Y"
+      ],
+      "datasets": [
+        {
+          "dd": "CUSTFILE",
+          "dsn": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+          "file": "CUSTOMER-INPUT",
+          "access": "read"
+        },
+        {
+          "dd": "ACCTFILE",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+          "file": "ACCOUNT-INPUT",
+          "access": "read"
+        },
+        {
+          "dd": "XREFFILE",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+          "file": "XREF-INPUT",
+          "access": "read"
+        },
+        {
+          "dd": "TRANSACT",
+          "dsn": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+          "file": "TRANSACTION-INPUT",
+          "access": "read"
+        },
+        {
+          "dd": "CARDFILE",
+          "dsn": "AWS.M2.CARDDEMO.CARDDATA.VSAM.KSDS",
+          "file": "CARD-INPUT",
+          "access": "read"
+        },
+        {
+          "dd": "EXPFILE",
+          "dsn": "AWS.M2.CARDDEMO.EXPORT.DATA",
+          "file": "EXPORT-OUTPUT",
+          "access": "write"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 21,
+        "file_io_verbs": 22,
+        "external_calls": 1,
+        "score": 68,
+        "band": "medium"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBIMPORT",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBIMPORT.cbl",
+      "jcl": [
+        "jcl/CBIMPORT.jcl:CBIMPORT.STEP01"
+      ],
+      "copybooks": [
+        "CVACT01Y",
+        "CVACT02Y",
+        "CVACT03Y",
+        "CVCUS01Y",
+        "CVEXPORT",
+        "CVTRA05Y"
+      ],
+      "datasets": [
+        {
+          "dd": "EXPFILE",
+          "dsn": "AWS.M2.CARDDEMO.EXPORT.DATA",
+          "file": "EXPORT-INPUT",
+          "access": "read"
+        },
+        {
+          "dd": "CUSTOUT",
+          "dsn": "AWS.M2.CARDDEMO.CUSTDATA.IMPORT",
+          "file": "CUSTOMER-OUTPUT",
+          "access": "write"
+        },
+        {
+          "dd": "ACCTOUT",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.IMPORT",
+          "file": "ACCOUNT-OUTPUT",
+          "access": "write"
+        },
+        {
+          "dd": "XREFOUT",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.IMPORT",
+          "file": "XREF-OUTPUT",
+          "access": "write"
+        },
+        {
+          "dd": "TRNXOUT",
+          "dsn": "AWS.M2.CARDDEMO.TRANSACT.IMPORT",
+          "file": "TRANSACTION-OUTPUT",
+          "access": "write"
+        },
+        {
+          "dd": "CARDOUT",
+          "dsn": null,
+          "file": "CARD-OUTPUT",
+          "access": "write"
+        },
+        {
+          "dd": "ERROUT",
+          "dsn": "AWS.M2.CARDDEMO.IMPORT.ERRORS",
+          "file": "ERROR-OUTPUT",
+          "access": "write"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 16,
+        "file_io_verbs": 21,
+        "external_calls": 1,
+        "score": 61,
+        "band": "medium"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBSTM03A",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBSTM03A.CBL",
+      "jcl": [
+        "jcl/CREASTMT.JCL:CREASTMT.STEP040"
+      ],
+      "copybooks": [
+        "COSTM01",
+        "CUSTREC",
+        "CVACT01Y",
+        "CVACT03Y"
+      ],
+      "datasets": [
+        {
+          "dd": "STMTFILE",
+          "dsn": "AWS.M2.CARDDEMO.STATEMNT.PS",
+          "file": "STMT-FILE",
+          "access": "write"
+        },
+        {
+          "dd": "HTMLFILE",
+          "dsn": "AWS.M2.CARDDEMO.STATEMNT.HTML",
+          "file": "HTML-FILE",
+          "access": "write"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CBSTM03B",
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 25,
+        "file_io_verbs": 97,
+        "external_calls": 2,
+        "score": 225,
+        "band": "high"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBSTM03B",
+      "type": "COBOL batch subprogram",
+      "group": "batch",
+      "source": "app/cbl/CBSTM03B.CBL",
+      "jcl": [
+        "jcl/CREASTMT.JCL:CREASTMT.STEP040"
+      ],
+      "copybooks": [],
+      "datasets": [
+        {
+          "dd": "TRNXFILE",
+          "dsn": "AWS.M2.CARDDEMO.TRXFL.VSAM.KSDS",
+          "file": "TRNX-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "XREFFILE",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+          "file": "XREF-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "CUSTFILE",
+          "dsn": "AWS.M2.CARDDEMO.CUSTDATA.VSAM.KSDS",
+          "file": "CUST-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "ACCTFILE",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+          "file": "ACCT-FILE",
+          "access": "read"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [],
+      "called_by": [
+        "CBSTM03A"
+      ],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 14,
+        "file_io_verbs": 12,
+        "external_calls": 0,
+        "score": 38,
+        "band": "low"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBTRN01C",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBTRN01C.cbl",
+      "jcl": [],
+      "copybooks": [
+        "CVACT01Y",
+        "CVACT02Y",
+        "CVACT03Y",
+        "CVCUS01Y",
+        "CVTRA05Y",
+        "CVTRA06Y"
+      ],
+      "datasets": [
+        {
+          "dd": "DALYTRAN",
+          "dsn": null,
+          "file": "DALYTRAN-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "CUSTFILE",
+          "dsn": null,
+          "file": "CUSTOMER-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "XREFFILE",
+          "dsn": null,
+          "file": "XREF-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "CARDFILE",
+          "dsn": null,
+          "file": "CARD-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "ACCTFILE",
+          "dsn": null,
+          "file": "ACCOUNT-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "TRANFILE",
+          "dsn": null,
+          "file": "TRANSACT-FILE",
+          "access": "read"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": true,
+      "complexity": {
+        "paragraphs": 18,
+        "file_io_verbs": 15,
+        "external_calls": 1,
+        "score": 51,
+        "band": "medium"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBTRN02C",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBTRN02C.cbl",
+      "jcl": [
+        "jcl/POSTTRAN.jcl:POSTTRAN.STEP15"
+      ],
+      "copybooks": [
+        "CVACT01Y",
+        "CVACT03Y",
+        "CVTRA01Y",
+        "CVTRA05Y",
+        "CVTRA06Y"
+      ],
+      "datasets": [
+        {
+          "dd": "DALYTRAN",
+          "dsn": "AWS.M2.CARDDEMO.DALYTRAN.PS",
+          "file": "DALYTRAN-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "TRANFILE",
+          "dsn": "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+          "file": "TRANSACT-FILE",
+          "access": "write"
+        },
+        {
+          "dd": "XREFFILE",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+          "file": "XREF-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "DALYREJS",
+          "dsn": "AWS.M2.CARDDEMO.DALYREJS(+1)",
+          "file": "DALYREJS-FILE",
+          "access": "write"
+        },
+        {
+          "dd": "ACCTFILE",
+          "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+          "file": "ACCOUNT-FILE",
+          "access": "read-write"
+        },
+        {
+          "dd": "TCATBALF",
+          "dsn": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+          "file": "TCATBAL-FILE",
+          "access": "read-write"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 26,
+        "file_io_verbs": 21,
+        "external_calls": 1,
+        "score": 71,
+        "band": "medium"
+      },
+      "wave": ""
+    },
+    {
+      "name": "CBTRN03C",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/CBTRN03C.cbl",
+      "jcl": [
+        "jcl/TRANREPT.jcl:TRANREPT.STEP10R",
+        "proc/TRANREPT.prc:TRANREPT.STEP10R"
+      ],
+      "copybooks": [
+        "CVACT03Y",
+        "CVTRA03Y",
+        "CVTRA04Y",
+        "CVTRA05Y",
+        "CVTRA07Y"
+      ],
+      "datasets": [
+        {
+          "dd": "TRANFILE",
+          "dsn": "AWS.M2.CARDDEMO.TRANSACT.DALY(+1)",
+          "file": "TRANSACT-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "CARDXREF",
+          "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+          "file": "XREF-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "TRANTYPE",
+          "dsn": "AWS.M2.CARDDEMO.TRANTYPE.VSAM.KSDS",
+          "file": "TRANTYPE-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "TRANCATG",
+          "dsn": "AWS.M2.CARDDEMO.TRANCATG.VSAM.KSDS",
+          "file": "TRANCATG-FILE",
+          "access": "read"
+        },
+        {
+          "dd": "TRANREPT",
+          "dsn": "AWS.M2.CARDDEMO.TRANREPT(+1)",
+          "file": "REPORT-FILE",
+          "access": "write"
+        },
+        {
+          "dd": "DATEPARM",
+          "dsn": "AWS.M2.CARDDEMO.DATEPARM",
+          "file": "DATE-PARMS-FILE",
+          "access": "read"
+        }
+      ],
+      "cics_transactions": [],
+      "external_calls": [
+        "CEE3ABD"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 26,
+        "file_io_verbs": 18,
+        "external_calls": 1,
+        "score": 65,
+        "band": "medium"
+      },
+      "wave": ""
+    },
+    {
+      "name": "COBSWAIT",
+      "type": "COBOL batch program",
+      "group": "batch",
+      "source": "app/cbl/COBSWAIT.cbl",
+      "jcl": [
+        "jcl/WAITSTEP.jcl:WAITSTEP.WAIT"
+      ],
+      "copybooks": [],
+      "datasets": [],
+      "cics_transactions": [],
+      "external_calls": [
+        "MVSWAIT"
+      ],
+      "called_by": [],
+      "unreferenced": false,
+      "complexity": {
+        "paragraphs": 0,
+        "file_io_verbs": 0,
+        "external_calls": 1,
+        "score": 3,
+        "band": "low"
+      },
+      "wave": ""
+    }
+  ],
+  "issues": [
+    "CBIMPORT: DD CARDOUT (file CARD-OUTPUT) has no DD statement in jcl/CBIMPORT.jcl",
+    "proc/TRANREPT.prc opens with '//REPROC PROC' but repeats the TRANREPT job body (EXEC PROC=REPROC, SORT, CBTRN03C); CBTRN03C is listed under both members.",
+    "CBSTM03B runs inside CREASTMT.STEP040 as a CALLed subprogram of CBSTM03A; its datasets come from that step's DDs.",
+    "COBDATFT and MVSWAIT are assembler routines under app/asm; CEE3ABD is the LE abend service. CSUTLDTC is not called by any batch program.",
+    "Batch JCL under app/app-*/jcl (IMS DFSRRC00, Db2 IKJEFT01) is outside app/jcl and app/proc and is not inventoried here.",
+    "Complexity convention taken from the ticket proposal; no Conventions skill or digest was found in the repo or plugins. DeepWiki has no index for this repo."
+  ]
+}

@@ -1,0 +1,17 @@
+# The batch path in three Jobs that share the run-data volume: GnuCOBOL, then Java on
+# PostgreSQL, then the comparison report and the static pages.
+apiVersion: batch/v1
+kind: Job
+metadata: {name: cobol-run, namespace: "${NS}"}
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: cobol
+          image: carddemo-cobol-runner:${STATE}
+          imagePullPolicy: Never
+          command: [sh, -c, "python3 -m harness inputs /data && python3 -m harness cobol /data --jobs ${JOBS}"]
+          volumeMounts: [{name: data, mountPath: /data}]
+      volumes: [{name: data, persistentVolumeClaim: {claimName: run-data}}]

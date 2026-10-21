@@ -1,0 +1,132 @@
+name: spec and java
+
+on:
+  pull_request:
+    paths: ["spec/**", "java/**", "deploy/**", "scripts/sdd/**", ".github/workflows/spec-java.yml"]
+  push:
+    branches: [main, "baseline/**"]
+  workflow_dispatch:
+    inputs:
+      jobs:
+        description: batch path job order for the COBOL run
+        default: POSTTRAN,INTCALC
+
+# Hosted runners pull Docker Hub reliably; anonymous ECR Public returns 429 there.
+env:
+  SDD_IMAGE_REGISTRY: docker.io/library
+
+jobs:
+  spec:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GnuCOBOL
+        run: sudo apt-get update -q && sudo apt-get install -y -q gnucobol3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r spec/requirements.txt
+      - name: Loader and shape tests against the frozen COBOL outputs
+        working-directory: spec
+        run: python -m pytest -q tests
+      - name: Run the batch path under GnuCOBOL
+        working-directory: spec
+        run: python -m harness all runs/ci --jobs "${{ github.event.inputs.jobs || 'POSTTRAN,INTCALC' }}"
+      - name: Acceptance suite against the live COBOL run
+        working-directory: spec
+        run: python -m pytest -q tests --run-dir runs/ci --impl cobol
+      - name: Frozen outputs still match the COBOL run
+        working-directory: spec
+        run: |
+          python -m harness golden runs/frozen
+          python -m harness inputs runs/frozen
+          cp -r runs/ci/cobol runs/frozen/live
+          python -m harness compare runs/frozen --left cobol --right live
+      - name: "Negative control: jobs reversed must not match"
+        working-directory: spec
+        run: |
+          python -m harness inputs runs/reversed
+          python -m harness cobol runs/reversed --jobs INTCALC,POSTTRAN
+          python -m harness golden runs/reversed-ref
+          python -m harness inputs runs/reversed-ref
+          cp -r runs/reversed/cobol runs/reversed-ref/reversed
+          python -m harness compare runs/reversed-ref --left cobol --right reversed --expect-fail
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spec-run
+          path: |
+            spec/runs/ci/cobol/*.jsonl
+            spec/runs/ci/cobol/run.json
+            spec/runs/ci/site
+            spec/runs/reversed-ref/report
+
+  java:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Unit rules and parity with the frozen COBOL outputs (H2)
+        working-directory: java
+        run: ./mvnw -q -B verify
+      - name: Run the Java batch path on PostgreSQL
+        working-directory: java
+        run: |
+          docker run -d --name pg -e POSTGRES_DB=carddemo -e POSTGRES_USER=carddemo -e POSTGRES_PASSWORD=carddemo-local \
+            -p 5432:5432 "$SDD_IMAGE_REGISTRY/postgres:16-alpine"
+          for i in $(seq 30); do docker exec pg pg_isready -U carddemo && break; sleep 2; done
+          java -jar target/carddemo-batch-0.1.0.jar \
+            --spring.datasource.url=jdbc:postgresql://localhost:5432/carddemo \
+            --spring.datasource.username=carddemo --spring.datasource.password=carddemo-local \
+            --carddemo.input-dir=../spec/golden/input --carddemo.output-dir=../spec/runs/pg/java
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r spec/requirements.txt
+      - name: Comparison report and acceptance suite on the PostgreSQL run
+        working-directory: spec
+        run: |
+          python -m harness golden runs/pg
+          python -m harness inputs runs/pg
+          python -m harness compare runs/pg
+          python -m harness site runs/pg
+          python -m pytest -q tests --run-dir runs/pg --impl java
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: java-run
+          path: |
+            spec/runs/pg/java
+            spec/runs/pg/report
+            spec/runs/pg/site
+
+  kind-smoke:
+    runs-on: ubuntu-22.04
+    needs: [spec, java]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Install kind
+        run: |
+          curl -fsSLo kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+          sudo install kind /usr/local/bin/kind
+      - name: Reset the before namespace on kind and fetch the pages
+        env:
+          SDD_RUN: sdd-ci
+        run: |
+          scripts/sdd/reset.sh before
+          curl -fsS http://before.sdd-ci.localtest.me:8080/ | grep -q "CardDemo"
+          curl -fsS http://before.sdd-ci.localtest.me:8080/comparison.html | grep -q "pass"
+      - name: Teardown
+        if: always()
+        env:
+          SDD_RUN: sdd-ci
+        run: scripts/sdd/teardown.sh

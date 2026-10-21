@@ -9,7 +9,6 @@ from collections import defaultdict
 from decimal import Decimal
 from pathlib import Path
 
-import pytest
 import yaml
 
 SPEC = Path(__file__).resolve().parents[2]
@@ -84,10 +83,6 @@ def cycle_measure(s, amt):
     return s["cr"] - s["db"] + amt
 
 
-def balance_measure(s, amt):
-    return s["bal"] + amt
-
-
 def posted_by(run_inputs, outputs, key_fn):
     sums = defaultdict(Decimal)
     for t in daily(run_inputs):
@@ -122,28 +117,18 @@ def test_cbtrn02c_r03_card_without_account_rejected_101(outputs, run_inputs):
         assert reason(outputs, tid) == REASON_ACCOUNT
 
 
-def _seeded_discriminating_cases(run_inputs):
-    """Transactions where the balance reading and the cycle-to-date reading decide differently."""
-    by_cycle = simulate(run_inputs, cycle_measure)
-    by_balance = simulate(run_inputs, balance_measure)
-    return [tid for tid in by_balance if by_balance[tid] != by_cycle[tid]]
+def test_cbtrn02c_r04_overlimit_judged_on_cycle_totals(outputs, run_inputs):
+    """Over limit when cycle credits - cycle debits + amount exceeds the credit limit.
 
-
-@pytest.mark.xfail(strict=True, reason="amber: business question https://github.com/Cognition-Partner-Workshops/ts-cobol-carddemo/issues/140")
-def test_cbtrn02c_r04_overlimit_judged_on_balance(outputs, run_inputs):
-    """Business reading: reject as over limit when current balance + amount exceeds the credit limit.
-
-    The reading is only demonstrated once the seeded data holds a transaction on
-    which it and the observed cycle-to-date reading decide differently.
+    Confirmed as the intended rule by the business owner (issue #140).
     """
-    expected = simulate(run_inputs, balance_measure)
+    expected = simulate(run_inputs, cycle_measure)
+    assert REASON_OVERLIMIT in expected.values(), "seeded data has no over-limit transaction"
     for tid, why in expected.items():
         if why is None:
             assert tid in outputs["posted"], tid
         else:
             assert reason(outputs, tid) == why, tid
-    assert _seeded_discriminating_cases(run_inputs), \
-        "no seeded transaction separates the balance reading from the cycle-to-date reading"
 
 
 def test_cbtrn02c_r05_limit_is_inclusive_and_rejects_do_not_count(outputs, run_inputs):

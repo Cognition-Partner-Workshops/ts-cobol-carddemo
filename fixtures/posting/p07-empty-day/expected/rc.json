@@ -1,0 +1,23 @@
+{
+ "POSTTRAN": {
+  "maxrc": 0,
+  "steps": {
+   "CLCIFIL": 0,
+   "OPCIFIL": 0,
+   "STEP05": 0,
+   "STEP10": 0,
+   "STEP15": 0,
+   "STEP20": 0,
+   "STEP25": 0,
+   "STEP30": 0
+  }
+ },
+ "TRANREPT": {
+  "maxrc": 0,
+  "steps": {
+   "PRC001": 0,
+   "STEP05R": 0,
+   "STEP10R": 0
+  }
+ }
+}

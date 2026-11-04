@@ -1,0 +1,5 @@
+010001Regular Sales Draft
+010002Cash Advance
+020001Payment - Bank Transfer
+030001Credit to Account
+050001Refund - Merchandise

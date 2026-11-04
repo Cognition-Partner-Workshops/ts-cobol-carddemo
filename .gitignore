@@ -6,3 +6,8 @@ batch-app/markers/*
 /.idea/
 .DS_Store
 **/.DS_Store
+
+# local estate build/run artefacts
+/loadlib/
+/work/
+/datasets/

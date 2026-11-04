@@ -1,0 +1,14 @@
+DSNRUN: DSN ATTACHED, RUNNING COBTUPDT
+OPEN FILE OK
+PROCESSING   A07Chargeback                                        
+ADDING RECORD
+RECORD INSERTED SUCCESSFULLY
+PROCESSING   U01Purchase - card present                           
+UPDATING RECORD
+RECORD UPDATED SUCCESSFULLY
+PROCESSING   *  skip                                              
+IGNORING COMMENTED LINE
+PROCESSING   D02                                                  
+DELETING RECORD
+RECORD DELETED SUCCESSFULLY
+DSNRUN: COMMIT AT END OF TASK

@@ -1,1 +1,11 @@
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+This repository is derived from the AWS Mainframe Modernization CardDemo
+application (https://github.com/aws-samples/aws-mainframe-modernization-carddemo),
+Apache License 2.0.
+
+Additions for the local modernization lab (Docker estate, local JCL runner,
+parity tooling under tools/, fixtures/, docs/, the PL/I member app/pli/CBFEECAL.pli
+and the programs CBFEEDRV and CBTRNDYN) are synthetic and carry the same
+Apache License 2.0 headers.  The local JCL/VSAM/GDG runner design follows the
+pattern of the cardDemo-env harness used in earlier Cognition partner workshops.

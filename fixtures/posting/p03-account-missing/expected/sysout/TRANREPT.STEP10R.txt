@@ -1,0 +1,6 @@
+START OF EXECUTION OF PROGRAM CBTRN03C
+Reporting from 2022-01-01 to 2022-07-06
+0000000000000002010001POS TERM  Valid purchase                                                                                      0000000200{100000002Nordlicht Buchhandel                              Hamburg                                           20095     40000000000010012022-07-04-09.15.00.0000002022-07-05-10.00.00.000000                    
+TRAN-AMT 00000002000+
+WS-PAGE-TOTAL00000002000+
+END OF EXECUTION OF PROGRAM CBTRN03C

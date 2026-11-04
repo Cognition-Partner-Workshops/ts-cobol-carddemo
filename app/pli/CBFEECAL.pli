@@ -1,0 +1,89 @@
+ /*****************************************************************/
+ /* CBFEECAL - LATE-FEE CALCULATION (PL/I)                        */
+ /*                                                               */
+ /* Called by CBFEEDRV (COBOL) once per delinquent account with   */
+ /* a FEE_REQ area.  Returns the late fee to charge in FEE_AMT    */
+ /* and a return code in FEE_RC:                                  */
+ /*     0 = fee calculated      4 = fee waived (GOLD, small bal.) */
+ /*     8 = calculation error (ON condition raised)               */
+ /*                                                               */
+ /* Rules (synthetic, for the modernization lab):                 */
+ /*   fee = cycle balance * FEE_PCT (2.5 %), truncated to cents   */
+ /*   floor 5.00, cap 35.00                                       */
+ /*   GOLD accounts with a cycle balance below 100.00 pay nothing */
+ /*   average daily balance = cycle balance / days in cycle       */
+ /*   (0 days raises ZERODIVIDE -> RC 8, fee 0)                   */
+ /*                                                               */
+ /* No PL/I compiler is available off-host: this member is        */
+ /* analysis-only (see docs/LEGACY-LANGUAGES.md for worked        */
+ /* examples a converter can be checked against).                 */
+ /*****************************************************************/
+ CBFEECAL: PROCEDURE (REQ_PTR) OPTIONS (MAIN REENTRANT);
+
+   DCL REQ_PTR            POINTER;
+
+   /* request/response area owned by the COBOL caller (CBFEEDRV) */
+   DCL 1 FEE_REQ          BASED (REQ_PTR),
+         2 FEE_ACCT_ID    CHAR (11),
+         2 FEE_GROUP_ID   CHAR (10),
+         2 FEE_CYCLE_BAL  DECIMAL FIXED (12,2),
+         2 FEE_LATE_DAYS  FIXED BINARY (15),
+         2 FEE_CYCLE_DAYS FIXED BINARY (15),
+         2 FEE_AMT        DECIMAL FIXED (9,2),
+         2 FEE_AVG_DAILY  DECIMAL FIXED (12,2),
+         2 FEE_RC         FIXED BINARY (15);
+
+   DCL FEE_PCT            DECIMAL FIXED (5,3) INIT (2.500);
+   DCL FEE_FLOOR          DECIMAL FIXED (9,2) INIT (5.00);
+   DCL FEE_CAP            DECIMAL FIXED (9,2) INIT (35.00);
+   DCL WAIVE_BELOW        DECIMAL FIXED (9,2) INIT (100.00);
+   DCL WORK_FEE           DECIMAL FIXED (15,5);
+
+   ON ZERODIVIDE BEGIN;
+      PUT SKIP LIST ('CBFEECAL: ZERODIVIDE FOR ACCOUNT ', FEE_ACCT_ID);
+      FEE_AMT       = 0;
+      FEE_AVG_DAILY = 0;
+      FEE_RC        = 8;
+      GO TO FEE_EXIT;
+   END;
+
+   ON SIZE BEGIN;
+      PUT SKIP LIST ('CBFEECAL: SIZE CONDITION FOR ACCOUNT ', FEE_ACCT_ID);
+      FEE_AMT = 0;
+      FEE_RC  = 8;
+      GO TO FEE_EXIT;
+   END;
+
+   ON ERROR BEGIN;
+      PUT SKIP LIST ('CBFEECAL: UNEXPECTED ERROR, ACCOUNT ', FEE_ACCT_ID);
+      FEE_RC = 8;
+      GO TO FEE_EXIT;
+   END;
+
+   (SIZE):
+   BEGIN;
+      FEE_RC  = 0;
+      FEE_AMT = 0;
+
+      /* average daily balance - raises ZERODIVIDE when 0 days */
+      FEE_AVG_DAILY = FEE_CYCLE_BAL / FEE_CYCLE_DAYS;
+
+      IF FEE_LATE_DAYS <= 0 THEN
+         GO TO FEE_EXIT;                     /* nothing overdue */
+
+      IF FEE_GROUP_ID = 'GOLD' & FEE_CYCLE_BAL < WAIVE_BELOW THEN DO;
+         FEE_RC = 4;                         /* waived */
+         GO TO FEE_EXIT;
+      END;
+
+      WORK_FEE = FEE_CYCLE_BAL * FEE_PCT / 100;
+      FEE_AMT  = WORK_FEE;                   /* assignment truncates to cents */
+
+      IF FEE_AMT < FEE_FLOOR THEN FEE_AMT = FEE_FLOOR;
+      IF FEE_AMT > FEE_CAP   THEN FEE_AMT = FEE_CAP;
+   END;
+
+ FEE_EXIT:
+   RETURN;
+
+ END CBFEECAL;

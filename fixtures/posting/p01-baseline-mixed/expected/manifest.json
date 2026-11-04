@@ -1,0 +1,27 @@
+{
+ "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS": {
+  "layout": "CVACT01Y",
+  "lrecl": 300,
+  "records": 2
+ },
+ "AWS.M2.CARDDEMO.DALYREJS.G0001V00": {
+  "layout": "REJTRAN",
+  "lrecl": 430,
+  "records": 0
+ },
+ "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS": {
+  "layout": "CVTRA01Y",
+  "lrecl": 50,
+  "records": 4
+ },
+ "AWS.M2.CARDDEMO.TRANREPT.G0001V00": {
+  "layout": "text",
+  "lrecl": 133,
+  "records": 13
+ },
+ "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS": {
+  "layout": "CVTRA05Y",
+  "lrecl": 350,
+  "records": 4
+ }
+}

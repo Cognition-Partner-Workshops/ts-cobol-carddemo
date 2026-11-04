@@ -1,0 +1,4 @@
+-- ad-hoc fix requested by operations
+UPDATE TRANSACTION_TYPE
+   SET TR_DESCRIPTION = 'Payment - SEPA'
+ WHERE TR_TYPE = '02'

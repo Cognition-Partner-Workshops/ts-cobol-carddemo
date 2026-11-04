@@ -1,0 +1,4 @@
+A07Chargeback
+U01Purchase - card present
+*  skip
+D02

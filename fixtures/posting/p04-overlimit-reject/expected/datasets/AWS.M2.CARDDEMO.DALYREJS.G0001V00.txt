@@ -1,0 +1,1 @@
+0000000000000002010001POS TERM  Purchase over the limit                                                                             0000001000{100000002Nordlicht Buchhandel                              Hamburg                                           20095     40000000000010032022-07-04-09.15.00.000000                                              0102OVERLIMIT TRANSACTION

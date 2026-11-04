@@ -1,0 +1,115 @@
+{
+  "posting": {
+    "description": "Daily transaction posting: POSTTRAN (CBTRN02C) then TRANREPT (REPRO, SORT, CBTRN03C)",
+    "clock": "2022-07-05 10:00:00.00",
+    "inputs": {
+      "AWS.M2.CARDDEMO.ACCTDATA.PS": 300,
+      "AWS.M2.CARDDEMO.CARDXREF.PS": 50,
+      "AWS.M2.CARDDEMO.TCATBALF.PS": 50,
+      "AWS.M2.CARDDEMO.DISCGRP.PS": 50,
+      "AWS.M2.CARDDEMO.TRANTYPE.PS": 60,
+      "AWS.M2.CARDDEMO.TRANCATG.PS": 60,
+      "AWS.M2.CARDDEMO.DALYTRAN.PS.INIT": 350,
+      "AWS.M2.CARDDEMO.DALYTRAN.PS": 350,
+      "AWS.M2.CARDDEMO.DATEPARM": 80
+    },
+    "setup": [
+      "DEFGDGB",
+      "DALYREJS",
+      "ACCTFILE",
+      "XREFFILE",
+      "TCATBALF",
+      "DISCGRP",
+      "TRANTYPE",
+      "TRANCATG",
+      "TRANFILE"
+    ],
+    "jobs": [
+      "POSTTRAN",
+      "TRANREPT"
+    ],
+    "outputs": {
+      "AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS": "CVTRA05Y",
+      "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS": "CVACT01Y",
+      "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS": "CVTRA01Y",
+      "AWS.M2.CARDDEMO.DALYREJS(0)": "REJTRAN",
+      "AWS.M2.CARDDEMO.TRANREPT(0)": "text"
+    },
+    "sysout": [
+      "POSTTRAN/STEP15",
+      "TRANREPT/STEP10R"
+    ]
+  },
+  "interest": {
+    "description": "Monthly interest calculation: INTCALC (CBACT04C)",
+    "clock": "2022-07-05 10:00:00.00",
+    "inputs": {
+      "AWS.M2.CARDDEMO.ACCTDATA.PS": 300,
+      "AWS.M2.CARDDEMO.CARDXREF.PS": 50,
+      "AWS.M2.CARDDEMO.TCATBALF.PS": 50,
+      "AWS.M2.CARDDEMO.DISCGRP.PS": 50
+    },
+    "setup": [
+      "DEFGDGB",
+      "ACCTFILE",
+      "XREFFILE",
+      "TCATBALF",
+      "DISCGRP"
+    ],
+    "jobs": [
+      "INTCALC"
+    ],
+    "outputs": {
+      "AWS.M2.CARDDEMO.SYSTRAN(0)": "CVTRA05Y",
+      "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS": "CVACT01Y"
+    },
+    "sysout": [
+      "INTCALC/STEP15"
+    ]
+  },
+  "trantype-update": {
+    "description": "Db2 transaction-type maintenance: MNTTRDB2 (IKJEFT01 -> COBTUPDT) against PostgreSQL",
+    "clock": "2022-07-05 10:00:00.00",
+    "inputs": {
+      "INPFILE": 53
+    },
+    "setup": [],
+    "jobs": [
+      "MNTTRDB2"
+    ],
+    "outputs": {},
+    "sysout": [
+      "MNTTRDB2/STEP1"
+    ],
+    "database": {
+      "seed": "db/seed.sql",
+      "tables": {
+        "carddemo.transaction_type": "tr_type",
+        "carddemo.transaction_type_categor": "trc_type_code, trc_type_category"
+      }
+    }
+  },
+  "trantype-dynamic": {
+    "description": "Db2 ad-hoc maintenance: MNTTRDYN (IKJEFT01 -> CBTRNDYN: dynamic SQL PREPARE/EXECUTE, then dynamic CALL of COBTUPDT) against PostgreSQL",
+    "clock": "2022-07-05 10:00:00.00",
+    "inputs": {
+      "DYNSQL": 80,
+      "INPFILE": 53
+    },
+    "setup": [],
+    "jobs": [
+      "MNTTRDYN"
+    ],
+    "outputs": {},
+    "sysout": [
+      "MNTTRDYN/STEP1"
+    ],
+    "database": {
+      "seed": "db/seed.sql",
+      "tables": {
+        "carddemo.transaction_type": "tr_type",
+        "carddemo.transaction_type_categor": "trc_type_code, trc_type_category"
+      }
+    }
+  }
+}

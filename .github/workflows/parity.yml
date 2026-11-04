@@ -1,0 +1,42 @@
+name: estate-parity
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build estate image and start services
+        run: make up
+
+      - name: Compile the estate (GnuCOBOL + Open COBOL ESQL)
+        run: make build
+
+      - name: Discovery graph is current
+        run: make chain-graph-check
+
+      - name: Golden-file parity for every chain and case
+        run: make parity
+
+      - name: Naive half-even reference fails only on the tie case
+        run: |
+          set +e
+          make parity-naive CASE=i02-tie-half-cent; tie=$?
+          make parity-naive CASE=i07-nontie-rounding; nontie=$?
+          set -e
+          test $tie -ne 0 || { echo "tie case unexpectedly passed"; exit 1; }
+          test $nontie -eq 0 || { echo "non-tie case unexpectedly failed"; exit 1; }
+
+      - name: Upload parity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-report
+          path: work/parity/*.md
+          if-no-files-found: ignore

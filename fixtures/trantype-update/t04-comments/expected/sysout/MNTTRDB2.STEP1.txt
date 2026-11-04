@@ -1,0 +1,10 @@
+DSNRUN: DSN ATTACHED, RUNNING COBTUPDT
+OPEN FILE OK
+PROCESSING   *  Nightly maintenance batch                         
+IGNORING COMMENTED LINE
+PROCESSING   A06Fee                                               
+ADDING RECORD
+RECORD INSERTED SUCCESSFULLY
+PROCESSING   *  end                                               
+IGNORING COMMENTED LINE
+DSNRUN: COMMIT AT END OF TASK

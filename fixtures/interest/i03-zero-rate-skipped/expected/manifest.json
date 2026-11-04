@@ -1,0 +1,12 @@
+{
+ "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS": {
+  "layout": "CVACT01Y",
+  "lrecl": 300,
+  "records": 1
+ },
+ "AWS.M2.CARDDEMO.SYSTRAN.G0001V00": {
+  "layout": "CVTRA05Y",
+  "lrecl": 350,
+  "records": 1
+ }
+}

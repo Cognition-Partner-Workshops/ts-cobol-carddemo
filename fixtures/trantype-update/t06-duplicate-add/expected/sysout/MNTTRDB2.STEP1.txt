@@ -1,0 +1,6 @@
+DSNRUN: DSN ATTACHED, RUNNING COBTUPDT
+OPEN FILE OK
+PROCESSING   A01Purchase                                          
+ADDING RECORD
+Error accessing: TRANSACTION_TYPE table. SQLCODE: -403                          
+DSNRUN: COMMIT AT END OF TASK

@@ -11,6 +11,11 @@
 #   make chain-graph / chain-graph-check       regenerate / verify docs/chain-graph.md
 #   make reset                  drop datasets, loadlib, work/ and the database volume
 
+# run the estate container as the invoking user so bind-mounted loadlib/, work/,
+# datasets/ stay writable on any host (CI runners are not uid 1000)
+export UID := $(shell id -u)
+export GID := $(shell id -g)
+
 COMPOSE ?= docker compose
 EXEC     = $(COMPOSE) exec -T estate
 CHAINS  ?= posting interest trantype-update trantype-dynamic

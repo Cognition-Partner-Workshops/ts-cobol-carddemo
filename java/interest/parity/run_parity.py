@@ -95,7 +95,7 @@ def main() -> int:
                 total += 1
                 matched += ok
                 key = key_of(meta["layout"], (exp[i] if i < len(exp) else act[i]))
-                rows.append(f"| {case} | {dsn.split('.')[2]} | {i + 1} | `{key}` | `{e[0][:16]}` | `{a[0][:16]}` "
+                rows.append(f"| {case} | {dsn.split('.')[3]} | {i + 1} | `{key}` | `{e[0][:16]}` | `{a[0][:16]}` "
                             f"| `{e[1][:12]}` | `{a[1][:12]}` | {'MATCH' if ok else 'MISMATCH'} |")
         verdict = not diffs and matched == total
         failed |= not verdict

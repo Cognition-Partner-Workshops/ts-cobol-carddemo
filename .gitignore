@@ -11,3 +11,6 @@ batch-app/markers/*
 /loadlib/
 /work/
 /datasets/
+
+# java port build output
+/java/interest/target/

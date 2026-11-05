@@ -8,6 +8,7 @@
 #   make record [CHAIN=..] [CASE=..]   (re)write golden outputs under fixtures/*/*/expected
 #   make parity [CHAIN=..] [CASE=..]   rerun chains and compare field by field -> work/parity/report.md
 #   make parity-naive CASE=i02-tie-half-cent   half-even Python reference vs golden (fails on the tie)
+#   make parity-java [CASE=..]  build java/interest (CBACT04C port), unit tests, golden + characterization parity
 #   make chain-graph / chain-graph-check       regenerate / verify docs/chain-graph.md
 #   make reset                  drop datasets, loadlib, work/ and the database volume
 
@@ -23,7 +24,7 @@ CHAIN   ?=
 CASE    ?=
 PY       = python3
 
-.PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell
+.PHONY: up down build run record parity parity-naive java-interest parity-java chain-graph chain-graph-check reset baseline shell
 
 up:
 	$(COMPOSE) up -d --build --wait
@@ -73,6 +74,21 @@ parity-naive:
 	$(EXEC) $(PY) tools/parity/naive_ref.py interest $(CASE) --out work/parity/interest/$(CASE)/naive && \
 	$(EXEC) $(PY) tools/parity/compare.py interest $(CASE) --actual work/parity/interest/$(CASE)/naive --report work/parity/report-naive.md --label "naive half-even reference"; \
 	rc=$$?; echo "report: work/parity/report-naive.md"; exit $$rc
+
+# ------------------------------------------------------------ java port of CBACT04C
+# MVN_FLAGS lets a host point Maven at a mirror (e.g. MVN_FLAGS="-s work/m2-settings.xml")
+MVN_FLAGS ?=
+MVN       = mvn -B -q -Dmaven.repo.local=/estate/work/m2 $(MVN_FLAGS) -f java/interest/pom.xml
+JAVA_JAR  = java/interest/target/carddemo-interest.jar
+
+java-interest: up
+	$(EXEC) $(MVN) verify
+
+parity-java: java-interest
+	@mkdir -p work/parity; \
+	$(EXEC) $(PY) java/interest/parity/run_parity.py --jar $(JAVA_JAR) $(CASE) && \
+	$(EXEC) $(PY) java/interest/parity/run_parity.py --jar $(JAVA_JAR) --characterization \
+	  --report work/parity/report-java-characterization.md
 
 # ------------------------------------------------------------ discovery graph
 chain-graph:

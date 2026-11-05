@@ -25,5 +25,5 @@ CMD ["sleep", "infinity"]
 
 # JDKs for the live migration session (Java 17 / 21 targets); unused by the legacy chains
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends openjdk-17-jdk-headless openjdk-21-jdk-headless \
+    && apt-get install -y --no-install-recommends openjdk-17-jdk-headless openjdk-21-jdk-headless maven \
     && rm -rf /var/lib/apt/lists/*

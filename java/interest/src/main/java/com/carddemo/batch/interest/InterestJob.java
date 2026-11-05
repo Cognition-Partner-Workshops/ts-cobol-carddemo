@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Supplier;
 
 /**
  * INTCALC job driver: loads the PS inputs the way the interest chain's setup jobs do, runs
@@ -82,16 +83,26 @@ public final class InterestJob {
     /**
      * Runs the job on PS input lines keyed by DSN.
      *
-     * @param clock frozen clock {@code YYYY-MM-DD HH:MM:SS.hh} (like COB_CURRENT_DATE); null for now
+     * @param clock frozen clock {@code YYYY-MM-DD HH:MM:SS.hh} (like COB_CURRENT_DATE); null reads the
+     *              system clock for each transaction, as FUNCTION CURRENT-DATE does
      */
     public static Result run(Map<String, List<String>> psInputs, String parm, String clock) {
+        if (clock == null) {
+            return run(psInputs, parm, () -> db2Timestamp(null));
+        }
+        String frozen = db2Timestamp(clock);
+        return run(psInputs, parm, () -> frozen);
+    }
+
+    /** Runs the job, reading a DB2-format timestamp from {@code timestamps} for each transaction written. */
+    static Result run(Map<String, List<String>> psInputs, String parm, Supplier<String> timestamps) {
         IndexedFile accounts = IndexedFile.load(records(psInputs, ACCTDATA_PS, Cbact04c.ACCT_LRECL), 0, 11);
         IndexedFile xref = IndexedFile.load(records(psInputs, CARDXREF_PS, Cbact04c.XREF_LRECL), 0, 16)
             .withAlternateIndex(25, 11);
         IndexedFile tcatbal = IndexedFile.load(records(psInputs, TCATBALF_PS, Cbact04c.TCATBAL_LRECL), 0, 17);
         IndexedFile discgrp = IndexedFile.load(records(psInputs, DISCGRP_PS, Cbact04c.DISCGRP_LRECL), 0, 16);
 
-        Cbact04c program = new Cbact04c(tcatbal, xref, discgrp, accounts, parm, db2Timestamp(clock));
+        Cbact04c program = new Cbact04c(tcatbal, xref, discgrp, accounts, parm, timestamps);
         int rc = program.run();
 
         StringBuilder sysout = new StringBuilder();

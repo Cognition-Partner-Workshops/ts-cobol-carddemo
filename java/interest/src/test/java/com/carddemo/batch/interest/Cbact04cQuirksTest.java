@@ -1,9 +1,11 @@
 package com.carddemo.batch.interest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -109,6 +111,22 @@ class Cbact04cQuirksTest {
         assertEquals("0000000015{000000000", second.substring(132, 152));
         assertEquals(card(2001), second.substring(262, 278));
         assertEquals("2022-07-05-10.00.00.0000002022-07-05-10.00.00.000000", second.substring(278));
+    }
+
+    @Test
+    void liveClockIsReadOncePerTransactionForBothTimestamps() {
+        // 1300-B-WRITE-TX performs Z-GET-DB2-FORMAT-TIMESTAMP (FUNCTION CURRENT-DATE) for every
+        // transaction and moves the one value to TRAN-ORIG-TS and TRAN-PROC-TS.
+        Iterator<String> clock = List.of("2022-07-05-10.00.00.000000", "2022-07-05-10.00.02.000000").iterator();
+        InterestJob.Result r = InterestJob.run(Map.of(
+                InterestJob.ACCTDATA_PS, List.of(acct(2001, "100.00", "GOLD", "0", "0")),
+                InterestJob.CARDXREF_PS, List.of(xref(2001)),
+                InterestJob.TCATBALF_PS, List.of(tcat(2001, "01", 1, "1000.00"), tcat(2001, "01", 2, "100.00")),
+                InterestJob.DISCGRP_PS, DISCGRP),
+            "2022071800", clock::next);
+        assertEquals("2022-07-05-10.00.00.0000002022-07-05-10.00.00.000000", r.transactions().get(0).substring(278));
+        assertEquals("2022-07-05-10.00.02.0000002022-07-05-10.00.02.000000", r.transactions().get(1).substring(278));
+        assertFalse(clock.hasNext());
     }
 
     @Test

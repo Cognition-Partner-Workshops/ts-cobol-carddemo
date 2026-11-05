@@ -11,13 +11,16 @@ For every case it runs the Java job on the case inputs, then
     python3 java/interest/parity/run_parity.py --jar java/interest/target/carddemo-interest.jar \
         [--characterization] [--report work/parity/report-java.md] [case ...]
 
-Exit code 1 when any case has a field difference or a row-hash mismatch.
+Each case's output directory is emptied before the Java run, and the Java exit code must
+equal the case's expected INTCALC STEP15 return code.  Exit code 1 when any case has a field
+difference, a row-hash mismatch or an unexpected return code.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -53,6 +56,7 @@ def key_of(layout: str, record: bytes) -> str:
 
 
 def run_java(jar: Path, case_dir: Path, out: Path) -> int:
+    shutil.rmtree(out, ignore_errors=True)
     cmd = ["java", "-jar", str(jar), "--input", str(case_dir / "input"), "--out", str(out),
            "--parm", PARM, "--clock", CLOCK]
     return subprocess.run(cmd, check=False).returncode
@@ -81,6 +85,7 @@ def main() -> int:
         case_dir = fixtures / CHAIN / case
         out = args.out / CHAIN / case
         java_rc = run_java(args.jar, case_dir, out)
+        expected_rc = json.loads((case_dir / "expected" / "rc.json").read_text())["INTCALC"]["steps"]["STEP15"]
         diffs, checked = compare.compare_case(CHAIN, case, out)
         compare.write_report(detail, CHAIN, case, "java", diffs, checked)
         manifest = json.loads((case_dir / "expected" / "manifest.json").read_text())
@@ -97,12 +102,13 @@ def main() -> int:
                 key = key_of(meta["layout"], (exp[i] if i < len(exp) else act[i]))
                 rows.append(f"| {case} | {dsn.split('.')[3]} | {i + 1} | `{key}` | `{e[0][:16]}` | `{a[0][:16]}` "
                             f"| `{e[1][:12]}` | `{a[1][:12]}` | {'MATCH' if ok else 'MISMATCH'} |")
-        verdict = not diffs and matched == total
+        verdict = not diffs and matched == total and java_rc == expected_rc
         failed |= not verdict
         summary.append(f"| {case} | {'PASS' if verdict else 'FAIL'} | {len(diffs)} | {checked['records']} | "
                        f"{checked['fields']} | {matched}/{total} | {checked['sysout']} | {java_rc} |")
         print(f"{CHAIN}/{case} [java]: {'PASS' if verdict else 'FAIL'} "
-              f"({len(diffs)} field differences, {matched}/{total} row hashes match, RC {java_rc})")
+              f"({len(diffs)} field differences, {matched}/{total} row hashes match, "
+              f"RC {java_rc}, expected {expected_rc})")
 
     title = "characterization cases (recorded from CBACT04C under GnuCOBOL)" if args.characterization \
         else "golden interest cases"

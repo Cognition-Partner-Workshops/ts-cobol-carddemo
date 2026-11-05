@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Java port of CBACT04C (INTCALC STEP15): monthly interest per transaction-category balance.
@@ -43,7 +44,7 @@ final class Cbact04c {
     private final IndexedFile discgrp;
     private final IndexedFile accounts;
     private final String parmDate;
-    private final String db2Timestamp;
+    private final Supplier<String> db2Timestamp;
 
     private final List<String> sysout = new ArrayList<>();
     private final List<String> stderr = new ArrayList<>();
@@ -58,7 +59,7 @@ final class Cbact04c {
     private String disGroupRecord;
 
     Cbact04c(IndexedFile tcatbal, IndexedFile xref, IndexedFile discgrp, IndexedFile accounts,
-             String parm, String db2Timestamp) {
+             String parm, Supplier<String> db2Timestamp) {
         this.tcatbal = tcatbal;
         this.xref = xref;
         this.discgrp = discgrp;
@@ -163,6 +164,8 @@ final class Cbact04c {
     /** 1300-B-WRITE-TX. */
     private void writeTransaction(BigDecimal monthlyInt) {
         tranIdSuffix = (tranIdSuffix + 1) % 1_000_000;
+        // Z-GET-DB2-FORMAT-TIMESTAMP runs per transaction, once for both ORIG-TS and PROC-TS.
+        String timestamp = db2Timestamp.get();
         String record = parmDate + String.format("%06d", tranIdSuffix)
             + "01"
             + "0005"
@@ -174,8 +177,8 @@ final class Cbact04c {
             + Text.pad("", 50)
             + Text.pad("", 10)
             + xrefRecord.substring(0, 16)
-            + db2Timestamp
-            + db2Timestamp
+            + timestamp
+            + timestamp
             + Text.pad("", 20);
         transactions.add(record);
     }

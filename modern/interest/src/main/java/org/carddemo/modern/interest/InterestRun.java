@@ -26,6 +26,11 @@ final class InterestRun {
         return balance.multiply(rate).divide(BigDecimal.valueOf(1200), 2, RoundingMode.DOWN);
     }
 
+    static BigDecimal accumulateInterest(BigDecimal total, BigDecimal amount) {
+        // WS-TOTAL-INT PIC S9(09)V99 drops high-order digits on each ADD, without ON SIZE ERROR.
+        return total.add(amount).setScale(2, RoundingMode.DOWN).remainder(BigDecimal.TEN.pow(9));
+    }
+
     int run(Path input, Path output, String parmDate) throws IOException {
         if (parmDate == null || !parmDate.matches("[0-9]{10}")) throw new IllegalArgumentException("PARM-DATE must have ten digits");
         for (var table : InterestTables.ALL) jdbc.update("DELETE FROM " + table.name());
@@ -71,7 +76,7 @@ final class InterestRun {
                 if (rate == null) throw new MissingRecord("ERROR READING DEFAULT DISCLOSURE GROUP");
                 if (rate.signum() == 0) continue;
                 var amount = monthlyInterest(number(balance, "TRAN-CAT-BAL"), rate);
-                totalInterest = totalInterest.add(amount);
+                totalInterest = accumulateInterest(totalInterest, amount);
                 var transaction = new LinkedHashMap<String, Object>();
                 transaction.put("TRAN-ID", parmDate + String.format("%06d", transactions.size() + 1));
                 transaction.put("TRAN-TYPE-CD", "01");

@@ -232,4 +232,47 @@ class InterestRunTest {
         }
         assertTrue(Files.readString(output.resolve("rc.json")).contains("\"maxrc\": 0"));
     }
+
+    @Test
+    void accumulatorDropsHighOrderDigitsAfterEachAdditionWithTheOriginalSign() {
+        var amount = new BigDecimal("600000000.00");
+        var positive = InterestRun.accumulateInterest(InterestRun.accumulateInterest(BigDecimal.ZERO, amount), amount);
+        assertEquals(new BigDecimal("200000000.00"), positive);
+        var negative = InterestRun.accumulateInterest(InterestRun.accumulateInterest(BigDecimal.ZERO, amount.negate()), amount.negate());
+        assertEquals(new BigDecimal("-200000000.00"), negative);
+        assertEquals(new BigDecimal("-200000100.01"), InterestRun.accumulateInterest(negative, new BigDecimal("-100.01")));
+        assertEquals(new BigDecimal("-400000000.00"), InterestRun.accumulateInterest(positive, amount.negate()));
+    }
+
+    @Test
+    void breakPostsTheOverflowedAccumulatorButKeepsFullMonthlyTransactions() throws Exception {
+        var balancePath = input.resolve("AWS.M2.CARDDEMO.TCATBALF.PS.txt");
+        var balances = new java.util.ArrayList<>(Files.readAllLines(balancePath));
+        var first = Layouts.CATEGORY_BALANCE.decode(balances.getFirst());
+        first.put("TRAN-CAT-BAL", new BigDecimal("600000000.00"));
+        balances.set(0, Layouts.CATEGORY_BALANCE.encodeLine(first));
+        first.put("TRANCAT-CD", new BigDecimal("2"));
+        balances.add(Layouts.CATEGORY_BALANCE.encodeLine(first));
+        Files.write(balancePath, balances);
+        var account = Layouts.ACCOUNT.decode(Files.readAllLines(input.resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt")).getFirst());
+        var ratePath = input.resolve("AWS.M2.CARDDEMO.DISCGRP.PS.txt");
+        var rates = new java.util.ArrayList<>(Files.readAllLines(ratePath));
+        for (int category = 1; category <= 2; category++) {
+            var rate = new java.util.LinkedHashMap<String, Object>();
+            rate.put("DIS-ACCT-GROUP-ID", account.get("ACCT-GROUP-ID"));
+            rate.put("DIS-TRAN-TYPE-CD", "01");
+            rate.put("DIS-TRAN-CAT-CD", new BigDecimal(category));
+            rate.put("DIS-INT-RATE", new BigDecimal("1200.00"));
+            String encoded = Layouts.DISCLOSURE.encodeLine(rate);
+            rates.removeIf(line -> line.startsWith(encoded.substring(0, 16)));
+            rates.add(encoded);
+        }
+        Files.write(ratePath, rates);
+        var output = temporary.resolve("output");
+        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(new BigDecimal("200001000.00"), InterestTables.ACCOUNT.read(jdbc).getFirst().get("ACCT-CURR-BAL"));
+        var transactions = InterestTables.TRANSACTION.read(jdbc);
+        assertEquals(new BigDecimal("600000000.00"), transactions.get(0).get("TRAN-AMT"));
+        assertEquals(new BigDecimal("600000000.00"), transactions.get(1).get("TRAN-AMT"));
+    }
 }

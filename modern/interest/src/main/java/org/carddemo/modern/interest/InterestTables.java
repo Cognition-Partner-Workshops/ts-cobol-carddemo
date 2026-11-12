@@ -27,6 +27,14 @@ record InterestTables(String name, RecordLayout layout, List<String> keys) {
     private static String column(String field) { return field.toLowerCase(java.util.Locale.ROOT).replace('-', '_'); }
 
     void store(JdbcTemplate jdbc, Map<String, Object> record) {
+        write(jdbc, record, true);
+    }
+
+    boolean insert(JdbcTemplate jdbc, Map<String, Object> record) {
+        return write(jdbc, record, false) != 0;
+    }
+
+    private int write(JdbcTemplate jdbc, Map<String, Object> record, boolean replace) {
         var fields = fields();
         var columns = fields.stream().map(field -> column(field.name())).collect(Collectors.joining(", "));
         var parameters = fields.stream().map(field -> "?").collect(Collectors.joining(", "));
@@ -35,8 +43,8 @@ record InterestTables(String name, RecordLayout layout, List<String> keys) {
                 .map(field -> column(field.name()) + " = EXCLUDED." + column(field.name())).collect(Collectors.joining(", "));
         var values = fields.stream().map(field -> record.getOrDefault(field.name(),
                 field.kind() == Field.Kind.TEXT ? "" : BigDecimal.ZERO)).toArray();
-        jdbc.update("INSERT INTO " + name + " (" + columns + ") VALUES (" + parameters + ") ON CONFLICT ("
-                + keyColumns + ") DO UPDATE SET " + updates, values);
+        return jdbc.update("INSERT INTO " + name + " (" + columns + ") VALUES (" + parameters + ") ON CONFLICT ("
+                + keyColumns + ") " + (replace ? "DO UPDATE SET " + updates : "DO NOTHING"), values);
     }
 
     List<Map<String, Object>> read(JdbcTemplate jdbc) {

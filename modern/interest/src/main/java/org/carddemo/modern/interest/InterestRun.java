@@ -16,7 +16,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 final class InterestRun {
     private static final String PREFIX = "AWS.M2.CARDDEMO.";
-    private static final String STAMP = "2022-07-05-10.00.00.000000";
     private final JdbcTemplate jdbc;
 
     InterestRun(JdbcTemplate jdbc) { this.jdbc = jdbc; }
@@ -31,7 +30,9 @@ final class InterestRun {
         return total.add(amount).setScale(2, RoundingMode.DOWN).remainder(BigDecimal.TEN.pow(9));
     }
 
-    int run(Path input, Path output, String parmDate) throws IOException {
+    int run(Path input, Path output, String parmDate, String clock) throws IOException {
+        var stamp = java.time.LocalDateTime.parse(clock, java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS"))
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SS")) + "0000";
         if (parmDate == null || !parmDate.matches("[0-9]{10}")) throw new IllegalArgumentException("PARM-DATE must have ten digits");
         for (var table : InterestTables.ALL) jdbc.update("DELETE FROM " + table.name());
         load(input, output, "ACCTDATA", "ACCTFILE", InterestTables.ACCOUNT);
@@ -85,8 +86,8 @@ final class InterestRun {
                 transaction.put("TRAN-DESC", "Int. for a/c " + String.format("%011d", accountId.longValueExact()));
                 transaction.put("TRAN-AMT", amount);
                 transaction.put("TRAN-CARD-NUM", cards.get(accountId));
-                transaction.put("TRAN-ORIG-TS", STAMP);
-                transaction.put("TRAN-PROC-TS", STAMP);
+                transaction.put("TRAN-ORIG-TS", stamp);
+                transaction.put("TRAN-PROC-TS", stamp);
                 transactions.add(transaction);
             }
             sysout.add("END OF EXECUTION OF PROGRAM CBACT04C");

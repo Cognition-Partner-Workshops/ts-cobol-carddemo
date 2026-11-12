@@ -34,7 +34,9 @@ keys match the indexed source keys; card account-id is a nonunique alternate
 index. Category balances are read in compound-key order. FILLER stays in the
 codec, not the relational schema. Tests audit database numeric types too.
 
-The third command-line argument becomes the `parmDate` Batch job parameter.
+The third command-line argument becomes the `parmDate` Batch job parameter;
+the fourth is the execution `clock`, including hundredths, used for both
+transaction timestamps. `INTEREST_CLOCK` defaults from chains.json.
 The harness defaults `INTEREST_PARM_DATE` from INTCALC.jcl's `PARM` value;
 override it explicitly when needed. Java has no literal transaction prefix.
 
@@ -68,7 +70,7 @@ make up
 docker compose exec -T java mvn -Dmaven.repo.local=/estate/work/maven -f modern/pom.xml test
 docker compose exec -T java mvn -Dmaven.repo.local=/estate/work/maven -f modern/pom.xml package -DskipTests
 parm=$(sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCALC.jcl)
-docker compose exec -T java java -jar modern/interest/target/interest-0.1.0.jar fixtures/interest/i01-baseline/input work/run/interest/i01-baseline "$parm"
+docker compose exec -T java java -jar modern/interest/target/interest-0.1.0.jar fixtures/interest/i01-baseline/input work/run/interest/i01-baseline "$parm" "2022-07-05 10:00:00.00"
 make parity CHAIN=interest
 make parity CHAIN=interest TARGET=legacy
 ```

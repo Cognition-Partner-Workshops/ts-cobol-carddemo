@@ -28,7 +28,7 @@ network, a local Maven settings file can be supplied as a BuildKit secret:
 Settings and credentials must remain outside the checkout and image.
 
 Parameters are derived from the existing JCL/chain metadata by Make:
-`POSTING_CLOCK`, `POSTING_SORT_START`, `POSTING_SORT_END`, `INTEREST_PARM_DATE`,
+`POSTING_CLOCK`, `POSTING_SORT_START`, `POSTING_SORT_END`, `INTEREST_PARM_DATE`, `INTEREST_CLOCK`,
 `TRANTYPE_CLOCK`, and `TRANTYPE_DYNAMIC_PARMS` can be overridden explicitly.
 
 The integration combines the still-open interest (#158), trantype-update

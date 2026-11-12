@@ -30,6 +30,7 @@ POSTING_SORT_START ?= $(shell sed -n "s/.*PARM-START-DATE,C'\([^']*\)'.*/\1/p" a
 POSTING_SORT_END ?= $(shell sed -n "s/.*PARM-END-DATE,C'\([^']*\)'.*/\1/p" app/jcl/TRANREPT.jcl)
 TRANTYPE_CLOCK ?= $(shell python3 -c 'import json; print(json.load(open("tools/runjcl/chains.json"))["trantype-update"]["clock"])')
 INTEREST_PARM_DATE ?= $(shell sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCALC.jcl)
+INTEREST_CLOCK ?= $(shell python3 -c 'import json; print(json.load(open("tools/runjcl/chains.json"))["interest"]["clock"])')
 TRANTYPE_DYNAMIC_PARMS ?= $(shell sed -n "s/.*PARMS('\([^']*\)').*/\1/p" app/app-transaction-type-db2/jcl/MNTTRDYN.jcl)
 PY       = python3
 
@@ -87,7 +88,7 @@ parity: parity-prepare
 	  cases="$(if $(CASE),$(CASE),$$(ls fixtures/$$chain))"; \
 	  for case in $$cases; do \
 	    if [ "$$target" = java ]; then \
-	      set --; if [ "$$chain" = posting ]; then set -- "$(POSTING_CLOCK)" "$(POSTING_SORT_START)" "$(POSTING_SORT_END)"; elif [ "$$chain" = interest ]; then set -- "$(INTEREST_PARM_DATE)"; elif [ "$$chain" = trantype-update ]; then set -- "$(TRANTYPE_CLOCK)"; elif [ "$$chain" = trantype-dynamic ]; then set -- "$(TRANTYPE_DYNAMIC_PARMS)"; fi; \
+	      set --; if [ "$$chain" = posting ]; then set -- "$(POSTING_CLOCK)" "$(POSTING_SORT_START)" "$(POSTING_SORT_END)"; elif [ "$$chain" = interest ]; then set -- "$(INTEREST_PARM_DATE)" "$(INTEREST_CLOCK)"; elif [ "$$chain" = trantype-update ]; then set -- "$(TRANTYPE_CLOCK)"; elif [ "$$chain" = trantype-dynamic ]; then set -- "$(TRANTYPE_DYNAMIC_PARMS)"; fi; \
 	      $(JAVA_RUN) $$chain fixtures/$$chain/$$case/input work/parity/$$chain/$$case/actual "$$@" > work/parity/run-$$chain-$$case.log 2>&1 || { cat work/parity/run-$$chain-$$case.log; fail=1; continue; }; \
 	      label="Java container"; \
 	    else \

@@ -18,7 +18,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @SpringBootApplication
 public class InterestApplication {
     public static void main(String[] args) throws Exception {
-        if (args.length != 3) throw new IllegalArgumentException("usage: interest <input-directory> <output-directory> <parm-date>");
+        if (args.length != 4) throw new IllegalArgumentException("usage: interest <input-directory> <output-directory> <parm-date> <clock>");
         try (var connection = DriverManager.getConnection("jdbc:postgresql://db:5432/carddemo", "carddemo", "carddemo");
                 var statement = connection.createStatement()) {
             statement.execute("CREATE SCHEMA IF NOT EXISTS interest");
@@ -28,6 +28,7 @@ public class InterestApplication {
                     new JobParametersBuilder().addString("input", Path.of(args[0]).toAbsolutePath().toString())
                             .addString("output", Path.of(args[1]).toAbsolutePath().toString())
                             .addString("parmDate", args[2])
+                            .addString("clock", args[3])
                             .addLong("run", System.nanoTime()).toJobParameters());
             if (execution.getStatus().isUnsuccessful() || execution.getExitStatus().getExitCode().equals("FAILED")) {
                 throw new IllegalStateException("INTCALC failed: " + execution.getExitStatus());
@@ -40,7 +41,7 @@ public class InterestApplication {
         var step = new StepBuilder("STEP15", repository).tasklet((contribution, chunk) -> {
             var parameters = contribution.getStepExecution().getJobParameters();
             int rc = new InterestRun(jdbc).run(Path.of(parameters.getString("input")),
-                    Path.of(parameters.getString("output")), parameters.getString("parmDate"));
+                    Path.of(parameters.getString("output")), parameters.getString("parmDate"), parameters.getString("clock"));
             if (rc != 0) contribution.setExitStatus(new org.springframework.batch.core.ExitStatus("FAILED", "CBACT04C RC=" + rc));
             return RepeatStatus.FINISHED;
         }, transactionManager).build();

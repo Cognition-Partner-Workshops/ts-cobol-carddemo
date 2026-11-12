@@ -15,6 +15,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 class InterestRunTest {
+    @Test void bothTransactionTimestampsUseTheSuppliedClockIncludingHundredths() throws Exception {
+        var output = temporary.resolve("clock");
+        assertEquals(0, run.run(input, output, parmDate, "2026-11-13 09:08:07.65"));
+        var records = Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt"));
+        assertTrue(!records.isEmpty());
+        for (String line : records) {
+            var row = Layouts.TRAN.decode(line);
+            assertEquals("2026-11-13-09.08.07.650000", row.get("TRAN-ORIG-TS"));
+            assertEquals("2026-11-13-09.08.07.650000", row.get("TRAN-PROC-TS"));
+        }
+    }
     @TempDir Path temporary;
     private InterestRun run;
     private Path input;
@@ -53,7 +64,7 @@ class InterestRunTest {
     void tieFixtureTruncatesTransactionAndPostedBalance() throws Exception {
         useFixture("i02-tie-half-cent");
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         var transaction = Layouts.TRAN.decode(Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")).getFirst());
         assertEquals(new BigDecimal("12.35"), transaction.get("TRAN-AMT"));
         var account = Layouts.ACCOUNT.decode(Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt")).getFirst());
@@ -64,7 +75,7 @@ class InterestRunTest {
     void negativeFixtureStillWritesNegativeThreeDollars() throws Exception {
         useFixture("i06-negative-balance");
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         var transaction = Layouts.TRAN.decode(Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")).getFirst());
         assertEquals(new BigDecimal("-3.00"), transaction.get("TRAN-AMT"));
     }
@@ -78,7 +89,7 @@ class InterestRunTest {
     @Test
     void baselineUpdatesOnlyTheAccountClosedByABreakAndExportsAllTransactions() throws Exception {
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         var accounts = Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt"));
         assertEquals(2, accounts.size());
         for (var line : accounts) {
@@ -105,7 +116,7 @@ class InterestRunTest {
     void singleAccountWithMultipleCategoriesIsNeverRewritten() throws Exception {
         useFixture("i05-multi-category");
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         var account = Layouts.ACCOUNT.decode(Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt")).getFirst());
         assertEquals(new BigDecimal("1500.00"), account.get("ACCT-CURR-BAL"));
         assertEquals(new BigDecimal("1500.00"), account.get("ACCT-CURR-CYC-CREDIT"));
@@ -129,7 +140,7 @@ class InterestRunTest {
         balance.put("TRANCAT-ACCT-ID", new BigDecimal("2008"));
         Files.writeString(balanceFile, Layouts.CATEGORY_BALANCE.encodeLine(balance) + "\n", java.nio.file.StandardOpenOption.APPEND);
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         var accounts = Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt"));
         var posted = Layouts.ACCOUNT.decode(accounts.getFirst());
         assertEquals(new BigDecimal("1517.50"), posted.get("ACCT-CURR-BAL"));
@@ -144,7 +155,7 @@ class InterestRunTest {
     void emptyBalancesProduceNoTransactions() throws Exception {
         Files.writeString(input.resolve("AWS.M2.CARDDEMO.TCATBALF.PS.txt"), "");
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         assertEquals(0, Files.size(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")));
         assertEquals(2, Files.readAllLines(output.resolve("sysout/INTCALC.STEP15.txt")).size());
     }
@@ -185,7 +196,7 @@ class InterestRunTest {
     void omittedBalancesFileEndsNormallyWithoutTransactions() throws Exception {
         Files.delete(input.resolve("AWS.M2.CARDDEMO.TCATBALF.PS.txt"));
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         assertEquals(0, Files.size(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")));
         assertEquals(2, Files.readAllLines(output.resolve("sysout/INTCALC.STEP15.txt")).size());
     }
@@ -198,7 +209,7 @@ class InterestRunTest {
 
     private void assertAbend(java.util.List<String> diagnostic) throws Exception {
         var output = temporary.resolve("output");
-        assertEquals(12, run.run(input, output, parmDate));
+        assertEquals(12, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         var sysout = Files.readAllLines(output.resolve("sysout/INTCALC.STEP15.txt"));
         assertEquals(diagnostic, sysout.subList(2, 2 + diagnostic.size()));
         assertEquals(java.util.List.of("FILE STATUS IS: NNNN0023", "ABENDING PROGRAM",
@@ -213,11 +224,11 @@ class InterestRunTest {
     @Test
     void transactionPrefixComesFromTheJobParameter() throws Exception {
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, "2026020100"));
+        assertEquals(0, run.run(input, output, "2026020100", "2022-07-05 10:00:00.00"));
         var transaction = Layouts.TRAN.decode(Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")).getFirst());
         assertEquals("2026020100000001", transaction.get("TRAN-ID"));
         assertEquals("2026020100000001", jdbc.queryForObject("SELECT tran_id FROM \"transaction\" ORDER BY tran_id LIMIT 1", String.class));
-        assertThrows(IllegalArgumentException.class, () -> run.run(input, output, "invalid"));
+        assertThrows(IllegalArgumentException.class, () -> run.run(input, output, "invalid", "2022-07-05 10:00:00.00"));
     }
 
     @Test
@@ -249,7 +260,7 @@ class InterestRunTest {
             Files.writeString(path, layout.encodeLine(duplicate) + "\n", java.nio.file.StandardOpenOption.APPEND);
         }
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         assertEquals(new BigDecimal("1010.00"), InterestTables.ACCOUNT.read(jdbc).getFirst().get("ACCT-CURR-BAL"));
         assertEquals(Layouts.XREF.decode(Files.readAllLines(input.resolve("AWS.M2.CARDDEMO.CARDXREF.PS.txt")).getFirst()).get("XREF-CUST-ID"),
                 InterestTables.XREF.read(jdbc).getFirst().get("XREF-CUST-ID"));
@@ -297,7 +308,7 @@ class InterestRunTest {
         }
         Files.write(ratePath, rates);
         var output = temporary.resolve("output");
-        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, run.run(input, output, parmDate, "2022-07-05 10:00:00.00"));
         assertEquals(new BigDecimal("200001000.00"), InterestTables.ACCOUNT.read(jdbc).getFirst().get("ACCT-CURR-BAL"));
         var transactions = InterestTables.TRANSACTION.read(jdbc);
         assertEquals(new BigDecimal("600000000.00"), transactions.get(0).get("TRAN-AMT"));

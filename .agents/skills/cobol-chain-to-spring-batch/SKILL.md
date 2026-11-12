@@ -50,8 +50,19 @@ clock). Learned on `interest` (INTCALC -> CBACT04C, `modern/interest`).
 * **Control-break flush at EOF.** Check whether the program really writes the last group; CBACT04C
   does not (C2C-06: the EOF branch is unreachable, so the last account is never rewritten). Keep it,
   name it in code and PR, and ask the business whether to fix it after cutover.
-* The codec skips FILLER (decoded as nothing, encoded as spaces): fine while fixture fillers are
-  blank, wrong for a REWRITE of a record with non-blank FILLER.
+* **FILLER must survive a REWRITE.** `compare.py` skips FILLER, so parity cannot catch this. Load
+  with `layout.decode(line, true)` and carry `FILLER@<offset>` into `encode`, because SYSOUT DISPLAYs
+  of whole records include it.
+* **An abend does not roll back.** CEE3ABD's stand-in ends with STOP RUN, so every REWRITE/WRITE
+  before the abend (including the control-break REWRITE on the abending record) stays. Do not let a
+  Spring Batch chunk rollback undo them: catch the abend in the processor, write that item, then
+  `setTerminateOnly()`. SYSOUT then ends with `U+0000000999`, a blank line and libcob's `implicit
+  CLOSE` warnings, in reverse OPEN order.
+* **Duplicate keys in a REPRO into a KSDS:** the first record wins and the rest are skipped
+  (IDC3302I, still RC 0). Use `INSERT ... ON CONFLICT DO NOTHING`, not a failing primary key.
+* Probe edge cases that have no golden by copying a fixture's `input/` to a scratch case, running
+  `record.py` (legacy) and the candidate into `work/`, and diffing with `diff -r`. Remove the scratch
+  case afterwards; goldens change only via `make record` on request.
 * Zoned overpunch is EBCDIC style (`{`/`A`-`I` positive, `}`/`J`-`R` negative); unsigned PIC 9
   fields have no overpunch.
 * The estate image's Maven is 3.6.3: pin `maven-compiler-plugin` >= 3.6 so `release 21` works.

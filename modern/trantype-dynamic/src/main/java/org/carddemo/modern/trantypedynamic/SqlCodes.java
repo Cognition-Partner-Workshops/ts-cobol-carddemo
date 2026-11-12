@@ -9,18 +9,25 @@ final class SqlCodes {
     private SqlCodes() {
     }
 
-    /** The Db2 SQLCODE for a PostgreSQL SQLSTATE. */
+    /**
+     * The SQLCODE the estate's precompiler (Open COBOL ESQL 1.4, dblib/ocpgsql.c) sets for a failed
+     * PostgreSQL statement: a handful of SQLSTATEs have their own code, everything else is -400.
+     */
     static int of(SQLException e) {
-        var state = e.getSQLState() == null ? "" : e.getSQLState();
+        var state = e.getSQLState();
+        if (state == null) return -9999;
         return switch (state) {
-            case "42703" -> -206;
-            case "42P01" -> -204;
-            case "42601" -> -104;
-            case "23505" -> -803;
-            case "23503" -> -530;
-            case "23502" -> -407;
-            case "22001" -> -404;
-            default -> -901;
+            case "08001" -> -402;
+            case "08003" -> -220;
+            case "08007" -> -401;
+            case "21000" -> -404;
+            case "23505" -> -403;
+            case "25001" -> -603;
+            case "25P01" -> -604;
+            case "34000" -> -602;
+            case "42804" -> -204;
+            case "42P03" -> -605;
+            default -> -400;
         };
     }
 

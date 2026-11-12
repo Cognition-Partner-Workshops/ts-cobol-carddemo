@@ -49,8 +49,10 @@ OCDB_PGSetResultStatus (dblib/ocpgsql.c). PGRES_COMMAND_OK always sets SQLCODE
 not zero-row UPDATE/DELETE. COBTUPDT 10032/10033 consequently display success.
 This preserved legacy defect is proven for DELETE by t05-delete-missing.
 The same missing-UPDATE path is covered by a unit test but is **unproven by
-fixture parity** (no corresponding fixture). The owner should decide whether
-to retain this false-success behavior at cutover; parity retains it by default.
+fixture parity** (no corresponding fixture). Business decision: keep this behaviour for cutover,
+exactly as the COBOL does it. An UPDATE or DELETE on a missing key reports success
+with RC 0. The post-cutover fix is tracked in KAN-250
+(https://partner-workshops-2.atlassian.net/browse/KAN-250).
 
 An isolated legacy DSNRUN/COBTUPDT run with a missing U99 record also produced
 RECORD UPDATED SUCCESSFULLY and RC 0, confirming the missing-UPDATE path

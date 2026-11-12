@@ -73,11 +73,26 @@ final class PostingReport {
                 detail.put("TRAN-REPORT-SOURCE", text(row, "TRAN-SOURCE")); detail.put("TRAN-REPORT-AMT", edited(amount, false));
                 write(PostingLayouts.DETAIL.encode(detail));
             }
-            if (rc == 0 && lineCount != 0) { pageTotal(); write(padded("Grand Total", 11) + ".".repeat(86) + edited(grand, true)); }
+            if (rc == 0 && lineCount != 0) {
+                // CBTRN03C's EOF READ leaves TRAN-RECORD intact. The ELSE displays and adds
+                // that final amount a second time. Preserve this report defect (p01-p06).
+                var last = rows.getLast();
+                var lastDate = text(last, "TRAN-PROC-TS").substring(0, 10);
+                if (lastDate.compareTo(start) >= 0 && lastDate.compareTo(end) <= 0) {
+                    var amount = number(last, "TRAN-AMT");
+                    sysout.add("TRAN-AMT " + display(amount));
+                    sysout.add("WS-PAGE-TOTAL" + display(page));
+                    page = page.add(amount); account = account.add(amount);
+                    pageTotal(); write(padded("Grand Total", 11) + ".".repeat(86) + edited(grand, true));
+                }
+            }
         }
         if (rc == 0) sysout.add("END OF EXECUTION OF PROGRAM CBTRN03C");
         Files.write(output.resolve("datasets/" + PREFIX + "TRANREPT.G0001V00.txt"), report, StandardCharsets.ISO_8859_1);
         Files.write(output.resolve("sysout/TRANREPT.STEP10R.txt"), sysout, StandardCharsets.ISO_8859_1);
         return rc;
+    }
+    static String display(BigDecimal amount) {
+        return String.format(Locale.ROOT, "%011d", amount.abs().movePointRight(2).toBigInteger()) + (amount.signum() < 0 ? "-" : "+");
     }
 }

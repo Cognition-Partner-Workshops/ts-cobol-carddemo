@@ -41,6 +41,7 @@ public class Cbact04cProcessor implements ItemProcessor<TranCatBal, Step15Output
     private CardXref xref;
     private int tranIdSuffix;
     private int written;
+    private boolean abended;
 
     public Cbact04cProcessor(InterestRepository repository, Sysout sysout, String parmDate,
                              Clock clock) {
@@ -52,30 +53,39 @@ public class Cbact04cProcessor implements ItemProcessor<TranCatBal, Step15Output
 
     @Override
     public Step15Output process(TranCatBal tcat) {
+        if (abended) {
+            return null;
+        }
         sysout.display(Layouts.TRAN_CAT_BAL.encode(tcat.fields()));
         Account rewrite = null;
-        if (lastAcctNum == null || tcat.acctId() != lastAcctNum) {
-            if (!firstTime) {
-                rewrite = updateAccount();
-            } else {
-                firstTime = false;
+        try {
+            if (lastAcctNum == null || tcat.acctId() != lastAcctNum) {
+                if (!firstTime) {
+                    rewrite = updateAccount();
+                } else {
+                    firstTime = false;
+                }
+                totalInt = BigDecimal.ZERO.setScale(2);
+                lastAcctNum = tcat.acctId();
+                account = readAccount(tcat.acctId());
+                xref = readXref(tcat.acctId());
             }
-            totalInt = BigDecimal.ZERO.setScale(2);
-            lastAcctNum = tcat.acctId();
-            account = readAccount(tcat.acctId());
-            xref = readXref(tcat.acctId());
+            DisclosureGroup group = interestRate(account.groupId(), tcat.typeCd(), tcat.catCd());
+            Transaction transaction = null;
+            int seq = 0;
+            if (group.intRate().signum() != 0) {
+                BigDecimal monthlyInt = CobolNumeric.store(
+                        InterestCalculator.monthlyInterest(tcat.balance(), group.intRate()), 9, 2);
+                totalInt = CobolNumeric.store(totalInt.add(monthlyInt), 9, 2);
+                transaction = interestTransaction(monthlyInt);
+                seq = ++written;
+            }
+            return new Step15Output(rewrite, transaction, seq, false);
+        } catch (CobolAbend e) {
+            // the REWRITE of the previous account already happened when CBACT04C abends on this record
+            abended = true;
+            return new Step15Output(rewrite, null, 0, true);
         }
-        DisclosureGroup group = interestRate(account.groupId(), tcat.typeCd(), tcat.catCd());
-        Transaction transaction = null;
-        int seq = 0;
-        if (group.intRate().signum() != 0) {
-            BigDecimal monthlyInt = CobolNumeric.store(
-                    InterestCalculator.monthlyInterest(tcat.balance(), group.intRate()), 9, 2);
-            totalInt = CobolNumeric.store(totalInt.add(monthlyInt), 9, 2);
-            transaction = interestTransaction(monthlyInt);
-            seq = ++written;
-        }
-        return new Step15Output(rewrite, transaction, seq);
     }
 
     /** 1050-UPDATE-ACCOUNT. */
@@ -132,7 +142,14 @@ public class Cbact04cProcessor implements ItemProcessor<TranCatBal, Step15Output
         sysout.display(message);
         sysout.display("FILE STATUS IS: NNNN0023");
         sysout.display("ABENDING PROGRAM");
-        sysout.display("CEE3ABD: USER ABEND U+000000999");
+        sysout.display("CEE3ABD: USER ABEND U+0000000999");
+        // STOP RUN in the CEE3ABD stand-in: libcob closes the open files and warns on stderr, which the
+        // JCL runner appends to SYSOUT after a blank line (reverse order of the OPENs in 0000-0400)
+        sysout.display("");
+        for (String fd : new String[] {"TRANSACT-FILE ('TRANSACT')", "ACCOUNT-FILE ('ACCTFILE')",
+                "DISCGRP-FILE ('DISCGRP')", "XREF-FILE ('XREFFILE')", "TCATBAL-FILE ('TCATBALF')"}) {
+            sysout.display("libcob: warning: implicit CLOSE of " + fd);
+        }
         return new CobolAbend(message);
     }
 

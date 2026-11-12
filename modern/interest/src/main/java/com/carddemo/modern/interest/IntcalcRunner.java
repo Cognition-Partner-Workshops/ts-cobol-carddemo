@@ -27,15 +27,17 @@ public class IntcalcRunner implements ApplicationRunner {
     private final InterestRepository repository;
     private final Sysout sysout;
     private final Estate estate;
+    private final Step15Abend abend;
 
     public IntcalcRunner(InputLoader loader, JobLauncher launcher, Job intcalcJob, InterestRepository repository,
-                         Sysout sysout, Estate estate) {
+                         Sysout sysout, Estate estate, Step15Abend abend) {
         this.loader = loader;
         this.launcher = launcher;
         this.intcalcJob = intcalcJob;
         this.repository = repository;
         this.sysout = sysout;
         this.estate = estate;
+        this.abend = abend;
     }
 
     @Override
@@ -47,6 +49,7 @@ public class IntcalcRunner implements ApplicationRunner {
         Path out = Path.of(args.getOptionValues("out").get(0));
 
         sysout.clear();
+        abend.clear();
         Map<String, Integer> steps = new LinkedHashMap<>(loader.load(caseDir));
         JobExecution execution = launcher.run(intcalcJob, new JobParametersBuilder()
                 .addString("case", caseDir.toString())
@@ -64,7 +67,10 @@ public class IntcalcRunner implements ApplicationRunner {
                 repository.accountsInKeyOrder().stream().map(Records.Account::fields).toList());
     }
 
-    private static int returnCode(JobExecution execution) {
+    private int returnCode(JobExecution execution) {
+        if (abend.abended()) {
+            return CobolAbend.RETURN_CODE;
+        }
         if (execution.getStatus() == BatchStatus.COMPLETED) {
             return 0;
         }

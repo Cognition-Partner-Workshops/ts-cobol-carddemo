@@ -30,13 +30,13 @@ public class IntcalcJobConfig {
     @Bean
     public Step step15(JobRepository jobRepository, PlatformTransactionManager tx,
                        JdbcCursorItemReader<TranCatBal> tcatbalfReader, Cbact04cProcessor processor,
-                       InterestRepository repository, Sysout sysout,
+                       InterestRepository repository, Sysout sysout, Step15Abend abend,
                        @Value("${interest.chunk-size}") int chunkSize) {
         return new StepBuilder("STEP15", jobRepository)
                 .<TranCatBal, Step15Output>chunk(chunkSize, tx)
                 .reader(tcatbalfReader)
                 .processor(processor)
-                .writer(new Step15Writer(repository))
+                .writer(new Step15Writer(repository, abend))
                 .listener(new StepExecutionListener() {
                     @Override
                     public void beforeStep(StepExecution stepExecution) {
@@ -45,7 +45,7 @@ public class IntcalcJobConfig {
 
                     @Override
                     public ExitStatus afterStep(StepExecution stepExecution) {
-                        if (stepExecution.getFailureExceptions().isEmpty()) {
+                        if (!abend.abended() && stepExecution.getFailureExceptions().isEmpty()) {
                             sysout.display("END OF EXECUTION OF PROGRAM CBACT04C");
                         }
                         return stepExecution.getExitStatus();

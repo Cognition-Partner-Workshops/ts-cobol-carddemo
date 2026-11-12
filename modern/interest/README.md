@@ -5,9 +5,17 @@ imported indexed datasets and generated transactions; Spring Batch stores job
 metadata there too. The loader and exporter use the shared record codec.
 Only synthetic fixture data is supported. Runs are serialized by the harness.
 
-This first port deliberately uses BigDecimal HALF_EVEN monthly interest and
-updates every account, including the last one. It has not yet been corrected
-against parity findings. No expected files are read by the application.
+No expected files are read by the application.
+
+## Intentional legacy defects
+
+- **Monthly interest truncation** (`i02-tie-half-cent`): CBACT04C's
+  `COMPUTE WS-MONTHLY-INT` has no `ROUNDED`. Its `PIC S9(09)V99` receiver
+  truncates toward zero to cents before adding to `WS-TOTAL-INT` and writing
+  `TRAN-AMT`. BigDecimal uses `RoundingMode.DOWN` at that same point; the
+  transaction is 12.35, not 12.36. `i06-negative-balance` still writes -3.00.
+
+The final-account rewrite behaviour is not yet corrected against parity.
 
 ```
 make up

@@ -22,7 +22,8 @@ final class InterestRun {
     InterestRun(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
     static BigDecimal monthlyInterest(BigDecimal balance, BigDecimal rate) {
-        return balance.multiply(rate).divide(BigDecimal.valueOf(1200), 2, RoundingMode.HALF_EVEN);
+        // Legacy truncation defect: COMPUTE into WS-MONTHLY-INT PIC S9(09)V99 has no ROUNDED.
+        return balance.multiply(rate).divide(BigDecimal.valueOf(1200), 2, RoundingMode.DOWN);
     }
 
     void run(Path input, Path output) throws IOException {

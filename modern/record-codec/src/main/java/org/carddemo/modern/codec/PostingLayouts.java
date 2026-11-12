@@ -20,5 +20,5 @@ public final class PostingLayouts {
             filler(28, 1), text("TRAN-REPORT-TYPE-CD", 29, 2), text("TYPE-SEPARATOR", 31, 1),
             text("TRAN-REPORT-TYPE-DESC", 32, 15), filler(47, 1), zoned("TRAN-REPORT-CAT-CD", 48, 4, 0, false),
             text("CATEGORY-SEPARATOR", 52, 1), text("TRAN-REPORT-CAT-DESC", 53, 29), filler(82, 1),
-            text("TRAN-REPORT-SOURCE", 83, 10), filler(93, 4), text("TRAN-REPORT-AMT", 97, 14), filler(111, 2)));
+            text("TRAN-REPORT-SOURCE", 83, 10), filler(93, 4), text("TRAN-REPORT-AMT", 97, 15), filler(112, 2)));
 }

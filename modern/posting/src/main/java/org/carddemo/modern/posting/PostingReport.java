@@ -23,7 +23,8 @@ final class PostingReport {
         String digits = String.format(Locale.US, "%,.2f", value.abs());
         if (value.signum() == 0) digits = ".00";
         String sign = value.signum() < 0 ? "-" : plus ? "+" : "";
-        return " ".repeat(Math.max(0, 14 - sign.length() - digits.length())) + sign + digits;
+        // CVTRA07Y: -ZZZ,ZZZ,ZZZ.ZZ / +ZZZ,ZZZ,ZZZ.ZZ has a fixed sign, width 15.
+        return padded(sign, 1) + " ".repeat(Math.max(0, 14 - digits.length())) + digits;
     }
     private void write(String line) { report.add(PostingLayouts.REPORT.encodeLine(Map.of("FD-REPTFILE-REC", line))); lineCount++; }
     private void headers(String start, String end) {

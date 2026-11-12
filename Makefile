@@ -25,6 +25,7 @@ TARGET  ?=
 MAVEN_ARGS ?=
 TRANTYPE_CLOCK ?= $(shell python3 -c 'import json; print(json.load(open("tools/runjcl/chains.json"))["trantype-update"]["clock"])')
 INTEREST_PARM_DATE ?= $(shell sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCALC.jcl)
+TRANTYPE_DYNAMIC_PARMS ?= $(shell sed -n "s/.*PARMS('\([^']*\)').*/\1/p" app/app-transaction-type-db2/jcl/MNTTRDYN.jcl)
 PY       = python3
 
 .PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell
@@ -68,7 +69,7 @@ parity:
 	  cases="$(if $(CASE),$(CASE),$$(ls fixtures/$$chain))"; \
 	  for case in $$cases; do \
 	    if [ "$$target" = java ]; then \
-	      set --; if [ "$$chain" = interest ]; then set -- "$(INTEREST_PARM_DATE)"; elif [ "$$chain" = trantype-update ]; then set -- "$(TRANTYPE_CLOCK)"; fi; \
+	      set --; if [ "$$chain" = interest ]; then set -- "$(INTEREST_PARM_DATE)"; elif [ "$$chain" = trantype-update ]; then set -- "$(TRANTYPE_CLOCK)"; elif [ "$$chain" = trantype-dynamic ]; then set -- $(TRANTYPE_DYNAMIC_PARMS); fi; \
 	      $(COMPOSE) exec -T java java -jar modern/$$chain/target/$$chain-0.1.0.jar fixtures/$$chain/$$case/input work/parity/$$chain/$$case/actual "$$@" > work/parity/run-$$chain-$$case.log 2>&1 || { cat work/parity/run-$$chain-$$case.log; fail=1; continue; }; \
 	      label=java; \
 	    else \

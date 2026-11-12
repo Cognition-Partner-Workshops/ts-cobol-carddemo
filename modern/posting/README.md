@@ -18,6 +18,17 @@ with `--case=<fixture directory> --out=<recording directory>
 The fixture runner recreates the posting data for each run; it is not a
 production, concurrent, or restartable processing service.
 
+Batch metadata persists across candidate invocations and is shared with
+interest in the database user's default schema (`carddemo` in the estate).
+Neither application's loader resets the `BATCH_*` tables or sequences.
+`spring.batch.jdbc.initialize-schema=always` is safe here: Spring Boot 3.3.5's
+`BatchDataSourceScriptDatabaseInitializer.getSettings` explicitly enables
+continue-on-error for the Batch schema script. Existing-table/sequence DDL
+errors are ignored, while job metadata continues accumulating. This is
+separate from `spring.sql.init`, which initializes the application's
+idempotent business schema. Full default parity and consecutive posting-jar
+launches after interest verify reuse of the same persistent metadata tables.
+
 ## Design
 
 * `InputLoader` recreates setup REPROs, preserving the first duplicate key.

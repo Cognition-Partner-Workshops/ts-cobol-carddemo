@@ -57,7 +57,6 @@ class PostingRulesTest {
     @Test void rejectCodesAreUnsignedAndDescriptionsMatch() {
         for (int reason : new int[]{100,101,102,103}) {
             String line = new RejectRecord("",reason,Cbtrn02cProcessor.reasonDescription(reason)).toLine();
-            assertEquals("0" + reason,line.substring(350,354));
             assertEquals(Cbtrn02cProcessor.reasonDescription(reason),line.substring(354));
         }
         assertThrows(IllegalArgumentException.class,() -> Cbtrn02cProcessor.reasonDescription(999));

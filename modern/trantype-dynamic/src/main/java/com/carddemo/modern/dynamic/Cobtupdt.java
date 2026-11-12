@@ -15,7 +15,7 @@ public class Cobtupdt implements ItemProcessor<Map<String, Object>, Map<String, 
 
     @Override
     public Map<String, Object> process(Map<String, Object> record) {
-        unit.sysout.add("PROCESSING   " + record.get("TYPE") + record.get("NUMBER") + record.get("DESC"));
+        unit.sysout.add("PROCESSING   " + record.get("INPUT-REC-TYPE") + record.get("INPUT-REC-NUMBER") + record.get("INPUT-REC-DESC"));
         return record;
     }
 
@@ -24,7 +24,7 @@ public class Cobtupdt implements ItemProcessor<Map<String, Object>, Map<String, 
      * Successful ocesql CALLs reset RETURN-CODE, including an earlier invalid-type RC 4.
      */
     void write(Map<String, Object> record) throws Exception {
-        String type = record.get("TYPE").toString();
+        String type = record.get("INPUT-REC-TYPE").toString();
         if ("*".equals(type)) {
             unit.sysout.add("IGNORING COMMENTED LINE");
             return;
@@ -47,13 +47,13 @@ public class Cobtupdt implements ItemProcessor<Map<String, Object>, Map<String, 
         };
         try (var statement = unit.connection.prepareStatement(sql)) {
             if ("A".equals(type)) {
-                statement.setString(1, record.get("NUMBER").toString());
-                statement.setString(2, record.get("DESC").toString());
+                statement.setString(1, record.get("INPUT-REC-NUMBER").toString());
+                statement.setString(2, record.get("INPUT-REC-DESC").toString());
             } else if ("U".equals(type)) {
-                statement.setString(1, record.get("DESC").toString());
-                statement.setString(2, record.get("NUMBER").toString());
+                statement.setString(1, record.get("INPUT-REC-DESC").toString());
+                statement.setString(2, record.get("INPUT-REC-NUMBER").toString());
             } else {
-                statement.setString(1, record.get("NUMBER").toString());
+                statement.setString(1, record.get("INPUT-REC-NUMBER").toString());
             }
             statement.executeUpdate();
             unit.rc = 0;

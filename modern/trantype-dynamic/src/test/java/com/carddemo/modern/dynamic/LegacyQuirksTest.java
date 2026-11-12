@@ -34,7 +34,7 @@ class LegacyQuirksTest {
         var statement = mock(PreparedStatement.class);
         when(unit.connection.prepareStatement(anyString())).thenReturn(statement);
         when(statement.executeUpdate()).thenReturn(1);
-        var record = Layouts.TRANTYPE_INPUT.decode("A04Authorization");
+        var record = Layouts.TRAN_TYPE_MAINT.decode("A04Authorization");
         new Cobtupdt(unit).write(record);
         verify(statement).setString(2, "Authorization" + " ".repeat(37));
         assertEquals(List.of("ADDING RECORD", "RECORD INSERTED SUCCESSFULLY"), unit.sysout);
@@ -45,7 +45,7 @@ class LegacyQuirksTest {
         RunUnit unit = unit();
         unit.rc = 8;
         when(unit.connection.prepareStatement(anyString())).thenThrow(new SQLException("aborted", "25P02"));
-        new Cobtupdt(unit).write(Layouts.TRANTYPE_INPUT.decode("U01Purchase"));
+        new Cobtupdt(unit).write(Layouts.TRAN_TYPE_MAINT.decode("U01Purchase"));
         assertEquals(4, unit.rc);
         assertEquals(RunUnit.pad("Error accessing: TRANSACTION_TYPE table. SQLCODE: -400", 80),
                 unit.sysout.getLast());
@@ -57,8 +57,8 @@ class LegacyQuirksTest {
         var statement = mock(PreparedStatement.class);
         when(unit.connection.prepareStatement(anyString())).thenReturn(statement);
         var program = new Cobtupdt(unit);
-        program.write(Layouts.TRANTYPE_INPUT.decode("D99"));
-        program.write(Layouts.TRANTYPE_INPUT.decode("U99Missing"));
+        program.write(Layouts.TRAN_TYPE_MAINT.decode("D99"));
+        program.write(Layouts.TRAN_TYPE_MAINT.decode("U99Missing"));
         assertEquals(0, unit.rc);
         assertTrue(unit.sysout.contains("RECORD DELETED SUCCESSFULLY"));
         assertTrue(unit.sysout.contains("RECORD UPDATED SUCCESSFULLY"));
@@ -70,9 +70,9 @@ class LegacyQuirksTest {
         var statement = mock(PreparedStatement.class);
         when(unit.connection.prepareStatement(anyString())).thenReturn(statement);
         var program = new Cobtupdt(unit);
-        program.write(Layouts.TRANTYPE_INPUT.decode("X99Invalid"));
+        program.write(Layouts.TRAN_TYPE_MAINT.decode("X99Invalid"));
         assertEquals(4, unit.rc);
-        program.write(Layouts.TRANTYPE_INPUT.decode("U99Missing"));
+        program.write(Layouts.TRAN_TYPE_MAINT.decode("U99Missing"));
         assertEquals(0, unit.rc);
     }
 
@@ -80,8 +80,8 @@ class LegacyQuirksTest {
     void commentsAndInvalidTypesContinueQuirk() throws Exception {
         RunUnit unit = unit();
         var program = new Cobtupdt(unit);
-        program.write(Layouts.TRANTYPE_INPUT.decode("* comment"));
-        program.write(Layouts.TRANTYPE_INPUT.decode("Z"));
+        program.write(Layouts.TRAN_TYPE_MAINT.decode("* comment"));
+        program.write(Layouts.TRAN_TYPE_MAINT.decode("Z"));
         assertEquals(4, unit.rc);
         assertEquals(RunUnit.pad("ERROR: TYPE NOT VALID", 80), unit.sysout.getLast());
         verifyNoInteractions(unit.connection);

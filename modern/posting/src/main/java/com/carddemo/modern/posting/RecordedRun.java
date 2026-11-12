@@ -59,7 +59,7 @@ final class RecordedRun {
                 lines.isEmpty() ? "" : String.join("\n", lines) + "\n");
     }
 
-    void rawDataset(String dsn, String layout, int lrecl, List<String> records) {
+    void report(String dsn, String layout, int lrecl, List<String> records) {
         List<String> lines = records.stream().map(String::stripTrailing).toList();
         write(out.resolve("datasets").resolve(dsn + ".txt"), lines.isEmpty() ? "" : String.join("\n",lines) + "\n");
         Map<String, Object> meta = new TreeMap<>();

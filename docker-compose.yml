@@ -39,5 +39,25 @@ services:
       PGPASSWORD: carddemo
     command: ["sleep", "infinity"]
 
+  modern:
+    user: "${UID:-1000}:${GID:-1000}"
+    build:
+      context: .
+      dockerfile: modern/Dockerfile
+      args:
+        MAVEN_IMAGE: ${MODERN_MAVEN_IMAGE:-maven:3.9-eclipse-temurin-21}
+        JAVA_IMAGE: ${MODERN_JAVA_IMAGE:-eclipse-temurin:21-jre}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/estate
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: carddemo
+      PGUSER: carddemo
+      PGPASSWORD: carddemo
+
 volumes:
   carddemo-db:

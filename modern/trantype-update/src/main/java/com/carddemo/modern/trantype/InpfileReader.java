@@ -25,13 +25,11 @@ import org.springframework.batch.item.ItemStreamReader;
 public class InpfileReader implements ItemStreamReader<InputRecord> {
 
     private final Path dataset;
-    private final int lrecl;
     private final Sysout sysout;
     private Iterator<String> records;
 
-    public InpfileReader(Path dataset, int lrecl, Sysout sysout) {
+    public InpfileReader(Path dataset, Sysout sysout) {
         this.dataset = dataset;
-        this.lrecl = lrecl;
         this.sysout = sysout;
     }
 
@@ -41,7 +39,7 @@ public class InpfileReader implements ItemStreamReader<InputRecord> {
         try {
             if (Files.exists(dataset)) {
                 for (String line : splitlines(Files.readString(dataset, StandardCharsets.ISO_8859_1))) {
-                    fixed.add(line.length() >= lrecl ? line.substring(0, lrecl) : line + " ".repeat(lrecl - line.length()));
+                    fixed.add(line);
                 }
             }
         } catch (IOException e) {

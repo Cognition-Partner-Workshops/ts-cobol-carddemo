@@ -44,7 +44,7 @@ public class DynamicJob {
         }
         unit.sysout.add("OPEN FILE OK");
         Iterator<String> records = unit.read("INPFILE").iterator();
-        return () -> records.hasNext() ? Layouts.TRANTYPE_INPUT.decode(records.next()) : null;
+        return () -> records.hasNext() ? Layouts.TRAN_TYPE_MAINT.decode(records.next()) : null;
     }
 
     /** 1001-READ-NEXT-RECORDS and 2001-CLOSE-STOP: STOP RUN suppresses CBTRNDYN: END. */

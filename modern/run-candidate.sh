@@ -10,5 +10,6 @@ set -euo pipefail
 chain=$1 case=$2 out=$3
 root=$(cd "$(dirname "$0")/.." && pwd)
 jar="$root/modern/$chain/target/$chain.jar"
+if [ -n "${JAVA_JAR_DIR:-}" ]; then jar="$JAVA_JAR_DIR/$chain.jar"; fi
 [ -f "$jar" ] || { echo "no candidate jar $jar (run make modern-build)" >&2; exit 2; }
 exec java -jar "$jar" --estate.root="$root" --case="$root/fixtures/$chain/$case" --out="$out"

@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.carddemo.modern.codec.Layouts;
+import org.carddemo.modern.codec.RecordLayout;
+import org.carddemo.modern.codec.Field;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,7 +71,9 @@ public class InputLoader {
         Path p = dir.resolve("input").resolve(dsn + ".txt");
         if (!Files.exists(p)) return List.of();
         int length = estate.chain().get("inputs").get(dsn).asInt();
-        return Files.readAllLines(p, StandardCharsets.ISO_8859_1).stream().map(s -> Cbtrn03cProcessor.pad(s,length)).toList();
+        var raw = new RecordLayout(dsn, List.of(Field.text("RECORD", 0, length)));
+        return Files.readAllLines(p, StandardCharsets.ISO_8859_1).stream()
+                .map(s -> raw.encode(raw.decode(s))).toList();
     }
 
     String startDate() { return startDate; }

@@ -56,7 +56,7 @@ public class Mnttrdb2JobConfig {
     @Bean
     @StepScope
     public InpfileReader inpfileReader(@Value("#{jobParameters['case']}") String caseDir, Estate estate, Sysout sysout) {
-        return new InpfileReader(Path.of(caseDir).resolve("input").resolve(INPFILE + ".txt"), estate.lrecl(INPFILE), sysout);
+        return new InpfileReader(Path.of(caseDir).resolve("input").resolve(INPFILE + ".txt"), sysout);
     }
 
     @Bean

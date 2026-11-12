@@ -28,11 +28,14 @@ PY       = python3
 TARGET  ?= legacy java
 MVN_ARGS ?=
 MVN      = mvn -B -q -Dmaven.repo.local=/estate/work/m2 $(MVN_ARGS)
+JAVA_RUNNER ?= modern
+JAVA_EXEC = $(COMPOSE) exec -T $(JAVA_RUNNER)
+JAVA_BUILD = $(if $(filter modern,$(JAVA_RUNNER)),modern-image,modern-build)
 
-.PHONY: up down build run record parity parity-naive modern-build chain-graph chain-graph-check reset baseline shell
+.PHONY: up down build run record parity parity-naive modern-build modern-image chain-graph chain-graph-check reset baseline shell
 
 up:
-	$(COMPOSE) up -d --build --wait
+	$(COMPOSE) up -d --build --wait db estate
 
 down:
 	$(COMPOSE) down
@@ -65,7 +68,7 @@ parity:
 	@rm -f work/parity/report.md; mkdir -p work/parity; fail=0; \
 	chains="$(if $(CHAIN),$(CHAIN),$(CHAINS))"; \
 	java=""; case " $(TARGET) " in *" java "*) for chain in $$chains; do [ -f modern/$$chain/pom.xml ] && java="$$java $$chain"; done;; esac; \
-	if [ -n "$$java" ]; then $(MAKE) --no-print-directory modern-build || exit 1; fi; \
+	if [ -n "$$java" ]; then $(MAKE) --no-print-directory $(JAVA_BUILD) || exit 1; $(COMPOSE) up -d --wait estate $(JAVA_RUNNER) || exit 1; fi; \
 	for chain in $$chains; do \
 	  case " $(TARGET) " in *" java "*) case " $$java " in *" $$chain "*) ;; *) \
 	    echo "$$chain [java]: no candidate, modern/$$chain/pom.xml missing"; \
@@ -77,7 +80,7 @@ parity:
 	    $(EXEC) $(PY) tools/parity/compare.py $$chain $$case --actual work/parity/$$chain/$$case/actual --report work/parity/report.md || fail=1;; \
 	    esac; \
 	    case " $$java " in *" $$chain "*) \
-	    $(EXEC) modern/run-candidate.sh $$chain $$case work/parity/$$chain/$$case/java > work/parity/$$chain-$$case-java.log 2>&1 || { echo "$$chain/$$case [java]: candidate run failed, see work/parity/$$chain-$$case-java.log"; fail=1; continue; }; \
+	    $(JAVA_EXEC) modern/run-candidate.sh $$chain $$case work/parity/$$chain/$$case/java > work/parity/$$chain-$$case-java.log 2>&1 || { echo "$$chain/$$case [java]: candidate run failed, see work/parity/$$chain-$$case-java.log"; fail=1; continue; }; \
 	    $(EXEC) $(PY) tools/parity/compare.py $$chain $$case --actual work/parity/$$chain/$$case/java --report work/parity/report.md --label "java modern/$$chain" || fail=1;; \
 	    esac; \
 	  done; \
@@ -86,6 +89,9 @@ parity:
 
 modern-build: up
 	$(EXEC) $(MVN) -f modern/pom.xml verify
+
+modern-image:
+	$(COMPOSE) build modern
 
 parity-naive:
 	@test -n "$(CASE)" || { echo "usage: make parity-naive CASE=<interest case>"; exit 2; }

@@ -10,11 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import org.carddemo.modern.codec.Field;
+import org.carddemo.modern.codec.RecordLayout;
 import org.springframework.stereotype.Component;
 
 /** DSNRUN and DSNEXIT: one business connection, committed only at end of task. */
 @Component
 public class RunUnit {
+    private static final RecordLayout SQL_LINE = new RecordLayout("DYNSQL",
+            List.of(Field.text("SQL", 0, 72)));
     Connection connection;
     Path caseDir;
     String program;
@@ -44,7 +48,7 @@ public class RunUnit {
     static String assemble(List<String> lines) {
         StringBuilder sql = new StringBuilder();
         for (String line : lines) {
-            if (!line.startsWith("--")) sql.append(pad(line, 72)).append(' ');
+            if (!line.startsWith("--")) sql.append(SQL_LINE.encode(SQL_LINE.decode(line))).append(' ');
         }
         return sql.substring(0, Math.min(800, sql.length()));
     }

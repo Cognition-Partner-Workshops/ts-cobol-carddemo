@@ -17,10 +17,6 @@ public final class Layouts {
     private Layouts() {
     }
 
-    /** COBTUPDT WS-INPUT-REC, LRECL 53. */
-    public static final RecordLayout TRANTYPE_INPUT = new RecordLayout("WS-INPUT-REC",
-            List.of(text("TYPE", 0, 1), text("NUMBER", 1, 2), text("DESC", 3, 50)));
-
     /** CVTRA06Y DALYTRAN-RECORD, RECLN 350. */
     public static final RecordLayout DALYTRAN = new RecordLayout("CVTRA06Y", transaction("DALYTRAN"));
 

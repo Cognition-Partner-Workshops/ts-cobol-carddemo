@@ -3,6 +3,7 @@ package com.carddemo.modern.posting;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.TreeMap;
+import org.carddemo.modern.codec.Layouts;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -49,10 +50,14 @@ public class PostingRunner implements ApplicationRunner {
         run.returnCodes("TRANREPT",output.reportRc,Map.of("PRC001",0,"STEP05R",0,"STEP10R",output.reportRc));
         run.sysout("POSTTRAN","STEP15",output.postingSysout);
         run.sysout("TRANREPT","STEP10R",output.reportSysout);
-        run.rawDataset(InputLoader.PREFIX + "TRANSACT.VSAM.KSDS","CVTRA05Y",350,repo.records("transaction_master","tran_id"));
-        run.rawDataset(InputLoader.PREFIX + "ACCTDATA.VSAM.KSDS","CVACT01Y",300,repo.records("account","acct_id"));
-        run.rawDataset(InputLoader.PREFIX + "TCATBALF.VSAM.KSDS","CVTRA01Y",50,repo.records("tran_cat_bal","acct_id,type_cd,cat_cd"));
-        run.rawDataset(InputLoader.PREFIX + "DALYREJS.G0001V00","REJTRAN",430,repo.records("reject","seq"));
-        run.rawDataset(InputLoader.PREFIX + "TRANREPT.G0001V00","text",133,output.report);
+        run.dataset(InputLoader.PREFIX + "TRANSACT.VSAM.KSDS", Layouts.TRAN,
+                repo.records("transaction_master","tran_id").stream().map(s -> Layouts.TRAN.decode(s, true)).toList());
+        run.dataset(InputLoader.PREFIX + "ACCTDATA.VSAM.KSDS", Layouts.ACCOUNT,
+                repo.records("account","acct_id").stream().map(s -> Layouts.ACCOUNT.decode(s, true)).toList());
+        run.dataset(InputLoader.PREFIX + "TCATBALF.VSAM.KSDS", Layouts.TRAN_CAT_BAL,
+                repo.records("tran_cat_bal","acct_id,type_cd,cat_cd").stream().map(s -> Layouts.TRAN_CAT_BAL.decode(s, true)).toList());
+        run.dataset(InputLoader.PREFIX + "DALYREJS.G0001V00", Layouts.REJTRAN,
+                repo.records("reject","seq").stream().map(s -> Layouts.REJTRAN.decode(s, true)).toList());
+        run.report(InputLoader.PREFIX + "TRANREPT.G0001V00","text",133,output.report);
     }
 }

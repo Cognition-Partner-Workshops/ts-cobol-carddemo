@@ -60,6 +60,15 @@ clock). Learned on `interest` (INTCALC -> CBACT04C, `modern/interest`).
   CLOSE` warnings, in reverse OPEN order.
 * **Duplicate keys in a REPRO into a KSDS:** the first record wins and the rest are skipped
   (IDC3302I, still RC 0). Use `INSERT ... ON CONFLICT DO NOTHING`, not a failing primary key.
+* **Db2 via ocesql (trantype-update):** SQLCODEs come from Open COBOL ESQL, not Db2. A DELETE or
+  UPDATE that touches no row is `PGRES_COMMAND_OK` = SQLCODE 0, never +100 (`t05-delete-missing`);
+  SQLSTATE 23505 is -403, everything else -400, and after one failure every later statement in
+  the unit of work is -400 (aborted transaction) until the end-of-task COMMIT. See `Sqlca.java`.
+* **EXEC SQL resets RETURN-CODE.** ocesql expands every statement into CALLs ending in
+  `CALL "OCESQLEndSQL"` (returns 0), and a CALL stores its result in RETURN-CODE. So an RC 4 set by
+  an error paragraph is wiped by the next SQL statement. No fixture covers it; found by probing.
+* **ocesql client_encoding is SJIS** (`OCDB_DB_CHAR` default): PIC X bytes are decoded by the server
+  as SJIS, while pgJDBC is UTF-8 only. Decode the record bytes as Shift_JIS before binding.
 * Probe edge cases that have no golden by copying a fixture's `input/` to a scratch case, running
   `record.py` (legacy) and the candidate into `work/`, and diffing with `diff -r`. Remove the scratch
   case afterwards; goldens change only via `make record` on request.

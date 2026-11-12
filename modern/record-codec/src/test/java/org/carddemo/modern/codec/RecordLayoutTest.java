@@ -70,6 +70,13 @@ class RecordLayoutTest {
     }
 
     @Test
+    void rejectReasonUsesFourUnsignedDigits() {
+        String line = new RejectRecord(DALYTRAN_LINE, 102, "OVERLIMIT TRANSACTION").toLine();
+        assertEquals("0102", line.substring(350, 354));
+        assertEquals(new BigDecimal("102"), Layouts.REJTRAN.decode(line).get("REJ-FAIL-REASON"));
+    }
+
+    @Test
     void reasonOutsideTheValidationRangeIsRefused() {
         assertThrows(IllegalArgumentException.class, () -> new RejectRecord(DALYTRAN_LINE, 0, ""));
     }

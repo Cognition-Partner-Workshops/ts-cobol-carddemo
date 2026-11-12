@@ -32,10 +32,38 @@ class InterestRunTest {
     }
 
     @Test
-    void halfEvenIncludesTiesAndNegativeBalances() {
+    void truncatesEachMonthlyAmountTowardZeroBeforeAccumulating() {
         assertEquals(new BigDecimal("0.00"), InterestRun.monthlyInterest(new BigDecimal("1"), new BigDecimal("6")));
-        assertEquals(new BigDecimal("0.02"), InterestRun.monthlyInterest(new BigDecimal("3"), new BigDecimal("6")));
-        assertEquals(new BigDecimal("-0.02"), InterestRun.monthlyInterest(new BigDecimal("-3"), new BigDecimal("6")));
+        assertEquals(new BigDecimal("0.01"), InterestRun.monthlyInterest(new BigDecimal("3"), new BigDecimal("6")));
+        assertEquals(new BigDecimal("-0.01"), InterestRun.monthlyInterest(new BigDecimal("-3"), new BigDecimal("6")));
+        assertEquals(new BigDecimal("0.00"), InterestRun.monthlyInterest(new BigDecimal("1"), new BigDecimal("6"))
+                .add(InterestRun.monthlyInterest(new BigDecimal("1"), new BigDecimal("6"))));
+    }
+
+    @Test
+    void tieFixtureTruncatesTransactionAndPostedBalance() throws Exception {
+        useFixture("i02-tie-half-cent");
+        var output = temporary.resolve("output");
+        run.run(input, output);
+        var transaction = Layouts.TRAN.decode(Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")).getFirst());
+        assertEquals(new BigDecimal("12.35"), transaction.get("TRAN-AMT"));
+        var account = Layouts.ACCOUNT.decode(Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt")).getFirst());
+        assertEquals(new BigDecimal("1247.85"), account.get("ACCT-CURR-BAL"));
+    }
+
+    @Test
+    void negativeFixtureStillWritesNegativeThreeDollars() throws Exception {
+        useFixture("i06-negative-balance");
+        var output = temporary.resolve("output");
+        run.run(input, output);
+        var transaction = Layouts.TRAN.decode(Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")).getFirst());
+        assertEquals(new BigDecimal("-3.00"), transaction.get("TRAN-AMT"));
+    }
+
+    private void useFixture(String fixture) throws Exception {
+        try (var paths = Files.list(Path.of("../../fixtures/interest/" + fixture + "/input"))) {
+            for (var path : paths.toList()) Files.copy(path, input.resolve(path.getFileName()), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     @Test

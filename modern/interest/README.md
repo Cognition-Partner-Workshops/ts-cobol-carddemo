@@ -18,9 +18,14 @@ parity migration.
 KSDS fixture loading keeps the first record for each primary key, like the
 runner's generated loader. `setup/<JOB>.STEP15.txt` records processed/skipped
 counts and `IDC3302I DUPLICATE KEYS SKIPPED`; `setup/<JOB>.rc.json` records
-loader RC 4 on duplicates (0 otherwise). These are supplementary setup logs:
-the recorder selects only INTCALC SYSOUT. Setup RC 4 does not abend the chain;
-INTCALC's STEP15 overwrites the setup STEP15 entry in the recorded `rc.json`.
+raw loader RC 4 on duplicates (0 otherwise). These are supplementary loader
+logs, not the runner's utility-step return code: `_idc_repro` normalizes loader
+RC 4 to utility RC 0. The recorder selects only INTCALC SYSOUT; INTCALC's
+STEP15 overwrites the setup STEP15 entry in the recorded `rc.json`.
+
+As in `record.py`, omitted input files are materialized as empty datasets.
+Missing account/xref/disclosure files therefore reach the job's legacy
+missing-record abends; missing category balances give a normal empty run.
 
 `src/main/resources/schema.sql` is initialized by Spring. Typed `account`,
 `card_xref`, `disclosure_group`, `tran_cat_balance` and `"transaction"` tables

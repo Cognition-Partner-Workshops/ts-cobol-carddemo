@@ -17,6 +17,26 @@ public final class Layouts {
     private Layouts() {
     }
 
+    public static final RecordLayout ACCOUNT = new RecordLayout("CVACT01Y", List.of(
+            zoned("ACCT-ID", 0, 11, 0, false), text("ACCT-ACTIVE-STATUS", 11, 1),
+            zoned("ACCT-CURR-BAL", 12, 12, 2, true), zoned("ACCT-CREDIT-LIMIT", 24, 12, 2, true),
+            zoned("ACCT-CASH-CREDIT-LIMIT", 36, 12, 2, true), text("ACCT-OPEN-DATE", 48, 10),
+            text("ACCT-EXPIRAION-DATE", 58, 10), text("ACCT-REISSUE-DATE", 68, 10),
+            zoned("ACCT-CURR-CYC-CREDIT", 78, 12, 2, true), zoned("ACCT-CURR-CYC-DEBIT", 90, 12, 2, true),
+            text("ACCT-ADDR-ZIP", 102, 10), text("ACCT-GROUP-ID", 112, 10), filler(122, 178)));
+
+    public static final RecordLayout XREF = new RecordLayout("CVACT03Y", List.of(
+            text("XREF-CARD-NUM", 0, 16), zoned("XREF-CUST-ID", 16, 9, 0, false),
+            zoned("XREF-ACCT-ID", 25, 11, 0, false), filler(36, 14)));
+
+    public static final RecordLayout CATEGORY_BALANCE = new RecordLayout("CVTRA01Y", List.of(
+            zoned("TRANCAT-ACCT-ID", 0, 11, 0, false), text("TRANCAT-TYPE-CD", 11, 2),
+            zoned("TRANCAT-CD", 13, 4, 0, false), zoned("TRAN-CAT-BAL", 17, 11, 2, true), filler(28, 22)));
+
+    public static final RecordLayout DISCLOSURE = new RecordLayout("CVTRA02Y", List.of(
+            text("DIS-ACCT-GROUP-ID", 0, 10), text("DIS-TRAN-TYPE-CD", 10, 2),
+            zoned("DIS-TRAN-CAT-CD", 12, 4, 0, false), zoned("DIS-INT-RATE", 16, 6, 2, true), filler(22, 28)));
+
     /** CVTRA06Y DALYTRAN-RECORD, RECLN 350. */
     public static final RecordLayout DALYTRAN = new RecordLayout("CVTRA06Y", transaction("DALYTRAN"));
 

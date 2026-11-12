@@ -3,6 +3,7 @@ package com.carddemo.modern.dynamic;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import org.postgresql.PGConnection;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -38,18 +39,21 @@ public class DynamicRunner implements ApplicationRunner {
                 throw new IllegalStateException("MNTTRDYN failed", execution.getAllFailureExceptions().getFirst());
             }
             unit.finish();
+            snapshotDatabase(out);
         }
         recorded.sysout("MNTTRDYN", "STEP1", unit.sysout);
         recorded.returnCodes("MNTTRDYN", unit.rc, Map.of("STEP1", unit.rc));
+    }
+
+    private void snapshotDatabase(Path out) throws Exception {
         Files.createDirectories(out.resolve("db"));
+        var copy = unit.connection.unwrap(PGConnection.class).getCopyAPI();
         for (var table : Map.of("carddemo.transaction_type", "tr_type",
                 "carddemo.transaction_type_categor", "trc_type_code, trc_type_category").entrySet()) {
-            var process = new ProcessBuilder("psql", "-v", "ON_ERROR_STOP=1", "-c",
-                    "COPY (SELECT * FROM " + table.getKey() + " ORDER BY " + table.getValue()
-                            + ") TO STDOUT WITH CSV HEADER")
-                    .redirectOutput(out.resolve("db/" + table.getKey() + ".csv").toFile())
-                    .redirectError(ProcessBuilder.Redirect.INHERIT).start();
-            if (process.waitFor() != 0) throw new IllegalStateException("Database snapshot failed");
+            try (var csv = Files.newOutputStream(out.resolve("db/" + table.getKey() + ".csv"))) {
+                copy.copyOut("COPY (SELECT * FROM " + table.getKey() + " ORDER BY " + table.getValue()
+                        + ") TO STDOUT WITH CSV HEADER", csv);
+            }
         }
     }
 

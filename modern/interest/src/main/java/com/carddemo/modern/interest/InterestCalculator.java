@@ -13,6 +13,6 @@ public final class InterestCalculator {
 
     /** {@code COMPUTE WS-MONTHLY-INT = (TRAN-CAT-BAL * DIS-INT-RATE) / 1200}. */
     public static BigDecimal monthlyInterest(BigDecimal balance, BigDecimal annualRatePercent) {
-        return balance.multiply(annualRatePercent).divide(TWELVE_HUNDRED, 2, RoundingMode.HALF_EVEN);
+        return balance.multiply(annualRatePercent).divide(TWELVE_HUNDRED, 2, RoundingMode.DOWN);
     }
 }

@@ -67,6 +67,9 @@ parity:
 	java=""; case " $(TARGET) " in *" java "*) for chain in $$chains; do [ -f modern/$$chain/pom.xml ] && java="$$java $$chain"; done;; esac; \
 	if [ -n "$$java" ]; then $(MAKE) --no-print-directory modern-build || exit 1; fi; \
 	for chain in $$chains; do \
+	  case " $(TARGET) " in *" java "*) case " $$java " in *" $$chain "*) ;; *) \
+	    echo "$$chain [java]: no candidate, modern/$$chain/pom.xml missing"; \
+	    case " $(TARGET) " in *" legacy "*) ;; *) fail=1; continue;; esac;; esac;; esac; \
 	  cases="$(if $(CASE),$(CASE),$$(ls fixtures/$$chain))"; \
 	  for case in $$cases; do \
 	    case " $(TARGET) " in *" legacy "*) \

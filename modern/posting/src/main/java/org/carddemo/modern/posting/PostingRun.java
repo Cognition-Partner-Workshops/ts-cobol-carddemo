@@ -94,7 +94,10 @@ public final class PostingRun {
     static int validate(Map<String, Object> daily, Map<String, Object> account, boolean hasCard) {
         if (!hasCard) return 100;
         if (account == null) return 101;
-        int reason = number(account, "ACCT-CURR-BAL").add(number(daily, "DALYTRAN-AMT")).compareTo(number(account, "ACCT-CREDIT-LIMIT")) > 0 ? 102 : 0;
+        // CBTRN02C 1500-VALIDATE-ACCOUNT uses cycle credit minus signed cycle debit,
+        // rather than current balance. The golden cases do not distinguish these formulas.
+        int reason = number(account, "ACCT-CURR-CYC-CREDIT").subtract(number(account, "ACCT-CURR-CYC-DEBIT"))
+                .add(number(daily, "DALYTRAN-AMT")).compareTo(number(account, "ACCT-CREDIT-LIMIT")) > 0 ? 102 : 0;
         if (text(account, "ACCT-EXPIRAION-DATE").compareTo(text(daily, "DALYTRAN-ORIG-TS").substring(0, 10)) < 0) reason = 103;
         return reason;
     }

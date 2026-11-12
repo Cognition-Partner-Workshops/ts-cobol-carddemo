@@ -37,6 +37,13 @@ public final class Layouts {
             text("DIS-ACCT-GROUP-ID", 0, 10), text("DIS-TRAN-TYPE-CD", 10, 2),
             zoned("DIS-TRAN-CAT-CD", 12, 4, 0, false), zoned("DIS-INT-RATE", 16, 6, 2, true), filler(22, 28)));
 
+    /** COBTUPDT FD TR-RECORD read INTO WS-INPUT-REC (INPFILE, LRECL 53); defined in the program, not a copybook. */
+    public static final RecordLayout TRANTYPE_UPDATE = new RecordLayout("COBTUPDT", List.of(
+            text("INPUT-REC-TYPE", 0, 1), text("INPUT-REC-NUMBER", 1, 2), text("INPUT-REC-DESC", 3, 50)));
+
+    /** CBTRNDYN FD DYNSQL-FILE DYNSQL-REC PIC X(80) (DYNSQL, LRECL 80); defined in the program. */
+    public static final RecordLayout DYNSQL = new RecordLayout("CBTRNDYN", List.of(text("DYNSQL-REC", 0, 80)));
+
     /** CVTRA06Y DALYTRAN-RECORD, RECLN 350. */
     public static final RecordLayout DALYTRAN = new RecordLayout("CVTRA06Y", transaction("DALYTRAN"));
 

@@ -7,6 +7,24 @@ Only synthetic fixture data is supported. Runs are serialized by the harness.
 
 No expected files are read by the application.
 
+`src/main/resources/schema.sql` is initialized by Spring. Typed `account`,
+`card_xref`, `disclosure_group`, `tran_cat_balance` and `"transaction"` tables
+mirror the named copybook fields with exact NUMERIC precision/scale. Primary
+keys match the indexed source keys; card account-id is a nonunique alternate
+index. Category balances are read in compound-key order. FILLER stays in the
+codec, not the relational schema. Tests audit database numeric types too.
+
+The third command-line argument becomes the `parmDate` Batch job parameter.
+The harness defaults `INTEREST_PARM_DATE` from INTCALC.jcl's `PARM` value;
+override it explicitly when needed. Java has no literal transaction prefix.
+
+Missing account, cross-reference or default disclosure records write the
+legacy diagnostics and file status 23, `ABENDING PROGRAM`, and the local
+CEE3ABD stub's `USER ABEND U+0000000999` line. `rc.json` records STEP15/maxrc
+12, the Batch job fails, and prior account updates/transactions are exported.
+The successful end-of-program line is omitted. These paths have unit tests
+but are **unproven by fixture parity**: no current interest fixture abends.
+
 ## Intentional legacy defects
 
 - **Monthly interest truncation** (`i02-tie-half-cent`): CBACT04C's
@@ -29,7 +47,8 @@ No expected files are read by the application.
 make up
 docker compose exec -T java mvn -Dmaven.repo.local=/estate/work/maven -f modern/pom.xml test
 docker compose exec -T java mvn -Dmaven.repo.local=/estate/work/maven -f modern/pom.xml package -DskipTests
-docker compose exec -T java java -jar modern/interest/target/interest-0.1.0.jar fixtures/interest/i01-baseline/input work/run/interest/i01-baseline
+parm=$(sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCALC.jcl)
+docker compose exec -T java java -jar modern/interest/target/interest-0.1.0.jar fixtures/interest/i01-baseline/input work/run/interest/i01-baseline "$parm"
 make parity CHAIN=interest
 make parity CHAIN=interest TARGET=legacy
 ```

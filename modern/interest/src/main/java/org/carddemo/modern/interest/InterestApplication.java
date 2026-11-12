@@ -18,7 +18,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 @SpringBootApplication
 public class InterestApplication {
     public static void main(String[] args) throws Exception {
-        if (args.length != 2) throw new IllegalArgumentException("usage: interest <input-directory> <output-directory>");
+        if (args.length != 3) throw new IllegalArgumentException("usage: interest <input-directory> <output-directory> <parm-date>");
         try (var connection = DriverManager.getConnection("jdbc:postgresql://db:5432/carddemo", "carddemo", "carddemo");
                 var statement = connection.createStatement()) {
             statement.execute("CREATE SCHEMA IF NOT EXISTS interest");
@@ -27,8 +27,11 @@ public class InterestApplication {
             var execution = context.getBean(JobLauncher.class).run(context.getBean(Job.class),
                     new JobParametersBuilder().addString("input", Path.of(args[0]).toAbsolutePath().toString())
                             .addString("output", Path.of(args[1]).toAbsolutePath().toString())
+                            .addString("parmDate", args[2])
                             .addLong("run", System.nanoTime()).toJobParameters());
-            if (execution.getStatus().isUnsuccessful()) throw new IllegalStateException("INTCALC failed: " + execution.getAllFailureExceptions());
+            if (execution.getStatus().isUnsuccessful() || execution.getExitStatus().getExitCode().equals("FAILED")) {
+                throw new IllegalStateException("INTCALC failed: " + execution.getExitStatus());
+            }
         }
     }
 
@@ -36,7 +39,9 @@ public class InterestApplication {
     Job interest(JobRepository repository, PlatformTransactionManager transactionManager, JdbcTemplate jdbc) {
         var step = new StepBuilder("STEP15", repository).tasklet((contribution, chunk) -> {
             var parameters = contribution.getStepExecution().getJobParameters();
-            new InterestRun(jdbc).run(Path.of(parameters.getString("input")), Path.of(parameters.getString("output")));
+            int rc = new InterestRun(jdbc).run(Path.of(parameters.getString("input")),
+                    Path.of(parameters.getString("output")), parameters.getString("parmDate"));
+            if (rc != 0) contribution.setExitStatus(new org.springframework.batch.core.ExitStatus("FAILED", "CBACT04C RC=" + rc));
             return RepeatStatus.FINISHED;
         }, transactionManager).build();
         return new JobBuilder("INTCALC", repository).start(step).build();

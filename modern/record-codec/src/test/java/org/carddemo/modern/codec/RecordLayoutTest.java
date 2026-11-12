@@ -32,6 +32,10 @@ class RecordLayoutTest {
         assertEquals(350, Layouts.DALYTRAN.length());
         assertEquals(350, Layouts.TRAN.length());
         assertEquals(430, Layouts.REJTRAN.length());
+        assertEquals(300, Layouts.ACCOUNT.length());
+        assertEquals(50, Layouts.CARD_XREF.length());
+        assertEquals(50, Layouts.TRAN_CAT_BAL.length());
+        assertEquals(50, Layouts.DIS_GROUP.length());
     }
 
     @Test
@@ -54,6 +58,15 @@ class RecordLayoutTest {
         String blankAmount = DALYTRAN_LINE.substring(0, 132) + " ".repeat(11) + DALYTRAN_LINE.substring(143);
         String line = new RejectRecord(blankAmount, 101, "ACCOUNT RECORD NOT FOUND").toLine();
         assertEquals(blankAmount, line.substring(0, blankAmount.length()));
+    }
+
+    @Test
+    void categoryBalanceDecodesNegativeOverpunchAndEncodesBack() {
+        String line = "00000002008010001" + "0000002500}";
+        Map<String, Object> values = Layouts.TRAN_CAT_BAL.decode(line);
+        assertEquals(new BigDecimal("-250.00"), values.get("TRAN-CAT-BAL"));
+        assertEquals(new BigDecimal("1"), values.get("TRANCAT-CD"));
+        assertEquals(line, Layouts.TRAN_CAT_BAL.encodeLine(values));
     }
 
     @Test

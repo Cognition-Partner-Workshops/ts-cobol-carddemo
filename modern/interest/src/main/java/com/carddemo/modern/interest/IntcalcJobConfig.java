@@ -69,6 +69,6 @@ public class IntcalcJobConfig {
     @StepScope
     public Cbact04cProcessor cbact04cProcessor(InterestRepository repository, Sysout sysout, Estate estate,
                                                @Value("${interest.parm-date}") String parmDate) {
-        return new Cbact04cProcessor(repository, sysout, estate.codec("CVTRA01Y"), parmDate, estate.clock());
+        return new Cbact04cProcessor(repository, sysout, parmDate, estate.clock());
     }
 }

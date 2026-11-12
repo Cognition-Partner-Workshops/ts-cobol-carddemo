@@ -1,6 +1,7 @@
 package com.carddemo.modern.interest;
 
-import com.carddemo.modern.codec.RecordCodec;
+import org.carddemo.modern.codec.Layouts;
+import org.carddemo.modern.codec.RecordLayout;
 import com.carddemo.modern.interest.Records.Account;
 import com.carddemo.modern.interest.Records.CardXref;
 import com.carddemo.modern.interest.Records.DisclosureGroup;
@@ -49,28 +50,28 @@ public class InputLoader {
     @Transactional
     public Map<String, Integer> load(Path caseDir) {
         repository.clear();
-        load(caseDir, "AWS.M2.CARDDEMO.ACCTDATA.PS", "CVACT01Y", Account::of, repository::insert);
-        load(caseDir, "AWS.M2.CARDDEMO.CARDXREF.PS", "CVACT03Y", CardXref::of, repository::insert);
-        load(caseDir, "AWS.M2.CARDDEMO.TCATBALF.PS", "CVTRA01Y", TranCatBal::of, repository::insert);
-        load(caseDir, "AWS.M2.CARDDEMO.DISCGRP.PS", "CVTRA02Y", DisclosureGroup::of, repository::insert);
+        load(caseDir, "AWS.M2.CARDDEMO.ACCTDATA.PS", Layouts.ACCOUNT, Account::of, repository::insert);
+        load(caseDir, "AWS.M2.CARDDEMO.CARDXREF.PS", Layouts.CARD_XREF, CardXref::of, repository::insert);
+        load(caseDir, "AWS.M2.CARDDEMO.TCATBALF.PS", Layouts.TRAN_CAT_BAL, TranCatBal::of, repository::insert);
+        load(caseDir, "AWS.M2.CARDDEMO.DISCGRP.PS", Layouts.DIS_GROUP, DisclosureGroup::of, repository::insert);
         Map<String, Integer> rcs = new LinkedHashMap<>();
         SETUP_STEPS.values().forEach(steps -> steps.forEach(step -> rcs.put(step, 0)));
         return rcs;
     }
 
-    private <T> void load(Path caseDir, String dsn, String layout, Function<Map<String, Object>, T> mapper,
+    private <T> void load(Path caseDir, String dsn, RecordLayout layout, Function<Map<String, Object>, T> mapper,
                           Consumer<T> sink) {
         int lrecl = estate.chain().get("inputs").get(dsn).asInt();
-        RecordCodec codec = estate.codec(layout);
+        if (layout.length() != lrecl) {
+            throw new IllegalStateException(dsn + ": " + layout.copybook() + " is " + layout.length() + " bytes, LRECL " + lrecl);
+        }
         Path src = caseDir.resolve("input").resolve(dsn + ".txt");
         if (!Files.exists(src)) {
             return;
         }
         try {
             for (String line : Files.readAllLines(src, StandardCharsets.ISO_8859_1)) {
-                String record = line.length() >= lrecl ? line.substring(0, lrecl)
-                        : line + " ".repeat(lrecl - line.length());
-                sink.accept(mapper.apply(codec.decodeLine(record)));
+                sink.accept(mapper.apply(layout.decode(line)));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

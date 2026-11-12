@@ -1,18 +1,16 @@
 package com.carddemo.modern.interest;
 
-import com.carddemo.modern.codec.CobolNumeric;
-import com.carddemo.modern.codec.RecordCodec;
 import com.carddemo.modern.interest.Records.Account;
 import com.carddemo.modern.interest.Records.CardXref;
 import com.carddemo.modern.interest.Records.DisclosureGroup;
 import com.carddemo.modern.interest.Records.TranCatBal;
 import com.carddemo.modern.interest.Records.Transaction;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import org.carddemo.modern.codec.Layouts;
 import org.springframework.batch.item.ItemProcessor;
 
 /**
@@ -33,7 +31,6 @@ public class Cbact04cProcessor implements ItemProcessor<TranCatBal, Step15Output
 
     private final InterestRepository repository;
     private final Sysout sysout;
-    private final RecordCodec tranCatBalCodec;
     private final String parmDate;
     private final String db2FormatTs;
 
@@ -45,18 +42,17 @@ public class Cbact04cProcessor implements ItemProcessor<TranCatBal, Step15Output
     private int tranIdSuffix;
     private int written;
 
-    public Cbact04cProcessor(InterestRepository repository, Sysout sysout, RecordCodec tranCatBalCodec,
-                             String parmDate, Clock clock) {
+    public Cbact04cProcessor(InterestRepository repository, Sysout sysout, String parmDate,
+                             Clock clock) {
         this.repository = repository;
         this.sysout = sysout;
-        this.tranCatBalCodec = tranCatBalCodec;
         this.parmDate = String.format("%-10.10s", parmDate);
         this.db2FormatTs = LocalDateTime.now(clock).format(DB2_TS) + "0000";
     }
 
     @Override
     public Step15Output process(TranCatBal tcat) {
-        sysout.display(new String(tranCatBalCodec.encode(tcat.fields()), StandardCharsets.ISO_8859_1));
+        sysout.display(Layouts.TRAN_CAT_BAL.encode(tcat.fields()));
         Account rewrite = null;
         if (lastAcctNum == null || tcat.acctId() != lastAcctNum) {
             if (!firstTime) {
@@ -118,7 +114,8 @@ public class Cbact04cProcessor implements ItemProcessor<TranCatBal, Step15Output
         }
         sysout.display("DISCLOSURE GROUP RECORD MISSING");
         sysout.display("TRY WITH DEFAULT GROUP CODE");
-        return repository.findDisclosureGroup("DEFAULT", typeCd, catCd)
+        // MOVE 'DEFAULT' TO FD-DIS-ACCT-GROUP-ID: PIC X(10), space-padded like every key read from the file
+        return repository.findDisclosureGroup(String.format("%-10s", "DEFAULT"), typeCd, catCd)
                 .orElseThrow(() -> abend("ERROR READING DEFAULT DISCLOSURE GROUP"));
     }
 

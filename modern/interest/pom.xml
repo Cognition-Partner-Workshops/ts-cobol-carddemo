@@ -13,7 +13,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.carddemo.modern</groupId>
+      <groupId>org.carddemo.modern</groupId>
       <artifactId>record-codec</artifactId>
     </dependency>
     <dependency>

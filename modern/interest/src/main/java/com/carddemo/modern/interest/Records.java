@@ -12,9 +12,10 @@ final class Records {
 
     /** CVTRA01Y TRAN-CAT-BAL-RECORD. */
     record TranCatBal(long acctId, String typeCd, int catCd, BigDecimal balance, String filler) {
+        // FILLER is not surfaced by record-codec (decoded as nothing, encoded as spaces).
         static TranCatBal of(Map<String, Object> r) {
             return new TranCatBal(num(r, "TRANCAT-ACCT-ID").longValueExact(), str(r, "TRANCAT-TYPE-CD"),
-                    num(r, "TRANCAT-CD").intValueExact(), num(r, "TRAN-CAT-BAL"), str(r, "FILLER@28"));
+                    num(r, "TRANCAT-CD").intValueExact(), num(r, "TRAN-CAT-BAL"), "");
         }
 
         Map<String, Object> fields() {
@@ -37,7 +38,7 @@ final class Records {
                     num(r, "ACCT-CURR-BAL"), num(r, "ACCT-CREDIT-LIMIT"), num(r, "ACCT-CASH-CREDIT-LIMIT"),
                     str(r, "ACCT-OPEN-DATE"), str(r, "ACCT-EXPIRAION-DATE"), str(r, "ACCT-REISSUE-DATE"),
                     num(r, "ACCT-CURR-CYC-CREDIT"), num(r, "ACCT-CURR-CYC-DEBIT"), str(r, "ACCT-ADDR-ZIP"),
-                    str(r, "ACCT-GROUP-ID"), str(r, "FILLER@122"));
+                    str(r, "ACCT-GROUP-ID"), "");
         }
 
         Map<String, Object> fields() {
@@ -63,7 +64,7 @@ final class Records {
     record CardXref(String cardNum, long custId, long acctId, String filler) {
         static CardXref of(Map<String, Object> r) {
             return new CardXref(str(r, "XREF-CARD-NUM"), num(r, "XREF-CUST-ID").longValueExact(),
-                    num(r, "XREF-ACCT-ID").longValueExact(), str(r, "FILLER@36"));
+                    num(r, "XREF-ACCT-ID").longValueExact(), "");
         }
     }
 
@@ -71,7 +72,7 @@ final class Records {
     record DisclosureGroup(String groupId, String typeCd, int catCd, BigDecimal intRate, String filler) {
         static DisclosureGroup of(Map<String, Object> r) {
             return new DisclosureGroup(str(r, "DIS-ACCT-GROUP-ID"), str(r, "DIS-TRAN-TYPE-CD"),
-                    num(r, "DIS-TRAN-CAT-CD").intValueExact(), num(r, "DIS-INT-RATE"), str(r, "FILLER@22"));
+                    num(r, "DIS-TRAN-CAT-CD").intValueExact(), num(r, "DIS-INT-RATE"), "");
         }
     }
 

@@ -31,9 +31,9 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.carddemo.modern</groupId>
+        <groupId>org.carddemo.modern</groupId>
         <artifactId>record-codec</artifactId>
-        <version>${project.version}</version>
+        <version>0.1.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

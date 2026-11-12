@@ -1,10 +1,10 @@
 package com.carddemo.modern.interest;
 
-import com.carddemo.modern.codec.RecordedRun;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.carddemo.modern.codec.Layouts;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -58,9 +58,9 @@ public class IntcalcRunner implements ApplicationRunner {
         RecordedRun run = new RecordedRun(out);
         run.returnCodes("INTCALC", rc, steps);
         run.sysout("INTCALC", "STEP15", sysout.lines());
-        run.dataset("AWS.M2.CARDDEMO.SYSTRAN.G0001V00", estate.codec("CVTRA05Y"),
+        run.dataset("AWS.M2.CARDDEMO.SYSTRAN.G0001V00", Layouts.TRAN,
                 repository.transactionsInWriteOrder().stream().map(Records.Transaction::fields).toList());
-        run.dataset("AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS", estate.codec("CVACT01Y"),
+        run.dataset("AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS", Layouts.ACCOUNT,
                 repository.accountsInKeyOrder().stream().map(Records.Account::fields).toList());
     }
 

@@ -1,7 +1,5 @@
 package com.carddemo.modern.interest;
 
-import com.carddemo.modern.codec.Copybook;
-import com.carddemo.modern.codec.RecordCodec;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -11,7 +9,6 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -39,12 +36,6 @@ public class Estate {
 
     public JsonNode chain() {
         return chain;
-    }
-
-    public RecordCodec codec(String copybook) {
-        return new RecordCodec(Copybook.load(copybook, List.of(
-                root.resolve("app/cpy"), root.resolve("tools/parity/layouts"),
-                root.resolve("app/app-transaction-type-db2/cpy"))));
     }
 
     /** The chain's frozen clock ({@code COB_CURRENT_DATE}, e.g. {@code 2022-07-05 10:00:00.00}). */

@@ -21,6 +21,9 @@ EXEC     = $(COMPOSE) exec -T estate
 CHAINS  ?= posting interest trantype-update trantype-dynamic
 CHAIN   ?=
 CASE    ?=
+TARGET  ?=
+MAVEN_ARGS ?=
+INTEREST_PARM_DATE ?= $(shell sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCALC.jcl)
 PY       = python3
 
 .PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell
@@ -59,10 +62,18 @@ parity:
 	@rm -f work/parity/report.md; mkdir -p work/parity; fail=0; \
 	chains="$(if $(CHAIN),$(CHAIN),$(CHAINS))"; \
 	for chain in $$chains; do \
+	  target="$(TARGET)"; [ -n "$$target" ] || { if [ -d modern/$$chain ]; then target=java; else target=legacy; fi; }; \
+	  if [ "$$target" = java ]; then $(COMPOSE) exec -T java mvn $(MAVEN_ARGS) -Dmaven.repo.local=/estate/work/maven -f modern/pom.xml -pl $$chain -am package -DskipTests > work/parity/build-$$chain.log 2>&1 || { cat work/parity/build-$$chain.log; exit 1; }; fi; \
 	  cases="$(if $(CASE),$(CASE),$$(ls fixtures/$$chain))"; \
 	  for case in $$cases; do \
-	    $(EXEC) $(PY) tools/parity/record.py $$chain $$case --out work/parity/$$chain/$$case/actual > /dev/null || { echo "$$chain/$$case: chain run failed"; fail=1; continue; }; \
-	    $(EXEC) $(PY) tools/parity/compare.py $$chain $$case --actual work/parity/$$chain/$$case/actual --report work/parity/report.md || fail=1; \
+	    if [ "$$target" = java ]; then \
+	      parm=""; if [ "$$chain" = interest ]; then parm="$(INTEREST_PARM_DATE)"; fi; \
+	      $(COMPOSE) exec -T java java -jar modern/$$chain/target/$$chain-0.1.0.jar fixtures/$$chain/$$case/input work/parity/$$chain/$$case/actual $$parm > work/parity/run-$$chain-$$case.log 2>&1 || { cat work/parity/run-$$chain-$$case.log; fail=1; continue; }; \
+	      label=java; \
+	    else \
+	      $(EXEC) $(PY) tools/parity/record.py $$chain $$case --out work/parity/$$chain/$$case/actual > /dev/null || { echo "$$chain/$$case: chain run failed"; fail=1; continue; }; label="legacy rerun"; \
+	    fi; \
+	    $(EXEC) $(PY) tools/parity/compare.py $$chain $$case --actual work/parity/$$chain/$$case/actual --report work/parity/report.md --label "$$label" || fail=1; \
 	  done; \
 	done; \
 	echo "report: work/parity/report.md"; exit $$fail

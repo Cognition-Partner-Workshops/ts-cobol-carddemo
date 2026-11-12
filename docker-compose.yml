@@ -1,4 +1,18 @@
 services:
+  java:
+    image: maven:3.9-eclipse-temurin-21
+    pull_policy: missing
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /estate
+    environment:
+      MAVEN_CONFIG: /estate/work/maven
+    volumes:
+      - .:/estate
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sleep", "infinity"]
+
   db:
     image: postgres:15
     pull_policy: missing

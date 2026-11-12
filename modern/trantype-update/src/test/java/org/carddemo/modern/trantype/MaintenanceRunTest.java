@@ -67,11 +67,22 @@ class MaintenanceRunTest {
     }
 
     @Test
-    void missingTargetsAndInvalidOperationsAreErrors() throws Exception {
-        Files.writeString(input.resolve("INPFILE.txt"), "D09\nU09Missing\nX01Invalid\n");
+    void missingDeleteAndUpdateRetainTheLegacySuccessDefect() throws Exception {
+        Files.writeString(input.resolve("INPFILE.txt"), "D09\nU09Missing\n");
+        assertEquals(0, run.run(input, output));
+        assertEquals(3, jdbc.queryForObject("SELECT count(*) FROM transaction_type", Integer.class));
+        var lines = Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt"));
+        assertTrue(lines.contains("RECORD DELETED SUCCESSFULLY"));
+        assertTrue(lines.contains("RECORD UPDATED SUCCESSFULLY"));
+        assertFalse(lines.contains("No records found."));
+        assertTrue(Files.readString(output.resolve("rc.json")).contains("\"maxrc\": 0"));
+    }
+
+    @Test
+    void invalidOperationsAreErrors() throws Exception {
+        Files.writeString(input.resolve("INPFILE.txt"), "X01Invalid\n");
         assertEquals(4, run.run(input, output));
         var lines = Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt"));
-        assertTrue(lines.contains("No records found."));
         assertTrue(lines.contains("ERROR: TYPE NOT VALID"));
     }
 

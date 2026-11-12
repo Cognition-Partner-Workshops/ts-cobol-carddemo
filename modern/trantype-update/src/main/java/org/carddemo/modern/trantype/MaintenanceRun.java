@@ -63,13 +63,11 @@ final class MaintenanceRun {
                         case "U", "D" -> {
                             boolean update = row.get("input_rec_type").equals("U");
                             lines.add(update ? "UPDATING RECORD" : "DELETING RECORD");
-                            int count = update
-                                    ? jdbc.update("UPDATE transaction_type SET tr_description = ? WHERE tr_type = ?", description, type)
-                                    : jdbc.update("DELETE FROM transaction_type WHERE tr_type = ?", type);
-                            if (count == 0) {
-                                lines.add("No records found.");
-                                rc = 4;
-                            } else lines.add(update ? "RECORD UPDATED SUCCESSFULLY" : "RECORD DELETED SUCCESSFULLY");
+                            if (update) jdbc.update("UPDATE transaction_type SET tr_description = ? WHERE tr_type = ?", description, type);
+                            else jdbc.update("DELETE FROM transaction_type WHERE tr_type = ?", type);
+                            // Legacy defect (t05): ocesql PGRES_COMMAND_OK yields SQLCODE 0 even for zero rows;
+                            // COBTUPDT 10032/10033 therefore never reach their +100 error branches.
+                            lines.add(update ? "RECORD UPDATED SUCCESSFULLY" : "RECORD DELETED SUCCESSFULLY");
                         }
                         default -> {
                             lines.add("ERROR: TYPE NOT VALID");

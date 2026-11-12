@@ -23,7 +23,7 @@ ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/lib/x86_64-linux-gnu
 WORKDIR /estate
 CMD ["sleep", "infinity"]
 
-# JDKs for the live migration session (Java 17 / 21 targets); unused by the legacy chains
+# JDKs + Maven for the migration targets under modern/ (Java 21); unused by the legacy chains
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends openjdk-17-jdk-headless openjdk-21-jdk-headless \
+    && apt-get install -y --no-install-recommends openjdk-17-jdk-headless openjdk-21-jdk-headless maven \
     && rm -rf /var/lib/apt/lists/*

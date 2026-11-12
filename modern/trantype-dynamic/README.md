@@ -42,6 +42,7 @@ map; an unknown name fails the step.
   `-400`, and the end-of-task `COMMIT` silently rolls back while still printing
   `DSNRUN: COMMIT AT END OF TASK` (`d03-bad-statement`). Db2 would roll back only
   the failing statement. This is the estate's semantic gap, recorded in the fixture.
+  Cutover decision: open (kept as-is until the business decides).
 
 ## Intentional legacy defects
 
@@ -54,6 +55,7 @@ map; an unknown name fails the step.
   **RC 0**, which was confirmed against the legacy run on a scratch input (unit
   test `failedDynamicStatementRc8IsLostWhenCobtupdtRunsNoSql`). Java throws
   `StopRun` from `Cobtupdt` to reproduce it.
+  Cutover decision: open (kept as-is until the business decides).
 
 - **COBTUPDT ignores SQLCODE +100** (no fixture of this chain; confirmed against
   the legacy run on a scratch input, and `trantype-update/t05-delete-missing`
@@ -62,6 +64,10 @@ map; an unknown name fails the step.
   a missing key prints `RECORD UPDATED/DELETED SUCCESSFULLY` with RC 0. The same
   holds for a zero-row dynamic DML statement in CBTRNDYN; only a query with no
   rows gives `+0000000100`.
+  Cutover decision: **keep**. The business wants the COBOL behaviour retained:
+  an `UPDATE` or `DELETE` on a missing key reports success with RC 0. The
+  post-cutover fix is tracked in
+  [KAN-250](https://partner-workshops-2.atlassian.net/browse/KAN-250).
 
 ## Unproven by fixture parity
 

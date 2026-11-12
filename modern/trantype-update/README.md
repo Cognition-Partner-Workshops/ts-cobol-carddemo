@@ -32,11 +32,19 @@ OCESQLPutSQLVar / OCDB_TYPE_ALPHANUMERIC's fixed-length memcpy. Both the
 legacy and translated DDL specify VARCHAR(50), not CHAR(50): seed descriptions
 remain unpadded; only maintenance writes carry host padding. Fixtures t01,
 t02, t04 and t07 prove this distinction. Missing update/delete targets
-report RC 4, and SQL errors report actual PostgreSQL diagnostics. No legacy
+retain success (RC 0), and SQL errors report actual PostgreSQL diagnostics. No legacy
 SQLCODE mapping or padding defects have been emulated.
 COBTUPDT source explicitly tests +100 on UPDATE/DELETE, despite the estate
 notes saying it ignores +100; the t05 README/golden description reports success.
-No candidate comparison has been run to resolve this discrepancy.
+The executed ocesql v1.4 path resolves the discrepancy: generated COBTUPDT
+calls OCESQLExecParams, which calls OCDBSetResultStatus, ultimately
+OCDB_PGSetResultStatus (dblib/ocpgsql.c). PGRES_COMMAND_OK always sets SQLCODE
+0, even when PQcmdTuples reports zero; +100 applies to empty SELECT results,
+not zero-row UPDATE/DELETE. COBTUPDT 10032/10033 consequently display success.
+This preserved legacy defect is proven for DELETE by t05-delete-missing.
+The same missing-UPDATE path is covered by a unit test but is **unproven by
+fixture parity** (no corresponding fixture). The owner should decide whether
+to retain this false-success behavior at cutover; parity retains it by default.
 
 Fixtures: t01 adds two types; t02 updates 02; t03 deletes 03; t04 ignores
 comments and adds one type; t05 deletes missing 09; t06 inserts duplicate 01;

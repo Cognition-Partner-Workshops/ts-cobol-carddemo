@@ -91,8 +91,9 @@ class MaintenanceRunTest {
     void invalidOperationsAreErrors() throws Exception {
         Files.writeString(input.resolve("INPFILE.txt"), "X01Invalid\n");
         assertEquals(4, run.run(input, output));
-        var lines = Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt"));
-        assertTrue(lines.contains("ERROR: TYPE NOT VALID"));
+        var lines = Files.readAllLines(output.resolve("sysout/MNTTRDB2.STEP1.txt"));
+        assertEquals("ERROR: TYPE NOT VALID" + " ".repeat(59), lines.get(3));
+        assertTrue(Files.readString(output.resolve("rc.json")).contains("\"STEP1\": 4"));
     }
 
     @Test

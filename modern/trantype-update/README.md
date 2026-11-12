@@ -72,6 +72,10 @@ Oversized lines are clipped to 53 bytes by the codec, matching the materializer'
 line.ljust(lrecl)[:lrecl]. A direct legacy check preserved only the first 50
 description characters; the unit test also checks the next record remains
 separate. This path is unproven by fixture parity.
+Invalid operations retain COBTUPDT:121-128's STRING into WS-RETURN-MSG PIC X(80)
+and 9999-ABEND's DISPLAY and RC 4: the diagnostic includes all trailing spaces.
+This is unit-tested and directly checked against legacy COBTUPDT but unproven
+by fixture parity.
 Fatal input errors export RC 12 and fail Batch; recoverable record errors
 export RC 4. Uncovered fatal database outages are not proven by fixture parity.
 The COBOL batch parity standard requires all-case comparator results for

@@ -44,11 +44,19 @@ final class InterestRun {
         var sysout = new ArrayList<String>();
         sysout.add("START OF EXECUTION OF PROGRAM CBACT04C");
         var transactions = new ArrayList<Map<String, Object>>();
+        Map<String, Object> previousAccount = null;
+        var totalInterest = BigDecimal.ZERO;
         for (var balance : read("TCATBALF", Layouts.CATEGORY_BALANCE)) {
             sysout.add(Layouts.CATEGORY_BALANCE.encode(balance));
             var accountId = number(balance, "TRANCAT-ACCT-ID");
+            if (previousAccount == null || !accountId.equals(number(previousAccount, "ACCT-ID"))) {
+                // Legacy EOF defect: only an account break rewrites balances; there is no final flush.
+                if (previousAccount != null) updateAccount(previousAccount, totalInterest);
+                totalInterest = BigDecimal.ZERO;
+            }
             var account = accounts.get(accountId);
             if (account == null) throw new IllegalStateException("ACCOUNT NOT FOUND: " + accountId);
+            previousAccount = account;
             if (!cards.containsKey(accountId)) throw new IllegalStateException("XREF NOT FOUND: " + accountId);
             var type = balance.get("TRANCAT-TYPE-CD");
             var category = balance.get("TRANCAT-CD");
@@ -59,11 +67,9 @@ final class InterestRun {
                 rate = rates.get(rateKey("DEFAULT", type, category));
             }
             if (rate == null) throw new IllegalStateException("ERROR READING DEFAULT DISCLOSURE GROUP");
-            account.put("ACCT-CURR-CYC-CREDIT", BigDecimal.ZERO);
-            account.put("ACCT-CURR-CYC-DEBIT", BigDecimal.ZERO);
             if (rate.signum() == 0) continue;
             var amount = monthlyInterest(number(balance, "TRAN-CAT-BAL"), rate);
-            account.put("ACCT-CURR-BAL", number(account, "ACCT-CURR-BAL").add(amount));
+            totalInterest = totalInterest.add(amount);
             var transaction = new LinkedHashMap<String, Object>();
             transaction.put("TRAN-ID", "2022071800" + String.format("%06d", transactions.size() + 1));
             transaction.put("TRAN-TYPE-CD", "01");
@@ -108,4 +114,10 @@ final class InterestRun {
 
     private static BigDecimal number(Map<String, Object> record, String field) { return (BigDecimal) record.get(field); }
     private static String rateKey(String group, Object type, Object category) { return group.stripTrailing() + "/" + type + "/" + category; }
+
+    private static void updateAccount(Map<String, Object> account, BigDecimal interest) {
+        account.put("ACCT-CURR-BAL", number(account, "ACCT-CURR-BAL").add(interest));
+        account.put("ACCT-CURR-CYC-CREDIT", BigDecimal.ZERO);
+        account.put("ACCT-CURR-CYC-DEBIT", BigDecimal.ZERO);
+    }
 }

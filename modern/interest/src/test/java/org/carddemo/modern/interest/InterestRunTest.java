@@ -67,7 +67,7 @@ class InterestRunTest {
     }
 
     @Test
-    void baselineUpdatesEveryAccountAndExportsRecords() throws Exception {
+    void baselineUpdatesOnlyTheAccountClosedByABreakAndExportsAllTransactions() throws Exception {
         var output = temporary.resolve("output");
         run.run(input, output);
         var accounts = Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt"));
@@ -76,9 +76,59 @@ class InterestRunTest {
             var account = Layouts.ACCOUNT.decode(line);
             assertEquals(new BigDecimal("0.00"), account.get("ACCT-CURR-CYC-DEBIT"));
         }
+        var first = Layouts.ACCOUNT.decode(accounts.getFirst());
+        assertEquals(new BigDecimal("1010.00"), first.get("ACCT-CURR-BAL"));
+        assertEquals(new BigDecimal("0.00"), first.get("ACCT-CURR-CYC-CREDIT"));
+        var last = Layouts.ACCOUNT.decode(accounts.getLast());
+        assertEquals(new BigDecimal("2400.00"), last.get("ACCT-CURR-BAL"));
+        assertEquals(new BigDecimal("2400.00"), last.get("ACCT-CURR-CYC-CREDIT"));
         assertEquals(2, Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")).size());
         assertTrue(Files.readString(output.resolve("sysout/INTCALC.STEP15.txt")).endsWith("END OF EXECUTION OF PROGRAM CBACT04C\n"));
         assertTrue(Files.readString(output.resolve("rc.json")).contains("\"maxrc\": 0"));
+        var sysout = Files.readAllLines(output.resolve("sysout/INTCALC.STEP15.txt"));
+        var balances = Files.readAllLines(input.resolve("AWS.M2.CARDDEMO.TCATBALF.PS.txt"));
+        assertEquals(4, sysout.size());
+        assertEquals(Layouts.CATEGORY_BALANCE.encode(Layouts.CATEGORY_BALANCE.decode(balances.getFirst())), sysout.get(1));
+        assertEquals(Layouts.CATEGORY_BALANCE.encode(Layouts.CATEGORY_BALANCE.decode(balances.getLast())), sysout.get(2));
+    }
+
+    @Test
+    void singleAccountWithMultipleCategoriesIsNeverRewritten() throws Exception {
+        useFixture("i05-multi-category");
+        var output = temporary.resolve("output");
+        run.run(input, output);
+        var account = Layouts.ACCOUNT.decode(Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt")).getFirst());
+        assertEquals(new BigDecimal("1500.00"), account.get("ACCT-CURR-BAL"));
+        assertEquals(new BigDecimal("1500.00"), account.get("ACCT-CURR-CYC-CREDIT"));
+        assertEquals(2, Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")).size());
+    }
+
+    @Test
+    void accountBreakPostsTheSumOfAllPrecedingCategories() throws Exception {
+        useFixture("i05-multi-category");
+        var accountFile = input.resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt");
+        var account = Layouts.ACCOUNT.decode(Files.readAllLines(accountFile).getFirst());
+        account.put("ACCT-ID", new BigDecimal("2008"));
+        Files.writeString(accountFile, Layouts.ACCOUNT.encodeLine(account) + "\n", java.nio.file.StandardOpenOption.APPEND);
+        var xrefFile = input.resolve("AWS.M2.CARDDEMO.CARDXREF.PS.txt");
+        var xref = Layouts.XREF.decode(Files.readAllLines(xrefFile).getFirst());
+        xref.put("XREF-ACCT-ID", new BigDecimal("2008"));
+        xref.put("XREF-CARD-NUM", "4000000000002008");
+        Files.writeString(xrefFile, Layouts.XREF.encodeLine(xref) + "\n", java.nio.file.StandardOpenOption.APPEND);
+        var balanceFile = input.resolve("AWS.M2.CARDDEMO.TCATBALF.PS.txt");
+        var balance = Layouts.CATEGORY_BALANCE.decode(Files.readAllLines(balanceFile).getFirst());
+        balance.put("TRANCAT-ACCT-ID", new BigDecimal("2008"));
+        Files.writeString(balanceFile, Layouts.CATEGORY_BALANCE.encodeLine(balance) + "\n", java.nio.file.StandardOpenOption.APPEND);
+        var output = temporary.resolve("output");
+        run.run(input, output);
+        var accounts = Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt"));
+        var posted = Layouts.ACCOUNT.decode(accounts.getFirst());
+        assertEquals(new BigDecimal("1517.50"), posted.get("ACCT-CURR-BAL"));
+        assertEquals(new BigDecimal("0.00"), posted.get("ACCT-CURR-CYC-CREDIT"));
+        var last = Layouts.ACCOUNT.decode(accounts.getLast());
+        assertEquals(new BigDecimal("1500.00"), last.get("ACCT-CURR-BAL"));
+        assertEquals(new BigDecimal("1500.00"), last.get("ACCT-CURR-CYC-CREDIT"));
+        assertEquals(3, Files.readAllLines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")).size());
     }
 
     @Test

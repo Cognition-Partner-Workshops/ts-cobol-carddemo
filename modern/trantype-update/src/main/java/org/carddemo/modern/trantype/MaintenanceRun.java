@@ -39,7 +39,10 @@ final class MaintenanceRun {
                 });
             }
             long sequence = 0;
-            for (var line : Files.readAllLines(input.resolve("INPFILE.txt"), StandardCharsets.ISO_8859_1)) {
+            var inputFile = input.resolve("INPFILE.txt");
+            var inputLines = Files.exists(inputFile)
+                    ? Files.readAllLines(inputFile, StandardCharsets.ISO_8859_1) : java.util.List.<String>of();
+            for (var line : inputLines) {
                 if (line.length() > TrantypeInput.LAYOUT.length()) throw new IllegalArgumentException("INPFILE record exceeds 53 bytes");
                 var record = TrantypeInput.LAYOUT.decode(line);
                 jdbc.update("INSERT INTO maintenance_input VALUES (?, ?, ?, ?)", ++sequence,

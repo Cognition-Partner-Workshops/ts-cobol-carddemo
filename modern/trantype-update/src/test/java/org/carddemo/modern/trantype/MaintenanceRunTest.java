@@ -96,9 +96,16 @@ class MaintenanceRunTest {
     }
 
     @Test
-    void missingOrOversizedInputIsFatal() throws Exception {
-        assertEquals(12, run.run(input, output));
-        assertTrue(Files.readString(output.resolve("rc.json")).contains("\"STEP1\": 12"));
+    void missingInputMaterializesAsAnEmptyDataset() throws Exception {
+        assertEquals(0, run.run(input, output));
+        assertEquals(3, jdbc.queryForObject("SELECT count(*) FROM transaction_type", Integer.class));
+        assertEquals("DSNRUN: DSN ATTACHED, RUNNING COBTUPDT\nOPEN FILE OK\nDSNRUN: COMMIT AT END OF TASK\n",
+                Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt")));
+        assertTrue(Files.readString(output.resolve("rc.json")).contains("\"STEP1\": 0"));
+    }
+
+    @Test
+    void oversizedInputIsFatal() throws Exception {
         Files.writeString(input.resolve("INPFILE.txt"), "A".repeat(54));
         assertEquals(12, run.run(input, output));
         assertTrue(Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt")).contains("exceeds 53 bytes"));

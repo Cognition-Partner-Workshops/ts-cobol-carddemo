@@ -65,6 +65,9 @@ t07 mixes add/update/delete/comment.
 
 Tests cover ordered maintenance, empty input, duplicate insert with continuation,
 missing targets, invalid operations, missing input and oversized records.
+Missing INPFILE.txt is an empty dataset (RC 0), matching record.py:45-53;
+this path is unit-tested and directly checked through the legacy materializer
+and COBTUPDT, but unproven by fixture parity.
 Fatal input errors export RC 12 and fail Batch; recoverable record errors
 export RC 4. Uncovered fatal database outages are not proven by fixture parity.
 The COBOL batch parity standard requires all-case comparator results for

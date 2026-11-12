@@ -25,7 +25,8 @@ public class PostingApplication {
             var execution = context.getBean(JobLauncher.class).run(context.getBean(Job.class), new JobParametersBuilder()
                     .addString("input", Path.of(args[0]).toAbsolutePath().toString()).addString("output", Path.of(args[1]).toAbsolutePath().toString())
                     .addString("clock", args[2]).addString("sortStart", args[3]).addString("sortEnd", args[4]).addLong("run", System.nanoTime()).toJobParameters());
-            if (execution.getStatus().isUnsuccessful()) throw new IllegalStateException("posting failed: " + execution.getExitStatus());
+            if (execution.getStatus().isUnsuccessful() || execution.getExitStatus().getExitCode().equals("FAILED"))
+                throw new IllegalStateException("posting failed: " + execution.getExitStatus());
         }
     }
     @Bean Job posting(JobRepository repository, PlatformTransactionManager transactions, JdbcTemplate jdbc) {
@@ -36,6 +37,7 @@ public class PostingApplication {
             else if (rc != 0) contribution.setExitStatus(new ExitStatus("RC" + rc));
             return RepeatStatus.FINISHED;
         }, transactions).build();
-        return new JobBuilder("posting", repository).start(step).build();
+        return new JobBuilder("posting", repository).start(step).on("FAILED").fail()
+                .from(step).on("*").end().end().build();
     }
 }

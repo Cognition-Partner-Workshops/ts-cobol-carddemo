@@ -36,6 +36,8 @@ class RecordLayoutTest {
         assertEquals(50, Layouts.CARD_XREF.length());
         assertEquals(50, Layouts.TRAN_CAT_BAL.length());
         assertEquals(50, Layouts.DIS_GROUP.length());
+        assertEquals(60, Layouts.TRAN_TYPE.length());
+        assertEquals(60, Layouts.TRAN_CATEGORY.length());
     }
 
     @Test

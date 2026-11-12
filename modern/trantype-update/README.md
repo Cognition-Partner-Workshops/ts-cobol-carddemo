@@ -26,7 +26,12 @@ sysout/MNTTRDB2.STEP1.txt, rc.json with STEP1/maxrc, and both
 db/carddemo.*.csv snapshots, exported by PostgreSQL COPY in recorder key order.
 
 This is deliberately a business-intent straight port, not parity-approved.
-Descriptions are trimmed for VARCHAR storage, missing update/delete targets
+Descriptions retain the full PIC X(50) host-variable padding in VARCHAR(50)
+storage, matching COBTUPDT 10031/10032 and ocesql v1.4
+OCESQLPutSQLVar / OCDB_TYPE_ALPHANUMERIC's fixed-length memcpy. Both the
+legacy and translated DDL specify VARCHAR(50), not CHAR(50): seed descriptions
+remain unpadded; only maintenance writes carry host padding. Fixtures t01,
+t02, t04 and t07 prove this distinction. Missing update/delete targets
 report RC 4, and SQL errors report actual PostgreSQL diagnostics. No legacy
 SQLCODE mapping or padding defects have been emulated.
 COBTUPDT source explicitly tests +100 on UPDATE/DELETE, despite the estate

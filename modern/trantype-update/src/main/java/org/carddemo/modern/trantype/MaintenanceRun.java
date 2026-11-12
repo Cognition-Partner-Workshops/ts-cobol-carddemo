@@ -51,7 +51,7 @@ final class MaintenanceRun {
                         "INPUT-REC-NUMBER", row.get("input_rec_number"), "INPUT-REC-DESC", row.get("input_rec_desc"));
                 lines.add("PROCESSING   " + TrantypeInput.LAYOUT.encode(record));
                 var type = row.get("input_rec_number");
-                var description = row.get("input_rec_desc").toString().stripTrailing();
+                var description = row.get("input_rec_desc").toString();
                 try {
                     switch (row.get("input_rec_type").toString()) {
                         case "*" -> lines.add("IGNORING COMMENTED LINE");

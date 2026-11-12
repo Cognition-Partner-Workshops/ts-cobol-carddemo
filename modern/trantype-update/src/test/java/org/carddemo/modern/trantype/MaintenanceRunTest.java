@@ -37,9 +37,9 @@ class MaintenanceRunTest {
         Files.writeString(input.resolve("INPFILE.txt"), "A04Fee\nU02New payment\nD03\n*00Comment\n");
         assertEquals(0, run.run(input, output));
         assertEquals(3, jdbc.queryForObject("SELECT count(*) FROM transaction_type", Integer.class));
-        assertEquals("New payment", jdbc.queryForObject("SELECT tr_description FROM transaction_type WHERE tr_type='02'", String.class));
+        assertEquals("New payment" + " ".repeat(39), jdbc.queryForObject("SELECT tr_description FROM transaction_type WHERE tr_type='02'", String.class));
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM transaction_type WHERE tr_type='03'", Integer.class));
-        assertEquals("tr_type,tr_description\n01,Purchase\n02,New payment\n04,Fee\n",
+        assertEquals("tr_type,tr_description\n01,Purchase\n02,New payment" + " ".repeat(39) + "\n04,Fee" + " ".repeat(47) + "\n",
                 Files.readString(output.resolve("db/carddemo.transaction_type.csv")));
         assertEquals("trc_type_code,trc_type_category,trc_cat_data\n",
                 Files.readString(output.resolve("db/carddemo.transaction_type_categor.csv")));

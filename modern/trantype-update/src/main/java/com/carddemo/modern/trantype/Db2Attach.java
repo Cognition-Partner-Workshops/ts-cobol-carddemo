@@ -7,7 +7,9 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 import javax.sql.DataSource;
 import org.springframework.stereotype.Component;
 
@@ -85,10 +87,10 @@ public class Db2Attach implements TransactionTypeSql {
 
     /**
      * ocesql connects with client_encoding OCDB_DB_CHAR, default SJIS (ocesql.c), and sends the
-     * PIC X bytes as they are; PostgreSQL rejects bytes that are not valid SJIS.
+     * PIC X bytes as they are, so the server decodes them as SJIS; pgJDBC itself is UTF-8 only.
      */
     private static final Charset OCDB_DB_CHAR = Charset.forName("Shift_JIS");
-    private static final String CHARACTER_NOT_IN_REPERTOIRE = "22021";
+    static final String SERVER_DECODE = "SELECT convert_from(?, 'SJIS')";
 
     /** Host variables are bound as the full PIC X value, trailing spaces included, like ocesql. */
     private int execute(String sql, String... hostVariables) {
@@ -103,16 +105,34 @@ public class Db2Attach implements TransactionTypeSql {
         }
     }
 
-    /** The record's bytes (read as Latin-1, one char per byte) as the server decodes them. */
-    static String asClientEncoding(String picX) throws SQLException {
+    /**
+     * The record's bytes (read as Latin-1, one char per byte) as the server decodes them. Bytes
+     * that are not valid SJIS go to the server to decode, so that its error (SQLSTATE 22021,
+     * SQLCODE -400) aborts the unit of work exactly as the legacy statement does.
+     */
+    private String asClientEncoding(String picX) throws SQLException {
+        Optional<String> decoded = decodeSjis(picX);
+        if (decoded.isPresent()) {
+            return decoded.get();
+        }
+        try (PreparedStatement ps = connection.prepareStatement(SERVER_DECODE)) {
+            ps.setBytes(1, picX.getBytes(StandardCharsets.ISO_8859_1));
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getString(1);
+            }
+        }
+    }
+
+    static Optional<String> decodeSjis(String picX) {
         try {
-            return OCDB_DB_CHAR.newDecoder()
+            return Optional.of(OCDB_DB_CHAR.newDecoder()
                     .onMalformedInput(CodingErrorAction.REPORT)
                     .onUnmappableCharacter(CodingErrorAction.REPORT)
                     .decode(ByteBuffer.wrap(picX.getBytes(StandardCharsets.ISO_8859_1)))
-                    .toString();
+                    .toString());
         } catch (CharacterCodingException e) {
-            throw new SQLException("invalid byte sequence for encoding \"SJIS\"", CHARACTER_NOT_IN_REPERTOIRE, e);
+            return Optional.empty();
         }
     }
 

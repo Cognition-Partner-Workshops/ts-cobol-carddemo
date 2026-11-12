@@ -111,13 +111,12 @@ class CobtupdtProcessorTest {
     }
 
     @Test
-    void hostVariablesAreDecodedAsOcesqlSjisClientEncoding() throws SQLException {
+    void hostVariablesAreDecodedAsOcesqlSjisClientEncoding() {
         // "Ün" in UTF-8 is C3 9C 6E; the legacy row (probed) holds U+FF83 (C3) and U+5F9E (SJIS 9C 6E)
-        assertEquals("\uff83\u5f9e", Db2Attach.asClientEncoding("\u00c3\u009cn"));
-        assertEquals("Purchase  ", Db2Attach.asClientEncoding("Purchase  "));
-        SQLException bad = org.junit.jupiter.api.Assertions.assertThrows(SQLException.class,
-                () -> Db2Attach.asClientEncoding("bad\u0081 "));
-        assertEquals(-400, Sqlca.sqlcode(bad));
+        assertEquals(java.util.Optional.of("\uff83\u5f9e"), Db2Attach.decodeSjis("\u00c3\u009cn"));
+        assertEquals(java.util.Optional.of("Purchase  "), Db2Attach.decodeSjis("Purchase  "));
+        // left to the server, whose error aborts the unit of work
+        assertEquals(java.util.Optional.empty(), Db2Attach.decodeSjis("bad\u0081 "));
     }
 
     @Test

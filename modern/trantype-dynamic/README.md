@@ -34,6 +34,9 @@ map; an unknown name fails the step.
   PostgreSQL error. Db2 would report `-206`, `-803` and so on.
 - `:INPUT-REC-DESC` is `PIC X(50)` and is bound with its trailing spaces, so
   `TR_DESCRIPTION` rows written by COBTUPDT are space-padded to 50.
+- `STRING ... INTO WS-RETURN-MSG` overwrites only the length of the new text, so a
+  shorter error keeps the tail of the previous one (`ERROR: TYPE NOT VALIDSACTION_TYPE
+  table. SQLCODE: -403`), as the legacy run on a scratch input shows.
 - No statement savepoints (ocesql runs without `OCDB_PG_IGNORE_ERROR`). A failed
   statement aborts the PostgreSQL transaction, every later statement fails with
   `-400`, and the end-of-task `COMMIT` silently rolls back while still printing

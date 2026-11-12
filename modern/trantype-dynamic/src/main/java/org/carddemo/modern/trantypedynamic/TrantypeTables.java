@@ -16,7 +16,7 @@ record TrantypeTables(String name, String legacyName, String order) {
     static final TrantypeTables CATEGORY = new TrantypeTables("transaction_type_categor", "carddemo.transaction_type_categor",
             "trc_type_code, trc_type_category");
     static final List<TrantypeTables> ALL = List.of(TRANSACTION_TYPE, CATEGORY);
-    private static final Pattern LEGACY_SCHEMA = Pattern.compile("(?i)\\bcarddemo\\.");
+    private static final Pattern LEGACY_SCHEMA = Pattern.compile("(?i)\\bcarddemo\\.(?=transaction_type)");
 
     /** record.py reset_database: truncate, then load the case's seed into the candidate schema. */
     static void reset(DataSource dataSource, Path seed) throws IOException, SQLException {

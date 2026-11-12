@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 import org.carddemo.modern.codec.TrantypeInput;
@@ -75,7 +76,9 @@ final class MaintenanceRun {
                         }
                     }
                 } catch (DataAccessException error) {
-                    lines.add("Error accessing: TRANSACTION_TYPE table. " + error.getMostSpecificCause().getMessage());
+                    var cause = error.getMostSpecificCause();
+                    if (!(cause instanceof SQLException sql)) throw error;
+                    lines.add(sqlErrorMessage(sql.getSQLState()));
                     rc = 4;
                 }
             }
@@ -90,6 +93,25 @@ final class MaintenanceRun {
         snapshot(output, "transaction_type", "tr_type");
         snapshot(output, "transaction_type_categor", "trc_type_code, trc_type_category");
         return rc;
+    }
+
+    static String sqlErrorMessage(String state) {
+        int code = switch (state == null ? "" : state) {
+            case "08001" -> -402;
+            case "08003" -> -220;
+            case "08007" -> -401;
+            case "21000" -> -404;
+            case "23505" -> -403;
+            case "25001" -> -603;
+            case "25P01" -> -604;
+            case "34000" -> -602;
+            case "42804" -> -204;
+            case "42P03" -> -605;
+            default -> -400;
+        };
+        // COBTUPDT 10031: PIC ----9 SQLCODE in PIC X(80) WS-RETURN-MSG.
+        return String.format(java.util.Locale.ROOT, "%-80s",
+                "Error accessing: TRANSACTION_TYPE table. SQLCODE:" + String.format(java.util.Locale.ROOT, "%5d", code));
     }
 
     private void snapshot(Path output, String table, String order) throws IOException {

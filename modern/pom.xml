@@ -27,6 +27,7 @@
     <module>record-codec</module>
     <module>interest</module>
     <module>posting</module>
+    <module>trantype-update</module>
   </modules>
 
   <dependencyManagement>

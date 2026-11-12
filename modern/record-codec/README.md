@@ -14,6 +14,7 @@ shares one definition of each record.
 | `Layouts.CARD_XREF` | `CVACT03Y` | 50 |
 | `Layouts.TRAN_CAT_BAL` | `CVTRA01Y` | 50 |
 | `Layouts.DIS_GROUP` | `CVTRA02Y` | 50 |
+| `Layouts.TRAN_TYPE_MAINT` | `COBTUPDT` `WS-INPUT-REC` (inline, no copybook) | 53 |
 
 Zoned decimals use the EBCDIC overpunch convention (`cobc -fsign=EBCDIC`).
 Lines are written the way `tools/parity/record.py` records them, one record per

@@ -92,13 +92,24 @@ class MnttrdynRunTest {
     }
 
     @Test
-    void failedDynamicStatementRc8IsReplacedByCobtupdtStopRun() throws Exception {
+    void failedDynamicStatementAbortsTheUnitOfWork() throws Exception {
         useFixture("d03-bad-statement");
+        assertEquals(4, run());
+        var lines = sysout();
+        assertEquals("CBTRNDYN: EXECUTE SQLCODE -0000000400", lines.get(2));
+        assertEquals(String.format("%-80s", "Error accessing: TRANSACTION_TYPE table. SQLCODE: -400"), lines.get(7));
+        assertFalse(lines.contains("CBTRNDYN: END"));
+        assertEquals("DSNRUN: COMMIT AT END OF TASK", lines.getLast());
+        assertEquals(List.of("01=Purchase", "02=Payment", "03=Credit"), descriptions());
+    }
+
+    @Test
+    void failedDynamicStatementRc8IsLostWhenCobtupdtRunsNoSql() throws Exception {
+        useFixture("d03-bad-statement");
+        Files.writeString(input.resolve("INPFILE.txt"), "*comment only\n");
         assertEquals(0, run());
-        assertFalse(sysout().contains("CBTRNDYN: END"));
-        assertEquals("CBTRNDYN: EXECUTE SQLCODE -0000000400", sysout().get(2));
-        assertTrue(sysout().contains("RECORD UPDATED SUCCESSFULLY"));
-        assertEquals("01=" + pad("Purchase - updated"), descriptions().getFirst());
+        assertEquals("IGNORING COMMENTED LINE", sysout().get(6));
+        assertEquals(List.of("01=Purchase", "02=Payment", "03=Credit"), descriptions());
     }
 
     @Test

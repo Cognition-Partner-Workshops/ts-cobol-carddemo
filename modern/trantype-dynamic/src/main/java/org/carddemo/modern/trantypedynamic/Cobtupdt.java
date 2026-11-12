@@ -74,15 +74,12 @@ final class Cobtupdt implements Subprogram {
         returnCode = 4;
     }
 
+    /** One EXEC SQL; like CBTRNDYN's, a failure is not rolled back on its own and aborts the unit of work. */
     private int execute(String sql, String... values) throws SQLException {
-        var savepoint = unit.setSavepoint();
         try (var statement = unit.prepareStatement(sql)) {
             for (int i = 0; i < values.length; i++) statement.setString(i + 1, values[i]);
-            int rows = statement.executeUpdate();
-            unit.releaseSavepoint(savepoint);
-            return rows == 0 ? SqlCodes.NOT_FOUND : 0;
+            return statement.executeUpdate() == 0 ? SqlCodes.NOT_FOUND : 0;
         } catch (SQLException e) {
-            unit.rollback(savepoint);
             return SqlCodes.of(e);
         }
     }

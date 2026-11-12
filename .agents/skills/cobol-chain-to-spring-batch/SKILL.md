@@ -25,7 +25,14 @@ description: Convert one CardDemo COBOL/JCL batch chain to Java 21 Spring Batch 
 4. Add `modern/<chain>/pom.xml` as a module in `modern/pom.xml`, following
    `modern/interest`: Java 21, Spring Batch, PostgreSQL 15 via Compose `db`.
    Use a chain-specific schema for candidate data and Batch metadata, separate
-   from legacy DB tables. Use the existing `java` Compose service for Maven
+   from legacy DB tables. Put explicit typed DDL in the module's
+   `src/main/resources/schema.sql`, initialized by Spring: one column per named
+   copybook field, NUMERIC precision/scale matching its PIC, and primary and
+   alternate indexes matching the VSAM keys (including nonunique alternate
+   keys). Do not store opaque fixed-record blobs as the relational model.
+   Load decoded fields into rows; read key-ordered rows in the Batch step;
+   update typed rows and encode them through the codec at export.
+   Use the existing `java` Compose service for Maven
    and execution; the host needs neither Java 21 nor Maven. Do not change the
    estate Dockerfile's COBOL toolchain.
 5. Import `fixtures/<chain>/<case>/input/*.txt` and any DB fixture inputs used
@@ -45,11 +52,15 @@ description: Convert one CardDemo COBOL/JCL batch chain to Java 21 Spring Batch 
 7. Port the business intent directly first; do not pre-reproduce documented
    quirks. Use plain BigDecimal arithmetic (HALF_EVEN for the initial interest
    port). Freeze the clock from `chains.json`, including hundredths, and follow
-   JCL parameters. Commit this straight version alone before parity fixes.
+   JCL parameters: pass them as Batch job parameters, defaulted from the JCL by
+   the harness/run command, not literals in Java. Commit this straight version
+   alone before parity fixes.
 8. The Makefile defaults to `TARGET=java` when `modern/<chain>` exists, legacy
    otherwise; `TARGET=legacy` explicitly selects COBOL. Java dispatch builds
    `modern/pom.xml -pl <chain> -am package`, then runs
    `modern/<chain>/target/<chain>-0.1.0.jar <input-directory> <output-directory>`.
+   Interest additionally takes `<parm-date>` as its third argument; the
+   Makefile defaults `INTEREST_PARM_DATE` from `app/jcl/INTCALC.jcl`.
    Keep this entry-point/artifact contract, or update dispatch for the new
    chain without breaking others. The existing `java` service supplies Java 21.
    Optional `MAVEN_ARGS` is passed to the harness Maven build.
@@ -70,6 +81,10 @@ description: Convert one CardDemo COBOL/JCL batch chain to Java 21 Spring Batch 
     test proving it; rerun Maven tests and all chain fixtures. Do not mask a
     layout error as a business-rule difference. Stop only when every case is
     green; record cases, findings and their causes in the PR.
+    Trace abends through `9999-ABEND-PROGRAM`, `tools/stubs/CEE3ABD.cbl` and the
+    runner too: local CEE3ABD returns RC 12. Emit actual failure diagnostics,
+    failed STEP/maxrc and a failed Batch job, not hard-coded success. Test
+    uncovered failures and label them unproven by fixture parity in the README.
 11. Reproduce legacy defects rather than quietly repairing them. Name each
     defect in a code-site comment, `modern/<chain>/README.md`, and the PR,
     citing a proving fixture and the COBOL cause. Ask the owner whether the

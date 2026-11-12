@@ -3,7 +3,7 @@ ARG JAVA_IMAGE=eclipse-temurin:21-jre
 FROM ${MAVEN_IMAGE} AS build
 WORKDIR /src
 COPY modern/ modern/
-RUN mvn -B -f modern/pom.xml verify
+RUN mvn -B -s modern/maven-settings.xml -f modern/pom.xml verify
 
 FROM ${JAVA_IMAGE}
 WORKDIR /estate

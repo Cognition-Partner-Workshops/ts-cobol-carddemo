@@ -88,7 +88,7 @@ parity:
 	echo "report: work/parity/report.md"; exit $$fail
 
 modern-build: up
-	$(EXEC) $(MVN) -f modern/pom.xml verify
+	$(EXEC) $(MVN) -s modern/maven-settings.xml -f modern/pom.xml verify
 
 modern-image:
 	$(COMPOSE) build modern

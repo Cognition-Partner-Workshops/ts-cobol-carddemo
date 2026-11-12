@@ -96,7 +96,7 @@ class MnttrdynRunTest {
         useFixture("d03-bad-statement");
         assertEquals(0, run());
         assertFalse(sysout().contains("CBTRNDYN: END"));
-        assertEquals("CBTRNDYN: EXECUTE SQLCODE -0000000206", sysout().get(2));
+        assertEquals("CBTRNDYN: EXECUTE SQLCODE -0000000400", sysout().get(2));
         assertTrue(sysout().contains("RECORD UPDATED SUCCESSFULLY"));
         assertEquals("01=" + pad("Purchase - updated"), descriptions().getFirst());
     }
@@ -158,6 +158,9 @@ class MnttrdynRunTest {
         assertEquals("+0000000000", SqlCodes.display(0));
         assertEquals("-0000000206", SqlCodes.display(-206));
         assertEquals(" -400", SqlCodes.edited(-400));
+        assertEquals(-403, SqlCodes.of(new java.sql.SQLException("duplicate", "23505")));
+        assertEquals(-400, SqlCodes.of(new java.sql.SQLException("undefined column", "42703")));
+        assertEquals(-400, SqlCodes.of(new java.sql.SQLException("in failed transaction", "25P02")));
         assertEquals("    0", SqlCodes.edited(0));
         assertEquals("-1234", SqlCodes.edited(-1234));
     }

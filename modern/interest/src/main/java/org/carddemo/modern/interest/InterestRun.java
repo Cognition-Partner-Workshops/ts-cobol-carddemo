@@ -111,7 +111,9 @@ final class InterestRun {
     private void load(Path input, Path output, String dataset, String job, InterestTables table) throws IOException {
         int processed = 0;
         int skipped = 0;
-        for (var line : Files.readAllLines(input.resolve(PREFIX + dataset + ".PS.txt"), StandardCharsets.ISO_8859_1)) {
+        var path = input.resolve(PREFIX + dataset + ".PS.txt");
+        var lines = Files.exists(path) ? Files.readAllLines(path, StandardCharsets.ISO_8859_1) : List.<String>of();
+        for (var line : lines) {
             if (table.insert(jdbc, table.layout().decode(line))) processed++;
             else skipped++;
         }

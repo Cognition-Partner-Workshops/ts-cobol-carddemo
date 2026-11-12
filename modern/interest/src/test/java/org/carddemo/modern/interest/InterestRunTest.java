@@ -163,6 +163,34 @@ class InterestRunTest {
     }
 
     @Test
+    void omittedAccountFileActsLikeAnEmptyDatasetAndAbendsInTheJob() throws Exception {
+        Files.delete(input.resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt"));
+        assertAbend(java.util.List.of("ACCOUNT NOT FOUND: 00000002001", "ERROR READING ACCOUNT FILE"));
+    }
+
+    @Test
+    void omittedXrefFileActsLikeAnEmptyDatasetAndAbendsInTheJob() throws Exception {
+        Files.delete(input.resolve("AWS.M2.CARDDEMO.CARDXREF.PS.txt"));
+        assertAbend(java.util.List.of("ACCOUNT NOT FOUND: 00000002001", "ERROR READING XREF FILE"));
+    }
+
+    @Test
+    void omittedDisclosureFileActsLikeAnEmptyDatasetAndAbendsInTheJob() throws Exception {
+        Files.delete(input.resolve("AWS.M2.CARDDEMO.DISCGRP.PS.txt"));
+        assertAbend(java.util.List.of("DISCLOSURE GROUP RECORD MISSING", "TRY WITH DEFAULT GROUP CODE",
+                "ERROR READING DEFAULT DISCLOSURE GROUP"));
+    }
+
+    @Test
+    void omittedBalancesFileEndsNormallyWithoutTransactions() throws Exception {
+        Files.delete(input.resolve("AWS.M2.CARDDEMO.TCATBALF.PS.txt"));
+        var output = temporary.resolve("output");
+        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(0, Files.size(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")));
+        assertEquals(2, Files.readAllLines(output.resolve("sysout/INTCALC.STEP15.txt")).size());
+    }
+
+    @Test
     void missingXrefRecordsTheLegacyAbend() throws Exception {
         Files.writeString(input.resolve("AWS.M2.CARDDEMO.CARDXREF.PS.txt"), "");
         assertAbend(java.util.List.of("ACCOUNT NOT FOUND: 00000002001", "ERROR READING XREF FILE"));

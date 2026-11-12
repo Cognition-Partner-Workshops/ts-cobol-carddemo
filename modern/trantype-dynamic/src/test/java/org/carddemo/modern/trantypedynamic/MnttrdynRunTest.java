@@ -145,6 +145,26 @@ class MnttrdynRunTest {
     }
 
     @Test
+    void shorterMessageKeepsTheTailOfTheEarlierOneInWsReturnMsg() throws Exception {
+        useFixture("d02-delete-statement");
+        Files.writeString(input.resolve("INPFILE.txt"), "A01Dup\nX01\n");
+        assertEquals(4, run());
+        var lines = sysout();
+        assertTrue(lines.contains(String.format("%-80s", "Error accessing: TRANSACTION_TYPE table. SQLCODE: -403")));
+        assertTrue(lines.contains(String.format("%-80s", "ERROR: TYPE NOT VALIDSACTION_TYPE table. SQLCODE: -403")));
+    }
+
+    @Test
+    void seedTextThatLooksLikeASchemaIsKept() throws Exception {
+        useFixture("d02-delete-statement");
+        Files.writeString(input.resolve("db/seed.sql"),
+                "INSERT INTO carddemo.transaction_type (tr_type, tr_description) VALUES ('01','see carddemo.notes');\n");
+        Files.writeString(input.resolve("DYNSQL.txt"), "SELECT 1\n");
+        run();
+        assertEquals(List.of("01=see carddemo.notes"), descriptions());
+    }
+
+    @Test
     void noParmsMeansNoCall() throws Exception {
         useFixture("d01-update-then-apply");
         parms = "";

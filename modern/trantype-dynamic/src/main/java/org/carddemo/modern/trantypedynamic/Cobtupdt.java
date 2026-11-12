@@ -22,6 +22,7 @@ final class Cobtupdt implements Subprogram {
     private final List<String> sysout;
     private final List<Map<String, Object>> records;
     private int returnCode;
+    private String returnMessage = " ".repeat(80);
 
     Cobtupdt(Connection unit, List<String> sysout, List<Map<String, Object>> records) {
         this.unit = unit;
@@ -72,9 +73,14 @@ final class Cobtupdt implements Subprogram {
         return "Error accessing: TRANSACTION_TYPE table. SQLCODE:" + SqlCodes.edited(code);
     }
 
-    /** 9999-ABEND: display WS-RETURN-MSG PIC X(80), set RETURN-CODE 4 and carry on. */
+    /**
+     * STRING ... INTO WS-RETURN-MSG PIC X(80) overwrites from position 1 and leaves the rest of the
+     * previous message in place; 9999-ABEND displays it, sets RETURN-CODE 4 and carries on.
+     */
     private void abend(String message) {
-        sysout.add(String.format("%-80.80s", message));
+        int length = Math.min(message.length(), returnMessage.length());
+        returnMessage = message.substring(0, length) + returnMessage.substring(length);
+        sysout.add(returnMessage);
         returnCode = 4;
     }
 

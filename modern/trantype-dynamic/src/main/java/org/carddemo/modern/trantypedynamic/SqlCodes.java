@@ -24,9 +24,12 @@ final class SqlCodes {
         };
     }
 
-    /** DISPLAY SQLCODE, PIC S9(9): sign and nine digits. */
+    /**
+     * DISPLAY SQLCODE. The ocesql SQLCA declares SQLCODE PIC S9(9) COMP-5, and GnuCOBOL displays a
+     * COMP-5 item with the digits of its four-byte binary capacity: sign and ten digits.
+     */
     static String display(int code) {
-        return (code < 0 ? "-" : "+") + String.format("%09d", Math.abs((long) code) % 1_000_000_000L);
+        return (code < 0 ? "-" : "+") + String.format("%010d", Math.abs((long) code));
     }
 
     /** MOVE SQLCODE TO WS-VAR-SQLCODE PIC ----9. */

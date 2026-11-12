@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+chain="${1:?usage: run-job <chain> <input> <output> [job parameters]}"
+shift
+case "$chain" in posting|interest|trantype-update|trantype-dynamic) ;; *) echo "Unknown chain: $chain" >&2; exit 2 ;; esac
+exec java -jar "/opt/carddemo/$chain.jar" "$@"

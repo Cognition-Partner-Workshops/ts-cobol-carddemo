@@ -23,6 +23,10 @@ CHAIN   ?=
 CASE    ?=
 TARGET  ?=
 MAVEN_ARGS ?=
+JAVA_RUN ?= $(COMPOSE) exec -T candidate /opt/carddemo/run-job
+POSTING_CLOCK ?= $(shell python3 -c 'import json; print(json.load(open("tools/runjcl/chains.json"))["posting"]["clock"])')
+POSTING_SORT_START ?= $(shell sed -n "s/.*PARM-START-DATE,C'\([^']*\)'.*/\1/p" app/jcl/TRANREPT.jcl)
+POSTING_SORT_END ?= $(shell sed -n "s/.*PARM-END-DATE,C'\([^']*\)'.*/\1/p" app/jcl/TRANREPT.jcl)
 TRANTYPE_CLOCK ?= $(shell python3 -c 'import json; print(json.load(open("tools/runjcl/chains.json"))["trantype-update"]["clock"])')
 INTEREST_PARM_DATE ?= $(shell sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCALC.jcl)
 TRANTYPE_DYNAMIC_PARMS ?= $(shell sed -n "s/.*PARMS('\([^']*\)').*/\1/p" app/app-transaction-type-db2/jcl/MNTTRDYN.jcl)
@@ -65,13 +69,12 @@ parity:
 	chains="$(if $(CHAIN),$(CHAIN),$(CHAINS))"; \
 	for chain in $$chains; do \
 	  target="$(TARGET)"; [ -n "$$target" ] || { if [ -d modern/$$chain ]; then target=java; else target=legacy; fi; }; \
-	  if [ "$$target" = java ]; then $(COMPOSE) exec -T java mvn $(MAVEN_ARGS) -Dmaven.repo.local=/estate/work/maven -f modern/pom.xml -pl $$chain -am package -DskipTests > work/parity/build-$$chain.log 2>&1 || { cat work/parity/build-$$chain.log; exit 1; }; fi; \
 	  cases="$(if $(CASE),$(CASE),$$(ls fixtures/$$chain))"; \
 	  for case in $$cases; do \
 	    if [ "$$target" = java ]; then \
-	      set --; if [ "$$chain" = interest ]; then set -- "$(INTEREST_PARM_DATE)"; elif [ "$$chain" = trantype-update ]; then set -- "$(TRANTYPE_CLOCK)"; elif [ "$$chain" = trantype-dynamic ]; then set -- $(TRANTYPE_DYNAMIC_PARMS); fi; \
-	      $(COMPOSE) exec -T java java -jar modern/$$chain/target/$$chain-0.1.0.jar fixtures/$$chain/$$case/input work/parity/$$chain/$$case/actual "$$@" > work/parity/run-$$chain-$$case.log 2>&1 || { cat work/parity/run-$$chain-$$case.log; fail=1; continue; }; \
-	      label=java; \
+	      set --; if [ "$$chain" = posting ]; then set -- "$(POSTING_CLOCK)" "$(POSTING_SORT_START)" "$(POSTING_SORT_END)"; elif [ "$$chain" = interest ]; then set -- "$(INTEREST_PARM_DATE)"; elif [ "$$chain" = trantype-update ]; then set -- "$(TRANTYPE_CLOCK)"; elif [ "$$chain" = trantype-dynamic ]; then set -- "$(TRANTYPE_DYNAMIC_PARMS)"; fi; \
+	      $(JAVA_RUN) $$chain fixtures/$$chain/$$case/input work/parity/$$chain/$$case/actual "$$@" > work/parity/run-$$chain-$$case.log 2>&1 || { cat work/parity/run-$$chain-$$case.log; fail=1; continue; }; \
+	      label="Java container"; \
 	    else \
 	      $(EXEC) $(PY) tools/parity/record.py $$chain $$case --out work/parity/$$chain/$$case/actual > /dev/null || { echo "$$chain/$$case: chain run failed"; fail=1; continue; }; label="legacy rerun"; \
 	    fi; \

@@ -1,4 +1,20 @@
 services:
+  candidate:
+    image: carddemo-modern:local
+    profiles: [modern]
+    build:
+      context: ./modern
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /estate
+    entrypoint: []
+    command: ["sleep", "infinity"]
+    volumes:
+      - ./fixtures:/estate/fixtures:ro
+      - ./work:/estate/work
+    depends_on:
+      db:
+        condition: service_healthy
+
   java:
     image: maven:3.9-eclipse-temurin-21
     pull_policy: missing

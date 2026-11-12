@@ -27,7 +27,7 @@ public final class PostingRun {
         Files.write(output.resolve("datasets/" + PREFIX + dsn + ".txt"), table.read(jdbc).stream().map(table.layout()::encodeLine).toList(), StandardCharsets.ISO_8859_1);
     }
     public int run(Path input, Path output, String clock, String sortStart, String sortEnd) throws IOException {
-        var stamp = LocalDateTime.parse(clock, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS")).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss.SS")) + "0000";
+        var stamp = timestamp(clock);
         for (var table : ALL) jdbc.update("DELETE FROM " + table.name());
         load(input, "ACCTDATA.PS", ACCOUNT); load(input, "CARDXREF.PS", XREF); load(input, "TCATBALF.PS", BALANCE);
         load(input, "TRANTYPE.PS", TYPE); load(input, "TRANCATG.PS", CATEGORY);
@@ -87,6 +87,10 @@ public final class PostingRun {
         return Math.max(postRc, reportRc);
     }
     static String balanceKey(BigDecimal account, String type, BigDecimal category) { return id(account) + type + String.format(Locale.ROOT, "%04d", category.intValueExact()); }
+    static String timestamp(String clock) {
+        return LocalDateTime.parse(clock, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH.mm.ss.SS")) + "0000";
+    }
     static int validate(Map<String, Object> daily, Map<String, Object> account, boolean hasCard) {
         if (!hasCard) return 100;
         if (account == null) return 101;

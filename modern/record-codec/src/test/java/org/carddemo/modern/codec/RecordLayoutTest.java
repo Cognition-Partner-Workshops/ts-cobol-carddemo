@@ -58,6 +58,15 @@ class RecordLayoutTest {
     }
 
     @Test
+    void rejectReasonRoundTrips() {
+        String line = new RejectRecord(DALYTRAN_LINE, 102, "OVERLIMIT TRANSACTION").toLine();
+        assertEquals("0102", line.substring(350, 354));
+        Map<String, Object> values = Layouts.REJTRAN.decode(line);
+        assertEquals(new BigDecimal("102"), values.get("REJ-FAIL-REASON"));
+        assertEquals(line, Layouts.REJTRAN.encodeLine(values));
+    }
+
+    @Test
     void rejectLineCopiesTheTransactionBytesUnchanged() {
         String blankAmount = DALYTRAN_LINE.substring(0, 132) + " ".repeat(11) + DALYTRAN_LINE.substring(143);
         String line = new RejectRecord(blankAmount, 101, "ACCOUNT RECORD NOT FOUND").toLine();

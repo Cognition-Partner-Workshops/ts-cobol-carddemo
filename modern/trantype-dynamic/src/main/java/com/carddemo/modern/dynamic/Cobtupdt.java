@@ -2,6 +2,7 @@ package com.carddemo.modern.dynamic;
 
 import java.sql.SQLException;
 import java.util.Map;
+import org.carddemo.modern.codec.SjisSql;
 import org.springframework.batch.item.ItemProcessor;
 
 /** 1003-TREAT-RECORD: step-scoped COBTUPDT working storage, including WS-RETURN-MSG. */
@@ -45,17 +46,16 @@ public class Cobtupdt implements ItemProcessor<Map<String, Object>, Map<String, 
             case "U" -> "UPDATE carddemo.transaction_type SET tr_description=? WHERE tr_type=?";
             default -> "DELETE FROM carddemo.transaction_type WHERE tr_type=?";
         };
-        try (var statement = unit.connection.prepareStatement(sql)) {
+        try {
             if ("A".equals(type)) {
-                statement.setString(1, record.get("INPUT-REC-NUMBER").toString());
-                statement.setString(2, record.get("INPUT-REC-DESC").toString());
+                SjisSql.executeUpdate(unit.connection, sql, record.get("INPUT-REC-NUMBER").toString(),
+                        record.get("INPUT-REC-DESC").toString());
             } else if ("U".equals(type)) {
-                statement.setString(1, record.get("INPUT-REC-DESC").toString());
-                statement.setString(2, record.get("INPUT-REC-NUMBER").toString());
+                SjisSql.executeUpdate(unit.connection, sql, record.get("INPUT-REC-DESC").toString(),
+                        record.get("INPUT-REC-NUMBER").toString());
             } else {
-                statement.setString(1, record.get("INPUT-REC-NUMBER").toString());
+                SjisSql.executeUpdate(unit.connection, sql, record.get("INPUT-REC-NUMBER").toString());
             }
-            statement.executeUpdate();
             unit.rc = 0;
             // ocesql reports successful zero-row DML as SQLCODE 0, not Db2 +100.
             unit.sysout.add("RECORD " + switch (type) {

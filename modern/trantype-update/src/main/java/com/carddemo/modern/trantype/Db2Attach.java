@@ -1,14 +1,9 @@
 package com.carddemo.modern.trantype;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import org.carddemo.modern.codec.SjisSql;
 import org.springframework.stereotype.Component;
 
 /**
@@ -83,36 +78,13 @@ public class Db2Attach implements TransactionTypeSql {
         return execute(DELETE, trType);
     }
 
-    /**
-     * ocesql connects with client_encoding OCDB_DB_CHAR, default SJIS (ocesql.c), and sends the
-     * PIC X bytes as they are; PostgreSQL rejects bytes that are not valid SJIS.
-     */
-    private static final Charset OCDB_DB_CHAR = Charset.forName("Shift_JIS");
-    private static final String CHARACTER_NOT_IN_REPERTOIRE = "22021";
-
     /** Host variables are bound as the full PIC X value, trailing spaces included, like ocesql. */
     private int execute(String sql, String... hostVariables) {
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            for (int i = 0; i < hostVariables.length; i++) {
-                ps.setString(i + 1, asClientEncoding(hostVariables[i]));
-            }
-            ps.executeUpdate();
+        try {
+            SjisSql.executeUpdate(connection, sql, hostVariables);
             return Sqlca.OK;
         } catch (SQLException e) {
             return Sqlca.sqlcode(e);
-        }
-    }
-
-    /** The record's bytes (read as Latin-1, one char per byte) as the server decodes them. */
-    static String asClientEncoding(String picX) throws SQLException {
-        try {
-            return OCDB_DB_CHAR.newDecoder()
-                    .onMalformedInput(CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(CodingErrorAction.REPORT)
-                    .decode(ByteBuffer.wrap(picX.getBytes(StandardCharsets.ISO_8859_1)))
-                    .toString();
-        } catch (CharacterCodingException e) {
-            throw new SQLException("invalid byte sequence for encoding \"SJIS\"", CHARACTER_NOT_IN_REPERTOIRE, e);
         }
     }
 

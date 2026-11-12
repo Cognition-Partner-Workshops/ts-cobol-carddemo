@@ -36,8 +36,31 @@ class LegacyQuirksTest {
         when(statement.executeUpdate()).thenReturn(1);
         var record = Layouts.TRAN_TYPE_MAINT.decode("A04Authorization");
         new Cobtupdt(unit).write(record);
-        verify(statement).setString(2, "Authorization" + " ".repeat(37));
+        verify(statement).setBytes(2, ("Authorization" + " ".repeat(37)).getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
         assertEquals(List.of("ADDING RECORD", "RECORD INSERTED SUCCESSFULLY"), unit.sysout);
+    }
+
+    @Test
+    void validSjisDescriptionIsDecodedOnTheServer() throws Exception {
+        RunUnit unit = unit();
+        var statement = mock(PreparedStatement.class);
+        when(unit.connection.prepareStatement(anyString())).thenReturn(statement);
+        new Cobtupdt(unit).write(Layouts.TRAN_TYPE_MAINT.decode("A82\u00b1"));
+        verify(unit.connection).prepareStatement("INSERT INTO carddemo.transaction_type (tr_type,tr_description) VALUES (convert_from(?, 'SJIS'),convert_from(?, 'SJIS'))");
+        verify(statement).setBytes(2, ("\u00b1" + " ".repeat(49)).getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
+        assertEquals(0, unit.rc);
+    }
+
+    @Test
+    void invalidSjisReachesServerAndReportsItsFailure() throws Exception {
+        RunUnit unit = unit();
+        var statement = mock(PreparedStatement.class);
+        when(unit.connection.prepareStatement(anyString())).thenReturn(statement);
+        when(statement.executeUpdate()).thenThrow(new SQLException("invalid SJIS", "22021"));
+        new Cobtupdt(unit).write(Layouts.TRAN_TYPE_MAINT.decode("A82bad\u0081 "));
+        verify(statement).setBytes(2, ("bad\u0081 " + " ".repeat(45)).getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
+        assertEquals(4, unit.rc);
+        assertTrue(unit.sysout.getLast().contains("SQLCODE: -400"));
     }
 
     @Test

@@ -112,12 +112,15 @@ class CobtupdtProcessorTest {
 
     @Test
     void hostVariablesAreDecodedAsOcesqlSjisClientEncoding() throws SQLException {
-        // "Ün" in UTF-8 is C3 9C 6E; the legacy row (probed) holds U+FF83 (C3) and U+5F9E (SJIS 9C 6E)
-        assertEquals("\uff83\u5f9e", Db2Attach.asClientEncoding("\u00c3\u009cn"));
-        assertEquals("Purchase  ", Db2Attach.asClientEncoding("Purchase  "));
-        SQLException bad = org.junit.jupiter.api.Assertions.assertThrows(SQLException.class,
-                () -> Db2Attach.asClientEncoding("bad\u0081 "));
-        assertEquals(-400, Sqlca.sqlcode(bad));
+        var connection = org.mockito.Mockito.mock(java.sql.Connection.class);
+        var statement = org.mockito.Mockito.mock(java.sql.PreparedStatement.class);
+        org.mockito.Mockito.when(connection.prepareStatement(org.mockito.ArgumentMatchers.anyString())).thenReturn(statement);
+        org.carddemo.modern.codec.SjisSql.executeUpdate(connection, "INSERT INTO t VALUES (?, ?)",
+                "\u00c3\u009cn", "Purchase  ");
+        org.mockito.Mockito.verify(connection).prepareStatement(
+                "INSERT INTO t VALUES (convert_from(?, 'SJIS'), convert_from(?, 'SJIS'))");
+        org.mockito.Mockito.verify(statement).setBytes(1, new byte[]{(byte) 0xc3, (byte) 0x9c, 0x6e});
+        org.mockito.Mockito.verify(statement).setBytes(2, "Purchase  ".getBytes(java.nio.charset.StandardCharsets.ISO_8859_1));
     }
 
     @Test

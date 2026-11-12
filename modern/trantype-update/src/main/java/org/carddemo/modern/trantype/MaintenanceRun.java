@@ -27,6 +27,7 @@ final class MaintenanceRun {
         Files.createDirectories(output.resolve("sysout"));
         Files.createDirectories(output.resolve("db"));
         var lines = new ArrayList<String>();
+        String returnMessage = " ".repeat(80);
         int rc = 0;
         try {
             jdbc.execute("TRUNCATE maintenance_input, transaction_type_categor, transaction_type");
@@ -80,14 +81,18 @@ final class MaintenanceRun {
                             lines.add(update ? "RECORD UPDATED SUCCESSFULLY" : "RECORD DELETED SUCCESSFULLY");
                         }
                         default -> {
-                            lines.add(String.format(java.util.Locale.ROOT, "%-80s", "ERROR: TYPE NOT VALID"));
+                            // COBTUPDT STRING starts at byte one, without clearing WS-RETURN-MSG.
+                            String prefix = "ERROR: TYPE NOT VALID";
+                            returnMessage = prefix + returnMessage.substring(prefix.length());
+                            lines.add(returnMessage);
                             rc = 4;
                         }
                     }
                 } catch (DataAccessException error) {
                     var cause = error.getMostSpecificCause();
                     if (!(cause instanceof SQLException sql)) throw error;
-                    lines.add(sqlErrorMessage(sql.getSQLState()));
+                    returnMessage = sqlErrorMessage(sql.getSQLState());
+                    lines.add(returnMessage);
                     rc = 4;
                 }
             }

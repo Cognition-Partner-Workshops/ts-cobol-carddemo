@@ -108,6 +108,14 @@ class MaintenanceRunTest {
         assertTrue(Files.readString(output.resolve("rc.json")).contains("\"STEP1\": 4"));
     }
 
+    @Test void shorterErrorRetainsThePreviousSqlMessagesSuffix() throws Exception {
+        Files.writeString(input.resolve("INPFILE.txt"), "A01Duplicate\nX01Invalid\n");
+        assertEquals(4, run.run(input, output));
+        var lines = Files.readAllLines(output.resolve("sysout/MNTTRDB2.STEP1.txt"));
+        String sql = MaintenanceRun.sqlErrorMessage("23505");
+        assertEquals("ERROR: TYPE NOT VALID" + sql.substring(20), lines.get(6));
+    }
+
     @Test
     void missingInputMaterializesAsAnEmptyDataset() throws Exception {
         assertEquals(0, run.run(input, output));

@@ -47,24 +47,24 @@ final class Cbtrndyn {
         statement.append(piece, 0, Math.min(room, piece.length()));
     }
 
+    /**
+     * PREPARE/EXECUTE through ocesql: no savepoint is taken (OCDB_PG_IGNORE_ERROR is not set), so a
+     * failed statement leaves the PostgreSQL transaction aborted for everything that follows.
+     */
     private int runDynamicSql(String text) throws SQLException {
-        var savepoint = unit.setSavepoint();
         java.sql.PreparedStatement prepared;
         try {
             prepared = unit.prepareStatement(text);
         } catch (SQLException e) {
-            unit.rollback(savepoint);
             sysout.add("CBTRNDYN: PREPARE FAILED SQLCODE " + SqlCodes.display(SqlCodes.of(e)));
             return 8;
         }
         try (prepared) {
             boolean query = prepared.execute();
             int code = !query && prepared.getUpdateCount() == 0 && changesRows(text) ? SqlCodes.NOT_FOUND : 0;
-            unit.releaseSavepoint(savepoint);
             sysout.add("CBTRNDYN: EXECUTE SQLCODE " + SqlCodes.display(code));
             return 0;
         } catch (SQLException e) {
-            unit.rollback(savepoint);
             sysout.add("CBTRNDYN: EXECUTE SQLCODE " + SqlCodes.display(SqlCodes.of(e)));
             return 8;
         }

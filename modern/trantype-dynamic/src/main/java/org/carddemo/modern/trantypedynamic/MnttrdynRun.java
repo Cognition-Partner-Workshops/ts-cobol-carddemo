@@ -38,6 +38,8 @@ final class MnttrdynRun {
             } catch (StopRun stop) {
                 rc = stop.returnCode;
             }
+            // DSNEXIT's EXEC SQL COMMIT: on an aborted transaction PostgreSQL answers ROLLBACK with no
+            // error, so ocesql reports SQLCODE 0 and the work of the whole step is discarded.
             try {
                 unit.commit();
                 sysout.add("DSNRUN: COMMIT AT END OF TASK");

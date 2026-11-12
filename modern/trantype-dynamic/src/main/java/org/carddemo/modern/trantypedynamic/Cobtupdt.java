@@ -6,7 +6,13 @@ import java.util.List;
 import java.util.Map;
 import org.carddemo.modern.codec.Layouts;
 
-/** COBTUPDT: apply INPFILE add/update/delete records to TRANSACTION_TYPE. */
+/**
+ * COBTUPDT: apply INPFILE add/update/delete records to TRANSACTION_TYPE.
+ *
+ * <p>Preserved COBOL defect: 1001-READ-NEXT-RECORDS ends with STOP RUN although CBTRNDYN CALLs this
+ * program, so the run unit ends here. CBTRNDYN never displays "CBTRNDYN: END", and its RETURN-CODE 8
+ * for a failed dynamic statement is replaced by COBTUPDT's own RETURN-CODE (0 when INPFILE applies cleanly).
+ */
 final class Cobtupdt implements Subprogram {
     private final Connection unit;
     private final List<String> sysout;
@@ -48,7 +54,7 @@ final class Cobtupdt implements Subprogram {
                 default -> abend("ERROR: TYPE NOT VALID");
             }
         }
-        return returnCode;
+        throw new StopRun(returnCode);
     }
 
     private void report(int code, String success) {

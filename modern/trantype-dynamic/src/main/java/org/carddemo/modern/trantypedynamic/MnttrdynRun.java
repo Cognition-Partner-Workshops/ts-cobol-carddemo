@@ -33,7 +33,11 @@ final class MnttrdynRun {
             unit.setAutoCommit(false);
             var updates = read(input.resolve("INPFILE.txt"), Layouts.TRANTYPE_UPDATE);
             Map<String, Subprogram> loadlib = Map.of("COBTUPDT", new Cobtupdt(unit, sysout, updates));
-            rc = new Cbtrndyn(unit, sysout, loadlib).run(read(input.resolve("DYNSQL.txt"), Layouts.DYNSQL), parms);
+            try {
+                rc = new Cbtrndyn(unit, sysout, loadlib).run(read(input.resolve("DYNSQL.txt"), Layouts.DYNSQL), parms);
+            } catch (StopRun stop) {
+                rc = stop.returnCode;
+            }
             try {
                 unit.commit();
                 sysout.add("DSNRUN: COMMIT AT END OF TASK");

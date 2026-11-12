@@ -61,10 +61,22 @@ class MaintenanceRunTest {
     void duplicateIsReportedAndSubsequentRecordsStillRun() throws Exception {
         Files.writeString(input.resolve("INPFILE.txt"), "A01Duplicate\nA04Fee\n");
         assertEquals(4, run.run(input, output));
-        assertEquals(4, jdbc.queryForObject("SELECT count(*) FROM transaction_type", Integer.class));
+        assertEquals(3, jdbc.queryForObject("SELECT count(*) FROM transaction_type", Integer.class));
         var diagnostic = Files.readAllLines(output.resolve("sysout/MNTTRDB2.STEP1.txt")).get(4);
         assertEquals("Error accessing: TRANSACTION_TYPE table. SQLCODE: -403" + " ".repeat(26), diagnostic);
         assertTrue(Files.readString(output.resolve("rc.json")).contains("\"maxrc\": 4"));
+        assertTrue(Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt")).contains("SQLCODE: -400"));
+    }
+
+    @Test void sqlFailureRollsBackEarlierWritesAndPoisonsLaterStatements() throws Exception {
+        Files.writeString(input.resolve("INPFILE.txt"), "A04Fee\nA01Duplicate\nU02Changed\n");
+        assertEquals(4, run.run(input, output));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM transaction_type WHERE tr_type='04'", Integer.class));
+        assertEquals("Payment", jdbc.queryForObject("SELECT tr_description FROM transaction_type WHERE tr_type='02'", String.class));
+        var sysout = Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt"));
+        assertTrue(sysout.contains("RECORD INSERTED SUCCESSFULLY"));
+        assertTrue(sysout.contains("SQLCODE: -403")); assertTrue(sysout.contains("SQLCODE: -400"));
+        assertTrue(sysout.endsWith("DSNRUN: COMMIT AT END OF TASK\n"));
     }
 
     @Test

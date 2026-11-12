@@ -13,6 +13,7 @@ import org.postgresql.PGConnection;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.core.io.ByteArrayResource;
 
@@ -49,7 +50,13 @@ final class MaintenanceRun {
             }
             lines.add("OPEN FILE OK");
             lines.addFirst("DSNRUN: DSN ATTACHED, RUNNING COBTUPDT");
-            for (var row : jdbc.queryForList("SELECT * FROM maintenance_input ORDER BY record_number")) {
+            var updates = jdbc.queryForList("SELECT * FROM maintenance_input ORDER BY record_number");
+            // DSNRUN/DSNEXIT uses one PostgreSQL unit, without per-statement savepoints.
+            // A SQL error aborts that unit: later writes fail and COMMIT discards prior writes.
+            try (var connection = jdbc.getDataSource().getConnection()) {
+                connection.setAutoCommit(false);
+                var unit = new JdbcTemplate(new SingleConnectionDataSource(connection, true));
+            for (var row : updates) {
                 var record = Map.<String, Object>of("INPUT-REC-TYPE", row.get("input_rec_type"),
                         "INPUT-REC-NUMBER", row.get("input_rec_number"), "INPUT-REC-DESC", row.get("input_rec_desc"));
                 lines.add("PROCESSING   " + TrantypeInput.LAYOUT.encode(record));
@@ -60,14 +67,14 @@ final class MaintenanceRun {
                         case "*" -> lines.add("IGNORING COMMENTED LINE");
                         case "A" -> {
                             lines.add("ADDING RECORD");
-                            jdbc.update("INSERT INTO transaction_type VALUES (?, ?)", type, description);
+                            unit.update("INSERT INTO transaction_type VALUES (?, ?)", type, description);
                             lines.add("RECORD INSERTED SUCCESSFULLY");
                         }
                         case "U", "D" -> {
                             boolean update = row.get("input_rec_type").equals("U");
                             lines.add(update ? "UPDATING RECORD" : "DELETING RECORD");
-                            if (update) jdbc.update("UPDATE transaction_type SET tr_description = ? WHERE tr_type = ?", description, type);
-                            else jdbc.update("DELETE FROM transaction_type WHERE tr_type = ?", type);
+                            if (update) unit.update("UPDATE transaction_type SET tr_description = ? WHERE tr_type = ?", description, type);
+                            else unit.update("DELETE FROM transaction_type WHERE tr_type = ?", type);
                             // Legacy defect (t05): ocesql PGRES_COMMAND_OK yields SQLCODE 0 even for zero rows;
                             // COBTUPDT 10032/10033 therefore never reach their +100 error branches.
                             lines.add(update ? "RECORD UPDATED SUCCESSFULLY" : "RECORD DELETED SUCCESSFULLY");
@@ -84,7 +91,9 @@ final class MaintenanceRun {
                     rc = 4;
                 }
             }
-        } catch (IOException | RuntimeException error) {
+                connection.commit();
+            }
+        } catch (IOException | RuntimeException | SQLException error) {
             lines.add("MAINTENANCE FAILED: " + error.getMessage());
             rc = 12;
         }

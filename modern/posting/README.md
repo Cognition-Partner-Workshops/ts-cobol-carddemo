@@ -30,7 +30,7 @@ code, then fixed in its own commit with a regression test.
 | p01–p06 | TRAN-PROC-TS and transaction SYSOUT used a space | CBTRN02C Z-GET-DB2-FORMAT-TIMESTAMP inserts a hyphen: `2022-07-05-10.00.00.000000` |
 | p02–p05 | REJ-FAIL-REASON was FILLER in the shared codec | REJTRAN.cpy names bytes 350–353 as PIC 9(4): encode 0100/0101/0102/0103, retaining the daily payload and 76-byte description |
 | p01–p06 | Report detail/total amounts were width 14 with a floating sign | CVTRA07Y uses width 15 with a fixed sign: `-ZZZ,ZZZ,ZZZ.ZZ` / `+ZZZ,ZZZ,ZZZ.ZZ` |
-| p01–p06 | Page/grand totals and two SYSOUT lines differed | CBTRN03C 1100-READ-TRAN leaves TRAN-RECORD unchanged at EOF; its ELSE displays the last amount and pre-add page total, then adds that amount again before printing totals |
+| p01–p06 | Page/grand totals and two SYSOUT lines differed | CBTRN03C 1000-TRANFILE-GET-NEXT leaves TRAN-RECORD unchanged at EOF; the main loop's ELSE displays the last amount and pre-add page total, then adds that amount again before printing totals |
 
 The EOF behavior is an intentional reproduced defect. For p01 page/grand
 totals are −26.25 rather than the sum −10.50; p02 84.00 rather than 42.00;

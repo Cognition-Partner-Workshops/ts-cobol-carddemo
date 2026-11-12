@@ -74,7 +74,7 @@ public final class Layouts {
     private static List<Field> rejectRecord() {
         List<Field> fields = new ArrayList<>(transaction("DALYTRAN"));
         // 05 REJ-VALIDATION-TRAILER
-        fields.add(filler(350, 4));
+        fields.add(zoned("REJ-FAIL-REASON", 350, 4, 0, false));
         fields.add(text("REJ-FAIL-REASON-DESC", 354, 76));
         return fields;
     }

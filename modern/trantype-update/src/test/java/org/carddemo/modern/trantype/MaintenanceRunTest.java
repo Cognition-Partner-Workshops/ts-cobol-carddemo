@@ -62,8 +62,17 @@ class MaintenanceRunTest {
         Files.writeString(input.resolve("INPFILE.txt"), "A01Duplicate\nA04Fee\n");
         assertEquals(4, run.run(input, output));
         assertEquals(4, jdbc.queryForObject("SELECT count(*) FROM transaction_type", Integer.class));
-        assertTrue(Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt")).contains("duplicate key"));
+        var diagnostic = Files.readAllLines(output.resolve("sysout/MNTTRDB2.STEP1.txt")).get(4);
+        assertEquals("Error accessing: TRANSACTION_TYPE table. SQLCODE: -403" + " ".repeat(26), diagnostic);
         assertTrue(Files.readString(output.resolve("rc.json")).contains("\"maxrc\": 4"));
+    }
+
+    @Test
+    void sqlstateMappingMatchesOcesqlAndCobolEditedReceiver() {
+        assertEquals("Error accessing: TRANSACTION_TYPE table. SQLCODE: -403" + " ".repeat(26),
+                MaintenanceRun.sqlErrorMessage("23505"));
+        assertEquals(80, MaintenanceRun.sqlErrorMessage("23503").length());
+        assertTrue(MaintenanceRun.sqlErrorMessage("23503").contains("SQLCODE: -400"));
     }
 
     @Test

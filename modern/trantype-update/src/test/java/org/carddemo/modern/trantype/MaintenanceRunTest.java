@@ -105,9 +105,12 @@ class MaintenanceRunTest {
     }
 
     @Test
-    void oversizedInputIsFatal() throws Exception {
-        Files.writeString(input.resolve("INPFILE.txt"), "A".repeat(54));
-        assertEquals(12, run.run(input, output));
-        assertTrue(Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt")).contains("exceeds 53 bytes"));
+    void oversizedInputIsClippedToTheMaterializedRecordLength() throws Exception {
+        Files.writeString(input.resolve("INPFILE.txt"), "A04" + "C".repeat(60) + "\n*01Next record\n");
+        assertEquals(0, run.run(input, output));
+        assertEquals("C".repeat(50), jdbc.queryForObject("SELECT tr_description FROM transaction_type WHERE tr_type='04'", String.class));
+        var lines = Files.readAllLines(output.resolve("sysout/MNTTRDB2.STEP1.txt"));
+        assertEquals("PROCESSING   A04" + "C".repeat(50), lines.get(2));
+        assertTrue(lines.contains("IGNORING COMMENTED LINE"));
     }
 }

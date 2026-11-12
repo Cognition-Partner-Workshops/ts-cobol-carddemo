@@ -43,7 +43,6 @@ final class MaintenanceRun {
             var inputLines = Files.exists(inputFile)
                     ? Files.readAllLines(inputFile, StandardCharsets.ISO_8859_1) : java.util.List.<String>of();
             for (var line : inputLines) {
-                if (line.length() > TrantypeInput.LAYOUT.length()) throw new IllegalArgumentException("INPFILE record exceeds 53 bytes");
                 var record = TrantypeInput.LAYOUT.decode(line);
                 jdbc.update("INSERT INTO maintenance_input VALUES (?, ?, ?, ?)", ++sequence,
                         record.get("INPUT-REC-TYPE"), record.get("INPUT-REC-NUMBER"), record.get("INPUT-REC-DESC"));

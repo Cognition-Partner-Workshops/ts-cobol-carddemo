@@ -87,8 +87,8 @@ final class MaintenanceRun {
         }
         if (rc < 12) lines.add("DSNRUN: COMMIT AT END OF TASK");
         Files.write(output.resolve("sysout/MNTTRDB2.STEP1.txt"), lines, StandardCharsets.ISO_8859_1);
-        Files.writeString(output.resolve("rc.json"), "{\"MNTTRDB2\": {\"maxrc\": " + rc
-                + ", \"steps\": {\"STEP1\": " + rc + "}}}\n");
+        Files.writeString(output.resolve("rc.json"), "{\n \"MNTTRDB2\": {\n  \"maxrc\": " + rc
+                + ",\n  \"steps\": {\n   \"STEP1\": " + rc + "\n  }\n }\n}");
         snapshot(output, "transaction_type", "tr_type");
         snapshot(output, "transaction_type_categor", "trc_type_code, trc_type_category");
         return rc;

@@ -43,7 +43,8 @@ class MaintenanceRunTest {
                 Files.readString(output.resolve("db/carddemo.transaction_type.csv")));
         assertEquals("trc_type_code,trc_type_category,trc_cat_data\n",
                 Files.readString(output.resolve("db/carddemo.transaction_type_categor.csv")));
-        assertTrue(Files.readString(output.resolve("rc.json")).contains("\"STEP1\": 0"));
+        assertEquals("{\n \"MNTTRDB2\": {\n  \"maxrc\": 0,\n  \"steps\": {\n   \"STEP1\": 0\n  }\n }\n}",
+                Files.readString(output.resolve("rc.json")));
         assertTrue(Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt")).contains("IGNORING COMMENTED LINE"));
     }
 

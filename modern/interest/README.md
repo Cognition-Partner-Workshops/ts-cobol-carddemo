@@ -11,7 +11,7 @@ No expected files are read by the application.
 
 The owner approved retaining both interest truncation and the unchanged final
 account exactly as COBOL does them for cutover. **After-cutover follow-up:**
-fix the missing final-account rewrite as a separately approved business change,
+KAN-249 tracks the missing final-account rewrite as a separate business change,
 with explicit tests and revised acceptance criteria; do not change it in this
 parity migration.
 

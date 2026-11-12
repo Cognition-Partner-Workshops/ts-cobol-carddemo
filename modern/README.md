@@ -33,9 +33,9 @@ Parameters are derived from the existing JCL/chain metadata by Make:
 
 The integration combines the still-open interest (#158), trantype-update
 (#159) and trantype-dynamic (#160) branches and adds posting. See each module's
-README for preserved behavior. Interest retains CBACT04C's last-account defect;
-this integration's cutover decision has been raised with the owner. Parity
-does not constitute approval to retain business defects at cutover.
+README for preserved behavior. The owner approved retaining CBACT04C's
+last-account behavior exactly as COBOL does it for cutover. The correction
+is tracked separately in KAN-249; it is outside this parity migration.
 
 The first recorded Java container comparison was **18/24 PASS**: all seven
 interest, seven trantype-update, three trantype-dynamic and posting's empty-day

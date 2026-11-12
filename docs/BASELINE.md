@@ -105,7 +105,14 @@ Other things to know when the Db2 chain is ported:
   `9999-ABEND` overwrites it with RC 4 and continues. The golden RC is 4,
   despite the fixture README describing the driver's intermediate RC 8.
 
-These are retained under the **COBOL batch parity standard**. Business question:
+These are retained under the **COBOL batch parity standard**.
+An additional scratch probe (add, invalid type, missing-row update, add) shows
+that a later successful ocesql CALL resets an earlier invalid-type RC 4 to 0.
+The missing-row UPDATE succeeds, processing continues, and both adds commit.
+No CEE3ABD tail or implicit CLOSE warning is emitted: DYNSQL and INPFILE are
+explicitly closed before STOP RUN.
+
+Business question:
 should statement-level recovery replace PostgreSQL's whole-transaction failure
 after cutover? Default: **keep legacy behaviour**.
 

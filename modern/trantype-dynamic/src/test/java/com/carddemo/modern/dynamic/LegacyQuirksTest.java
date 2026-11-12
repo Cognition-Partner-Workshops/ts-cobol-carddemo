@@ -65,6 +65,18 @@ class LegacyQuirksTest {
     }
 
     @Test
+    void successfulSqlCallResetsEarlierInvalidTypeReturnCodeQuirk() throws Exception {
+        RunUnit unit = unit();
+        var statement = mock(PreparedStatement.class);
+        when(unit.connection.prepareStatement(anyString())).thenReturn(statement);
+        var program = new Cobtupdt(unit);
+        program.write(Layouts.TRANTYPE_INPUT.decode("X99Invalid"));
+        assertEquals(4, unit.rc);
+        program.write(Layouts.TRANTYPE_INPUT.decode("U99Missing"));
+        assertEquals(0, unit.rc);
+    }
+
+    @Test
     void commentsAndInvalidTypesContinueQuirk() throws Exception {
         RunUnit unit = unit();
         var program = new Cobtupdt(unit);
@@ -103,6 +115,27 @@ class LegacyQuirksTest {
         verify(unit.connection).commit();
         assertEquals("DSNRUN: COMMIT AT END OF TASK", unit.sysout.getLast());
         assertFalse(unit.sysout.contains("CBTRNDYN: END"));
+    }
+
+    @Test
+    void unexpectedChunkFailureDoesNotCommitOrRecordSuccess(
+            @org.junit.jupiter.api.io.TempDir java.nio.file.Path out) throws Exception {
+        RunUnit unit = spy(unit());
+        doNothing().when(unit).open(any(), any());
+        var launcher = mock(org.springframework.batch.core.launch.JobLauncher.class);
+        var job = mock(org.springframework.batch.core.Job.class);
+        var execution = new org.springframework.batch.core.JobExecution(1L);
+        execution.setStatus(org.springframework.batch.core.BatchStatus.FAILED);
+        execution.addFailureException(new IllegalStateException("unexpected writer failure"));
+        when(launcher.run(eq(job), any())).thenReturn(execution);
+        var runner = new DynamicRunner(unit, launcher, job);
+        var args = new org.springframework.boot.DefaultApplicationArguments(
+                "--case=" + out, "--out=" + out.resolve("actual"), "--estate.root=" + out);
+        assertThrows(IllegalStateException.class, () -> runner.run(args));
+        verify(unit.connection, never()).commit();
+        verify(unit.connection).close();
+        assertFalse(java.nio.file.Files.exists(out.resolve("actual/rc.json")));
+        assertFalse(unit.sysout.contains("DSNRUN: COMMIT AT END OF TASK"));
     }
 
     private static RunUnit unit() {

@@ -19,7 +19,10 @@ public class Cobtupdt implements ItemProcessor<Map<String, Object>, Map<String, 
         return record;
     }
 
-    /** 10031-INSERT-DB, 10032-UPDATE-DB, 10033-DELETE-DB; errors continue without rollback. */
+    /**
+     * 10031-INSERT-DB, 10032-UPDATE-DB, 10033-DELETE-DB: errors continue without rollback.
+     * Successful ocesql CALLs reset RETURN-CODE, including an earlier invalid-type RC 4.
+     */
     void write(Map<String, Object> record) throws Exception {
         String type = record.get("TYPE").toString();
         if ("*".equals(type)) {
@@ -52,9 +55,10 @@ public class Cobtupdt implements ItemProcessor<Map<String, Object>, Map<String, 
             } else {
                 statement.setString(1, record.get("NUMBER").toString());
             }
-            int rows = statement.executeUpdate();
+            statement.executeUpdate();
+            unit.rc = 0;
             // ocesql reports successful zero-row DML as SQLCODE 0, not Db2 +100.
-            if (rows >= 0) unit.sysout.add("RECORD " + switch (type) {
+            unit.sysout.add("RECORD " + switch (type) {
                 case "A" -> "INSERTED";
                 case "U" -> "UPDATED";
                 default -> "DELETED";

@@ -29,6 +29,7 @@ class RecordLayoutTest {
 
     @Test
     void layoutLengthsMatchTheDatasets() {
+        assertEquals(53, Layouts.TRANTYPE_INPUT.length());
         assertEquals(350, Layouts.DALYTRAN.length());
         assertEquals(350, Layouts.TRAN.length());
         assertEquals(430, Layouts.REJTRAN.length());

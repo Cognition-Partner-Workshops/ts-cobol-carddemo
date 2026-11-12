@@ -26,6 +26,7 @@
   <modules>
     <module>record-codec</module>
     <module>interest</module>
+    <module>trantype-dynamic</module>
   </modules>
 
   <dependencyManagement>

@@ -52,7 +52,8 @@ class MaintenanceRunTest {
         Files.writeString(input.resolve("INPFILE.txt"), "");
         assertEquals(0, run.run(input, output));
         assertEquals(3, jdbc.queryForObject("SELECT count(*) FROM transaction_type", Integer.class));
-        assertEquals("OPEN FILE OK\n", Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt")));
+        assertEquals("DSNRUN: DSN ATTACHED, RUNNING COBTUPDT\nOPEN FILE OK\nDSNRUN: COMMIT AT END OF TASK\n",
+                Files.readString(output.resolve("sysout/MNTTRDB2.STEP1.txt")));
     }
 
     @Test

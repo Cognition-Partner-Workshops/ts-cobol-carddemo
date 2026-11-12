@@ -45,6 +45,7 @@ final class MaintenanceRun {
                         record.get("INPUT-REC-TYPE"), record.get("INPUT-REC-NUMBER"), record.get("INPUT-REC-DESC"));
             }
             lines.add("OPEN FILE OK");
+            lines.addFirst("DSNRUN: DSN ATTACHED, RUNNING COBTUPDT");
             for (var row : jdbc.queryForList("SELECT * FROM maintenance_input ORDER BY record_number")) {
                 var record = Map.<String, Object>of("INPUT-REC-TYPE", row.get("input_rec_type"),
                         "INPUT-REC-NUMBER", row.get("input_rec_number"), "INPUT-REC-DESC", row.get("input_rec_desc"));
@@ -84,6 +85,7 @@ final class MaintenanceRun {
             lines.add("MAINTENANCE FAILED: " + error.getMessage());
             rc = 12;
         }
+        if (rc < 12) lines.add("DSNRUN: COMMIT AT END OF TASK");
         Files.write(output.resolve("sysout/MNTTRDB2.STEP1.txt"), lines, StandardCharsets.ISO_8859_1);
         Files.writeString(output.resolve("rc.json"), "{\"MNTTRDB2\": {\"maxrc\": " + rc
                 + ", \"steps\": {\"STEP1\": " + rc + "}}}\n");

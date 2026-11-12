@@ -36,6 +36,7 @@ class RecordLayoutTest {
         assertEquals(50, Layouts.CARD_XREF.length());
         assertEquals(50, Layouts.TRAN_CAT_BAL.length());
         assertEquals(50, Layouts.DIS_GROUP.length());
+        assertEquals(53, Layouts.TRAN_TYPE_MAINT.length());
     }
 
     @Test
@@ -67,6 +68,15 @@ class RecordLayoutTest {
         assertEquals(new BigDecimal("-250.00"), values.get("TRAN-CAT-BAL"));
         assertEquals(new BigDecimal("1"), values.get("TRANCAT-CD"));
         assertEquals(line, Layouts.TRAN_CAT_BAL.encodeLine(values));
+    }
+
+    @Test
+    void tranTypeMaintenanceRecordKeepsPaddedText() {
+        Map<String, Object> values = Layouts.TRAN_TYPE_MAINT.decode("A04Authorization");
+        assertEquals("A", values.get("INPUT-REC-TYPE"));
+        assertEquals("04", values.get("INPUT-REC-NUMBER"));
+        assertEquals(RecordLayout.pad("Authorization", 50), values.get("INPUT-REC-DESC"));
+        assertEquals("A04Authorization", Layouts.TRAN_TYPE_MAINT.encodeLine(values));
     }
 
     @Test

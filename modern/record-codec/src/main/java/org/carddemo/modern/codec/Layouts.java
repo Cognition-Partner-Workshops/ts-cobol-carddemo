@@ -65,6 +65,15 @@ public final class Layouts {
             zoned("DIS-INT-RATE", 16, 6, 2, true),
             filler(22, 28)));
 
+    /**
+     * COBTUPDT INPFILE record (WS-INPUT-REC, declared inline in COBTUPDT.cbl, no copybook), LRECL 53:
+     * column 1 action (A/U/D/*), columns 2-3 TR_TYPE, columns 4-53 TR_DESCRIPTION.
+     */
+    public static final RecordLayout TRAN_TYPE_MAINT = new RecordLayout("COBTUPDT", List.of(
+            text("INPUT-REC-TYPE", 0, 1),
+            text("INPUT-REC-NUMBER", 1, 2),
+            text("INPUT-REC-DESC", 3, 50)));
+
     private static List<Field> transaction(String prefix) {
         return List.of(
                 text(prefix + "-ID", 0, 16),

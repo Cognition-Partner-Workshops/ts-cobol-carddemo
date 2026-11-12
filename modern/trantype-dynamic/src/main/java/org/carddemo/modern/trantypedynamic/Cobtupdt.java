@@ -12,6 +12,10 @@ import org.carddemo.modern.codec.Layouts;
  * <p>Preserved COBOL defect: 1001-READ-NEXT-RECORDS ends with STOP RUN although CBTRNDYN CALLs this
  * program, so the run unit ends here. CBTRNDYN never displays "CBTRNDYN: END", and its RETURN-CODE 8
  * for a failed dynamic statement is replaced by COBTUPDT's own RETURN-CODE (0 when INPFILE applies cleanly).
+ *
+ * <p>Preserved COBOL defect: COBTUPDT ignores SQLCODE +100. The estate's ocesql returns SQLCODE 0 for an
+ * UPDATE or DELETE that matches no row, so the "No records found." branches never fire and a missing
+ * key prints "RECORD UPDATED/DELETED SUCCESSFULLY" with RC 0.
  */
 final class Cobtupdt implements Subprogram {
     private final Connection unit;
@@ -78,7 +82,8 @@ final class Cobtupdt implements Subprogram {
     private int execute(String sql, String... values) throws SQLException {
         try (var statement = unit.prepareStatement(sql)) {
             for (int i = 0; i < values.length; i++) statement.setString(i + 1, values[i]);
-            return statement.executeUpdate() == 0 ? SqlCodes.NOT_FOUND : 0;
+            statement.executeUpdate();
+            return 0;
         } catch (SQLException e) {
             return SqlCodes.of(e);
         }

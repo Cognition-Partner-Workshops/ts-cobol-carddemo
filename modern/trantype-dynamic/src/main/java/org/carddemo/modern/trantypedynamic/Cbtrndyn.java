@@ -3,7 +3,6 @@ package org.carddemo.modern.trantypedynamic;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /** CBTRNDYN: run the DYNSQL statement with PREPARE/EXECUTE, then CALL the program named in PARMS. */
@@ -60,18 +59,18 @@ final class Cbtrndyn {
             return 8;
         }
         try (prepared) {
-            boolean query = prepared.execute();
-            int code = !query && prepared.getUpdateCount() == 0 && changesRows(text) ? SqlCodes.NOT_FOUND : 0;
+            // ocesql sets +100 only for a query with no rows; DML that touches no row is SQLCODE 0.
+            int code = 0;
+            if (prepared.execute()) {
+                try (var rows = prepared.getResultSet()) {
+                    if (!rows.next()) code = SqlCodes.NOT_FOUND;
+                }
+            }
             sysout.add("CBTRNDYN: EXECUTE SQLCODE " + SqlCodes.display(code));
             return 0;
         } catch (SQLException e) {
             sysout.add("CBTRNDYN: EXECUTE SQLCODE " + SqlCodes.display(SqlCodes.of(e)));
             return 8;
         }
-    }
-
-    private static boolean changesRows(String text) {
-        var verb = text.strip().split("\\s+", 2)[0].toUpperCase(Locale.ROOT);
-        return verb.equals("UPDATE") || verb.equals("DELETE") || verb.equals("INSERT");
     }
 }

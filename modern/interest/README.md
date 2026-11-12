@@ -15,7 +15,15 @@ No expected files are read by the application.
   `TRAN-AMT`. BigDecimal uses `RoundingMode.DOWN` at that same point; the
   transaction is 12.35, not 12.36. `i06-negative-balance` still writes -3.00.
 
-The final-account rewrite behaviour is not yet corrected against parity.
+- **Final account not rewritten** (`i01-baseline`, and every interest case):
+  `1050-UPDATE-ACCOUNT` runs on account-id breaks, not after EOF. The EOF read
+  sets `END-OF-FILE` to `Y`, skipping the body; the next loop test exits before
+  the outer `ELSE` can perform the update. The Java break accumulator likewise
+  has no final flush. The final account's balance and cycle credit/debit stay
+  unchanged, but all its interest transactions are written. `i05-multi-category`
+  proves this also applies to an account with multiple categories. SYSOUT still
+  displays each successfully read category record, including the final one;
+  EOF itself displays no record.
 
 ```
 make up

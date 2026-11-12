@@ -24,6 +24,7 @@ CASE    ?=
 TARGET  ?=
 MAVEN_ARGS ?=
 INTEREST_PARM_DATE ?= $(shell sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCALC.jcl)
+TRANTYPE_DYNAMIC_PARMS ?= $(shell sed -n "s/.*PARMS('\([^']*\)').*/\1/p" app/app-transaction-type-db2/jcl/MNTTRDYN.jcl)
 PY       = python3
 
 .PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell
@@ -68,6 +69,7 @@ parity:
 	  for case in $$cases; do \
 	    if [ "$$target" = java ]; then \
 	      parm=""; if [ "$$chain" = interest ]; then parm="$(INTEREST_PARM_DATE)"; fi; \
+	      if [ "$$chain" = trantype-dynamic ]; then parm="$(TRANTYPE_DYNAMIC_PARMS)"; fi; \
 	      $(COMPOSE) exec -T java java -jar modern/$$chain/target/$$chain-0.1.0.jar fixtures/$$chain/$$case/input work/parity/$$chain/$$case/actual $$parm > work/parity/run-$$chain-$$case.log 2>&1 || { cat work/parity/run-$$chain-$$case.log; fail=1; continue; }; \
 	      label=java; \
 	    else \

@@ -69,7 +69,7 @@ class MnttrdynRunTest {
         assertEquals(List.of("01=Purchase", "02=Payment - SEPA", "03=Credit", "04=Authorization"), descriptions());
         var lines = sysout();
         assertEquals("CBTRNDYN: 03 SQL LINES READ", lines.get(1));
-        assertEquals("CBTRNDYN: EXECUTE SQLCODE +000000000", lines.get(2));
+        assertEquals("CBTRNDYN: EXECUTE SQLCODE +0000000000", lines.get(2));
         assertEquals("CBTRNDYN: CALLING COBTUPDT", lines.get(3));
         assertEquals("DSNRUN: COMMIT AT END OF TASK", lines.getLast());
         assertTrue(Files.readString(output.resolve("rc.json")).contains("\"STEP1\": 0"));
@@ -91,7 +91,7 @@ class MnttrdynRunTest {
     void failedDynamicStatementRollsBackOnlyItselfAndSetsRc8() throws Exception {
         useFixture("d03-bad-statement");
         assertEquals(8, run());
-        assertEquals("CBTRNDYN: EXECUTE SQLCODE -000000206", sysout().get(2));
+        assertEquals("CBTRNDYN: EXECUTE SQLCODE -0000000206", sysout().get(2));
         assertTrue(sysout().contains("RECORD UPDATED SUCCESSFULLY"));
         assertEquals("01=Purchase - updated", descriptions().getFirst());
     }
@@ -149,8 +149,8 @@ class MnttrdynRunTest {
 
     @Test
     void sqlcodeDisplayFormats() {
-        assertEquals("+000000000", SqlCodes.display(0));
-        assertEquals("-000000206", SqlCodes.display(-206));
+        assertEquals("+0000000000", SqlCodes.display(0));
+        assertEquals("-0000000206", SqlCodes.display(-206));
         assertEquals(" -400", SqlCodes.edited(-400));
         assertEquals("    0", SqlCodes.edited(0));
         assertEquals("-1234", SqlCodes.edited(-1234));

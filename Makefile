@@ -23,6 +23,7 @@ CHAIN   ?=
 CASE    ?=
 TARGET  ?=
 MAVEN_ARGS ?=
+MODERN_BUILD_ARGS ?=
 JAVA_RUN ?= $(COMPOSE) exec -T candidate /opt/carddemo/run-job
 POSTING_CLOCK ?= $(shell python3 -c 'import json; print(json.load(open("tools/runjcl/chains.json"))["posting"]["clock"])')
 POSTING_SORT_START ?= $(shell sed -n "s/.*PARM-START-DATE,C'\([^']*\)'.*/\1/p" app/jcl/TRANREPT.jcl)
@@ -32,7 +33,7 @@ INTEREST_PARM_DATE ?= $(shell sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCA
 TRANTYPE_DYNAMIC_PARMS ?= $(shell sed -n "s/.*PARMS('\([^']*\)').*/\1/p" app/app-transaction-type-db2/jcl/MNTTRDYN.jcl)
 PY       = python3
 
-.PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell
+.PHONY: up down build run record parity parity-prepare modern-build modern-up parity-naive chain-graph chain-graph-check reset baseline shell
 
 up:
 	$(COMPOSE) up -d --build --wait
@@ -64,7 +65,21 @@ run:
 record:
 	$(call for_each_case,$(EXEC) $(PY) tools/parity/record.py $$chain $$case --out fixtures/$$chain/$$case/expected)
 
-parity:
+modern-build:
+	docker build $(MODERN_BUILD_ARGS) -t carddemo-modern:local modern
+
+modern-up: modern-build
+	$(COMPOSE) --profile modern up -d --no-build --wait candidate estate
+
+# Build once for the whole run, including default dispatch when a Java module exists.
+parity-prepare:
+	@for chain in $(if $(CHAIN),$(CHAIN),$(CHAINS)); do \
+	  if [ "$(TARGET)" = java ] || { [ -z "$(TARGET)" ] && [ -d modern/$$chain ]; }; then \
+	    $(MAKE) modern-up; exit $$?; \
+	  fi; \
+	done
+
+parity: parity-prepare
 	@rm -f work/parity/report.md; mkdir -p work/parity; fail=0; \
 	chains="$(if $(CHAIN),$(CHAIN),$(CHAINS))"; \
 	for chain in $$chains; do \

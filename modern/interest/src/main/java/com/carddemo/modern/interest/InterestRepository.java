@@ -39,23 +39,24 @@ public class InterestRepository {
                 + "interest.disclosure_group, interest.systran");
     }
 
+    // REPRO into a KSDS keeps the first record of a key and skips the duplicates (IDC3302I, CC 4 -> RC 0).
     public void insert(Account a) {
-        jdbc.update("INSERT INTO interest.account VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", a.acctId(), a.activeStatus(),
+        jdbc.update("INSERT INTO interest.account VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING", a.acctId(), a.activeStatus(),
                 a.currBal(), a.creditLimit(), a.cashCreditLimit(), a.openDate(), a.expirationDate(),
                 a.reissueDate(), a.currCycCredit(), a.currCycDebit(), a.addrZip(), a.groupId(), a.filler());
     }
 
     public void insert(CardXref x) {
-        jdbc.update("INSERT INTO interest.card_xref VALUES (?,?,?,?)", x.cardNum(), x.custId(), x.acctId(), x.filler());
+        jdbc.update("INSERT INTO interest.card_xref VALUES (?,?,?,?) ON CONFLICT DO NOTHING", x.cardNum(), x.custId(), x.acctId(), x.filler());
     }
 
     public void insert(TranCatBal t) {
-        jdbc.update("INSERT INTO interest.tran_cat_bal VALUES (?,?,?,?,?)", t.acctId(), t.typeCd(), t.catCd(),
+        jdbc.update("INSERT INTO interest.tran_cat_bal VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING", t.acctId(), t.typeCd(), t.catCd(),
                 t.balance(), t.filler());
     }
 
     public void insert(DisclosureGroup d) {
-        jdbc.update("INSERT INTO interest.disclosure_group VALUES (?,?,?,?,?)", d.groupId(), d.typeCd(), d.catCd(),
+        jdbc.update("INSERT INTO interest.disclosure_group VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING", d.groupId(), d.typeCd(), d.catCd(),
                 d.intRate(), d.filler());
     }
 

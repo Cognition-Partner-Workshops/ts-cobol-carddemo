@@ -89,7 +89,9 @@ final class MaintenanceRun {
                         }
                     }
                 } catch (DataAccessException error) {
-                    var cause = error.getMostSpecificCause();
+                    // An aborted-statement PSQLException can chain the original error as its
+                    // deepest cause. Use this statement's SQLSTATE (25P02), not the earlier 23505.
+                    var cause = error.getCause();
                     if (!(cause instanceof SQLException sql)) throw error;
                     returnMessage = sqlErrorMessage(sql.getSQLState());
                     lines.add(returnMessage);

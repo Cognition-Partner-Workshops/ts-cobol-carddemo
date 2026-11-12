@@ -113,7 +113,7 @@ class MaintenanceRunTest {
         assertEquals(4, run.run(input, output));
         var lines = Files.readAllLines(output.resolve("sysout/MNTTRDB2.STEP1.txt"));
         String sql = MaintenanceRun.sqlErrorMessage("23505");
-        assertEquals("ERROR: TYPE NOT VALID" + sql.substring(20), lines.get(6));
+        assertEquals("ERROR: TYPE NOT VALID" + sql.substring("ERROR: TYPE NOT VALID".length()), lines.get(6));
     }
 
     @Test

@@ -40,6 +40,14 @@ For t06-duplicate-add, PostgreSQL SQLSTATE 23505 maps through ocesql v1.4
 OCDB_PGSetResultStatus to OCPG_DUPLICATE_KEY (-403); COBTUPDT 10031 displays
 the padded message and 9999-ABEND sets RC 4 (it does not terminate the loop).
 Other mapped SQLSTATE diagnostics are not proven by fixture parity.
+The DSNRUN unit uses one non-autocommit connection with no statement
+savepoints. Any SQL error aborts that transaction: subsequent SQL sees -400
+and the final COMMIT rolls back earlier writes, as PostgreSQL does for
+DSNEXIT. Seed loading stays outside that unit. A regression covers an insert
+followed by a duplicate and an update; these sequences are unproven by fixtures.
+COBTUPDT's STRING overwrites only the beginning of WS-RETURN-MSG, so a shorter
+invalid-operation message retains the prior SQL diagnostic suffix. A mixed
+error regression preserves that behavior too.
 COBTUPDT source explicitly tests +100 on UPDATE/DELETE, despite the estate
 notes saying it ignores +100; the t05 README/golden description reports success.
 The executed ocesql v1.4 path resolves the discrepancy: generated COBTUPDT

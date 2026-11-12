@@ -32,6 +32,11 @@ public final class RecordLayout {
     }
 
     public Map<String, Object> decode(String line) {
+        return decode(line, false);
+    }
+
+    /** As {@link #decode(String)}; with {@code withFiller} the FILLER bytes are kept too, under {@code FILLER@<offset>}. */
+    public Map<String, Object> decode(String line, boolean withFiller) {
         String record = pad(line, length);
         Map<String, Object> values = new LinkedHashMap<>();
         for (Field f : fields) {
@@ -39,7 +44,11 @@ public final class RecordLayout {
             switch (f.kind()) {
                 case TEXT -> values.put(f.name(), raw);
                 case ZONED -> values.put(f.name(), Zoned.decode(raw, f.scale(), f.signed()));
-                case FILLER -> { }
+                case FILLER -> {
+                    if (withFiller) {
+                        values.put(f.name(), raw);
+                    }
+                }
             }
         }
         return values;
@@ -51,7 +60,7 @@ public final class RecordLayout {
             String text = switch (f.kind()) {
                 case TEXT -> pad(Objects.toString(values.get(f.name()), ""), f.length());
                 case ZONED -> Zoned.encode(asDecimal(values.get(f.name())), f.length(), f.scale(), f.signed());
-                case FILLER -> " ".repeat(f.length());
+                case FILLER -> pad(Objects.toString(values.get(f.name()), ""), f.length());
             };
             text.getChars(0, f.length(), out, f.offset());
         }

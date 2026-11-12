@@ -73,4 +73,15 @@ class RecordLayoutTest {
     void reasonOutsideTheValidationRangeIsRefused() {
         assertThrows(IllegalArgumentException.class, () -> new RejectRecord(DALYTRAN_LINE, 0, ""));
     }
+
+    @org.junit.jupiter.api.Test
+    void fillerIsKeptOnlyWhenAskedFor() {
+        String line = "000000020010100010000010000{" + "KEEP ME".concat(" ".repeat(15));
+        org.junit.jupiter.api.Assertions.assertFalse(Layouts.TRAN_CAT_BAL.decode(line).containsKey("FILLER@28"));
+        Map<String, Object> withFiller = Layouts.TRAN_CAT_BAL.decode(line, true);
+        org.junit.jupiter.api.Assertions.assertEquals("KEEP ME" + " ".repeat(15), withFiller.get("FILLER@28"));
+        org.junit.jupiter.api.Assertions.assertEquals(line.stripTrailing(), Layouts.TRAN_CAT_BAL.encodeLine(withFiller));
+        org.junit.jupiter.api.Assertions.assertEquals("000000020010100010000010000{",
+                Layouts.TRAN_CAT_BAL.encodeLine(Layouts.TRAN_CAT_BAL.decode(line)));
+    }
 }

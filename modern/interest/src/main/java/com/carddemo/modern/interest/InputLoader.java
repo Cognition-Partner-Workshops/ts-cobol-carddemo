@@ -71,7 +71,7 @@ public class InputLoader {
         }
         try {
             for (String line : Files.readAllLines(src, StandardCharsets.ISO_8859_1)) {
-                sink.accept(mapper.apply(layout.decode(line)));
+                sink.accept(mapper.apply(layout.decode(line, true)));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

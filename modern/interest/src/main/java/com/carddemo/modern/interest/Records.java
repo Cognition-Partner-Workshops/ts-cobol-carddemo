@@ -12,10 +12,9 @@ final class Records {
 
     /** CVTRA01Y TRAN-CAT-BAL-RECORD. */
     record TranCatBal(long acctId, String typeCd, int catCd, BigDecimal balance, String filler) {
-        // FILLER is not surfaced by record-codec (decoded as nothing, encoded as spaces).
         static TranCatBal of(Map<String, Object> r) {
             return new TranCatBal(num(r, "TRANCAT-ACCT-ID").longValueExact(), str(r, "TRANCAT-TYPE-CD"),
-                    num(r, "TRANCAT-CD").intValueExact(), num(r, "TRAN-CAT-BAL"), "");
+                    num(r, "TRANCAT-CD").intValueExact(), num(r, "TRAN-CAT-BAL"), fillerOf(r, "FILLER@28"));
         }
 
         Map<String, Object> fields() {
@@ -38,7 +37,7 @@ final class Records {
                     num(r, "ACCT-CURR-BAL"), num(r, "ACCT-CREDIT-LIMIT"), num(r, "ACCT-CASH-CREDIT-LIMIT"),
                     str(r, "ACCT-OPEN-DATE"), str(r, "ACCT-EXPIRAION-DATE"), str(r, "ACCT-REISSUE-DATE"),
                     num(r, "ACCT-CURR-CYC-CREDIT"), num(r, "ACCT-CURR-CYC-DEBIT"), str(r, "ACCT-ADDR-ZIP"),
-                    str(r, "ACCT-GROUP-ID"), "");
+                    str(r, "ACCT-GROUP-ID"), fillerOf(r, "FILLER@122"));
         }
 
         Map<String, Object> fields() {
@@ -64,7 +63,7 @@ final class Records {
     record CardXref(String cardNum, long custId, long acctId, String filler) {
         static CardXref of(Map<String, Object> r) {
             return new CardXref(str(r, "XREF-CARD-NUM"), num(r, "XREF-CUST-ID").longValueExact(),
-                    num(r, "XREF-ACCT-ID").longValueExact(), "");
+                    num(r, "XREF-ACCT-ID").longValueExact(), fillerOf(r, "FILLER@36"));
         }
     }
 
@@ -72,7 +71,7 @@ final class Records {
     record DisclosureGroup(String groupId, String typeCd, int catCd, BigDecimal intRate, String filler) {
         static DisclosureGroup of(Map<String, Object> r) {
             return new DisclosureGroup(str(r, "DIS-ACCT-GROUP-ID"), str(r, "DIS-TRAN-TYPE-CD"),
-                    num(r, "DIS-TRAN-CAT-CD").intValueExact(), num(r, "DIS-INT-RATE"), "");
+                    num(r, "DIS-TRAN-CAT-CD").intValueExact(), num(r, "DIS-INT-RATE"), fillerOf(r, "FILLER@22"));
         }
     }
 
@@ -105,6 +104,11 @@ final class Records {
             return bd;
         }
         throw new IllegalArgumentException(field + " is not numeric: '" + v + "'");
+    }
+
+    private static String fillerOf(Map<String, Object> r, String field) {
+        Object v = r.get(field);
+        return v == null ? "" : v.toString();
     }
 
     private static String str(Map<String, Object> r, String field) {

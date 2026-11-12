@@ -2,6 +2,7 @@ package org.carddemo.modern.codec;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Locale;
 
 /**
  * DISPLAY zoned decimal with the EBCDIC overpunch convention that
@@ -38,7 +39,7 @@ public final class Zoned {
 
     public static String encode(BigDecimal value, int length, int scale, boolean signed) {
         BigInteger units = value.abs().movePointRight(scale).toBigInteger();
-        String text = String.format("%0" + length + "d", units);
+        String text = String.format(Locale.ROOT, "%0" + length + "d", units);
         text = text.substring(text.length() - length);
         if (signed) {
             int lastDigit = text.charAt(length - 1) - '0';

@@ -73,7 +73,7 @@ final class MaintenanceRun {
                             lines.add(update ? "RECORD UPDATED SUCCESSFULLY" : "RECORD DELETED SUCCESSFULLY");
                         }
                         default -> {
-                            lines.add("ERROR: TYPE NOT VALID");
+                            lines.add(String.format(java.util.Locale.ROOT, "%-80s", "ERROR: TYPE NOT VALID"));
                             rc = 4;
                         }
                     }

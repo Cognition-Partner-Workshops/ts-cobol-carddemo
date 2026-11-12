@@ -29,10 +29,10 @@ final class InterestRun {
     int run(Path input, Path output, String parmDate) throws IOException {
         if (parmDate == null || !parmDate.matches("[0-9]{10}")) throw new IllegalArgumentException("PARM-DATE must have ten digits");
         for (var table : InterestTables.ALL) jdbc.update("DELETE FROM " + table.name());
-        load(input, "ACCTDATA", InterestTables.ACCOUNT);
-        load(input, "CARDXREF", InterestTables.XREF);
-        load(input, "DISCGRP", InterestTables.DISCLOSURE);
-        load(input, "TCATBALF", InterestTables.BALANCE);
+        load(input, output, "ACCTDATA", "ACCTFILE", InterestTables.ACCOUNT);
+        load(input, output, "CARDXREF", "XREFFILE", InterestTables.XREF);
+        load(input, output, "DISCGRP", "DISCGRP", InterestTables.DISCLOSURE);
+        load(input, output, "TCATBALF", "TCATBALF", InterestTables.BALANCE);
 
         var accounts = new LinkedHashMap<BigDecimal, Map<String, Object>>();
         for (var record : InterestTables.ACCOUNT.read(jdbc)) accounts.put(number(record, "ACCT-ID"), record);
@@ -103,10 +103,20 @@ final class InterestRun {
         return rc;
     }
 
-    private void load(Path input, String dataset, InterestTables table) throws IOException {
+    private void load(Path input, Path output, String dataset, String job, InterestTables table) throws IOException {
+        int processed = 0;
+        int skipped = 0;
         for (var line : Files.readAllLines(input.resolve(PREFIX + dataset + ".PS.txt"), StandardCharsets.ISO_8859_1)) {
-            table.store(jdbc, table.layout().decode(line));
+            if (table.insert(jdbc, table.layout().decode(line))) processed++;
+            else skipped++;
         }
+        var diagnostics = new ArrayList<String>();
+        diagnostics.add(String.format("IDC0005I NUMBER OF RECORDS PROCESSED WAS %09d", processed));
+        if (skipped != 0) diagnostics.add(String.format("IDC3302I DUPLICATE KEYS SKIPPED %09d", skipped));
+        int rc = skipped == 0 ? 0 : 4;
+        Files.createDirectories(output.resolve("setup"));
+        Files.write(output.resolve("setup/" + job + ".STEP15.txt"), diagnostics, StandardCharsets.ISO_8859_1);
+        Files.writeString(output.resolve("setup/" + job + ".rc.json"), "{\"STEP15\": " + rc + "}");
     }
 
     private static final class MissingRecord extends RuntimeException {

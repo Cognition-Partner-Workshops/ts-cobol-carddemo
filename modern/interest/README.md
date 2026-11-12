@@ -7,6 +7,21 @@ Only synthetic fixture data is supported. Runs are serialized by the harness.
 
 No expected files are read by the application.
 
+## Cutover decision and follow-up
+
+The owner approved retaining both interest truncation and the unchanged final
+account exactly as COBOL does them for cutover. **After-cutover follow-up:**
+fix the missing final-account rewrite as a separately approved business change,
+with explicit tests and revised acceptance criteria; do not change it in this
+parity migration.
+
+KSDS fixture loading keeps the first record for each primary key, like the
+runner's generated loader. `setup/<JOB>.STEP15.txt` records processed/skipped
+counts and `IDC3302I DUPLICATE KEYS SKIPPED`; `setup/<JOB>.rc.json` records
+loader RC 4 on duplicates (0 otherwise). These are supplementary setup logs:
+the recorder selects only INTCALC SYSOUT. Setup RC 4 does not abend the chain;
+INTCALC's STEP15 overwrites the setup STEP15 entry in the recorded `rc.json`.
+
 `src/main/resources/schema.sql` is initialized by Spring. Typed `account`,
 `card_xref`, `disclosure_group`, `tran_cat_balance` and `"transaction"` tables
 mirror the named copybook fields with exact NUMERIC precision/scale. Primary

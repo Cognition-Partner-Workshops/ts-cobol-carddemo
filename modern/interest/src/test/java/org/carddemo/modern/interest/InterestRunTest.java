@@ -206,4 +206,30 @@ class InterestRunTest {
             }
         }
     }
+
+    @Test
+    void duplicatePrimaryKeysKeepFirstRecordsAndReportLoaderWarnings() throws Exception {
+        var datasets = java.util.List.of("ACCTDATA", "CARDXREF", "DISCGRP", "TCATBALF");
+        var jobs = java.util.List.of("ACCTFILE", "XREFFILE", "DISCGRP", "TCATBALF");
+        var tables = java.util.List.of(InterestTables.ACCOUNT, InterestTables.XREF, InterestTables.DISCLOSURE, InterestTables.BALANCE);
+        var fields = java.util.List.of("ACCT-CURR-BAL", "XREF-CUST-ID", "DIS-INT-RATE", "TRAN-CAT-BAL");
+        for (int i = 0; i < datasets.size(); i++) {
+            var path = input.resolve("AWS.M2.CARDDEMO." + datasets.get(i) + ".PS.txt");
+            var layout = tables.get(i).layout();
+            var duplicate = layout.decode(Files.readAllLines(path).getFirst());
+            duplicate.put(fields.get(i), new BigDecimal("99"));
+            Files.writeString(path, layout.encodeLine(duplicate) + "\n", java.nio.file.StandardOpenOption.APPEND);
+        }
+        var output = temporary.resolve("output");
+        assertEquals(0, run.run(input, output, parmDate));
+        assertEquals(new BigDecimal("1010.00"), InterestTables.ACCOUNT.read(jdbc).getFirst().get("ACCT-CURR-BAL"));
+        assertEquals(Layouts.XREF.decode(Files.readAllLines(input.resolve("AWS.M2.CARDDEMO.CARDXREF.PS.txt")).getFirst()).get("XREF-CUST-ID"),
+                InterestTables.XREF.read(jdbc).getFirst().get("XREF-CUST-ID"));
+        assertEquals(new BigDecimal("10.00"), InterestTables.TRANSACTION.read(jdbc).getFirst().get("TRAN-AMT"));
+        for (var job : jobs) {
+            assertTrue(Files.readString(output.resolve("setup/" + job + ".STEP15.txt")).contains("IDC3302I DUPLICATE KEYS SKIPPED 000000001"));
+            assertEquals("{\"STEP15\": 4}", Files.readString(output.resolve("setup/" + job + ".rc.json")));
+        }
+        assertTrue(Files.readString(output.resolve("rc.json")).contains("\"maxrc\": 0"));
+    }
 }

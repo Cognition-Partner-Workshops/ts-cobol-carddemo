@@ -50,6 +50,13 @@ class RecordLayoutTest {
     }
 
     @Test
+    void rejectLineCopiesTheTransactionBytesUnchanged() {
+        String blankAmount = DALYTRAN_LINE.substring(0, 132) + " ".repeat(11) + DALYTRAN_LINE.substring(143);
+        String line = new RejectRecord(blankAmount, 101, "ACCOUNT RECORD NOT FOUND").toLine();
+        assertEquals(blankAmount, line.substring(0, blankAmount.length()));
+    }
+
+    @Test
     void reasonOutsideTheValidationRangeIsRefused() {
         assertThrows(IllegalArgumentException.class, () -> new RejectRecord(DALYTRAN_LINE, 0, ""));
     }

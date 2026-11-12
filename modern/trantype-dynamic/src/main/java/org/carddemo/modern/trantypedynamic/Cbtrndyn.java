@@ -35,7 +35,7 @@ final class Cbtrndyn {
             sysout.add("CBTRNDYN: CALLING " + name);
             var program = loadlib.get(name.strip());
             if (program == null) throw new IllegalStateException("CBTRNDYN: CALL " + name.strip() + ": program not found");
-            rc = Math.max(rc, program.call());
+            rc = program.call();
         }
         sysout.add("CBTRNDYN: END");
         return rc;

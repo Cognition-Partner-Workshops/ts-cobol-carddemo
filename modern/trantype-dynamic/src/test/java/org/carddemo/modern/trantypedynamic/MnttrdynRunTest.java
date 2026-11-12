@@ -82,15 +82,16 @@ class MnttrdynRunTest {
         useFixture("d02-delete-statement");
         assertEquals(0, run());
         assertEquals(List.of("01=Purchase", "02=Payment"), descriptions());
-        assertEquals(List.of("OPEN FILE OK", "CBTRNDYN: END", "DSNRUN: COMMIT AT END OF TASK"), sysout().subList(4, 7));
+        assertEquals(List.of("OPEN FILE OK", "DSNRUN: COMMIT AT END OF TASK"), sysout().subList(4, 6));
         assertEquals("trc_type_code,trc_type_category,trc_cat_data\n",
                 Files.readString(output.resolve("db/carddemo.transaction_type_categor.csv")));
     }
 
     @Test
-    void failedDynamicStatementRollsBackOnlyItselfAndSetsRc8() throws Exception {
+    void failedDynamicStatementRc8IsReplacedByCobtupdtStopRun() throws Exception {
         useFixture("d03-bad-statement");
-        assertEquals(8, run());
+        assertEquals(0, run());
+        assertFalse(sysout().contains("CBTRNDYN: END"));
         assertEquals("CBTRNDYN: EXECUTE SQLCODE -0000000206", sysout().get(2));
         assertTrue(sysout().contains("RECORD UPDATED SUCCESSFULLY"));
         assertEquals("01=Purchase - updated", descriptions().getFirst());
@@ -121,6 +122,7 @@ class MnttrdynRunTest {
         parms = "";
         assertEquals(0, run());
         assertFalse(sysout().stream().anyMatch(line -> line.startsWith("CBTRNDYN: CALLING")));
+        assertTrue(sysout().contains("CBTRNDYN: END"));
         assertFalse(descriptions().contains("04=Authorization"));
     }
 

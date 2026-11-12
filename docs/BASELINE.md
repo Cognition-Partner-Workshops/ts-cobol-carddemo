@@ -84,6 +84,38 @@ Other things to know when the Db2 chain is ported:
   and commits at end of task through `DSNEXIT` (`CBL_EXIT_PROC`) because the
   application ends with `STOP RUN`, exactly like the DSN command processor.
 
+## Dynamic transaction-type chain (`trantype-dynamic`)
+
+* `d01-update-then-apply`: DYNSQL skips only lines beginning with `--`,
+  concatenates columns 1-72 plus a space, and counts non-comment lines in
+  a two-digit counter. The statement buffer is 800 bytes. Column truncation
+  is also covered by Java's `column72AndCommentQuirk` unit test.
+* `d01-update-then-apply`: dynamic SQL and the JCL-selected dynamic CALL
+  share one connection and one end-of-task commit; COBTUPDT sends the full
+  padded 50-character description. Its `STOP RUN` ends the run unit, so
+  `CBTRNDYN: END` is absent in all three fixtures.
+* `d02-delete-statement`: an empty INPFILE still opens successfully and
+  commits the dynamic DELETE.
+* `d03-bad-statement`: ocesql PREPARE stores the SQL locally; the invalid
+  column fails at EXECUTE with SQLCODE -400. PostgreSQL rejects the called
+  program's UPDATE because the same transaction is aborted. End-of-task
+  COMMIT rolls back that transaction and the snapshot is unchanged.
+  No savepoint or per-statement recovery is introduced.
+* `d03-bad-statement`: CBTRNDYN sets RC 8, but COBTUPDT's
+  `9999-ABEND` overwrites it with RC 4 and continues. The golden RC is 4,
+  despite the fixture README describing the driver's intermediate RC 8.
+
+These are retained under the **COBOL batch parity standard**.
+An additional scratch probe (add, invalid type, missing-row update, add) shows
+that a later successful ocesql CALL resets an earlier invalid-type RC 4 to 0.
+The missing-row UPDATE succeeds, processing continues, and both adds commit.
+No CEE3ABD tail or implicit CLOSE warning is emitted: DYNSQL and INPFILE are
+explicitly closed before STOP RUN.
+
+Business question:
+should statement-level recovery replace PostgreSQL's whole-transaction failure
+after cutover? Default: **keep legacy behaviour**.
+
 ## z/OS services emulated by the local runner (`tools/runjcl`)
 
 | Facility | Local stand-in | Fidelity |

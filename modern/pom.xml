@@ -28,6 +28,7 @@
     <module>interest</module>
     <module>posting</module>
     <module>trantype-update</module>
+    <module>trantype-dynamic</module>
   </modules>
 
   <dependencyManagement>

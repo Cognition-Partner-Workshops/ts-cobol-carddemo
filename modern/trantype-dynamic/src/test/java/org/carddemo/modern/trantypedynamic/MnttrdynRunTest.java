@@ -113,11 +113,24 @@ class MnttrdynRunTest {
     }
 
     @Test
-    void missingKeyOnUpdateReportsNotFoundAndRc4() throws Exception {
+    void missingKeyIsReportedAsSuccessBecauseSqlcode100IsNeverSet() throws Exception {
         useFixture("d02-delete-statement");
-        Files.writeString(input.resolve("INPFILE.txt"), "U09Nothing\n");
-        assertEquals(4, run());
-        assertTrue(sysout().contains(String.format("%-80s", "No records found.")));
+        Files.writeString(input.resolve("DYNSQL.txt"), "DELETE FROM TRANSACTION_TYPE WHERE TR_TYPE = '09'\n");
+        Files.writeString(input.resolve("INPFILE.txt"), "U09Nothing\nD08\n");
+        assertEquals(0, run());
+        var lines = sysout();
+        assertEquals("CBTRNDYN: EXECUTE SQLCODE +0000000000", lines.get(2));
+        assertTrue(lines.contains("RECORD UPDATED SUCCESSFULLY"));
+        assertTrue(lines.contains("RECORD DELETED SUCCESSFULLY"));
+        assertFalse(lines.contains(String.format("%-80s", "No records found.")));
+    }
+
+    @Test
+    void dynamicQueryWithNoRowsIsSqlcode100() throws Exception {
+        useFixture("d02-delete-statement");
+        Files.writeString(input.resolve("DYNSQL.txt"), "SELECT TR_TYPE FROM TRANSACTION_TYPE WHERE TR_TYPE = '09'\n");
+        assertEquals(0, run());
+        assertEquals("CBTRNDYN: EXECUTE SQLCODE +0000000100", sysout().get(2));
     }
 
     @Test

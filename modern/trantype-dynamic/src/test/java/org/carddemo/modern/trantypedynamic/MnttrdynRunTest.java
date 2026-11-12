@@ -58,6 +58,10 @@ class MnttrdynRunTest {
         return Files.readAllLines(output.resolve("sysout/MNTTRDYN.STEP1.txt"));
     }
 
+    private static String pad(String description) {
+        return String.format("%-50s", description);
+    }
+
     private List<String> descriptions() {
         return jdbc.queryForList("SELECT tr_type || '=' || tr_description FROM transaction_type ORDER BY tr_type", String.class);
     }
@@ -66,14 +70,14 @@ class MnttrdynRunTest {
     void dynamicUpdateAndCalledAddShareOneUnitOfWork() throws Exception {
         useFixture("d01-update-then-apply");
         assertEquals(0, run());
-        assertEquals(List.of("01=Purchase", "02=Payment - SEPA", "03=Credit", "04=Authorization"), descriptions());
+        assertEquals(List.of("01=Purchase", "02=Payment - SEPA", "03=Credit", "04=" + pad("Authorization")), descriptions());
         var lines = sysout();
         assertEquals("CBTRNDYN: 03 SQL LINES READ", lines.get(1));
         assertEquals("CBTRNDYN: EXECUTE SQLCODE +0000000000", lines.get(2));
         assertEquals("CBTRNDYN: CALLING COBTUPDT", lines.get(3));
         assertEquals("DSNRUN: COMMIT AT END OF TASK", lines.getLast());
         assertTrue(Files.readString(output.resolve("rc.json")).contains("\"STEP1\": 0"));
-        assertEquals("tr_type,tr_description\n01,Purchase\n02,Payment - SEPA\n03,Credit\n04,Authorization\n",
+        assertEquals("tr_type,tr_description\n01,Purchase\n02,Payment - SEPA\n03,Credit\n04," + pad("Authorization") + "\n",
                 Files.readString(output.resolve("db/carddemo.transaction_type.csv")));
     }
 
@@ -94,7 +98,7 @@ class MnttrdynRunTest {
         assertFalse(sysout().contains("CBTRNDYN: END"));
         assertEquals("CBTRNDYN: EXECUTE SQLCODE -0000000206", sysout().get(2));
         assertTrue(sysout().contains("RECORD UPDATED SUCCESSFULLY"));
-        assertEquals("01=Purchase - updated", descriptions().getFirst());
+        assertEquals("01=" + pad("Purchase - updated"), descriptions().getFirst());
     }
 
     @Test
@@ -113,7 +117,7 @@ class MnttrdynRunTest {
         var lines = sysout();
         assertTrue(lines.contains(String.format("%-80s", "ERROR: TYPE NOT VALID")));
         assertTrue(lines.contains("RECORD INSERTED SUCCESSFULLY"));
-        assertTrue(descriptions().contains("07=Chargeback"));
+        assertTrue(descriptions().contains("07=" + pad("Chargeback")));
     }
 
     @Test
@@ -123,7 +127,7 @@ class MnttrdynRunTest {
         assertEquals(0, run());
         assertFalse(sysout().stream().anyMatch(line -> line.startsWith("CBTRNDYN: CALLING")));
         assertTrue(sysout().contains("CBTRNDYN: END"));
-        assertFalse(descriptions().contains("04=Authorization"));
+        assertFalse(descriptions().contains("04=" + pad("Authorization")));
     }
 
     @Test

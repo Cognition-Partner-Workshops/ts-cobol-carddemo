@@ -32,7 +32,8 @@ final class Cobtupdt implements Subprogram {
         for (var record : records) {
             sysout.add("PROCESSING   " + Layouts.TRANTYPE_UPDATE.encode(record));
             var number = record.get("INPUT-REC-NUMBER").toString();
-            var description = record.get("INPUT-REC-DESC").toString().stripTrailing();
+            // :INPUT-REC-DESC is PIC X(50): the host variable is bound with its trailing spaces.
+            var description = record.get("INPUT-REC-DESC").toString();
             switch (record.get("INPUT-REC-TYPE").toString()) {
                 case "A" -> {
                     sysout.add("ADDING RECORD");

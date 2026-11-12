@@ -68,6 +68,10 @@ missing targets, invalid operations, missing input and oversized records.
 Missing INPFILE.txt is an empty dataset (RC 0), matching record.py:45-53;
 this path is unit-tested and directly checked through the legacy materializer
 and COBTUPDT, but unproven by fixture parity.
+Oversized lines are clipped to 53 bytes by the codec, matching the materializer's
+line.ljust(lrecl)[:lrecl]. A direct legacy check preserved only the first 50
+description characters; the unit test also checks the next record remains
+separate. This path is unproven by fixture parity.
 Fatal input errors export RC 12 and fail Batch; recoverable record errors
 export RC 4. Uncovered fatal database outages are not proven by fixture parity.
 The COBOL batch parity standard requires all-case comparator results for

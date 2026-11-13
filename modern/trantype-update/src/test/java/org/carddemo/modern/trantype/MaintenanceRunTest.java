@@ -77,6 +77,26 @@ class MaintenanceRunTest {
     }
 
     @Test
+    void invalidOperationKeepsTheSqlErrorSuffixAndMessageStateIsRunLocal() throws Exception {
+        Files.writeString(input.resolve("INPFILE.txt"), "A01Duplicate\nX99Invalid operation\n");
+        assertEquals(4, run.run(input, output));
+        assertEquals(List.of("DSNRUN: DSN ATTACHED, RUNNING COBTUPDT", "OPEN FILE OK",
+                "PROCESSING   A01" + String.format("%-50s", "Duplicate"), "ADDING RECORD",
+                "Error accessing: TRANSACTION_TYPE table. SQLCODE: -403" + " ".repeat(26),
+                "PROCESSING   X99" + String.format("%-50s", "Invalid operation"),
+                "ERROR: TYPE NOT VALIDSACTION_TYPE table. SQLCODE: -403" + " ".repeat(26),
+                "DSNRUN: COMMIT AT END OF TASK"), Files.readAllLines(output.resolve("sysout/MNTTRDB2.STEP1.txt")));
+        assertEquals("tr_type,tr_description\n01,Purchase\n02,Payment\n03,Credit\n",
+                Files.readString(output.resolve("db/carddemo.transaction_type.csv")));
+        assertEquals("{\n \"MNTTRDB2\": {\n  \"maxrc\": 4,\n  \"steps\": {\n   \"STEP1\": 4\n  }\n }\n}",
+                Files.readString(output.resolve("rc.json")));
+        Files.writeString(input.resolve("INPFILE.txt"), "X99Invalid operation\n");
+        assertEquals(4, run.run(input, output));
+        assertEquals("ERROR: TYPE NOT VALID" + " ".repeat(59),
+                Files.readAllLines(output.resolve("sysout/MNTTRDB2.STEP1.txt")).get(3));
+    }
+
+    @Test
     void sqlstateMappingMatchesOcesqlAndCobolEditedReceiver() {
         assertEquals("Error accessing: TRANSACTION_TYPE table. SQLCODE: -403" + " ".repeat(26),
                 MaintenanceRun.sqlErrorMessage("23505"));

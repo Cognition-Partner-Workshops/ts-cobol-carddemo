@@ -46,7 +46,9 @@ DSNRUN's ocesql BEGIN and DSNEXIT's end-of-task COMMIT. Seed/input loading
 precedes that unit of work, and snapshots follow it. There are no statement
 savepoints: a duplicate insert aborts the transaction, later SQL reports -400,
 and COMMIT discards all maintenance writes while retaining the legacy
-`DSNRUN: COMMIT AT END OF TASK` diagnostic.
+`DSNRUN: COMMIT AT END OF TASK` diagnostic. Consecutive error messages use a
+run-local 80-character receiver: COBOL STRING overwrites only the new prefix,
+so an invalid operation following a SQL error retains the old message suffix.
 COBTUPDT source explicitly tests +100 on UPDATE/DELETE, despite the estate
 notes saying it ignores +100; the t05 README/golden description reports success.
 The executed ocesql v1.4 path resolves the discrepancy: generated COBTUPDT

@@ -54,6 +54,7 @@ final class MaintenanceRun {
                 boolean autoCommit = connection.getAutoCommit();
                 connection.setAutoCommit(false);
                 int returnCode = 0;
+                String returnMessage = " ".repeat(80);
                 try {
                     for (var row : rows) {
                         var record = Map.<String, Object>of("INPUT-REC-TYPE", row.get("input_rec_type"),
@@ -79,12 +80,14 @@ final class MaintenanceRun {
                                     lines.add(update ? "RECORD UPDATED SUCCESSFULLY" : "RECORD DELETED SUCCESSFULLY");
                                 }
                                 default -> {
-                                    lines.add(String.format(java.util.Locale.ROOT, "%-80s", "ERROR: TYPE NOT VALID"));
+                                    returnMessage = overwrite(returnMessage, "ERROR: TYPE NOT VALID");
+                                    lines.add(returnMessage);
                                     returnCode = 4;
                                 }
                             }
                         } catch (SQLException error) {
-                            lines.add(sqlErrorMessage(error.getSQLState()));
+                            returnMessage = overwrite(returnMessage, sqlErrorMessage(error.getSQLState()).stripTrailing());
+                            lines.add(returnMessage);
                             returnCode = 4;
                         }
                     }
@@ -134,6 +137,11 @@ final class MaintenanceRun {
             case "42P03" -> -605;
             default -> -400;
         };
+    }
+
+    private static String overwrite(String previous, String message) {
+        int length = Math.min(message.length(), previous.length());
+        return message.substring(0, length) + previous.substring(length);
     }
 
     private static void execute(Connection connection, String sql, Object... values) throws SQLException {

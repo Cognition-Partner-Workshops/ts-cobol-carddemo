@@ -53,6 +53,13 @@ public final class Layouts {
     /** REJTRAN REJECT-RECORD: the 350-byte daily transaction plus the 80-byte validation trailer. */
     public static final RecordLayout REJTRAN = new RecordLayout("REJTRAN", rejectRecord());
 
+    public static final RecordLayout TRAN_TYPE = new RecordLayout("CVTRA03Y", List.of(
+            text("TRAN-TYPE", 0, 2), text("TRAN-TYPE-DESC", 2, 50), filler(52, 8)));
+
+    public static final RecordLayout TRAN_CATEGORY = new RecordLayout("CVTRA04Y", List.of(
+            text("TRAN-TYPE-CD", 0, 2), zoned("TRAN-CAT-CD", 2, 4, 0, false),
+            text("TRAN-CAT-TYPE-DESC", 6, 50), filler(56, 4)));
+
     private static List<Field> transaction(String prefix) {
         return List.of(
                 text(prefix + "-ID", 0, 16),
@@ -74,7 +81,7 @@ public final class Layouts {
     private static List<Field> rejectRecord() {
         List<Field> fields = new ArrayList<>(transaction("DALYTRAN"));
         // 05 REJ-VALIDATION-TRAILER
-        fields.add(filler(350, 4));
+        fields.add(zoned("REJ-FAIL-REASON", 350, 4, 0, false));
         fields.add(text("REJ-FAIL-REASON-DESC", 354, 76));
         return fields;
     }

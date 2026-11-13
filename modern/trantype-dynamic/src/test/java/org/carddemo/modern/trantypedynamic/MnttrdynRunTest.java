@@ -155,6 +155,26 @@ class MnttrdynRunTest {
     }
 
     @Test
+    void duplicateInCalledProgramRollsBackDynamicAndEarlierMaintenanceWrites() throws Exception {
+        useFixture("d01-update-then-apply");
+        Files.writeString(input.resolve("INPFILE.txt"), "A04Before error\nA01Duplicate\nA05After error\n");
+        assertEquals(4, run());
+        assertEquals(List.of("01=Purchase", "02=Payment", "03=Credit"), descriptions());
+        var lines = sysout();
+        assertEquals("CBTRNDYN: EXECUTE SQLCODE +0000000000", lines.get(2));
+        assertEquals(List.of("OPEN FILE OK",
+                "PROCESSING   A04" + pad("Before error"), "ADDING RECORD", "RECORD INSERTED SUCCESSFULLY",
+                "PROCESSING   A01" + pad("Duplicate"), "ADDING RECORD",
+                String.format("%-80s", "Error accessing: TRANSACTION_TYPE table. SQLCODE: -403"),
+                "PROCESSING   A05" + pad("After error"), "ADDING RECORD",
+                String.format("%-80s", "Error accessing: TRANSACTION_TYPE table. SQLCODE: -400"),
+                "DSNRUN: COMMIT AT END OF TASK"), lines.subList(4, lines.size()));
+        assertEquals("tr_type,tr_description\n01,Purchase\n02,Payment\n03,Credit\n",
+                Files.readString(output.resolve("db/carddemo.transaction_type.csv")));
+        assertTrue(Files.readString(output.resolve("rc.json")).contains("\"STEP1\": 4"));
+    }
+
+    @Test
     void seedTextThatLooksLikeASchemaIsKept() throws Exception {
         useFixture("d02-delete-statement");
         Files.writeString(input.resolve("db/seed.sql"),

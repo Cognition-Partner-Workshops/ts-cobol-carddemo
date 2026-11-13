@@ -40,6 +40,13 @@ For t06-duplicate-add, PostgreSQL SQLSTATE 23505 maps through ocesql v1.4
 OCDB_PGSetResultStatus to OCPG_DUPLICATE_KEY (-403); COBTUPDT 10031 displays
 the padded message and 9999-ABEND sets RC 4 (it does not terminate the loop).
 Other mapped SQLSTATE diagnostics are not proven by fixture parity.
+
+Maintenance DML uses one connection with autocommit disabled, matching
+DSNRUN's ocesql BEGIN and DSNEXIT's end-of-task COMMIT. Seed/input loading
+precedes that unit of work, and snapshots follow it. There are no statement
+savepoints: a duplicate insert aborts the transaction, later SQL reports -400,
+and COMMIT discards all maintenance writes while retaining the legacy
+`DSNRUN: COMMIT AT END OF TASK` diagnostic.
 COBTUPDT source explicitly tests +100 on UPDATE/DELETE, despite the estate
 notes saying it ignores +100; the t05 README/golden description reports success.
 The executed ocesql v1.4 path resolves the discrepancy: generated COBTUPDT

@@ -5,12 +5,12 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 import org.carddemo.modern.codec.TrantypeInput;
 import org.postgresql.PGConnection;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
@@ -49,46 +49,63 @@ final class MaintenanceRun {
             }
             lines.add("OPEN FILE OK");
             lines.addFirst("DSNRUN: DSN ATTACHED, RUNNING COBTUPDT");
-            for (var row : jdbc.queryForList("SELECT * FROM maintenance_input ORDER BY record_number")) {
-                var record = Map.<String, Object>of("INPUT-REC-TYPE", row.get("input_rec_type"),
-                        "INPUT-REC-NUMBER", row.get("input_rec_number"), "INPUT-REC-DESC", row.get("input_rec_desc"));
-                lines.add("PROCESSING   " + TrantypeInput.LAYOUT.encode(record));
-                var type = row.get("input_rec_number");
-                var description = row.get("input_rec_desc").toString();
+            var rows = jdbc.queryForList("SELECT * FROM maintenance_input ORDER BY record_number");
+            rc = jdbc.execute((ConnectionCallback<Integer>) connection -> {
+                boolean autoCommit = connection.getAutoCommit();
+                connection.setAutoCommit(false);
+                int returnCode = 0;
                 try {
-                    switch (row.get("input_rec_type").toString()) {
-                        case "*" -> lines.add("IGNORING COMMENTED LINE");
-                        case "A" -> {
-                            lines.add("ADDING RECORD");
-                            jdbc.update("INSERT INTO transaction_type VALUES (?, ?)", type, description);
-                            lines.add("RECORD INSERTED SUCCESSFULLY");
-                        }
-                        case "U", "D" -> {
-                            boolean update = row.get("input_rec_type").equals("U");
-                            lines.add(update ? "UPDATING RECORD" : "DELETING RECORD");
-                            if (update) jdbc.update("UPDATE transaction_type SET tr_description = ? WHERE tr_type = ?", description, type);
-                            else jdbc.update("DELETE FROM transaction_type WHERE tr_type = ?", type);
-                            // Legacy defect (t05): ocesql PGRES_COMMAND_OK yields SQLCODE 0 even for zero rows;
-                            // COBTUPDT 10032/10033 therefore never reach their +100 error branches.
-                            lines.add(update ? "RECORD UPDATED SUCCESSFULLY" : "RECORD DELETED SUCCESSFULLY");
-                        }
-                        default -> {
-                            lines.add(String.format(java.util.Locale.ROOT, "%-80s", "ERROR: TYPE NOT VALID"));
-                            rc = 4;
+                    for (var row : rows) {
+                        var record = Map.<String, Object>of("INPUT-REC-TYPE", row.get("input_rec_type"),
+                                "INPUT-REC-NUMBER", row.get("input_rec_number"), "INPUT-REC-DESC", row.get("input_rec_desc"));
+                        lines.add("PROCESSING   " + TrantypeInput.LAYOUT.encode(record));
+                        var type = row.get("input_rec_number");
+                        var description = row.get("input_rec_desc").toString();
+                        try {
+                            switch (row.get("input_rec_type").toString()) {
+                                case "*" -> lines.add("IGNORING COMMENTED LINE");
+                                case "A" -> {
+                                    lines.add("ADDING RECORD");
+                                    execute(connection, "INSERT INTO transaction_type VALUES (?, ?)", type, description);
+                                    lines.add("RECORD INSERTED SUCCESSFULLY");
+                                }
+                                case "U", "D" -> {
+                                    boolean update = row.get("input_rec_type").equals("U");
+                                    lines.add(update ? "UPDATING RECORD" : "DELETING RECORD");
+                                    if (update) execute(connection, "UPDATE transaction_type SET tr_description = ? WHERE tr_type = ?", description, type);
+                                    else execute(connection, "DELETE FROM transaction_type WHERE tr_type = ?", type);
+                                    // Legacy defect (t05): ocesql PGRES_COMMAND_OK yields SQLCODE 0 even for zero rows;
+                                    // COBTUPDT 10032/10033 therefore never reach their +100 error branches.
+                                    lines.add(update ? "RECORD UPDATED SUCCESSFULLY" : "RECORD DELETED SUCCESSFULLY");
+                                }
+                                default -> {
+                                    lines.add(String.format(java.util.Locale.ROOT, "%-80s", "ERROR: TYPE NOT VALID"));
+                                    returnCode = 4;
+                                }
+                            }
+                        } catch (SQLException error) {
+                            lines.add(sqlErrorMessage(error.getSQLState()));
+                            returnCode = 4;
                         }
                     }
-                } catch (DataAccessException error) {
-                    var cause = error.getMostSpecificCause();
-                    if (!(cause instanceof SQLException sql)) throw error;
-                    lines.add(sqlErrorMessage(sql.getSQLState()));
-                    rc = 4;
+                    try {
+                        connection.commit();
+                        lines.add("DSNRUN: COMMIT AT END OF TASK");
+                    } catch (SQLException error) {
+                        lines.add("DSNRUN: COMMIT FAILED " + String.format(java.util.Locale.ROOT, "%+011d", sqlErrorCode(error.getSQLState())));
+                    }
+                    return returnCode;
+                } catch (RuntimeException error) {
+                    connection.rollback();
+                    throw error;
+                } finally {
+                    connection.setAutoCommit(autoCommit);
                 }
-            }
+            });
         } catch (IOException | RuntimeException error) {
             lines.add("MAINTENANCE FAILED: " + error.getMessage());
             rc = 12;
         }
-        if (rc < 12) lines.add("DSNRUN: COMMIT AT END OF TASK");
         Files.write(output.resolve("sysout/MNTTRDB2.STEP1.txt"), lines, StandardCharsets.ISO_8859_1);
         Files.writeString(output.resolve("rc.json"), "{\n \"MNTTRDB2\": {\n  \"maxrc\": " + rc
                 + ",\n  \"steps\": {\n   \"STEP1\": " + rc + "\n  }\n }\n}");
@@ -98,7 +115,13 @@ final class MaintenanceRun {
     }
 
     static String sqlErrorMessage(String state) {
-        int code = switch (state == null ? "" : state) {
+        // COBTUPDT 10031: PIC ----9 SQLCODE in PIC X(80) WS-RETURN-MSG.
+        return String.format(java.util.Locale.ROOT, "%-80s",
+                "Error accessing: TRANSACTION_TYPE table. SQLCODE:" + String.format(java.util.Locale.ROOT, "%5d", sqlErrorCode(state)));
+    }
+
+    private static int sqlErrorCode(String state) {
+        return switch (state == null ? "" : state) {
             case "08001" -> -402;
             case "08003" -> -220;
             case "08007" -> -401;
@@ -111,9 +134,13 @@ final class MaintenanceRun {
             case "42P03" -> -605;
             default -> -400;
         };
-        // COBTUPDT 10031: PIC ----9 SQLCODE in PIC X(80) WS-RETURN-MSG.
-        return String.format(java.util.Locale.ROOT, "%-80s",
-                "Error accessing: TRANSACTION_TYPE table. SQLCODE:" + String.format(java.util.Locale.ROOT, "%5d", code));
+    }
+
+    private static void execute(Connection connection, String sql, Object... values) throws SQLException {
+        try (var statement = connection.prepareStatement(sql)) {
+            for (int i = 0; i < values.length; i++) statement.setObject(i + 1, values[i]);
+            statement.executeUpdate();
+        }
     }
 
     private void snapshot(Path output, String table, String order) throws IOException {

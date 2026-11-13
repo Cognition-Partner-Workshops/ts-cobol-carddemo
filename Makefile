@@ -21,6 +21,11 @@ EXEC     = $(COMPOSE) exec -T estate
 CHAINS  ?= posting interest trantype-update trantype-dynamic
 CHAIN   ?=
 CASE    ?=
+TARGET  ?=
+MAVEN_ARGS ?=
+TRANTYPE_CLOCK ?= $(shell python3 -c 'import json; print(json.load(open("tools/runjcl/chains.json"))["trantype-update"]["clock"])')
+INTEREST_PARM_DATE ?= $(shell sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCALC.jcl)
+TRANTYPE_DYNAMIC_PARMS ?= $(shell sed -n "s/.*PARMS('\([^']*\)').*/\1/p" app/app-transaction-type-db2/jcl/MNTTRDYN.jcl)
 PY       = python3
 
 .PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell
@@ -59,10 +64,18 @@ parity:
 	@rm -f work/parity/report.md; mkdir -p work/parity; fail=0; \
 	chains="$(if $(CHAIN),$(CHAIN),$(CHAINS))"; \
 	for chain in $$chains; do \
+	  target="$(TARGET)"; [ -n "$$target" ] || { if [ -d modern/$$chain ]; then target=java; else target=legacy; fi; }; \
+	  if [ "$$target" = java ]; then $(COMPOSE) exec -T java mvn $(MAVEN_ARGS) -Dmaven.repo.local=/estate/work/maven -f modern/pom.xml -pl $$chain -am package -DskipTests > work/parity/build-$$chain.log 2>&1 || { cat work/parity/build-$$chain.log; exit 1; }; fi; \
 	  cases="$(if $(CASE),$(CASE),$$(ls fixtures/$$chain))"; \
 	  for case in $$cases; do \
-	    $(EXEC) $(PY) tools/parity/record.py $$chain $$case --out work/parity/$$chain/$$case/actual > /dev/null || { echo "$$chain/$$case: chain run failed"; fail=1; continue; }; \
-	    $(EXEC) $(PY) tools/parity/compare.py $$chain $$case --actual work/parity/$$chain/$$case/actual --report work/parity/report.md || fail=1; \
+	    if [ "$$target" = java ]; then \
+	      set --; if [ "$$chain" = interest ]; then set -- "$(INTEREST_PARM_DATE)"; elif [ "$$chain" = trantype-update ]; then set -- "$(TRANTYPE_CLOCK)"; elif [ "$$chain" = trantype-dynamic ]; then set -- $(TRANTYPE_DYNAMIC_PARMS); fi; \
+	      $(COMPOSE) exec -T java java -jar modern/$$chain/target/$$chain-0.1.0.jar fixtures/$$chain/$$case/input work/parity/$$chain/$$case/actual "$$@" > work/parity/run-$$chain-$$case.log 2>&1 || { cat work/parity/run-$$chain-$$case.log; fail=1; continue; }; \
+	      label=java; \
+	    else \
+	      $(EXEC) $(PY) tools/parity/record.py $$chain $$case --out work/parity/$$chain/$$case/actual > /dev/null || { echo "$$chain/$$case: chain run failed"; fail=1; continue; }; label="legacy rerun"; \
+	    fi; \
+	    $(EXEC) $(PY) tools/parity/compare.py $$chain $$case --actual work/parity/$$chain/$$case/actual --report work/parity/report.md --label "$$label" || fail=1; \
 	  done; \
 	done; \
 	echo "report: work/parity/report.md"; exit $$fail

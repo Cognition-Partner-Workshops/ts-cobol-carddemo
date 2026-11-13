@@ -10,6 +10,12 @@ shares one definition of each record.
 | `Layouts.DALYTRAN` | `CVTRA06Y` | 350 |
 | `Layouts.TRAN` | `CVTRA05Y` | 350 |
 | `Layouts.REJTRAN` | `tools/parity/layouts/REJTRAN.cpy` | 430 |
+| `Layouts.ACCOUNT` | `CVACT01Y` | 300 |
+| `Layouts.XREF` | `CVACT03Y` | 50 |
+| `Layouts.CATEGORY_BALANCE` | `CVTRA01Y` | 50 |
+| `Layouts.DISCLOSURE` | `CVTRA02Y` | 50 |
+| `Layouts.TRANTYPE_UPDATE` | `COBTUPDT.cbl` `WS-INPUT-REC` (INPFILE) | 53 |
+| `Layouts.DYNSQL` | `CBTRNDYN.cbl` `DYNSQL-REC` (DYNSQL) | 80 |
 
 Zoned decimals use the EBCDIC overpunch convention (`cobc -fsign=EBCDIC`).
 Lines are written the way `tools/parity/record.py` records them, one record per

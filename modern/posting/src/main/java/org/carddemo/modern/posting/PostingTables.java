@@ -1,0 +1,62 @@
+package org.carddemo.modern.posting;
+
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.carddemo.modern.codec.Field;
+import org.carddemo.modern.codec.Layouts;
+import org.carddemo.modern.codec.RecordLayout;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+record PostingTables(String name, RecordLayout layout, List<String> keys) {
+    static final PostingTables ACCOUNT = new PostingTables("account", Layouts.ACCOUNT, List.of("ACCT-ID"));
+    static final PostingTables XREF = new PostingTables("card_xref", Layouts.XREF, List.of("XREF-CARD-NUM"));
+    static final PostingTables TYPE = new PostingTables("tran_type", Layouts.TRAN_TYPE, List.of("TRAN-TYPE"));
+    static final PostingTables CATEGORY = new PostingTables("tran_category", Layouts.TRAN_CATEGORY,
+            List.of("TRAN-TYPE-CD", "TRAN-CAT-CD"));
+    static final PostingTables BALANCE = new PostingTables("tran_cat_balance", Layouts.CATEGORY_BALANCE,
+            List.of("TRANCAT-ACCT-ID", "TRANCAT-TYPE-CD", "TRANCAT-CD"));
+    static final PostingTables TRANSACTION = new PostingTables("\"transaction\"", Layouts.TRAN, List.of("TRAN-ID"));
+    static final List<PostingTables> ALL = List.of(ACCOUNT, XREF, TYPE, CATEGORY, BALANCE, TRANSACTION);
+
+    private List<Field> fields() {
+        return layout.fields().stream().filter(field -> field.kind() != Field.Kind.FILLER).toList();
+    }
+
+    private static String column(String field) { return field.toLowerCase(java.util.Locale.ROOT).replace('-', '_'); }
+
+    void store(JdbcTemplate jdbc, Map<String, Object> record) {
+        write(jdbc, record, true);
+    }
+
+    boolean insert(JdbcTemplate jdbc, Map<String, Object> record) {
+        return write(jdbc, record, false) != 0;
+    }
+
+    private int write(JdbcTemplate jdbc, Map<String, Object> record, boolean replace) {
+        var fields = fields();
+        var columns = fields.stream().map(field -> column(field.name())).collect(Collectors.joining(", "));
+        var parameters = fields.stream().map(field -> "?").collect(Collectors.joining(", "));
+        var keyColumns = keys.stream().map(PostingTables::column).collect(Collectors.joining(", "));
+        var updates = fields.stream().filter(field -> !keys.contains(field.name()))
+                .map(field -> column(field.name()) + " = EXCLUDED." + column(field.name())).collect(Collectors.joining(", "));
+        var values = fields.stream().map(field -> record.getOrDefault(field.name(),
+                field.kind() == Field.Kind.TEXT ? "" : BigDecimal.ZERO)).toArray();
+        return jdbc.update("INSERT INTO " + name + " (" + columns + ") VALUES (" + parameters + ") ON CONFLICT ("
+                + keyColumns + ") " + (replace ? "DO UPDATE SET " + updates : "DO NOTHING"), values);
+    }
+
+    List<Map<String, Object>> read(JdbcTemplate jdbc) {
+        var order = keys.stream().map(key -> column(key) + (fields().stream()
+                .anyMatch(field -> field.name().equals(key) && field.kind() == Field.Kind.TEXT) ? " COLLATE \"C\"" : ""))
+                .collect(Collectors.joining(", "));
+        return jdbc.query("SELECT * FROM " + name + " ORDER BY " + order, (rs, row) -> {
+            Map<String, Object> record = new LinkedHashMap<>();
+            for (var field : fields()) record.put(field.name(), field.kind() == Field.Kind.TEXT
+                    ? rs.getString(column(field.name())) : rs.getBigDecimal(column(field.name())));
+            return record;
+        });
+    }
+}

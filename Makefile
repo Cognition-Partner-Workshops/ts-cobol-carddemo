@@ -26,9 +26,12 @@ MAVEN_ARGS ?=
 TRANTYPE_CLOCK ?= $(shell python3 -c 'import json; print(json.load(open("tools/runjcl/chains.json"))["trantype-update"]["clock"])')
 INTEREST_PARM_DATE ?= $(shell sed -n "s/.*PARM='\([^']*\)'.*/\1/p" app/jcl/INTCALC.jcl)
 TRANTYPE_DYNAMIC_PARMS ?= $(shell sed -n "s/.*PARMS('\([^']*\)').*/\1/p" app/app-transaction-type-db2/jcl/MNTTRDYN.jcl)
+POSTING_CLOCK ?= $(shell python3 -c 'import json; print(json.load(open("tools/runjcl/chains.json"))["posting"]["clock"])')
+POSTING_SORT_START ?= $(shell sed -n "s/.*PARM-START-DATE,C'\([^']*\)'.*/\1/p" app/jcl/TRANREPT.jcl)
+POSTING_SORT_END ?= $(shell sed -n "s/.*PARM-END-DATE,C'\([^']*\)'.*/\1/p" app/jcl/TRANREPT.jcl)
 PY       = python3
 
-.PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell
+.PHONY: up down build run record parity parity-container modern-image parity-naive chain-graph chain-graph-check reset baseline shell
 
 up:
 	$(COMPOSE) up -d --build --wait
@@ -69,7 +72,7 @@ parity:
 	  cases="$(if $(CASE),$(CASE),$$(ls fixtures/$$chain))"; \
 	  for case in $$cases; do \
 	    if [ "$$target" = java ]; then \
-	      set --; if [ "$$chain" = interest ]; then set -- "$(INTEREST_PARM_DATE)"; elif [ "$$chain" = trantype-update ]; then set -- "$(TRANTYPE_CLOCK)"; elif [ "$$chain" = trantype-dynamic ]; then set -- $(TRANTYPE_DYNAMIC_PARMS); fi; \
+	      set --; if [ "$$chain" = interest ]; then set -- "$(INTEREST_PARM_DATE)"; elif [ "$$chain" = trantype-update ]; then set -- "$(TRANTYPE_CLOCK)"; elif [ "$$chain" = trantype-dynamic ]; then set -- $(TRANTYPE_DYNAMIC_PARMS); elif [ "$$chain" = posting ]; then set -- "$(POSTING_CLOCK)" "$(POSTING_SORT_START)" "$(POSTING_SORT_END)"; fi; \
 	      $(COMPOSE) exec -T java java -jar modern/$$chain/target/$$chain-0.1.0.jar fixtures/$$chain/$$case/input work/parity/$$chain/$$case/actual "$$@" > work/parity/run-$$chain-$$case.log 2>&1 || { cat work/parity/run-$$chain-$$case.log; fail=1; continue; }; \
 	      label=java; \
 	    else \
@@ -79,6 +82,13 @@ parity:
 	  done; \
 	done; \
 	echo "report: work/parity/report.md"; exit $$fail
+
+# Candidate image build is deliberately separate from execution/review.
+modern-image:
+	$(COMPOSE) --profile candidate build java-batch
+
+parity-container:
+	$(COMPOSE) --profile candidate run --rm --no-build java-batch --compare $(if $(CHAIN),--chain $(CHAIN)) $(if $(CASE),--case $(CASE))
 
 parity-naive:
 	@test -n "$(CASE)" || { echo "usage: make parity-naive CASE=<interest case>"; exit 2; }

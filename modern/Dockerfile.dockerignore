@@ -1,0 +1,5 @@
+**
+!modern/
+!modern/**
+modern/**/target/
+modern/**/__pycache__/

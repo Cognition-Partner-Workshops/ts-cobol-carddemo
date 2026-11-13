@@ -1,4 +1,21 @@
 services:
+  java-batch:
+    profiles: ["candidate"]
+    image: carddemo-java-batch:local
+    build:
+      context: .
+      dockerfile: modern/Dockerfile
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /estate
+    volumes:
+      - ./fixtures:/estate/fixtures:ro
+      - ./app:/estate/app:ro
+      - ./tools:/estate/tools:ro
+      - ./work:/estate/work
+    depends_on:
+      db:
+        condition: service_healthy
+
   java:
     image: maven:3.9-eclipse-temurin-21
     pull_policy: missing

@@ -91,6 +91,21 @@ class PostingRunTest {
                 Files.readString(output.resolve("sysout/TRANREPT.STEP10R.txt")));
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void missingOrEmptyDateParmEndsNormallyWithoutReport(boolean omitted) throws Exception {
+        var input = input();
+        var dateParm = input.resolve(PostingRun.PREFIX + "DATEPARM.txt");
+        if (omitted) Files.delete(dateParm); else Files.writeString(dateParm, "");
+        var output = temporary.resolve("output");
+        assertEquals(0, run.run(input, output));
+        assertEquals(4, PostingTables.TRANSACTION.read(jdbc).size());
+        assertEquals("", Files.readString(output.resolve("datasets/" + PostingRun.PREFIX + "TRANREPT.G0001V00.txt")));
+        assertEquals("START OF EXECUTION OF PROGRAM CBTRN03C\nEND OF EXECUTION OF PROGRAM CBTRN03C\n",
+                Files.readString(output.resolve("sysout/TRANREPT.STEP10R.txt")));
+        assertTrue(Files.readString(output.resolve("rc.json")).contains("\"STEP10R\": 0"));
+    }
+
     @Test
     void missingReportLookupAbendsButRetainsPostedTransactions() throws Exception {
         var input = input();

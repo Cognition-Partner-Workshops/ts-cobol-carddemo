@@ -50,6 +50,21 @@ public final class Layouts {
     /** CVTRA05Y TRAN-RECORD, RECLN 350. */
     public static final RecordLayout TRAN = new RecordLayout("CVTRA05Y", transaction("TRAN"));
 
+    public static final RecordLayout TRAN_TYPE = new RecordLayout("CVTRA03Y", List.of(
+            text("TRAN-TYPE", 0, 2), text("TRAN-TYPE-DESC", 2, 50), filler(52, 8)));
+
+    public static final RecordLayout TRAN_CATEGORY = new RecordLayout("CVTRA04Y", List.of(
+            text("TRAN-TYPE-CD", 0, 2), zoned("TRAN-CAT-CD", 2, 4, 0, false),
+            text("TRAN-CAT-TYPE-DESC", 6, 50), filler(56, 4)));
+
+    /** CBTRN03C WS-DATEPARM-RECORD read from FD-DATEPARM-REC PIC X(80). */
+    public static final RecordLayout DATE_PARAMETERS = new RecordLayout("CBTRN03C-DATEPARM", List.of(
+            text("WS-START-DATE", 0, 10), filler(10, 1), text("WS-END-DATE", 11, 10), filler(21, 59)));
+
+    /** CBTRN03C FD-REPTFILE-REC PIC X(133), populated from CVTRA07Y. */
+    public static final RecordLayout REPORT = new RecordLayout("CBTRN03C-REPORT", List.of(
+            text("FD-REPTFILE-REC", 0, 133)));
+
     /** REJTRAN REJECT-RECORD: the 350-byte daily transaction plus the 80-byte validation trailer. */
     public static final RecordLayout REJTRAN = new RecordLayout("REJTRAN", rejectRecord());
 
@@ -74,7 +89,7 @@ public final class Layouts {
     private static List<Field> rejectRecord() {
         List<Field> fields = new ArrayList<>(transaction("DALYTRAN"));
         // 05 REJ-VALIDATION-TRAILER
-        fields.add(filler(350, 4));
+        fields.add(zoned("REJ-FAIL-REASON", 350, 4, 0, false));
         fields.add(text("REJ-FAIL-REASON-DESC", 354, 76));
         return fields;
     }

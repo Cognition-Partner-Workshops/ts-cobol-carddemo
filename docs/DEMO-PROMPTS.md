@@ -1,7 +1,7 @@
 # Modernization demo prompts (runbook sequence)
 
-Six copy-paste prompts that walk this repository through the engineer
-runbook's story:
+Six copy-paste prompts, plus a hand-off prompt for the next stream, that walk
+this repository through the engineer runbook's story:
 
 **ingest -> inventory -> analyze -> isolate -> specify -> design -> execute -> replay -> accept**
 
@@ -26,6 +26,7 @@ Conventions used by all prompts:
 | `modernization/design/` | architecture, code-and-data strategy, tickets | prompt 4 |
 | `java/interest/` | the target implementation | prompt 5 |
 | `lab/` | classified replay and its local web page | prompt 6 |
+| `modernization/streams/posting/`, `modernization/design/shared-layouts.md` | hand-off to the next stream | prompt 7 |
 
 ## 0. One-shot preparation prompt (optional)
 
@@ -153,9 +154,13 @@ and the copybooks it uses). Scope is modernization/streams/interest/manifest.jso
    business outcome from rules.yaml and the case's input/ files only, as
    modernization/rules/interest/expected/<case>.json. Write a small rulebook
    evaluator that does this. It must not read fixtures/*/expected, must not
-   call the COBOL and must not reuse tools/parity/naive_ref.py. Where a rule
-   is undecided (a QUIRK or HOLE), emit both candidate outcomes and mark the
-   expectation OPEN instead of picking one.
+   call the COBOL and must not reuse tools/parity/naive_ref.py. Every
+   expected value must be derived from the rule text and cite the rule id it
+   came from; never copy a value from the legacy lane's output, in this
+   directory or in any fixture you add. Where a rule is undecided (a QUIRK
+   or HOLE), emit both candidate outcomes and mark the expectation OPEN
+   instead of picking one. Where the rules do not determine a case at all,
+   mark it UNRESOLVED with an owner placeholder and add it to the register.
 
 3. Board. Generate a self-contained modernization/rules/interest/rules-INTCALC.html:
    the business summary on top, then RULE / QUIRK / HOLE cards with the source
@@ -295,6 +300,52 @@ real Db2. Attach the recording, a screenshot of the gate and the classified
 report. Open one PR against main. Do not merge.
 ```
 
+## 7. Hand-off to the next stream (interest to posting)
+
+Run this after the interest stream has passed its replay gate.  It prepares
+the `posting` chain; the build itself reuses prompts 2-6 with the stream name
+changed.
+
+```
+In Cognition-Partner-Workshops/ts-cobol-carddemo, hand the modernization
+over from the interest stream to the posting stream: app/jcl/POSTTRAN.jcl
+(app/cbl/CBTRN02C.cbl) then app/jcl/TRANREPT.jcl (app/cbl/CBTRN03C.cbl).
+Read AGENTS.md, modernization/design/architecture.md and
+modernization/design/data-map-interest.md first.
+
+1. Freeze the shared record layouts before anything else. The two streams
+   share AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS (CVACT01Y),
+   AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS (CVTRA01Y) and
+   AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS (CVACT03Y), and both write
+   transaction records in the CVTRA05Y layout. Write
+   modernization/design/shared-layouts.md: for each of those four copybooks
+   the table and column mapping already built for interest, which stream
+   reads and which updates it, and the statement that the mapping is frozen.
+   A change to a frozen layout is a decision-register row, not a ticket.
+   Confirm the list against the source; add any shared layout it misses.
+2. Write modernization/streams/posting/handoff.md: what posting reuses
+   from interest unchanged (schema, codec, comparator, lab), what is new
+   (CVTRA06Y, CVTRA03Y, CVTRA04Y, CVTRA07Y, the reject file, the report),
+   and the run-order question: which stream updates the account and
+   category balances first, and what the scheduler exports under
+   app/scheduler prove about that order. Leave unproven order as an open
+   ask.
+3. Plan the build as waves under modernization/design/tickets/posting/:
+   one program per session - CBTRN02C in the first wave, CBTRN03C in the
+   second - with no session touching both programs or a frozen layout.
+   State the ticket-write policy for each wave on its own line in the wave
+   file: "Ticket writes: prohibited" unless the presenter has authorized a
+   tracker for that wave, in which case name the project and the allowed
+   transitions.
+4. List what the posting stream must still pass: all seven cases under
+   fixtures/posting with make parity, and all seven interest cases
+   unchanged.
+
+Do not write Java, do not edit app/ or fixtures/, and do not start the
+wave sessions. Attach handoff.md and shared-layouts.md, open one PR against
+main and stop for approval. Do not merge.
+```
+
 ## What each prompt should leave behind
 
 | Prompt | Evidence to show an audience |
@@ -305,3 +356,4 @@ report. Open one PR against main. Do not merge.
 | 4 | `strategy-interest.html`, `architecture.md`, ticket files with a dependency order |
 | 5 | One PR per ticket with test output and per-case parity |
 | 6 | The lab page: Golden run, classified counts, rule verdicts, gate result |
+| 7 | `shared-layouts.md` with the frozen layouts, `handoff.md`, the wave plan with its ticket-write policy |

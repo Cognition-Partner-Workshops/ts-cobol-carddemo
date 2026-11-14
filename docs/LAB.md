@@ -3,6 +3,10 @@
 Three copy-paste prompts for a live session against this repository.  Each is
 self-contained; the estate must be green first (`make up && make build && make parity`).
 
+For the full runbook sequence (inventory, stream isolation, SME rules board,
+design, tickets, replay lab) use [DEMO-PROMPTS.md](DEMO-PROMPTS.md) with
+[DEMO-SETUP.md](DEMO-SETUP.md).
+
 ## 1. Discovery and migration plan
 
 ```

@@ -94,6 +94,14 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Fix.** `SET LOCAL search_path = pg_catalog;` in the test transaction. After it: `43 assertions, 0 failed`.
 * **Reported by:** ticket 02-schema (step 5b, wave 1).
 
+## P9. A test cannot read `modernization/rules/interest/expected/<case>.json`
+
+* **Symptom.** `NullPointerException: Cannot invoke "java.util.List.iterator()" because the return value of "java.util.Map.get(Object)" is null`.
+* **Cause.** Spring Boot's `BasicJsonParser` does not read the nested, indented files.
+* **Fix.** `com.jayway.jsonpath.JsonPath.parse(text).read("$")`; `json-path` is on the test classpath through
+  `spring-boot-starter-test`, no new dependency.
+* **Reported by:** ticket 04-calculation-rules (`PolicySwitchFixtureTest`; 63 of 63 pass with JsonPath).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

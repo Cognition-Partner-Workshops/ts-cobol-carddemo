@@ -22,6 +22,8 @@ import org.springframework.core.io.ClassPathResource;
 import com.carddemo.interest.policy.InterestPolicy.IdPrefix;
 import com.carddemo.interest.policy.InterestPolicy.InactiveAccounts;
 import com.carddemo.interest.policy.InterestPolicy.NegativeBalance;
+import com.carddemo.interest.policy.InterestPolicy.MultiCard;
+import com.carddemo.interest.policy.InterestPolicy.Overflow;
 import com.carddemo.interest.policy.InterestPolicy.Rounding;
 import com.carddemo.interest.policy.InterestPolicy.TimestampSource;
 import com.carddemo.interest.policy.InterestPolicy.ZeroInterest;
@@ -35,14 +37,15 @@ class InterestPolicyTest {
     private static InterestPolicy bound(Map<String, String> properties) {
         return new Binder(new MapConfigurationPropertySource(properties))
                 .bind("interest.policy", InterestPolicy.class)
-                .orElseGet(() -> new InterestPolicy(null, null, null, false, null, null, null));
+                .orElseGet(() -> new InterestPolicy(null, null, null, false, null, null, null, null, null));
     }
 
     @Test
     void fi5_nothingConfiguredIsTheLegacyBehaviour() {
         assertEquals(InterestPolicy.legacy(), bound(Map.of()));
         assertEquals(new InterestPolicy(Rounding.TRUNCATE, IdPrefix.PARM, TimestampSource.RUN_CLOCK, false,
-                NegativeBalance.CHARGE, ZeroInterest.WRITE, InactiveAccounts.CHARGE), InterestPolicy.legacy());
+                NegativeBalance.CHARGE, ZeroInterest.WRITE, InactiveAccounts.CHARGE, MultiCard.STOP, Overflow.STOP),
+                InterestPolicy.legacy());
     }
 
     @Test
@@ -58,6 +61,8 @@ class InterestPolicyTest {
         assertEquals("CHARGE", yml.getProperty("interest.policy.negativeBalance"));
         assertEquals("WRITE", yml.getProperty("interest.policy.zeroInterest"));
         assertEquals("CHARGE", yml.getProperty("interest.policy.inactiveAccounts"));
+        assertEquals("STOP", yml.getProperty("interest.policy.multiCard"));
+        assertEquals("STOP", yml.getProperty("interest.policy.overflow"));
     }
 
     @Test
@@ -69,15 +74,29 @@ class InterestPolicyTest {
                 "interest.policy.updateLastAccount", "true",
                 "interest.policy.negativeBalance", "SKIP",
                 "interest.policy.zeroInterest", "SKIP",
-                "interest.policy.inactiveAccounts", "SKIP"));
+                "interest.policy.inactiveAccounts", "SKIP",
+                "interest.policy.multiCard", "FIRST_BY_CARD_NUM",
+                "interest.policy.overflow", "WIDEN"));
 
         assertEquals(new InterestPolicy(Rounding.HALF_EVEN, IdPrefix.RUN_DATE, TimestampSource.CYCLE_DATE, true,
-                NegativeBalance.SKIP, ZeroInterest.SKIP, InactiveAccounts.SKIP), policy);
+                NegativeBalance.SKIP, ZeroInterest.SKIP, InactiveAccounts.SKIP, MultiCard.FIRST_BY_CARD_NUM, Overflow.WIDEN), policy);
     }
 
     @Test
     void fi5_unknownValueOfASwitchIsRefused() {
         assertThrows(BindException.class, () -> bound(Map.of("interest.policy.negativeBalance", "REFUND")));
+    }
+
+    @Test
+    void intH03_stopsUnlessSwitchedToTheLowestCardNumber() {
+        assertEquals(false, bound(Map.of()).intH03TakesTheLowestCardNumber());
+        assertEquals(true, bound(Map.of("interest.policy.multiCard", "FIRST_BY_CARD_NUM")).intH03TakesTheLowestCardNumber());
+    }
+
+    @Test
+    void intH05_stopsUnlessSwitchedToWiden() {
+        assertEquals(true, bound(Map.of()).intH05StopsWhenAValueDoesNotFit());
+        assertEquals(false, bound(Map.of("interest.policy.overflow", "WIDEN")).intH05StopsWhenAValueDoesNotFit());
     }
 
     @Test

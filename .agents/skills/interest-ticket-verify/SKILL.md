@@ -28,6 +28,13 @@ first. Run every command from the repository root.
    `eclipse-temurin:21-jre` container on the network of the `db` container with the PARM `2022071800`
    (`app/jcl/INTCALC.jcl:22`) and the clock frozen at `2022-07-05 10:00:00.00`, and compares. Exit code 0
    only if every case it ran passed. Without `CASE` it runs every case under `fixtures/interest`.
+   Since ticket 09 the target runs the jar with the profile `tables` (loadExtractsStep, calcInterestStep on the
+   tables, exportDatasetsStep), removes `work/parity-java/<case>` first, and after the comparison checks RC1, RC2
+   and RC5 in the `interest_run` row of that launch, printing a second line
+   `interest/<case> [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)`. Exit code 0 only if
+   every case passed all three: job exit code 0, comparator, assertions. `INTEREST_PROFILE=default` runs
+   calcInterestStep alone on the file adapters; `INTEREST_OPTS=<option>` and `INTEREST_OUT=<directory>` run the
+   gate with another setting into another directory.
 
 2. **Know the files the comparator reads.** The job writes them itself; nothing has to be converted.
 

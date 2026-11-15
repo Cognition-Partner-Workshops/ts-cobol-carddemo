@@ -25,6 +25,11 @@ interest:
     idPrefix: PARM              # INT-Q02
     timestampSource: RUN_CLOCK  # INT-Q03
     updateLastAccount: false    # INT-Q04
+    negativeBalance: CHARGE     # INT-Q05
+    zeroInterest: WRITE         # INT-Q06
+    inactiveAccounts: CHARGE    # INT-H04
+    multiCard: STOP             # INT-H03 (proposed)
+    overflow: STOP              # INT-H05 (proposed)
   calc:
     commitInterval: 100         # accounts per chunk (architecture.md section 5, G11)
   clock:

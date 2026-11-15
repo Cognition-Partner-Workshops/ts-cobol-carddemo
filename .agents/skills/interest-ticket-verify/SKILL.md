@@ -82,7 +82,12 @@ first. Run every command from the repository root.
    ```
    `make parity-java` printed for i03 and i04 `java job ended with exit code 12` and ended with
    `make: *** [Makefile:96: parity-java] Error 1`. A case your ticket does not name may pass or fail;
-   report it, do not claim it.
+   report it, do not claim it. That result is the pilot's: from ticket 04 on, all seven cases PASS and
+   `make parity-java` exits 0; any FAIL is a regression.
+
+   Run Python of your own that imports the comparator with `PYTHONDONTWRITEBYTECODE=1`, and delete an
+   untracked `tools/parity/__pycache__/compare.*.pyc`: importing `tools.parity.compare` leaves one
+   there, which `git checkout -- tools/parity/__pycache__` does not remove.
 
 4. **Run the job by hand when you need another setting** (a policy switch, another input directory).
    This is the command `make parity-java` runs, with one option added:
@@ -134,11 +139,14 @@ first. Run every command from the repository root.
    ```
    Only `input` is listed: no output directory and no staging directory were left.
 
+   From ticket 08 the stop conditions are in `StopConditionsTest` and `ErrorPathsJdbcIT`; a new stop
+   needs a row in both and the run-log lines cited from CBACT04C.
+
 7. **Check the database assertions of the ticket** in the `db` service.
 
    ```sh
    docker compose exec -T db psql -U carddemo -d carddemo \
-     -c "select i.job_name, e.status, (select string_agg(s.step_name || ':' || s.status || ' read=' || s.read_count || ' write=' || s.write_count, ', ') from batch.batch_step_execution s where s.job_execution_id = e.job_execution_id) as steps, p.parameter_value as run_id from batch.batch_job_execution e join batch.batch_job_instance i using (job_instance_id) join batch.batch_job_execution_params p on p.job_execution_id = e.job_execution_id and p.parameter_name = 'runId' where p.parameter_value like '%i01-baseline' order by e.job_execution_id desc limit 1" \
+     -c "select i.job_name, e.status, (select string_agg(s.step_name || ':' || s.status || ' read=' || s.read_count || ' write=' || s.write_count, ', ' order by s.step_execution_id) from batch.batch_step_execution s where s.job_execution_id = e.job_execution_id) as steps, p.parameter_value as run_id from batch.batch_job_execution e join batch.batch_job_instance i using (job_instance_id) join batch.batch_job_execution_params p on p.job_execution_id = e.job_execution_id and p.parameter_name = 'runId' where p.parameter_value like '%i01-baseline' order by e.job_execution_id desc limit 1" \
      -c "select table_schema, table_name from information_schema.tables where table_schema in ('carddemo', 'public') order by 1, 2"
    ```
    Output, without the rule and count lines:
@@ -150,6 +158,17 @@ first. Run every command from the repository root.
    ```
    The job repository is in schema `batch`. The same assertions run in `InterestCalcJobIT` on a
    Testcontainers `postgres:15`; a ticket that adds tables changes the expected list there.
+
+   That output is the pilot's. Since ticket 02 the table list holds the eight tables of
+   `db/postgres/01-transaction-type.sql` and `02-interest.sql`: `account`, `card_xref`,
+   `disclosure_group`, `interest_run`, `interest_transaction`, `tran_cat_balance`, `transaction_type`,
+   `transaction_type_category`. The steps of a job are listed in the order they ran
+   (`order by s.step_execution_id`). From ticket 06 the run's row and its rows are in schema `carddemo`:
+
+   ```sh
+   docker compose exec -T db psql -U carddemo -d carddemo \
+     -c "select run_id, status, written_transaction_count, written_tran_amt_sum, written_account_count from carddemo.interest_run order by run_id desc limit 1"
+   ```
 
 8. **Write the evidence, from the committed revision, in the ticket's own directory.** Commit the code
    first, then produce the files, then commit them alone, so the evidence names the revision it came
@@ -165,6 +184,7 @@ first. Run every command from the repository root.
    | `test-output.txt` | the command below |
    | `parity-report.md` | `.agents/skills/interest-ticket-verify/parity-report.sh <ticket file name> <case the ticket names> [...]` |
    | `report.md` (the ticket's report) | by hand, step 9 |
+   | other evidence the ticket's Verification names | files or a sub-folder in the ticket's evidence folder, listed at the top of `report.md` |
 
    The commands were run in step 5a with ticket 01, the only ticket built, to prove them; that
    directory was removed again and is not in the repository.
@@ -205,6 +225,20 @@ first. Run every command from the repository root.
    complete them by hand. A ticket name with no file under `modernization/design/tickets`, or a case
    with no directory under `fixtures/interest`, ends the script with exit code 2
    (`no ticket file modernization/design/tickets/99-nothing.md`). `REPORT=<file>` writes somewhere else.
+
+   The script needs at least one case and marks each case on its command line "yes - acceptance case
+   of the ticket". Where that does not fit the ticket:
+
+   | The ticket | What to do |
+   |---|---|
+   | names no case of its own, but asks that the seven cases still pass | pass every case: `parity-report.sh <ticket> $(ls fixtures/interest)` |
+   | names no parity case because its code is not part of `interestCalcJob`, or does not change the job (02, 05, 10) | pass `i01-baseline` and change its scope cell by hand to `regression case of the job`; the ticket's own figures come from its tests in `test-output.txt` |
+   | is proven through the tables (06) | say in `report.md` section 1 which integration test compares the tables with `fixtures/interest/<case>/expected`; the parity report then shows no regression |
+   | has as evidence a directory the job does not write (07: the exported directories) | run `compare.py interest <case> --actual <dir> --label <name>` on it yourself and append the command and its output as a last section of `parity-report.md` |
+
+   Files the tests leave under `java/interest/target/` are those of the last `clean verify`; use them
+   before running Maven again. Paste the command and output of a step-4 run the ticket asks for (a
+   policy switch) into section 6 of `report.md`.
 
 9. **Write the ticket's report** as `java/interest/evidence/<ticket file name>/report.md`, with the
    seven sections of the pilot's `java/interest/evidence/PILOT-REPORT.md`, in this order:

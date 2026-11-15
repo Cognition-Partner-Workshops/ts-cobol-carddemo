@@ -5,8 +5,9 @@ description: The failures the pilot ticket of the interest stream actually hit w
 
 # Interest stream: pitfalls
 
-Only failures the pilot (ticket 01) hit. Each was reproduced in step 5a with the command shown; the
-symptom is the output of that command. Where the fix is a conversion standard, the entry names the
+P1 to P7 are the failures the pilot (ticket 01) hit; each was reproduced in step 5a with the command
+shown, and the symptom is the output of that command. P8 to P12 were reported by the sessions that
+built tickets 04, 05, 07 and 10 in step 5b; each names the ticket and the evidence that shows it. Where the fix is a conversion standard, the entry names the
 section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops there.
 
 ## How to use
@@ -84,6 +85,55 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
   `make parity-java` does this for `work/parity-java/report.md`.
 * **Reproduced by:** running the same comparison twice; `grep -c '^## ' work/parity/report.md` printed `2`.
 
-## Reported by the pilot, not reproduced
+## P8. A test that reads JSON cannot use Jackson
 
-None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.
+* **Symptom.** `package com.fasterxml.jackson.databind does not exist` when a test is compiled.
+* **Cause.** The module has no Jackson.
+* **Fix.** `org.json.JSONObject` from `spring-boot-starter-test`; do not add a dependency (standard S8.3).
+* **Reported by:** ticket 04, `java/interest/evidence/04-calculation-rules/report.md` section 6.
+
+## P9. An integration test finds no schema `carddemo` for the interest tables
+
+* **Symptom.** `db/postgres/02-interest.sql` alone cannot create its tables in a Testcontainers `postgres:15`.
+* **Cause.** `CREATE SCHEMA carddemo` is only in `db/postgres/01-transaction-type.sql`.
+* **Fix.** Copy `db/postgres/01-transaction-type.sql` and `02-interest.sql` into
+  `/docker-entrypoint-initdb.d/` of the container, as `ExtractLoaderIT` does.
+* **Reported by:** ticket 05, `java/interest/evidence/05-extract-loader/report.md` section 5.
+
+## P10. rc.json has to be written outside package `file`
+
+* **Symptom.** Another package cannot reuse the rc.json writer of the pilot.
+* **Cause.** `file/RecordedReturnCodes` is package-private, and `file/**` belongs to another ticket.
+* **Fix.** A writer of your own in your package (`export/ExportedReturnCodes`); test it against the
+  recorded `rc.json` of every case, so the two writers cannot drift apart (see P4).
+* **Reported by:** ticket 07, `java/interest/evidence/07-dataset-export/report.md` section 5 (seen while
+  reading the code, not reproduced as a failure).
+
+## P11. `compare.py` cannot compare two directories
+
+* **Symptom.** The comparator has no option for the legacy side: it always reads
+  `fixtures/<chain>/<case>/expected`.
+* **Cause.** `tools/parity/compare.py` takes `--actual` only.
+* **Fix.** Lay the legacy directory out as `<root>/interest/<name>/expected` with a `manifest.json` and
+  point `compare.FIXTURES` at `<root>` from your own Python call, as the `sidebyside-java` target of the
+  `Makefile` does; never edit the comparator. Run that Python with `PYTHONDONTWRITEBYTECODE=1` (P6).
+* **Reported by:** ticket 10, `java/interest/evidence/10-data-move-kit/report.md` finding F1.
+
+## P12. A class a later ticket needs is package-private in a package it may not edit
+
+* **Symptom.** A later ticket writes a second copy of something that exists
+  (`recon/TrialLoadProfile` beside `load/ExtractProfile`).
+* **Cause.** The factory it needs (`ExtractProfile.of`, `RoundTrip.compare`, `ExtractDecoder`) is
+  package-private, and the later ticket's Allowed files do not include that package.
+* **Fix.** Make what a later ticket of the design reads public when you write it; a later ticket cannot
+  widen it.
+* **Reported by:** ticket 10, `java/interest/evidence/10-data-move-kit/report.md` finding F7.
+
+## Reported, not reproduced
+
+The pilot: none. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.
+
+Ticket 05: the datasource sets `search_path` to `batch` (`connection-init-sql` in `application.yml`), so
+an unqualified table name in application SQL is looked up in the job repository schema. Qualify every
+application table as `carddemo.<table>`. Not reproduced: the loader was written with qualified names
+from the start.

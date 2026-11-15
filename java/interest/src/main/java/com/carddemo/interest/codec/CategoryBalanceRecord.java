@@ -5,24 +5,37 @@ import com.carddemo.interest.domain.CategoryBalance;
 /** Layout CVTRA01Y (app/cpy/CVTRA01Y.cpy:4-10, RECLN 50). Data-map rows CVTRA01Y/*. */
 public final class CategoryBalanceRecord {
 
-    public static final int LENGTH = 50;
+    public static final RecordLayout LAYOUT = RecordLayout.of("CVTRA01Y")
+            .unsigned("TRANCAT-ACCT-ID", 11)
+            .text("TRANCAT-TYPE-CD", 2)
+            .unsigned("TRANCAT-CD", 4)
+            .signed("TRAN-CAT-BAL", 9, 2)
+            .filler(22)
+            .build();
+    public static final int LENGTH = LAYOUT.length();
 
-    private static final Field ACCOUNT_ID = new Field("TRANCAT-ACCT-ID", 0, 11);
-    private static final Field TYPE_CODE = new Field("TRANCAT-TYPE-CD", 11, 2);
-    private static final Field CATEGORY_CODE = new Field("TRANCAT-CD", 13, 4);
-    private static final Field BALANCE = new Field("TRAN-CAT-BAL", 17, 11);
+    private static final RecordCodec FIXTURE = new RecordCodec(LAYOUT, CodePage.fixture());
     /** TRAN-CAT-KEY: the three key fields, 17 bytes. */
-    private static final int KEY_LENGTH = 17;
+    private static final int KEY_LENGTH = LAYOUT.field("TRAN-CAT-BAL").offset();
 
     private CategoryBalanceRecord() {
     }
 
-    public static CategoryBalance decode(String image) {
+    public static CategoryBalance from(RecordValues values) {
         return new CategoryBalance(
-                ACCOUNT_ID.unsigned(image),
-                TYPE_CODE.text(image),
-                (int) CATEGORY_CODE.unsigned(image),
-                BALANCE.signed(image, 2));
+                values.unsigned("TRANCAT-ACCT-ID"),
+                values.text("TRANCAT-TYPE-CD"),
+                (int) values.unsigned("TRANCAT-CD"),
+                values.signed("TRAN-CAT-BAL"));
+    }
+
+    /** Decodes a record image of the fixture code page. */
+    public static CategoryBalance decode(String image) {
+        return decode(image, RecordOrigin.IN_MEMORY);
+    }
+
+    public static CategoryBalance decode(String image, RecordOrigin origin) {
+        return from(FIXTURE.decode(FixtureCodePage.bytes(image), origin));
     }
 
     public static String key(String image) {

@@ -194,6 +194,10 @@ first. Run every command from the repository root.
      echo "# exit code ${PIPESTATUS[0]}"; } > java/interest/evidence/$ticket/test-output.txt
    tail -1 java/interest/evidence/$ticket/test-output.txt; grep -E 'Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|BUILD' java/interest/evidence/$ticket/test-output.txt
    ```
+   If the unit phase fails, the integration tests do not run. Report the failure as it is; to show the rest,
+   append a second, labelled run that leaves out the failing test:
+   `mvn -B -f java/interest/pom.xml clean verify -Dtest='!<Class>#<method>' -Dsurefire.failIfNoSpecifiedTests=false`.
+   With `-Dtest` surefire also runs the `*IT` classes, so its count is unit plus integration tests.
    ```
    # exit code 0
    [INFO] Tests run: 60, Failures: 0, Errors: 0, Skipped: 0

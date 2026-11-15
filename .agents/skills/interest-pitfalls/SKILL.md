@@ -177,6 +177,14 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Fix.** `@ConstructorBinding` (`org.springframework.boot.context.properties.bind`) on the canonical constructor.
 * **Reported by:** ticket 08-error-paths (`InterestPolicyBindingTest`: 5 errors, then 228 tests and 0 failures).
 
+## P19. The interest_run key of a launch cannot be read from the job repository in SQL
+
+* **Symptom.** `select short_context from batch.batch_job_execution_context` returns `rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcA...`.
+* **Cause.** Spring Batch 5.2.3 stores the execution context as serialized Java, Base64.
+* **Fix.** Take the `interest_run` row whose `run_id` is above the highest `run_id` before the launch, as
+  `make parity-java` does.
+* **Reported by:** ticket 09-parity-gate.
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

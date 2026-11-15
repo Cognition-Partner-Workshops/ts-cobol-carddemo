@@ -234,7 +234,13 @@ first. Run every command from the repository root.
    complete them by hand. Before changing code, run `make parity-java` on the base and keep its output; use
    it for the "Why" of a case outside the ticket that already failed there.
    For a case outside the ticket that passes, replace `_fill in_` with `no - not named by the ticket; run to
-   show no regression`. A ticket name with no file under `modernization/design/tickets`, or a case
+   show no regression`.
+   When the parity run does not execute the ticket's code (its step is not in `interestCalcJob`, or
+   `make parity-java` still runs the file adapters), say so under the table: `The parity run does not execute
+   <step>; the cases prove that nothing else changed.` Prove the ticket's own cases with an integration test
+   that writes `java/interest/target/<name>/<case>/actual`, run after `mvn clean verify`
+   `python3 tools/parity/compare.py interest <case> --actual java/interest/target/<name>/<case>/actual --label java-<name>; echo "exit $?"`
+   and add the output by hand as its own section of `parity-report.md`. A ticket name with no file under `modernization/design/tickets`, or a case
    with no directory under `fixtures/interest`, ends the script with exit code 2
    (`no ticket file modernization/design/tickets/99-nothing.md`). `REPORT=<file>` writes somewhere else.
    A ticket whose Verification says "Fixture cases: none" passes one case that passed on the base branch

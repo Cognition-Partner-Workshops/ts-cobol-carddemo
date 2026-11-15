@@ -1,0 +1,71 @@
+15.20 (Debian 15.20-1.pgdg13+1)
+CREATE DATABASE
+== apply db/postgres/01-transaction-type.sql
+CREATE SCHEMA
+CREATE TABLE
+CREATE TABLE
+exit 0
+== apply db/postgres/02-interest.sql
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+COMMIT
+exit 0
+== apply db/postgres/02-interest.sql a second time (must fail and change nothing)
+BEGIN
+psql:<stdin>:46: ERROR:  relation "interest_run" already exists
+exit 3
+PASS  catalog of schema carddemo unchanged by the second apply
+== db/postgres/tests/02-interest-assertions.sql
+PASS  tables: carddemo holds the two of 01-transaction-type.sql and the six of the data map
+PASS  columns: account equals the data map row for row (13 columns)
+PASS  columns: card_xref equals the data map row for row (4 columns)
+PASS  columns: tran_cat_balance equals the data map row for row (5 columns)
+PASS  columns: disclosure_group equals the data map row for row (5 columns)
+PASS  columns: interest_transaction equals the data map row for row (16 columns)
+PASS  columns: interest_run equals the data map row for row (23 columns)
+PASS  columns: interest_run.run_id is GENERATED ALWAYS AS IDENTITY
+PASS  columns: no column of the six tables has a default
+PASS  keys: primary key of account is (acct_id)
+PASS  keys: primary key of card_xref is (xref_card_num)
+PASS  keys: primary key of tran_cat_balance is (trancat_acct_id, trancat_type_cd, trancat_cd)
+PASS  keys: primary key of disclosure_group is (dis_acct_group_id, dis_tran_type_cd, dis_tran_cat_cd)
+PASS  keys: primary key of interest_transaction is (run_id, seq_no)
+PASS  keys: primary key of interest_run is (run_id)
+PASS  keys: the only UNIQUE constraint is interest_transaction (run_id, tran_id)
+PASS  index: card_xref_acct_ix ON card_xref (xref_acct_id, xref_card_num) exists and is not unique
+PASS  index: no index beyond the six primary keys, the unique constraint and card_xref_acct_ix
+PASS  checks: the 13 CHECKs of the data map and no other
+PASS  foreign keys: only interest_transaction.run_id -> interest_run; none between the replica tables or to transaction_type (G09)
+PASS  accepts: account with acct_curr_bal = 9999999999.99 (largest S9(10)V99) and a 178-byte filler
+PASS  accepts: account with acct_curr_bal = -9999999999.99 and acct_id = 0
+PASS  rejects: acct_curr_bal = 10000000000.00
+PASS  rejects: a negative acct_id
+PASS  rejects: a 177-byte acct_filler
+PASS  rejects: a 179-byte acct_filler
+PASS  rejects: acct_id = 100000000000 (12 digits)
+PASS  rejects: a second account with acct_id = 1 (primary key)
+PASS  rejects: a NULL acct_curr_bal
+PASS  accepts: disclosure_group with dis_int_rate = 9999.99 (largest S9(04)V99)
+PASS  rejects: dis_int_rate = 10000.00
+PASS  rejects: a second disclosure_group row with the key (DEFAULT, 01, 0001), group padded to CHAR(10)
+PASS  accepts: interest_transaction with tran_amt = 999999999.99 (largest S9(09)V99)
+PASS  rejects: tran_amt = 1000000000.00
+PASS  rejects: a second row with the same (run_id, tran_id)
+PASS  rejects: a second row with the same (run_id, seq_no)
+PASS  rejects: interest_transaction for a run_id that is not in interest_run
+PASS  rejects: an explicit run_id in interest_run (GENERATED ALWAYS)
+PASS  accepts: two cards for one account in card_xref (card_xref_acct_ix is not unique, G08)
+PASS  rejects: a negative xref_acct_id
+PASS  rejects: tran_cat_bal = 1000000000.00
+PASS  rejects: trancat_cd = 10000 (five digits)
+PASS  order: ORDER BY trancat_acct_id, trancat_type_cd, trancat_cd gives 01, 1A, A1, B0, a1 (COLLATE "C", E6)
+43 assertions, 0 failed
+exit 0
+PASS  the assertions left no row behind
+== result: PASS

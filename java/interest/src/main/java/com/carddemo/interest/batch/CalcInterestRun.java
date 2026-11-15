@@ -14,6 +14,7 @@ import org.springframework.batch.item.Chunk;
 
 import com.carddemo.interest.domain.AccountBalances;
 import com.carddemo.interest.domain.AccountInterest;
+import com.carddemo.interest.domain.HoleDecisions;
 import com.carddemo.interest.domain.InterestCalculator;
 import com.carddemo.interest.domain.InterestRunStoppedException;
 import com.carddemo.interest.domain.RunLogLines;
@@ -31,14 +32,16 @@ public class CalcInterestRun implements StepExecutionListener {
     private static final Logger log = LoggerFactory.getLogger(CalcInterestRun.class);
 
     private final InterestPolicy policy;
+    private final HoleDecisions holes;
     private final Clock clock;
 
     private FileRunWorkspace workspace;
     private InterestCalculator calculator;
     private TransactionCounter counter;
 
-    public CalcInterestRun(InterestPolicy policy, Clock clock) {
+    public CalcInterestRun(InterestPolicy policy, HoleDecisions holes, Clock clock) {
         this.policy = policy;
+        this.holes = holes;
         this.clock = clock;
     }
 
@@ -52,7 +55,7 @@ public class CalcInterestRun implements StepExecutionListener {
                 parameters.getString(InterestJobParameters.RUN_ID));
         counter = new TransactionCounter();
         calculator = new InterestCalculator(workspace.accountStore(), workspace.cardLookup(), workspace.rateLookup(),
-                workspace.runLog(), policy, clock, counter, parameters.getString(InterestJobParameters.PARM_DATE));
+                workspace.runLog(), policy, holes, clock, counter, parameters.getString(InterestJobParameters.PARM_DATE));
         workspace.runLog().line(RunLogLines.START);
     }
 

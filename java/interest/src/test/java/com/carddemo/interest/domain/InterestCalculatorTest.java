@@ -23,7 +23,9 @@ import com.carddemo.interest.domain.AccountBalances.BalanceRead;
 import com.carddemo.interest.policy.InterestPolicy;
 import com.carddemo.interest.policy.InterestPolicy.IdPrefix;
 import com.carddemo.interest.policy.InterestPolicy.InactiveAccounts;
+import com.carddemo.interest.policy.InterestPolicy.MultiCard;
 import com.carddemo.interest.policy.InterestPolicy.NegativeBalance;
+import com.carddemo.interest.policy.InterestPolicy.Overflow;
 import com.carddemo.interest.policy.InterestPolicy.Rounding;
 import com.carddemo.interest.policy.InterestPolicy.TimestampSource;
 import com.carddemo.interest.policy.InterestPolicy.ZeroInterest;
@@ -52,7 +54,8 @@ class InterestCalculatorTest {
             "STANDARD/01/1", new BigDecimal("18.50")));
     private final List<String> runLogLines = new ArrayList<>();
     private final List<String> rateLookups = new ArrayList<>();
-    private final TransactionCounter counter = new TransactionCounter();
+    private TransactionCounter counter = new TransactionCounter();
+    private HoleDecisions holes = HoleDecisions.stop();
 
     private InterestCalculator calculator(InterestPolicy policy, Clock clock) {
         AccountStore accountStore = new AccountStore() {
@@ -83,7 +86,7 @@ class InterestCalculatorTest {
                     rateLookups.add(groupId + "/" + typeCode + "/" + categoryCode);
                     return Optional.ofNullable(rates.get(groupId + "/" + typeCode + "/" + categoryCode));
                 },
-                runLog, policy, clock, counter, PARM_DATE);
+                runLog, policy, holes, clock, counter, PARM_DATE);
     }
 
     private static InterestPolicy policy(IdPrefix idPrefix, TimestampSource timestampSource,
@@ -171,8 +174,8 @@ class InterestCalculatorTest {
 
     @Test
     void intR03_missingDefaultRateStops() {
-        // CBACT04C:443-459: no DEFAULT rate either. The two fallback lines are displayed first; the legacy
-        // messages of the stop itself are ticket 08.
+        // CBACT04C:416-419, 443-459, 628-648: no DEFAULT rate either. The two fallback lines are displayed
+        // first, then the message of the DEFAULT read, status 23 and the abend line.
         accounts.put(2001L, new Account(2001L, new BigDecimal("1000.00"), "SILVER"));
 
         InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
@@ -180,8 +183,8 @@ class InterestCalculatorTest {
 
         assertEquals(StopReason.DEFAULT_RATE_MISSING, stop.reason());
         assertEquals("INT-R08", stop.reason().ruleId());
-        assertEquals(List.of("image of 2001/01/1", "DISCLOSURE GROUP RECORD MISSING", "TRY WITH DEFAULT GROUP CODE"),
-                runLogLines);
+        assertEquals(List.of("image of 2001/01/1", "DISCLOSURE GROUP RECORD MISSING", "TRY WITH DEFAULT GROUP CODE",
+                "ERROR READING DEFAULT DISCLOSURE GROUP", "FILE STATUS IS: NNNN0023", "ABENDING PROGRAM"), runLogLines);
     }
 
     @Test
@@ -372,8 +375,11 @@ class InterestCalculatorTest {
                 () -> calculator().calculate(account2001(false)));
 
         assertEquals(StopReason.ACCOUNT_MISSING, stop.reason());
-        // CBACT04C:193 comes before 202-203: the balance is displayed before the account is looked up
-        assertEquals(List.of("image of 2001/01/1"), runLogLines);
+        assertEquals("INT-R08", stop.reason().ruleId());
+        // CBACT04C:193 comes before 202-203: the balance is displayed before the account is looked up.
+        // CBACT04C:373-390, 628-648: the id as FD-ACCT-ID PIC 9(11), the message, status 23, the abend line.
+        assertEquals(List.of("image of 2001/01/1", "ACCOUNT NOT FOUND: 00000002001", "ERROR READING ACCOUNT FILE",
+                "FILE STATUS IS: NNNN0023", "ABENDING PROGRAM"), runLogLines);
         assertTrue(!stop.getMessage().contains("2001"), "no account id in a message for the application log");
     }
 
@@ -385,6 +391,26 @@ class InterestCalculatorTest {
                 () -> calculator().calculate(account2001(false)));
 
         assertEquals(StopReason.CARD_MISSING, stop.reason());
+        assertEquals("INT-R08", stop.reason().ruleId());
+        // CBACT04C:394-412: the legacy displays ACCOUNT NOT FOUND with FD-XREF-ACCT-ID for a missing card too
+        assertEquals(List.of("image of 2001/01/1", "ACCOUNT NOT FOUND: 00000002001", "ERROR READING XREF FILE",
+                "FILE STATUS IS: NNNN0023", "ABENDING PROGRAM"), runLogLines);
+        assertTrue(!stop.getMessage().contains("2001"), "no account id in a message for the application log");
+    }
+
+    @Test
+    void intR08_nothingIsReturnedForAnAccountThatStops() {
+        // S6.2: the stop is an exception out of calculate, so no transaction and no new balance exist
+        // for the account; a second balance of the account is not even displayed.
+        accounts.remove(2001L);
+        AccountBalances twoBalances = new AccountBalances(2001L,
+                List.of(balance(2001L, "01", 1, "1000.00"), balance(2001L, "01", 2, "500.00")), false);
+
+        assertThrows(InterestRunStoppedException.class, () -> calculator().calculate(twoBalances));
+
+        assertEquals("ABENDING PROGRAM", runLogLines.get(runLogLines.size() - 1));
+        assertTrue(!runLogLines.contains("image of 2001/01/2"), "nothing runs after the abend line");
+        assertEquals(0, counter.issued());
     }
 
     @Test
@@ -396,6 +422,136 @@ class InterestCalculatorTest {
 
         assertEquals(StopReason.MULTI_CARD, stop.reason());
         assertEquals("INT-H03", stop.reason().ruleId());
+        assertTrue(stop.getMessage().contains("INT-H03"), stop.getMessage());
+        // no legacy text exists for this stop: the line names the open decision
+        assertEquals(List.of("image of 2001/01/1", "INT-H03 ACCOUNT HAS SEVERAL CARDS: 00000002001", "ABENDING PROGRAM"),
+                runLogLines);
+        assertTrue(!stop.getMessage().contains("2001") && !stop.getMessage().contains("4000"),
+                "no account id or card number in a message for the application log");
+    }
+
+    @Test
+    void intH03_lowerCardNumberWhenSwitched() {
+        // multiCard=FIRST_BY_CARD_NUM: the port returns the cards in card-number order; the first is used
+        holes = new HoleDecisions(MultiCard.FIRST_BY_CARD_NUM, Overflow.STOP);
+        cards.put(2001L, List.of("4000000000002001", "4000000000009001"));
+
+        AccountInterest result = calculator().calculate(account2001(false));
+
+        assertEquals("4000000000002001", result.transactions().get(0).cardNumber());
+        assertEquals(List.of("image of 2001/01/1"), runLogLines);
+    }
+
+    @Test
+    void intH03_defaultIsStop() {
+        assertEquals(MultiCard.STOP, HoleDecisions.stop().multiCard());
+        assertEquals(MultiCard.STOP, new HoleDecisions(null, null).multiCard());
+    }
+
+    @Test
+    void intH03_missingCardStillStopsWhenSwitched() {
+        // FIRST_BY_CARD_NUM decides between several cards only; no card is INT-R08 as before
+        holes = new HoleDecisions(MultiCard.FIRST_BY_CARD_NUM, Overflow.STOP);
+        cards.remove(2001L);
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(account2001(false)));
+
+        assertEquals(StopReason.CARD_MISSING, stop.reason());
+    }
+
+    @Test
+    void intH05_interestAboveFieldStops() {
+        // TRAN-AMT is S9(09)V99: 999999999.99 at most.
+        // 999999999.99 x 1500.00 / 1200 = 1249999999.9875 -> 1249999999.98, ten integer digits.
+        rates.put("GOLD/01/1", new BigDecimal("1500.00"));
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "999999999.99")), false);
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(item));
+
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+        assertEquals("INT-H05", stop.reason().ruleId());
+        assertTrue(stop.getMessage().contains("INT-H05"), stop.getMessage());
+        assertEquals(List.of("image of 2001/01/1", "INT-H05 VALUE DOES NOT FIT FIELD: TRAN-AMT", "ABENDING PROGRAM"),
+                runLogLines);
+        assertTrue(!stop.getMessage().contains("1249999999") && !stop.getMessage().contains("249999999.98"),
+                "neither the amount nor a truncated amount in the message");
+        assertEquals(0, counter.issued(), "no transaction id was issued for an amount that does not fit");
+    }
+
+    @Test
+    void intH05_largestInterestThatFitsIsWritten() {
+        // 999999999.99 x 1200.00 / 1200 = 999999999.99: exactly the largest value of S9(09)V99
+        rates.put("GOLD/01/1", new BigDecimal("1200.00"));
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "999999999.99")), true);
+
+        AccountInterest result = calculator().calculate(item);
+
+        assertEquals(new BigDecimal("999999999.99"), result.transactions().get(0).amount());
+    }
+
+    @Test
+    void intH05_negativeInterestBelowFieldStops() {
+        // INT-Q05 charges a credit balance: -999999999.99 x 1500.00 / 1200 = -1249999999.98 (towards zero)
+        rates.put("GOLD/01/1", new BigDecimal("1500.00"));
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "-999999999.99")), false);
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(item));
+
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+    }
+
+    @Test
+    void intH05_accountTotalAboveFieldStops() {
+        // WS-TOTAL-INT is S9(09)V99 (CBACT04C:168-169, 467): each interest fits, their sum does not.
+        // 600000000.00 x 1200.00 / 1200 = 600000000.00, twice = 1200000000.00.
+        rates.put("GOLD/01/1", new BigDecimal("1200.00"));
+        rates.put("GOLD/01/2", new BigDecimal("1200.00"));
+        AccountBalances item = new AccountBalances(2001L,
+                List.of(balance(2001L, "01", 1, "600000000.00"), balance(2001L, "01", 2, "600000000.00")), false);
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(item));
+
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+        assertEquals("INT-H05 VALUE DOES NOT FIT FIELD: WS-TOTAL-INT", runLogLines.get(runLogLines.size() - 2));
+    }
+
+    @Test
+    void intH05_newBalanceAboveFieldStops() {
+        // ACCT-CURR-BAL is S9(10)V99 (CBACT04C:352): 9999999999.99 + 10.00 = 10000000009.99 does not fit.
+        accounts.put(2001L, new Account(2001L, new BigDecimal("9999999999.99"), "GOLD"));
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(account2001(false)));
+
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+        assertEquals("INT-H05 VALUE DOES NOT FIT FIELD: ACCT-CURR-BAL", runLogLines.get(runLogLines.size() - 2));
+    }
+
+    @Test
+    void intH05_millionthTransactionStops() {
+        // TRAN-ID holds six digits of the counter (CBACT04C:173, 474): 999999 is the last id of a run.
+        counter = new TransactionCounter(999_998);
+
+        AccountInterest last = calculator().calculate(account2001(false));
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(account2002(false)));
+
+        assertEquals(PARM_DATE + "999999", last.transactions().get(0).id());
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+        assertEquals("INT-H05", stop.reason().ruleId());
+        assertEquals(List.of("image of 2001/01/1", "image of 2002/01/1", "INT-H05 VALUE DOES NOT FIT FIELD: TRAN-ID",
+                "ABENDING PROGRAM"), runLogLines);
+        assertEquals(999_999, counter.issued(), "the counter does not start again at 000000");
+    }
+
+    @Test
+    void intH05_defaultIsStop() {
+        assertEquals(Overflow.STOP, HoleDecisions.stop().overflow());
+        assertEquals(Overflow.STOP, new HoleDecisions(null, null).overflow());
     }
 
     @Test

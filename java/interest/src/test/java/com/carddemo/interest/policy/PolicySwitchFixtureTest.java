@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.carddemo.interest.Fixtures;
 import com.carddemo.interest.domain.Account;
 import com.carddemo.interest.domain.AccountBalances;
+import com.carddemo.interest.domain.HoleDecisions;
 import com.carddemo.interest.domain.AccountInterest;
 import com.carddemo.interest.domain.InterestCalculator;
 import com.carddemo.interest.domain.TransactionCounter;
@@ -189,7 +190,7 @@ class PolicySwitchFixtureTest {
         FileRunWorkspace workspace = FileRunWorkspace.open(Fixtures.input(caseName), output, "switch-test");
         AccountStore accounts = workspace.accountStore();
         InterestCalculator calculator = new InterestCalculator(accounts, workspace.cardLookup(), workspace.rateLookup(),
-                workspace.runLog(), policy, FROZEN, new TransactionCounter(), Fixtures.PARM_DATE);
+                workspace.runLog(), policy, HoleDecisions.stop(), FROZEN, new TransactionCounter(), Fixtures.PARM_DATE);
 
         workspace.runLog().line("START OF EXECUTION OF PROGRAM CBACT04C");
         Optional<AccountBalances> item = workspace.balanceSource().nextAccount();

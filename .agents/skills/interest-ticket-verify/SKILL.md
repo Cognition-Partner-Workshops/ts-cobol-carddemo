@@ -276,6 +276,7 @@ first. Run every command from the repository root.
    that writes `java/interest/target/<name>/<case>/actual`, run after `mvn clean verify`
    `python3 tools/parity/compare.py interest <case> --actual java/interest/target/<name>/<case>/actual --label java-<name>; echo "exit $?"`
    and add the output by hand as its own section of `parity-report.md`.
+   For a tool beside the job the own section is replaced by the tool's own evidence file (`recon-report.md`).
    Since ticket 09 `make parity-java` runs the three steps through PostgreSQL, so the paragraph above applies
    only to code the gate still does not run; a ticket that changes only the file adapters runs
    `make parity-java INTEREST_PROFILE=default` as well and adds its output as its own section. Ticket 09's

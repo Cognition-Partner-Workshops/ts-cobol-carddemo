@@ -74,7 +74,11 @@ Run every command from the repository root.
    | `Makefile`, target `parity-java` | FI-6, the parity entry point |
    | `docker-compose.yml`, service `db` | `postgres:15`, database, user and password `carddemo`, init scripts from `db/postgres/` |
 
-   Package `recon` is named in `architecture.md` section 2 and exists only once its ticket is combined;
+   Package `recon` (ticket 10) is the data-move kit: `ReconCommand` (the reconciliation report, `make recon-java`)
+   and `SideBySideCommand` (`make sidebyside-java`). It is not part of `interestCalcJob` and holds no Spring bean;
+   both are second main classes of the same jar, started with
+   `java -cp java/interest/target/interest.jar -Dloader.main=com.carddemo.interest.recon.ReconCommand org.springframework.boot.loader.launch.PropertiesLauncher name=<label> inputDir=<dir> outputDir=<dir> report=<file>`
+   in the JRE container of `make parity-java`.
    `load` and `jdbc/load` (ticket 05), `jdbc/calc` (ticket 06, the JDBC adapters of the ports) and `export`
    and `jdbc/export` (ticket 07) exist since wave 2. Since ticket 08, `batch/DatabaseFailureStops` turns a database
    failure of the JDBC adapters into the stop exception, `domain/RunStops` holds the legacy lines of every stop and

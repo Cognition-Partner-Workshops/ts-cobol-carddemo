@@ -6,7 +6,7 @@ description: Procedure to build one ticket of the interest stream (modernization
 # Interest ticket: build
 
 Commands and layout only, each run on the pilot ticket (01) in step 5a and quoted with the output that
-shows success. What the code must be - naming, types, numbers, encodings, quirks, rule ids, tests - is
+shows success; text marked with a ticket number was reported by that ticket's session in step 5b. What the code must be - naming, types, numbers, encodings, quirks, rule ids, tests - is
 `.agents/skills/interest-conversion-standards/SKILL.md`; read it before writing code and fill in its
 section 9. Failures and their fixes: `interest-pitfalls`. Proving the ticket: `interest-ticket-verify`.
 
@@ -67,14 +67,18 @@ Run every command from the repository root.
    | `.../file` | file adapters of the ports (`FileRunWorkspace`), recorded output format |
    | `.../codec` | `Field` (encoding rules) and one `*Record` class per copybook layout |
    | `.../batch` | `InterestJobConfig` (job `interestCalcJob`, step `calcInterestStep`), `CalcInterestRun`, `InterestJobParameters`, `InterestExitCode(s)` |
+   | `.../domain/RunStop`, `StopReason`, `LegacyFile` | the stop classes (ticket 08): every stop goes through `RunStop`, which writes the legacy lines; never throw `InterestRunStoppedException` directly from the calculation |
+   | `.../jdbc` | JDBC adapters of the ports (ticket 06); `batch/JdbcCalcStepIT` runs the step on the tables with `interest.calc.store=jdbc`; `src/test/.../jdbc/InterestTables` loads a case's input into the replica tables |
+   | `db/postgres/02-interest.sql` | the six tables of the stream (ticket 02, FI-4); `db/postgres/tests/run.sh` checks them with psql. The Java tests do not load the script until tickets 05 and 06 |
    | `java/interest/src/main/resources/application.yml` | datasource (`INTEREST_DB_URL`, `INTEREST_DB_USER`, `INTEREST_DB_PASSWORD`, default `localhost:5432/carddemo`), job repository in schema `batch`, the `interest.policy.*` defaults, `interest.calc.commitInterval`, `interest.clock.frozen` |
    | `java/interest/src/test/java/com/carddemo/interest` | same packages; `Fixtures.java` reads `fixtures/interest` (Maven runs in `java/interest`, so the path is `../../fixtures/interest`); `batch/InterestCalcJobIT.java` is the integration test on `postgres:15` |
    | `java/interest/evidence/` | the pilot's three evidence files; each later ticket writes its own under `java/interest/evidence/<ticket file name>/` (see `interest-ticket-verify` step 8) |
    | `Makefile`, target `parity-java` | FI-6, the parity entry point |
    | `docker-compose.yml`, service `db` | `postgres:15`, database, user and password `carddemo`, init scripts from `db/postgres/` |
 
-   Packages `jdbc`, `load`, `export` and `recon` are named in `architecture.md` section 2 and do not
-   exist yet. No table exists in schema `carddemo` beyond `db/postgres/01-transaction-type.sql`.
+   This table is the pilot's layout plus the rows later tickets reported. Packages `load`, `export` and
+   `recon` of `architecture.md` section 2 exist once tickets 05, 07 and 10 are in your base branch;
+   `ls java/interest/src/main/java/com/carddemo/interest` shows what your base has.
 
 6. **Start PostgreSQL 15.** Only the `db` service is needed; the `estate` image is not.
 
@@ -97,7 +101,10 @@ Run every command from the repository root.
    ```
    java/interest/target/interest.jar
    ```
-   `-q` prints nothing on success.
+   `-q` prints nothing on success. A command other than the job (a second main class, as the data-move
+   kit of ticket 10) is started from the same jar with
+   `java -cp interest.jar -Dloader.main=<class> org.springframework.boot.loader.launch.PropertiesLauncher`;
+   start its context with `spring.batch.job.enabled=false`.
 
 8. **Run the tests.** Unit and integration tests together; this is the Build line of every ticket.
 
@@ -111,8 +118,9 @@ Run every command from the repository root.
    [INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
    [INFO] BUILD SUCCESS
    ```
-   The first total is surefire (unit), the second failsafe (integration). Your ticket adds to both
-   numbers; neither may go down. One unit test class while you work:
+   The first total is surefire (unit), the second failsafe (integration). These figures are the
+   pilot's: compare with the totals in the newest `java/interest/evidence/*/test-output.txt` of your
+   base branch, not with the figures quoted here. Your ticket adds to both numbers; neither may go down. One unit test class while you work:
    ```sh
    mvn -B -f java/interest/pom.xml test -Dtest=InterestFormulaTest 2>&1 | grep -E '^\[(INFO|ERROR)\] (Tests run:|BUILD)'
    ```
@@ -130,6 +138,13 @@ Run every command from the repository root.
    ```
    The `git diff --stat` line must print nothing for a ticket whose Allowed files are `java/interest/**`
    and the `Makefile`; take out of that list only a path your ticket's Scope allows (pitfall P6).
+
+   Two cases the Allowed files do not settle:
+   * A new step is a `@Bean Step` in the ticket's own package; test it by launching a job built in the
+     test. Adding it to `InterestJobConfig` belongs to the ticket that owns `batch/**`; report it in
+     section 2 of your report.
+   * When a Deliverable names a file outside the Allowed files, put the text in the ticket's
+     package-info and in `report.md` section 2, and name the ticket that may edit the file.
 
 10. **Go on with `interest-ticket-verify`:** run the fixture cases, compare, write the evidence, open the
     pull request. Do not merge it.

@@ -145,6 +145,14 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
   second branch and do not retry at once.
 * **Reported by:** tickets 05-extract-loader (PR 181) and 06-calc-step-jdbc (PR 180).
 
+## P15. Hand-written amounts a factor of ten too small
+
+* **Symptom.** `expected 0000000030} but was 0000000003}` in a test with hand-written rows.
+* **Cause.** TRAN-AMT and ACCT-CURR-BAL have two decimals: 3.00 is `0000000030` with the overpunch on the last digit.
+* **Fix.** Correct the test, not the code. Take hand-written expected amounts from the RC table of
+  `strategy-interest.md` (i01 47.00 and 3410.00; i06 -3.00 and -300.00).
+* **Reported by:** ticket 07-dataset-export (`DatasetExportTest.i06NegativeBalance_rows_giveTheRecordedFiles`).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

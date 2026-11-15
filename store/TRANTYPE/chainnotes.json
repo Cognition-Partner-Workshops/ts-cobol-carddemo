@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "module": "TRANTYPE",
+    "written_by": "batch-chain-analysis skill"
+  },
+  "tables": {
+    "TransactionTypesDBRefresh": {
+      "closures": [
+        {
+          "kind": "chain-input-unproduced",
+          "job": "TRANEXTR",
+          "match": "&HLQ..TRANTYPE.PS",
+          "how": "&HLQ is a JCL symbol set to AWS.M2.CARDDEMO, so the name is the catalogued dataset AWS.M2.CARDDEMO.TRANTYPE.PS, not a && temporary. STEP10 backs up the copy left by the previous run; STEP30 deletes it and STEP40 catalogs a new one (NEW,CATLG). The first-run gap is filed as the skill's ask below.",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:25",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:34",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:53-57",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:71-73"
+          ]
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "job": "TRANEXTR",
+          "match": "&HLQ..TRANCATG.PS",
+          "how": "&HLQ is a JCL symbol set to AWS.M2.CARDDEMO, so the name is the catalogued dataset AWS.M2.CARDDEMO.TRANCATG.PS, not a && temporary. STEP20 backs up the copy left by the previous run; STEP30 deletes it and STEP50 catalogs a new one. The first-run gap is filed as the skill's ask below.",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:25",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:45",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:58-61",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:103"
+          ]
+        }
+      ],
+      "asks": [
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "TRANEXTR",
+          "message": "TRANEXTR STEP10 and STEP20 read AWS.M2.CARDDEMO.TRANTYPE.PS and AWS.M2.CARDDEMO.TRANCATG.PS with DISP=SHR before STEP40/STEP50 create them, so the job depends on the files left by its own previous run; no scanned job creates them for a first run",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:34",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:45",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:71-73",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:103"
+          ],
+          "request": "Confirm how the two extract files are first created (or that a first run is expected to fail at STEP10), and whether the job comment 'runs once a day' or the scheduler description 'WEEKLY' is the real frequency"
+        }
+      ],
+      "notes": [
+        {
+          "text": "The job comment says TRANEXTR runs once a day, while the Control-M smart folder that schedules it is described 'WEEKLY TransactionTypesDBRefresh'; the two statements are not reconciled by any scanned source.",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:19-21",
+            "app/scheduler/CardDemo.controlm:57-58"
+          ]
+        }
+      ]
+    },
+    "MNTTRDYN": {
+      "notes": [
+        {
+          "text": "STEP1 runs CBTRNDYN through the DSN RUN command with PARMS('COBTUPDT') in SYSTSIN; the scanner looks for PARM= on the EXEC statement and records the parameter as missing, so the dynamic CALL target stays an open evidence request rather than being taken from this line.",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:23",
+            "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:31-34",
+            "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:59-62"
+          ]
+        }
+      ]
+    }
+  }
+}

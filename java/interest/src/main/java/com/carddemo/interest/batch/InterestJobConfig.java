@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import javax.sql.DataSource;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -21,8 +23,11 @@ import com.carddemo.interest.domain.AccountInterest;
 import com.carddemo.interest.policy.InterestPolicy;
 
 /**
- * interestCalcJob replaces INTCALC.STEP15 (architecture.md section 4). In the pilot it has one
- * step, calcInterestStep, on file adapters; PostgreSQL holds the job repository only.
+ * interestCalcJob replaces INTCALC.STEP15 (architecture.md section 4). It has one step,
+ * calcInterestStep, with the same reader, processor and writer shape on either set of adapters of
+ * the ports (FI-3): the file adapters of the pilot (interest.calc.store=file, the default while the
+ * job has no load and export step) or the JDBC adapters on schema carddemo (interest.calc.store=jdbc,
+ * ticket 06).
  */
 @Configuration
 @EnableConfigurationProperties(InterestPolicy.class)
@@ -30,6 +35,8 @@ public class InterestJobConfig {
 
     public static final String JOB_NAME = "interestCalcJob";
     public static final String CALC_STEP_NAME = "calcInterestStep";
+    static final String STORE_FILE = "file";
+    static final String STORE_JDBC = "jdbc";
 
     private static final DateTimeFormatter FROZEN_CLOCK_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS");
 
@@ -49,9 +56,29 @@ public class InterestJobConfig {
     }
 
     @Bean
+    JdbcCalcInterestRun jdbcCalcInterestRun(DataSource dataSource, InterestPolicy policy, Clock runClock) {
+        return new JdbcCalcInterestRun(dataSource, policy, runClock);
+    }
+
+    @Bean
     Step calcInterestStep(JobRepository jobRepository, PlatformTransactionManager transactionManager,
-            CalcInterestRun run, @Value("${interest.calc.commitInterval:100}") int commitInterval) {
+            CalcInterestRun run, JdbcCalcInterestRun jdbcRun,
+            @Value("${interest.calc.store:file}") String store,
+            @Value("${interest.calc.commitInterval:100}") int commitInterval) {
         // No skip, no retry: one stop exception fails the step (standards S6.2).
+        if (STORE_JDBC.equals(store)) {
+            return new StepBuilder(CALC_STEP_NAME, jobRepository)
+                    .<AccountBalances, AccountInterest>chunk(commitInterval, transactionManager)
+                    .reader(jdbcRun::read)
+                    .processor(jdbcRun::process)
+                    .writer(jdbcRun::write)
+                    .stream(jdbcRun)
+                    .listener(jdbcRun)
+                    .build();
+        }
+        if (!STORE_FILE.equals(store)) {
+            throw new IllegalArgumentException("interest.calc.store must be file or jdbc");
+        }
         return new StepBuilder(CALC_STEP_NAME, jobRepository)
                 .<AccountBalances, AccountInterest>chunk(commitInterval, transactionManager)
                 .reader(run::read)

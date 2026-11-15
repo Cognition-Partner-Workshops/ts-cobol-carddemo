@@ -169,6 +169,13 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Reported by:** ticket 08-error-paths (`CalcInterestRestartIT.rel11_restartEndsWithTheRowsOfAnUninterruptedRun`,
   `InterestCalculatorTest.intR03_missingDefaultRateStops`, `intR08_missingAccountStops`).
 
+## P18. `Failed to bind properties under 'interest.policy'` after adding a constructor to the record
+
+* **Symptom.** `Failed to bind properties under 'interest.policy' to com.carddemo.interest.policy.InterestPolicy`.
+* **Cause.** With more than one constructor Spring Boot does not pick the canonical one for constructor binding.
+* **Fix.** `@ConstructorBinding` (`org.springframework.boot.context.properties.bind`) on the canonical constructor.
+* **Reported by:** ticket 08-error-paths (`InterestPolicyBindingTest`: 5 errors, then 228 tests and 0 failures).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

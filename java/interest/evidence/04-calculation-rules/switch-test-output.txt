@@ -1,0 +1,216 @@
+# Switch test of ticket 04 through the job jar and tools/parity/compare.py (interest-ticket-verify step 4)
+# revision 8ac4b774789598df1e6653dcae9f34e4930bce50, 2026-11-15T16:13:39Z
+
+## rounding (INT-Q01): HALF_EVEN fails i02 on TRAN-AMT, i07 still passes; the default passes both
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN  parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i02-tie-half-cent/input outputDir=work/manual/i02-default/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i02-tie-half-cent --actual work/manual/i02-default/actual --label i02-default --report work/manual/i02-default/diff.md
+interest/i02-tie-half-cent [i02-default]: PASS (4 records, 50 fields, 0 differences)
+compare exit=0
+
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN  parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i07-nontie-rounding/input outputDir=work/manual/i07-default/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i07-nontie-rounding --actual work/manual/i07-default/actual --label i07-default --report work/manual/i07-default/diff.md
+interest/i07-nontie-rounding [i07-default]: PASS (4 records, 50 fields, 0 differences)
+compare exit=0
+
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN --interest.policy.rounding=HALF_EVEN parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i02-tie-half-cent/input outputDir=work/manual/i02-halfeven/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i02-tie-half-cent --actual work/manual/i02-halfeven/actual --label i02-halfeven --report work/manual/i02-halfeven/diff.md
+interest/i02-tie-half-cent [i02-halfeven]: FAIL (4 records, 50 fields, 2 differences)
+compare exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 1 (ACCT-ID=2003) | `ACCT-CURR-BAL` | 1247.85 | 1247.86 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-AMT` | 12.35 | 12.36 |
+
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN --interest.policy.rounding=HALF_EVEN parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i07-nontie-rounding/input outputDir=work/manual/i07-halfeven/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i07-nontie-rounding --actual work/manual/i07-halfeven/actual --label i07-halfeven --report work/manual/i07-halfeven/diff.md
+interest/i07-nontie-rounding [i07-halfeven]: PASS (4 records, 50 fields, 0 differences)
+compare exit=0
+
+## the other switches, each set to its non-legacy value on one case (differences against the recorded legacy run)
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN --interest.policy.updateLastAccount=true parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i01-baseline/input outputDir=work/manual/i01-lastaccount/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i01-baseline --actual work/manual/i01-lastaccount/actual --label i01-lastaccount --report work/manual/i01-lastaccount/diff.md
+interest/i01-baseline [i01-lastaccount]: FAIL (4 records, 50 fields, 2 differences)
+compare exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-CURR-BAL` | 2400.00 | 2437.00 |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-CURR-CYC-CREDIT` | 2400.00 | 0.00 |
+
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN --interest.policy.idPrefix=RUN_DATE parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i01-baseline/input outputDir=work/manual/i01-rundate/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i01-baseline --actual work/manual/i01-rundate/actual --label i01-rundate --report work/manual/i01-rundate/diff.md
+interest/i01-baseline [i01-rundate]: FAIL (4 records, 50 fields, 2 differences)
+compare exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-ID` | 2022071800000001 | 2022070500000001 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-ID` | 2022071800000002 | 2022070500000002 |
+
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN --interest.policy.timestampSource=CYCLE_DATE parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i01-baseline/input outputDir=work/manual/i01-cycledate/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i01-baseline --actual work/manual/i01-cycledate/actual --label i01-cycledate --report work/manual/i01-cycledate/diff.md
+interest/i01-baseline [i01-cycledate]: FAIL (4 records, 50 fields, 4 differences)
+compare exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-ORIG-TS` | 2022-07-05-10.00.00.000000 | 2022-07-18-00.00.00.000000 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-PROC-TS` | 2022-07-05-10.00.00.000000 | 2022-07-18-00.00.00.000000 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-ORIG-TS` | 2022-07-05-10.00.00.000000 | 2022-07-18-00.00.00.000000 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-PROC-TS` | 2022-07-05-10.00.00.000000 | 2022-07-18-00.00.00.000000 |
+
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN --interest.policy.negativeBalance=SKIP parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i06-negative-balance/input outputDir=work/manual/i06-negskip/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i06-negative-balance --actual work/manual/i06-negskip/actual --label i06-negskip --report work/manual/i06-negskip/diff.md
+interest/i06-negative-balance [i06-negskip]: FAIL (2 records, 25 fields, 1 differences)
+compare exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 | `(record count)` | 1 | 0 |
+
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN --interest.policy.zeroInterest=SKIP parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i01-baseline/input outputDir=work/manual/i01-zeroskip/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i01-baseline --actual work/manual/i01-zeroskip/actual --label i01-zeroskip --report work/manual/i01-zeroskip/diff.md
+interest/i01-baseline [i01-zeroskip]: PASS (4 records, 50 fields, 0 differences)
+compare exit=0
+
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN --interest.policy.inactiveAccounts=SKIP parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i01-baseline/input outputDir=work/manual/i01-inactiveskip/actual
+job exit=0
+$ python3 tools/parity/compare.py interest i01-baseline --actual work/manual/i01-inactiveskip/actual --label i01-inactiveskip --report work/manual/i01-inactiveskip/diff.md
+interest/i01-baseline [i01-inactiveskip]: PASS (4 records, 50 fields, 0 differences)
+compare exit=0
+
+## Errors (INT-T09): an empty balance input writes no transaction, touches no account and ends COMPLETED
+$ : > work/manual/empty/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt   # the other input files are those of i01-baseline
+$ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN parmDate=2022071800 runId=<new> format=fixture inputDir=work/manual/empty/input outputDir=work/manual/empty/actual
+job exit=0
+
+$ wc -c work/manual/empty/actual/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+0 work/manual/empty/actual/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+$ cmp work/manual/empty/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt work/manual/empty/actual/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt; echo cmp exit=$?
+cmp exit=0
+$ cat work/manual/empty/actual/sysout/INTCALC.STEP15.txt work/manual/empty/actual/rc.json
+START OF EXECUTION OF PROGRAM CBACT04C
+END OF EXECUTION OF PROGRAM CBACT04C
+{
+ "INTCALC": {
+  "maxrc": 0,
+  "steps": {
+   "STEP05": 0,
+   "STEP10": 0,
+   "STEP15": 0,
+   "STEP20": 0,
+   "STEP25": 0,
+   "STEP30": 0
+  }
+ }
+}
+$ psql: the job execution of the empty run (job, status, exit code, steps)
+interestCalcJob|COMPLETED|COMPLETED|calcInterestStep:COMPLETED read=0 write=0
+
+## Per switch value and case, against modernization/rules/interest/expected/<case>.json (PolicySwitchExpectationsTest, from test-output.txt)
+switch-test i01-baseline INT-Q01 option A rounding=TRUNCATE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-Q01 option B rounding=HALF_UP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-Q01 option C rounding=HALF_EVEN: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-Q02 option A idPrefix=PARM: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-Q02 option B idPrefix=RUN_DATE: 35 values compared, expectation lists 2 changed, job changed 2 [balance/00000002001/01/0001/TRAN-ID, balance/00000002002/01/0001/TRAN-ID]
+switch-test i01-baseline INT-Q03 option A timestampSource=RUN_CLOCK: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-Q03 option B timestampSource=CYCLE_DATE: 35 values compared, expectation lists 4 changed, job changed 4 [balance/00000002001/01/0001/TRAN-ORIG-TS, balance/00000002001/01/0001/TRAN-PROC-TS, balance/00000002002/01/0001/TRAN-ORIG-TS, balance/00000002002/01/0001/TRAN-PROC-TS]
+switch-test i01-baseline INT-Q04 option A updateLastAccount=false: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-Q04 option B updateLastAccount=true: 35 values compared, expectation lists 2 changed, job changed 2 [account/00000002002/ACCT-CURR-BAL, account/00000002002/ACCT-CURR-CYC-CREDIT]
+switch-test i01-baseline INT-Q05 option A negativeBalance=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-Q05 option B negativeBalance=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-Q06 option A zeroInterest=WRITE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-Q06 option B zeroInterest=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-H04 option A inactiveAccounts=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i01-baseline INT-H04 option B inactiveAccounts=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-Q01 option A rounding=TRUNCATE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-Q01 option B rounding=HALF_UP: 35 values compared, expectation lists 3 changed, job changed 3 [balance/00000002003/01/0001/TRAN-AMT, balance/00000002004/01/0001/TRAN-AMT, account/00000002003/ACCT-CURR-BAL]
+switch-test i02-tie-half-cent INT-Q01 option C rounding=HALF_EVEN: 35 values compared, expectation lists 2 changed, job changed 2 [balance/00000002003/01/0001/TRAN-AMT, account/00000002003/ACCT-CURR-BAL]
+switch-test i02-tie-half-cent INT-Q02 option A idPrefix=PARM: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-Q02 option B idPrefix=RUN_DATE: 35 values compared, expectation lists 2 changed, job changed 2 [balance/00000002003/01/0001/TRAN-ID, balance/00000002004/01/0001/TRAN-ID]
+switch-test i02-tie-half-cent INT-Q03 option A timestampSource=RUN_CLOCK: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-Q03 option B timestampSource=CYCLE_DATE: 35 values compared, expectation lists 4 changed, job changed 4 [balance/00000002003/01/0001/TRAN-ORIG-TS, balance/00000002003/01/0001/TRAN-PROC-TS, balance/00000002004/01/0001/TRAN-ORIG-TS, balance/00000002004/01/0001/TRAN-PROC-TS]
+switch-test i02-tie-half-cent INT-Q04 option A updateLastAccount=false: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-Q04 option B updateLastAccount=true: 35 values compared, expectation lists 2 changed, job changed 2 [account/00000002004/ACCT-CURR-BAL, account/00000002004/ACCT-CURR-CYC-CREDIT]
+switch-test i02-tie-half-cent INT-Q05 option A negativeBalance=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-Q05 option B negativeBalance=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-Q06 option A zeroInterest=WRITE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-Q06 option B zeroInterest=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-H04 option A inactiveAccounts=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i02-tie-half-cent INT-H04 option B inactiveAccounts=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q01 option A rounding=TRUNCATE: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q01 option B rounding=HALF_UP: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q01 option C rounding=HALF_EVEN: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q02 option A idPrefix=PARM: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q02 option B idPrefix=RUN_DATE: 32 values compared, expectation lists 1 changed, job changed 1 [balance/00000002005/01/0001/TRAN-ID]
+switch-test i03-zero-rate-skipped INT-Q03 option A timestampSource=RUN_CLOCK: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q03 option B timestampSource=CYCLE_DATE: 32 values compared, expectation lists 2 changed, job changed 2 [balance/00000002005/01/0001/TRAN-ORIG-TS, balance/00000002005/01/0001/TRAN-PROC-TS]
+switch-test i03-zero-rate-skipped INT-Q04 option A updateLastAccount=false: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q04 option B updateLastAccount=true: 32 values compared, expectation lists 3 changed, job changed 3 [account/00000002005/ACCT-CURR-BAL, account/00000002005/ACCT-CURR-CYC-CREDIT, account/00000002005/ACCT-CURR-CYC-DEBIT]
+switch-test i03-zero-rate-skipped INT-Q05 option A negativeBalance=CHARGE: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q05 option B negativeBalance=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q06 option A zeroInterest=WRITE: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-Q06 option B zeroInterest=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-H04 option A inactiveAccounts=CHARGE: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i03-zero-rate-skipped INT-H04 option B inactiveAccounts=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q01 option A rounding=TRUNCATE: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q01 option B rounding=HALF_UP: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q01 option C rounding=HALF_EVEN: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q02 option A idPrefix=PARM: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q02 option B idPrefix=RUN_DATE: 18 values compared, expectation lists 1 changed, job changed 1 [balance/00000002006/01/0001/TRAN-ID]
+switch-test i04-default-group-fallback INT-Q03 option A timestampSource=RUN_CLOCK: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q03 option B timestampSource=CYCLE_DATE: 18 values compared, expectation lists 2 changed, job changed 2 [balance/00000002006/01/0001/TRAN-ORIG-TS, balance/00000002006/01/0001/TRAN-PROC-TS]
+switch-test i04-default-group-fallback INT-Q04 option A updateLastAccount=false: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q04 option B updateLastAccount=true: 18 values compared, expectation lists 2 changed, job changed 2 [account/00000002006/ACCT-CURR-BAL, account/00000002006/ACCT-CURR-CYC-CREDIT]
+switch-test i04-default-group-fallback INT-Q05 option A negativeBalance=CHARGE: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q05 option B negativeBalance=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q06 option A zeroInterest=WRITE: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-Q06 option B zeroInterest=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-H04 option A inactiveAccounts=CHARGE: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i04-default-group-fallback INT-H04 option B inactiveAccounts=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q01 option A rounding=TRUNCATE: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q01 option B rounding=HALF_UP: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q01 option C rounding=HALF_EVEN: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q02 option A idPrefix=PARM: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q02 option B idPrefix=RUN_DATE: 32 values compared, expectation lists 2 changed, job changed 2 [balance/00000002007/01/0001/TRAN-ID, balance/00000002007/01/0002/TRAN-ID]
+switch-test i05-multi-category INT-Q03 option A timestampSource=RUN_CLOCK: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q03 option B timestampSource=CYCLE_DATE: 32 values compared, expectation lists 4 changed, job changed 4 [balance/00000002007/01/0001/TRAN-ORIG-TS, balance/00000002007/01/0001/TRAN-PROC-TS, balance/00000002007/01/0002/TRAN-ORIG-TS, balance/00000002007/01/0002/TRAN-PROC-TS]
+switch-test i05-multi-category INT-Q04 option A updateLastAccount=false: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q04 option B updateLastAccount=true: 32 values compared, expectation lists 2 changed, job changed 2 [account/00000002007/ACCT-CURR-BAL, account/00000002007/ACCT-CURR-CYC-CREDIT]
+switch-test i05-multi-category INT-Q05 option A negativeBalance=CHARGE: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q05 option B negativeBalance=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q06 option A zeroInterest=WRITE: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-Q06 option B zeroInterest=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-H04 option A inactiveAccounts=CHARGE: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i05-multi-category INT-H04 option B inactiveAccounts=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-Q01 option A rounding=TRUNCATE: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-Q01 option B rounding=HALF_UP: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-Q01 option C rounding=HALF_EVEN: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-Q02 option A idPrefix=PARM: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-Q02 option B idPrefix=RUN_DATE: 18 values compared, expectation lists 1 changed, job changed 1 [balance/00000002008/01/0001/TRAN-ID]
+switch-test i06-negative-balance INT-Q03 option A timestampSource=RUN_CLOCK: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-Q03 option B timestampSource=CYCLE_DATE: 18 values compared, expectation lists 2 changed, job changed 2 [balance/00000002008/01/0001/TRAN-ORIG-TS, balance/00000002008/01/0001/TRAN-PROC-TS]
+switch-test i06-negative-balance INT-Q04 option A updateLastAccount=false: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-Q04 option B updateLastAccount=true: 18 values compared, expectation lists 2 changed, job changed 2 [account/00000002008/ACCT-CURR-BAL, account/00000002008/ACCT-CURR-CYC-DEBIT]
+switch-test i06-negative-balance INT-Q05 option A negativeBalance=CHARGE: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-Q05 option B negativeBalance=SKIP: 18 values compared, expectation lists 14 changed, job changed 14 [balance/00000002008/01/0001/interestTransactionWritten, balance/00000002008/01/0001/TRAN-ID, balance/00000002008/01/0001/TRAN-TYPE-CD, balance/00000002008/01/0001/TRAN-CAT-CD, balance/00000002008/01/0001/TRAN-SOURCE, balance/00000002008/01/0001/TRAN-DESC, balance/00000002008/01/0001/TRAN-AMT, balance/00000002008/01/0001/TRAN-MERCHANT-ID, balance/00000002008/01/0001/TRAN-MERCHANT-NAME, balance/00000002008/01/0001/TRAN-MERCHANT-CITY, balance/00000002008/01/0001/TRAN-MERCHANT-ZIP, balance/00000002008/01/0001/TRAN-CARD-NUM, balance/00000002008/01/0001/TRAN-ORIG-TS, balance/00000002008/01/0001/TRAN-PROC-TS]
+switch-test i06-negative-balance INT-Q06 option A zeroInterest=WRITE: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-Q06 option B zeroInterest=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-H04 option A inactiveAccounts=CHARGE: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i06-negative-balance INT-H04 option B inactiveAccounts=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q01 option A rounding=TRUNCATE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q01 option B rounding=HALF_UP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q01 option C rounding=HALF_EVEN: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q02 option A idPrefix=PARM: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q02 option B idPrefix=RUN_DATE: 35 values compared, expectation lists 2 changed, job changed 2 [balance/00000002009/01/0001/TRAN-ID, balance/00000002010/01/0001/TRAN-ID]
+switch-test i07-nontie-rounding INT-Q03 option A timestampSource=RUN_CLOCK: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q03 option B timestampSource=CYCLE_DATE: 35 values compared, expectation lists 4 changed, job changed 4 [balance/00000002009/01/0001/TRAN-ORIG-TS, balance/00000002009/01/0001/TRAN-PROC-TS, balance/00000002010/01/0001/TRAN-ORIG-TS, balance/00000002010/01/0001/TRAN-PROC-TS]
+switch-test i07-nontie-rounding INT-Q04 option A updateLastAccount=false: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q04 option B updateLastAccount=true: 35 values compared, expectation lists 2 changed, job changed 2 [account/00000002010/ACCT-CURR-BAL, account/00000002010/ACCT-CURR-CYC-CREDIT]
+switch-test i07-nontie-rounding INT-Q05 option A negativeBalance=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q05 option B negativeBalance=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q06 option A zeroInterest=WRITE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-Q06 option B zeroInterest=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-H04 option A inactiveAccounts=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+switch-test i07-nontie-rounding INT-H04 option B inactiveAccounts=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.351 s -- in com.carddemo.interest.batch.PolicySwitchExpectationsTest

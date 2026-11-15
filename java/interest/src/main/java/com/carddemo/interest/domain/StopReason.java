@@ -2,7 +2,7 @@ package com.carddemo.interest.domain;
 
 /**
  * Why a run stopped. The legacy has one failure path (INT-R08, CBACT04C:628-632); so has the target.
- * The pilot (ticket 01) names only the reasons it can raise; the legacy messages of each are ticket 08.
+ * Only the reasons the code can raise are named; the legacy messages of each are ticket 08.
  */
 public enum StopReason {
     /** An input file cannot be opened (CBACT04C:234-323). */
@@ -15,10 +15,10 @@ public enum StopReason {
     CARD_MISSING("INT-R08"),
     /** Several cards for one account: the source does not determine the outcome (INT-H03). */
     MULTI_CARD("INT-H03"),
-    /** The account's group has no rate: the DEFAULT fallback (INT-R03) is ticket 04, not the pilot. */
-    RATE_FALLBACK_NOT_BUILT("INT-R03"),
-    /** The rate is zero: the no-interest rule (INT-R04) is ticket 04, not the pilot. */
-    ZERO_RATE_NOT_BUILT("INT-R04"),
+    /** Neither the account's group nor the group DEFAULT has a rate for the balance (CBACT04C:444-459). */
+    DEFAULT_RATE_MISSING("INT-R08"),
+    /** timestampSource=CYCLE_DATE and the PARM does not start with eight digits (INT-Q03). */
+    CYCLE_DATE_UNREADABLE("INT-Q03"),
     /** The outputs cannot be written or moved into place (CBACT04C:500-514, 522-611). */
     WRITE_OUTPUT("INT-R08");
 

@@ -81,7 +81,9 @@ first. Run every command from the repository root.
      exit 0
    ```
    `make parity-java` printed for i03 and i04 `java job ended with exit code 12` and ended with
-   `make: *** [Makefile:96: parity-java] Error 1`. A case your ticket does not name may pass or fail;
+   `make: *** [Makefile:96: parity-java] Error 1`. Since ticket 04 (step 5b, wave 1) all seven pass:
+   `interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)` and
+   `interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)`, exit 0. A case your ticket does not name may pass or fail;
    report it, do not claim it.
 
 4. **Run the job by hand when you need another setting** (a policy switch, another input directory).

@@ -72,7 +72,8 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 
 * **Symptom.** ` M tools/parity/__pycache__/copybook.cpython-310.pyc` after any `compare.py` or `make parity-java`.
 * **Cause.** The `.pyc` files are tracked and Python rewrites them.
-* **Fix.** `git checkout -- tools/parity/__pycache__` before every commit (standard S8.1).
+* **Fix.** `git checkout -- tools/parity/__pycache__ tools/runjcl/__pycache__` before every commit (standard S8.1);
+  `make parity` (legacy) rewrites the one under `tools/runjcl`.
 * **Reproduced by:** `python3 tools/parity/compare.py interest i01-baseline --actual work/parity-java/i01-baseline/actual --label java; git status --short`.
 
 ## P7. The comparator report holds old results

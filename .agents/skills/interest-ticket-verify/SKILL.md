@@ -109,7 +109,7 @@ first. Run every command from the repository root.
 
    | What the report shows | How it was produced | Where the rule is |
    |---|---|---|
-   | `TRAN-AMT` 12.35 against 12.36 and `ACCT-CURR-BAL` 1247.85 against 1247.86 on i02-tie-half-cent | step 4 with `--interest.policy.rounding=HALF_UP` | standards S3.2, section 4 row a |
+   | `TRAN-AMT` 12.35 against 12.36 and `ACCT-CURR-BAL` 1247.85 against 1247.86 on i02-tie-half-cent | step 4 with `--interest.policy.rounding=HALF_UP` (3 differences). With `--interest.policy.rounding=HALF_EVEN`: 2 differences on i02-tie-half-cent (account 2003 only, the same two fields and values) and none on i07-nontie-rounding | standards S3.2, section 4 row a |
    | `ACCT-CURR-BAL` 2400.00 against 2437.00 and `ACCT-CURR-CYC-CREDIT` 2400.00 against 0.00 on the last account (i01-baseline, ACCT-ID=2002) | step 4 with `--interest.policy.updateLastAccount=true` | standards S5.1, section 4 row m |
    | `TRAN-ORIG-TS` and `TRAN-PROC-TS` 2022-07-05-10.00.00.000000 against today's time | step 4 without `--interest.clock.frozen` | standards S3.8, section 4 rows t and u |
    | `(file)` `1 records` against `missing` for both datasets, and the whole SYSOUT and rc.json as removed lines | the job stopped (exit 12) and left no output: i03, i04 on the pilot's code. Read the job's own `InterestRunStoppedException: <REASON> (<rule id>)` line in the `make parity-java` output | standards section 6 |

@@ -176,6 +176,10 @@ first. Run every command from the repository root.
    or nothing loads the tables of the `db` service yet), make the database assertions in the ticket's `*IT`
    class on `postgres:15` started with both init scripts (`db/postgres/01-transaction-type.sql` and
    `02-interest.sql`) and name the test in `report.md`; the query of this step then shows the job repository only.
+   A ticket whose database assertion is that it writes nothing (ticket 10) shows it by an integration test that
+   compares the rows of the six tables of schema `carddemo` and the number of job executions before and after, and
+   expects SQLSTATE 25006 for an UPDATE on its own connection:
+   `ReconReportIT.report_writesNothing_andItsConnectionRefusesAWrite`.
 
    ```sh
    docker compose exec -T db psql -U carddemo -d carddemo \

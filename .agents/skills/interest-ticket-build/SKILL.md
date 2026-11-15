@@ -137,7 +137,7 @@ Run every command from the repository root.
 9. **Before every commit,** undo what the comparator changed and check you stayed in scope.
 
    ```sh
-   git checkout -- tools/parity/__pycache__
+   git checkout -- tools/parity/__pycache__ tools/runjcl/__pycache__
    git diff --stat origin/<base-branch> -- app fixtures tools modernization .agents db docker-compose.yml
    git status --short
    ```

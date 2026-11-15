@@ -5,10 +5,12 @@ description: Conversion standards for the interest stream (INTCALC -> CBACT04C) 
 
 # Interest stream conversion standards
 
-> **PROPOSED - not confirmed. Nothing here has been run.** These standards were written by an agent from the
-> rulebook, the design, the data map, `CBACT04C.cbl`, its copybooks, `INTCALC.jcl` and `tools/build.sh`. No Java
-> exists yet and no standard has been applied to code. **The pilot ticket
-> (`modernization/design/tickets/01-pilot-thin-slice.md`) is the first test.**
+> **PROPOSED - not confirmed. Applied once, by the pilot ticket.** These standards were written by an agent from
+> the rulebook, the design, the data map, `CBACT04C.cbl`, its copybooks, `INTCALC.jcl` and `tools/build.sh`. The
+> pilot ticket (`modernization/design/tickets/01-pilot-thin-slice.md`) applied them to the code in `java/interest`;
+> its filled-in checklist is section 4 of `java/interest/evidence/PILOT-REPORT.md`. No other ticket has applied
+> them. Corrections approved after the pilot are in the text; the ones still proposed are in section 4 of
+> `modernization/design/skills.md`.
 > **Owner who must confirm: the target architect.**
 
 This file is the only place the standards are written. Ticket sessions follow it and **do not edit it**: a standard
@@ -67,7 +69,8 @@ for this table; the fixture cases named are recorded legacy runs.
 
 Line numbers are `app/cbl/CBACT04C.cbl` unless a file is named. "Search" means
 `grep -nE` over CBACT04C.cbl and the five copybooks returned nothing. Test names are the names ticket
-sessions must use; none exists yet.
+sessions must use; those of the behaviours ticket 01 touched exist in `java/interest/src/test`, the others do not
+yet.
 
 | | Behaviour | In this stream | Evidence | What the legacy does | Java standard | Test (fixture case) | Off-host run cannot settle |
 |---|---|---|---|---|---|---|---|

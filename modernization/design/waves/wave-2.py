@@ -242,6 +242,12 @@ async def main():
     failed = [r["ticket"] for r in results if r["final"].get("status") != "done"]
     log(f"wave {WAVE} tickets not done: {failed or 'none'}")
     log("WAVE_RESULT_JSON " + json.dumps({"wave": WAVE, "results": results}, sort_keys=True))
+    # The run output shown to the coordinator is cut in the middle when it is long: keep a full copy on its machine.
+    try:
+        with open(f"/home/ubuntu/wave-results/wave-{WAVE}.json", "w") as out:
+            json.dump({"wave": WAVE, "results": results}, out, indent=1, sort_keys=True)
+    except OSError as error:
+        log(f"could not write the result file: {error}")
 
 
 asyncio.run(main())

@@ -1,0 +1,184 @@
+# Combined check, wave 4, branch demo/05b-integration at 9cd2e63c100d56062f085c1678e0af1e121481fb
+# 2026-11-15T12:44:43Z, openjdk version "21.0.13.0.3" 2026-10-24, Docker 29.9.2
+# cases expected to pass: i01-baseline i02-tie-half-cent i03-zero-rate-skipped i04-default-group-fallback i05-multi-category i06-negative-balance i07-nontie-rounding 
+
+## make reset && make up && make build
+ Network ts-cobol-carddemo_default Removing 
+ Volume ts-cobol-carddemo_carddemo-db Removed 
+ Network ts-cobol-carddemo_default Removed 
+ Container ts-cobol-carddemo-db-1 Waiting 
+ Container ts-cobol-carddemo-estate-1 Healthy 
+ Container ts-cobol-carddemo-db-1 Healthy 
+COBTUPDT: precompiled (ocesql) and compiled
+DSNEXIT: precompiled (ocesql) and compiled
+DSNRUN: precompiled (ocesql) and compiled
+# exit code 0
+
+## mvn -B -f java/interest/pom.xml clean verify
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.154 s -- in com.carddemo.interest.export.DatasetExportTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.carddemo.interest.batch.InterestJobParametersTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.552 s -- in com.carddemo.interest.batch.InterestJobStepsTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in com.carddemo.interest.batch.RestartableRunLogTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 s -- in com.carddemo.interest.file.FileRunWorkspaceTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in com.carddemo.interest.codec.RecordLayoutTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 s -- in com.carddemo.interest.codec.RecordCodecTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.carddemo.interest.codec.CopybookTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.046 s -- in com.carddemo.interest.codec.AccountRecordActiveStatusTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in com.carddemo.interest.codec.FileAdapterCodecTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.carddemo.interest.codec.RecordFormatTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.040 s -- in com.carddemo.interest.codec.FixtureRoundTripTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.131 s -- in com.carddemo.interest.policy.InterestPolicyBindingTest
+[INFO] Tests run: 63, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.240 s -- in com.carddemo.interest.policy.PolicySwitchFixtureTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.carddemo.interest.domain.InterestFormulaTest
+[INFO] Tests run: 49, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 s -- in com.carddemo.interest.domain.InterestCalculatorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.carddemo.interest.domain.RunTimestampTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s -- in com.carddemo.interest.load.ExtractDecoderTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.carddemo.interest.load.ExtractProfileTest
+[INFO] Tests run: 234, Failures: 0, Errors: 0, Skipped: 0
+2026-11-15T12:45:13.930Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step exportDatasetsStep in job exportOnlyJob
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.797 s -- in com.carddemo.interest.export.DatasetExportIT
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.046 s -- in com.carddemo.interest.jdbc.calc.JdbcCalcAdaptersIT
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.709 s -- in com.carddemo.interest.batch.InactiveAccountsSkipJobIT
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.637 s -- in com.carddemo.interest.batch.MultiCardFirstByCardNumIT
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.774 s -- in com.carddemo.interest.batch.CalcInterestTablesIT
+2026-11-15T12:45:25.646Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:25.647Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 467cf3ce-6473-410e-8a61-bcaf12a7eecd step calcInterestStep stopped before any work
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.509 s -- in com.carddemo.interest.batch.InterestCalcJobIT
+2026-11-15T12:45:26.969Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.DatabaseFailureStops  : database failure: reason=UPDATE_ACCOUNT failure=UncategorizedSQLException sqlState=P0001
+2026-11-15T12:45:26.970Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:26.972Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 36961f1a-ff61-4133-8cfe-051f3775e7aa step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:27.051Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:27.052Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 7866150a-50f1-419d-b999-eb64fd4e130f step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:27.150Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.DatabaseFailureStops  : database failure: reason=UPDATE_ACCOUNT failure=UncategorizedSQLException sqlState=P0001
+2026-11-15T12:45:27.151Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:27.152Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 7a5c2f23-ece5-4b2b-952e-d829f95533ce step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:27.187Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.DatabaseFailureStops  : database failure: reason=UPDATE_ACCOUNT failure=UncategorizedSQLException sqlState=P0001
+2026-11-15T12:45:27.188Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:27.189Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run c10367e5-fe57-44ea-8510-75d9bcd6edd9 step calcInterestStep stopped: accounts committed=0; committed chunks stay, the step can be restarted
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.552 s -- in com.carddemo.interest.batch.CalcInterestRestartIT
+2026-11-15T12:45:28.511Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.DatabaseFailureStops  : database failure: reason=UPDATE_ACCOUNT failure=UncategorizedSQLException sqlState=P0001
+2026-11-15T12:45:28.512Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:28.513Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run f098afb7-e003-4d4e-9084-c1d009d64743 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:28.595Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.DatabaseFailureStops  : database failure: reason=UPDATE_ACCOUNT failure=UncategorizedSQLException sqlState=P0001
+2026-11-15T12:45:28.595Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:28.596Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run e0ba313e-f32e-492e-bf8c-dd1dfc4d75cd step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:28.637Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step exportDatasetsStep in job interestCalcJob
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.443 s -- in com.carddemo.interest.batch.InterestJobRestartIT
+2026-11-15T12:45:29.937Z ERROR 157724 --- [interest] [           main] c.carddemo.interest.load.ExtractLoader   : loadExtractsStep run 1 FAILED: 1 rejected records, no table was changed
+2026-11-15T12:45:29.939Z ERROR 157724 --- [interest] [           main] c.c.i.load.LoadExtractsStepConfig        : loadExtractsStep reject: file AWS.M2.CARDDEMO.DISCGRP.PS.txt record 2 field DIS-TRAN-CAT-CD: is not numeric
+2026-11-15T12:45:29.940Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step loadExtractsStep in job interestCalcJob
+2026-11-15T12:45:29.974Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:29.975Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run b7294c9a-7741-4d8d-89cb-c7988f3c25de step calcInterestStep stopped: accounts committed=0; committed chunks stay, the step can be restarted
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.623 s -- in com.carddemo.interest.batch.InterestJobTablesIT
+2026-11-15T12:45:31.535Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.DatabaseFailureStops  : database failure: reason=WRITE_TRANSACTION failure=UncategorizedSQLException sqlState=P0001
+2026-11-15T12:45:31.536Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.537Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 93ede5bd-f0bd-40ed-823a-857abd03a2b6 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:31.571Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.DatabaseFailureStops  : database failure: reason=READ_BALANCES failure=BadSqlGrammarException sqlState=42P01
+2026-11-15T12:45:31.571Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.572Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 5c2cb980-a261-40eb-a3ce-e0928f1c740c step calcInterestStep stopped: accounts committed=0; committed chunks stay, the step can be restarted
+2026-11-15T12:45:31.605Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.DatabaseFailureStops  : database failure: reason=UPDATE_ACCOUNT failure=UncategorizedSQLException sqlState=P0001
+2026-11-15T12:45:31.606Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.607Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 08c62b35-fc15-4917-b3bc-bd033f2a53b9 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:31.625Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.626Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 08c62b35-fc15-4917-b3bc-bd033f2a53b9 step calcInterestStep stopped: accounts committed=0; committed chunks stay, the step can be restarted
+2026-11-15T12:45:31.663Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.DatabaseFailureStops  : database failure: reason=UPDATE_ACCOUNT failure=UncategorizedSQLException sqlState=P0001
+2026-11-15T12:45:31.663Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.664Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 9ac5431e-2f59-4ca1-a0dd-6f82409d468d step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:31.695Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.696Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run a6c92acf-9376-46ce-b11b-5e87a807abb1 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:31.724Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.724Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 2e2b0dcb-0dfe-4719-9989-3074eb56fa46 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:31.754Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.755Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 3ebfd993-420f-47cf-9740-5ff5a57b4205 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:31.784Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.785Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run fe87fab2-9745-455e-a2d6-bce0b489396d step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T12:45:31.811Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T12:45:31.811Z ERROR 157724 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 4f221ff8-5d8f-46e6-a59e-3664e4613a19 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.536 s -- in com.carddemo.interest.batch.ErrorPathsIT
+2026-11-15T12:45:33.114Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step loadExtractsStep in job loadOnlyJob
+2026-11-15T12:45:33.159Z ERROR 157724 --- [interest] [           main] c.carddemo.interest.load.ExtractLoader   : loadExtractsStep run 7 FAILED: 1 rejected records, no table was changed
+2026-11-15T12:45:33.160Z ERROR 157724 --- [interest] [           main] c.c.i.load.LoadExtractsStepConfig        : loadExtractsStep reject: file AWS.M2.CARDDEMO.TCATBALF.PS.txt record 2 field TRAN-CAT-BAL: is not numeric
+2026-11-15T12:45:33.160Z ERROR 157724 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step loadExtractsStep in job loadOnlyJob
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.567 s -- in com.carddemo.interest.load.LoadExtractsStepIT
+[INFO] Tests run: 101, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+# exit code 0
+
+## db/postgres/tests (schema assertions, db service)
+PASS  rejects: a negative xref_acct_id
+PASS  rejects: tran_cat_bal = 1000000000.00
+PASS  rejects: trancat_cd = 10000 (five digits)
+PASS  order: ORDER BY trancat_acct_id, trancat_type_cd, trancat_cd gives 01, 1A, A1, B0, a1 (COLLATE "C", E6)
+43 assertions, 0 failed
+# db/postgres/tests/02-interest-assertions.sql exit code 0
+
+## make parity-java (every case under fixtures/interest, tools/parity/compare.py)
+docker compose up -d --wait db
+ Container ts-cobol-carddemo-db-1 Running 
+ Container ts-cobol-carddemo-db-1 Waiting 
+ Container ts-cobol-carddemo-db-1 Healthy 
+mvn -q -f java/interest/pom.xml -DskipTests package
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i01-baseline [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i03-zero-rate-skipped [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+interest/i05-multi-category [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i06-negative-balance [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i07-nontie-rounding [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+report: work/parity-java/report.md
+# exit code 0
+
+## per case: python3 tools/parity/compare.py interest <case> --actual work/parity-java/<case>/actual --label java
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+  exit 0
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+
+## make parity (legacy lane)
+posting/p01-baseline-mixed [legacy rerun]: PASS (23 records, 92 fields, 0 differences)
+posting/p02-invalid-card [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p03-account-missing [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p04-overlimit-reject [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p05-expired-account [legacy rerun]: PASS (14 records, 60 fields, 0 differences)
+posting/p06-credits-new-category [legacy rerun]: PASS (18 records, 67 fields, 0 differences)
+posting/p07-empty-day [legacy rerun]: PASS (2 records, 16 fields, 0 differences)
+interest/i01-baseline [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i03-zero-rate-skipped [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i05-multi-category [legacy rerun]: PASS (3 records, 38 fields, 0 differences)
+interest/i06-negative-balance [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i07-nontie-rounding [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+trantype-update/t01-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t02-update [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t03-delete [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t04-comments [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t05-delete-missing [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t06-duplicate-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t07-mixed-batch [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d01-update-then-apply [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d02-delete-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d03-bad-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+report: work/parity/report.md
+# exit code 0
+
+## git status --short (must be empty apart from this file)
+
+# COMBINED CHECK: PASS

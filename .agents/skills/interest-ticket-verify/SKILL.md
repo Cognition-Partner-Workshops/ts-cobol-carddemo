@@ -139,6 +139,9 @@ first. Run every command from the repository root.
    Acceptance has no error line that a command-line run can show, and say so in `report.md`.
    A ticket whose step is not a step of `interestCalcJob` yet, or whose error line needs loaded tables
    (05, 06, 07, 08), shows the error line by an integration test on PostgreSQL 15 and names the test in `report.md`.
+   Ticket 09 (the gate): `make parity-java CASE=i01-baseline INTEREST_OUT=work/parity-java-err INTEREST_PARM=20220718`
+   must print `interest/i01-baseline: java job ended with exit code 12`, a comparator FAIL and
+   `interest_run: FAIL (0 of 1 assertions ...)`, and exit non-zero.
    Missing input file (ticket 01):
 
    ```sh

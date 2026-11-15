@@ -232,7 +232,9 @@ first. Run every command from the repository root.
    exits 0 when every case named on the command line passes. In the result table it leaves
    `_fill in_` in the columns "In the ticket's scope" and "Why" of the cases the ticket does not name:
    complete them by hand. Before changing code, run `make parity-java` on the base and keep its output; use
-   it for the "Why" of a case outside the ticket that already failed there. A ticket name with no file under `modernization/design/tickets`, or a case
+   it for the "Why" of a case outside the ticket that already failed there.
+   For a case outside the ticket that passes, replace `_fill in_` with `no - not named by the ticket; run to
+   show no regression`. A ticket name with no file under `modernization/design/tickets`, or a case
    with no directory under `fixtures/interest`, ends the script with exit code 2
    (`no ticket file modernization/design/tickets/99-nothing.md`). `REPORT=<file>` writes somewhere else.
    A ticket whose Verification says "Fixture cases: none" passes one case that passed on the base branch

@@ -134,7 +134,8 @@ first. Run every command from the repository root.
    ```
    Only `input` is listed: no output directory and no staging directory were left.
 
-7. **Check the database assertions of the ticket** in the `db` service.
+7. **Check the database assertions of the ticket** in the `db` service. Skip this step when the ticket's
+   Acceptance says "Database assertions: none"; say so in section 6 of `report.md`.
 
    ```sh
    docker compose exec -T db psql -U carddemo -d carddemo \

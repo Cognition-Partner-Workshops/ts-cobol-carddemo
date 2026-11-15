@@ -9,44 +9,70 @@ import com.carddemo.interest.domain.InterestTransaction;
  */
 public final class TransactionRecord {
 
-    public static final int LENGTH = 350;
+    public static final RecordLayout LAYOUT = RecordLayout.of("CVTRA05Y")
+            .text("TRAN-ID", 16)
+            .text("TRAN-TYPE-CD", 2)
+            .unsigned("TRAN-CAT-CD", 4)
+            .text("TRAN-SOURCE", 10)
+            .text("TRAN-DESC", 100)
+            .signed("TRAN-AMT", 9, 2)
+            .unsigned("TRAN-MERCHANT-ID", 9)
+            .text("TRAN-MERCHANT-NAME", 50)
+            .text("TRAN-MERCHANT-CITY", 50)
+            .text("TRAN-MERCHANT-ZIP", 10)
+            .text("TRAN-CARD-NUM", 16)
+            .text("TRAN-ORIG-TS", 26)
+            .text("TRAN-PROC-TS", 26)
+            .filler(20)
+            .build();
+    public static final int LENGTH = LAYOUT.length();
 
-    private static final Field ID = new Field("TRAN-ID", 0, 16);
-    private static final Field TYPE_CODE = new Field("TRAN-TYPE-CD", 16, 2);
-    private static final Field CATEGORY_CODE = new Field("TRAN-CAT-CD", 18, 4);
-    private static final Field SOURCE = new Field("TRAN-SOURCE", 22, 10);
-    private static final Field DESCRIPTION = new Field("TRAN-DESC", 32, 100);
-    private static final Field AMOUNT = new Field("TRAN-AMT", 132, 11);
-    private static final Field MERCHANT_ID = new Field("TRAN-MERCHANT-ID", 143, 9);
-    private static final Field MERCHANT_NAME = new Field("TRAN-MERCHANT-NAME", 152, 50);
-    private static final Field MERCHANT_CITY = new Field("TRAN-MERCHANT-CITY", 202, 50);
-    private static final Field MERCHANT_ZIP = new Field("TRAN-MERCHANT-ZIP", 252, 10);
-    private static final Field CARD_NUMBER = new Field("TRAN-CARD-NUM", 262, 16);
-    private static final Field ORIGIN_TIMESTAMP = new Field("TRAN-ORIG-TS", 278, 26);
-    private static final Field PROCESSED_TIMESTAMP = new Field("TRAN-PROC-TS", 304, 26);
-    private static final int FILLER_LENGTH = 20;
+    private static final RecordCodec FIXTURE = new RecordCodec(LAYOUT, CodePage.fixture());
 
     private TransactionRecord() {
     }
 
+    /** The values of a new interest transaction: merchant name, city, zip and FILLER stay spaces. */
+    public static RecordValues values(InterestTransaction transaction) {
+        return RecordValues.blank(LAYOUT)
+                .with("TRAN-ID", transaction.id())
+                .with("TRAN-TYPE-CD", transaction.typeCode())
+                .with("TRAN-CAT-CD", (long) transaction.categoryCode())
+                .with("TRAN-SOURCE", transaction.source())
+                .with("TRAN-DESC", transaction.description())
+                .with("TRAN-AMT", transaction.amount())
+                .with("TRAN-MERCHANT-ID", transaction.merchantId())
+                .with("TRAN-CARD-NUM", transaction.cardNumber())
+                .with("TRAN-ORIG-TS", transaction.originTimestamp())
+                .with("TRAN-PROC-TS", transaction.processedTimestamp());
+    }
+
+    /** What an interest transaction holds of a record; the merchant texts and the FILLER are not part of it. */
+    public static InterestTransaction from(RecordValues values) {
+        return new InterestTransaction(
+                values.text("TRAN-ID"),
+                values.text("TRAN-TYPE-CD"),
+                (int) values.unsigned("TRAN-CAT-CD"),
+                values.text("TRAN-SOURCE"),
+                values.text("TRAN-DESC"),
+                values.signed("TRAN-AMT"),
+                values.unsigned("TRAN-MERCHANT-ID"),
+                values.text("TRAN-CARD-NUM"),
+                values.text("TRAN-ORIG-TS"),
+                values.text("TRAN-PROC-TS"));
+    }
+
+    /** Encodes a record image of the fixture code page. */
     public static String encode(InterestTransaction transaction) {
-        String image = ID.encodeText(transaction.id())
-                + TYPE_CODE.encodeText(transaction.typeCode())
-                + CATEGORY_CODE.encodeUnsigned(transaction.categoryCode())
-                + SOURCE.encodeText(transaction.source())
-                + DESCRIPTION.encodeText(transaction.description())
-                + AMOUNT.encodeSigned(transaction.amount(), 2)
-                + MERCHANT_ID.encodeUnsigned(transaction.merchantId())
-                + MERCHANT_NAME.encodeText("")
-                + MERCHANT_CITY.encodeText("")
-                + MERCHANT_ZIP.encodeText("")
-                + CARD_NUMBER.encodeText(transaction.cardNumber())
-                + ORIGIN_TIMESTAMP.encodeText(transaction.originTimestamp())
-                + PROCESSED_TIMESTAMP.encodeText(transaction.processedTimestamp())
-                + " ".repeat(FILLER_LENGTH);
-        if (image.length() != LENGTH) {
-            throw new IllegalStateException("CVTRA05Y record is " + image.length() + " bytes, not " + LENGTH);
-        }
-        return image;
+        return encode(transaction, RecordOrigin.IN_MEMORY);
+    }
+
+    public static String encode(InterestTransaction transaction, RecordOrigin origin) {
+        return FixtureCodePage.image(FIXTURE.encode(values(transaction), origin));
+    }
+
+    /** Decodes a record image of the fixture code page. */
+    public static InterestTransaction decode(String image, RecordOrigin origin) {
+        return from(FIXTURE.decode(FixtureCodePage.bytes(image), origin));
     }
 }

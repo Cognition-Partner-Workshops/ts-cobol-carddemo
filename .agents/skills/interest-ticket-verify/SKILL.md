@@ -122,6 +122,8 @@ first. Run every command from the repository root.
 
 6. **Check the error path of the ticket** from the command line. Skip this step when the ticket's
    Acceptance has no error line that a command-line run can show, and say so in `report.md`.
+   A ticket whose step is not a step of `interestCalcJob` yet, or whose error line needs loaded tables
+   (05, 06, 07, 08), shows the error line by an integration test on PostgreSQL 15 and names the test in `report.md`.
    Missing input file (ticket 01):
 
    ```sh

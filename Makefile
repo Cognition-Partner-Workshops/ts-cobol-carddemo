@@ -8,7 +8,7 @@
 #   make record [CHAIN=..] [CASE=..]   (re)write golden outputs under fixtures/*/*/expected
 #   make parity [CHAIN=..] [CASE=..]   rerun chains and compare field by field -> work/parity/report.md
 #   make parity-naive CASE=i02-tie-half-cent   half-even Python reference vs golden (fails on the tie)
-#   make parity-java [CASE=..]  run the Java interest job (java/interest) and compare -> work/parity-java/report.md
+#   make parity-java [CASE=..]  the Java interest gate: load, calculation, export through PostgreSQL, compare, RC1-RC5 -> work/parity-java/report.md
 #   make chain-graph / chain-graph-check       regenerate / verify docs/chain-graph.md
 #   make rules / rules-check   regenerate / verify the interest rulebook outputs (board, register, expectations)
 #   make board-e2e              Playwright suite for the rules review board (needs: pip install -r e2e/requirements.txt)
@@ -90,22 +90,45 @@ INTEREST_JRE    ?= eclipse-temurin:21-jre
 INTEREST_PARM   ?= 2022071800
 INTEREST_CLOCK  ?= 2022-07-05 10:00:00.00
 
+# The gate (ticket 09): every case runs the whole job under profile `tables` -
+# loadExtractsStep -> calcInterestStep on the tables of schema carddemo -> exportDatasetsStep -
+# and three things decide a case: the exit code of the job, tools/parity/compare.py on the
+# exported files, and the reconciliation report (RC1-RC5 against interest_run, read only) on
+# the run the job left in the database -> $(PARITY_JAVA_OUT)/<case>/recon.md.
+# A case whose job does not end with 0 is FAILED: it is still compared (the comparator reports
+# what is missing) and listed in the report; it is never skipped.
+#   make parity-java ROUNDING=HALF_EVEN PARITY_JAVA_OUT=work/parity-java-half-even
+# is the negative control (INT-Q01): interest.policy.rounding of the run, default as coded.
+PARITY_JAVA_OUT ?= work/parity-java
+ROUNDING        ?=
+
 parity-java:
 	$(COMPOSE) up -d --wait db
 	mvn -q -f java/interest/pom.xml -DskipTests package
-	@rm -f work/parity-java/report.md; mkdir -p work/parity-java; fail=0; \
+	@out=$(PARITY_JAVA_OUT); rm -f $$out/report.md; mkdir -p $$out; fail=0; summary=""; \
 	db=$$($(COMPOSE) ps -q db); \
+	jre="docker run --rm --network container:$$db --user $(UID):$(GID) -v $(CURDIR):/estate -w /estate $(INTEREST_JRE)"; \
 	cases="$(if $(CASE),$(CASE),$$(ls fixtures/interest))"; \
 	for case in $$cases; do \
-	  rm -rf work/parity-java/$$case; \
-	  docker run --rm --network container:$$db --user $(UID):$(GID) -v "$(CURDIR)":/estate -w /estate $(INTEREST_JRE) \
-	    java -jar $(INTEREST_JAR) --interest.clock.frozen="$(INTEREST_CLOCK)" --logging.level.root=WARN \
+	  rm -rf $$out/$$case; mkdir -p $$out/$$case; \
+	  $$jre java -jar $(INTEREST_JAR) --spring.profiles.active=tables --interest.clock.frozen="$(INTEREST_CLOCK)" --logging.level.root=WARN \
+	      $(if $(ROUNDING),--interest.policy.rounding=$(ROUNDING)) \
 	      parmDate=$(INTEREST_PARM) runId=$$(date +%s)-$$$$-$$case format=fixture \
-	      inputDir=fixtures/interest/$$case/input outputDir=work/parity-java/$$case/actual \
-	    || { echo "interest/$$case: java job ended with exit code $$?"; fail=1; }; \
-	  $(PY) tools/parity/compare.py interest $$case --actual work/parity-java/$$case/actual --label java --report work/parity-java/report.md || fail=1; \
+	      inputDir=fixtures/interest/$$case/input outputDir=$$out/$$case/actual; \
+	  rc=$$?; job=PASS; cmp=PASS; recon=PASS; \
+	  if [ $$rc -ne 0 ]; then echo "interest/$$case: java job ended with exit code $$rc"; job="FAIL (exit code $$rc)"; fi; \
+	  $(PY) tools/parity/compare.py interest $$case --actual $$out/$$case/actual --label java --report $$out/report.md || cmp=FAIL; \
+	  if [ $$rc -eq 0 ]; then \
+	    $$jre $(RECON_CMD) report title=interest/$$case format=fixture inputDir=fixtures/interest/$$case/input reportFile=$$out/$$case/recon.md > /dev/null \
+	      || { echo "interest/$$case: RC1-RC5 do not hold in interest_run, see $$out/$$case/recon.md"; recon=FAIL; }; \
+	  else recon="FAIL (no finished run to check)"; fi; \
+	  result=PASS; if [ "$$job" != PASS ] || [ $$cmp != PASS ] || [ "$$recon" != PASS ]; then result=FAIL; fail=1; fi; \
+	  summary="$$summary| $$case | $$job | $$cmp | $$recon | $$result |\n"; \
 	done; \
-	echo "report: work/parity-java/report.md"; exit $$fail
+	{ printf '\n# Gate: make parity-java%s\n\n' "$(if $(ROUNDING), ROUNDING=$(ROUNDING))"; \
+	  printf '| Case | Job (load, calculation, export) | Comparator | RC1-RC5 in interest_run | Result |\n|---|---|---|---|---|\n'; \
+	  printf "$$summary"; } >> $$out/report.md; \
+	printf "$$summary"; echo "report: $$out/report.md"; exit $$fail
 
 # ------------------------------------- data-move kit (java/interest, ticket 10)
 # recon-java: the reconciliation report (RC1-RC6, TL4) of one loaded and calculated case.

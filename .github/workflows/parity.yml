@@ -33,6 +33,40 @@ jobs:
           test $tie -ne 0 || { echo "tie case unexpectedly passed"; exit 1; }
           test $nontie -eq 0 || { echo "non-tie case unexpectedly failed"; exit 1; }
 
+      - name: JDK 21 for the Java interest job
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Java interest gate - seven cases through PostgreSQL (make parity-java)
+        run: make parity-java
+
+      - name: Java negative control - HALF_EVEN fails on the tie case only
+        run: |
+          set +e
+          make parity-java ROUNDING=HALF_EVEN PARITY_JAVA_OUT=work/parity-java-half-even; rc=$?
+          set -e
+          report=work/parity-java-half-even/report.md
+          test $rc -ne 0 || { echo "the negative control unexpectedly passed"; exit 1; }
+          rows=$(grep -c '^| i0' "$report"); failed=$(grep '^| i0' "$report" | grep 'FAIL |$' | cut -d'|' -f2 | xargs)
+          echo "cases: $rows, failed: $failed"
+          test "$rows" -eq 7 || { echo "the negative control did not run seven cases"; exit 1; }
+          test "$failed" = "i02-tie-half-cent" || { echo "expected only i02-tie-half-cent to fail"; exit 1; }
+          grep -q '^| i02-tie-half-cent | PASS | FAIL | PASS | FAIL |$' "$report" || { echo "i02 must fail in the comparator only"; exit 1; }
+
+      - name: Upload Java parity reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-java-report
+          path: |
+            work/parity-java/report.md
+            work/parity-java/*/recon.md
+            work/parity-java-half-even/report.md
+          if-no-files-found: warn
+
       - name: Upload parity report
         if: always()
         uses: actions/upload-artifact@v4

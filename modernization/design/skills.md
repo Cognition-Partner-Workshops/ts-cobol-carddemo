@@ -5,7 +5,8 @@
 > Owner who must confirm the skills and decide the corrections in section 4: **the target architect.**
 
 Based on `demo/05-pilot` at `2c4b023` (code revision `0294cc0`). No application code and no ticket was
-changed in this step; `interest-conversion-standards` and `carddemo-parity` were not edited.
+changed in this step; `carddemo-parity` was not edited. `interest-conversion-standards` was edited only for
+the five corrections the reviewer approved (section 4: 1, 2, 10, 13, 15), one commit each; it stays PROPOSED.
 
 ## 1. The three skills
 
@@ -89,14 +90,17 @@ the replay ran.
 
 ## 4. Proposed corrections to `interest-conversion-standards` - for the target architect to decide
 
-The skill was not edited. "Pilot" in the last column means the pilot's report
+**Applied after review:** corrections 1, 2, 10, 13 and 15 were approved by the reviewer and are now in the
+skill, one commit each. For 2, 13 and 15 the reviewer chose: add what holds for a file adapter; the digits
+of an id inside a text are a domain matter; one stop reason `OPEN_INPUT` with the file as data. The other
+thirteen rows are still proposals and the skill is unchanged for them. "Pilot" in the last column means the pilot's report
 (`java/interest/evidence/PILOT-REPORT.md`, section 5) raised it; "5a" means it was found in this step
 by reading the standard against the pilot's code.
 
 | # | Standard | What the pilot's code shows | Proposed change | Raised by |
 |---|---|---|---|---|
-| 1 | Section 9, checklist template | About ten lines are N/A for a ticket that does not own the behaviour; the template prints "PASS / FAIL" only, though its introduction allows N/A | Print "PASS / FAIL / N/A" on every line | Pilot |
-| 2 | S2.3, S3.7, S6.3, S6.4, row h | Ticket 01 has file adapters and no table. Key order is fixed by sorting the 17-byte key in `file/FileRunWorkspace.java`, which S3.7's "Do not" forbids; there is no restart state; a stopped run keeps nothing | Add what holds for a file adapter, or say these standards start with ticket 06 | Pilot |
+| 1 (applied) | Section 9, checklist template | About ten lines are N/A for a ticket that does not own the behaviour; the template prints "PASS / FAIL" only, though its introduction allows N/A | Print "PASS / FAIL / N/A" on every line | Pilot |
+| 2 (applied) | S2.3, S3.7, S6.3, S6.4, row h | Ticket 01 has file adapters and no table. Key order is fixed by sorting the 17-byte key in `file/FileRunWorkspace.java`, which S3.7's "Do not" forbids; there is no restart state; a stopped run keeps nothing | Add what holds for a file adapter, or say these standards start with ticket 06 | Pilot |
 | 3 | S6.5 against S2.2 and S3.5 | The run log needs the 50-byte record image, the domain is meant to see typed values only. The image travels beside the typed balance in `domain/AccountBalances.BalanceRead` | Rule on it; say how ticket 06 rebuilds the image from table columns, the 22-byte FILLER of CVTRA01Y included | Pilot |
 | 4 | S7.1, S3.8 | `interest.policy.timestampSource=CYCLE_DATE` is refused in `policy/InterestPolicy.java`: it needs a cycle-date job parameter that `architecture.md` section 4 does not list | Name the ticket that builds the non-default values and the parameter; say ticket 01 tests defaults | Pilot |
 | 5 | Section 6, table | `StopReason.RECORD_REJECTED` (a byte that breaks E1/E2) and a launch refused before the job starts (parmDate length, `format=host`) have no row | Add both rows: stop reason, run-log line or "none", exit code | Pilot |
@@ -104,12 +108,12 @@ by reading the standard against the pilot's code.
 | 7 | S6.4 | `file/RecordedReturnCodes.java` writes five step entries that are not INTCALC's as 0, to match the recorded `rc.json` | Say what `rc.json` holds, and what the target writes outside the harness | Pilot |
 | 8 | S3.8, row u | `batch/InterestJobConfig.runClock` uses the JVM's default zone; the JRE container runs in UTC | Name the time zone of the injected clock | Pilot |
 | 9 | S7.3, FI-6 | The `db` service publishes no port and the `estate` image has no JDK, so the tests use Testcontainers `postgres:15` and `make parity-java` runs the jar on the `db` container's network | S7.3 names "the `db` service ... or the same image": say Testcontainers with `db/postgres/*.sql` as init scripts; point FI-6 to `interest-ticket-verify` | Pilot (as a method note) |
-| 10 | The banner at the top and the sentence before the section 4 table | They say "Nothing here has been run", "No Java exists yet" and that no named test exists yet. The pilot applied the standards and its tests exist | Update the banner: applied once, by ticket 01; still PROPOSED | 5a |
+| 10 (applied) | The banner at the top and the sentence before the section 4 table | They say "Nothing here has been run", "No Java exists yet" and that no named test exists yet. The pilot applied the standards and its tests exist | Update the banner: applied once, by ticket 01; still PROPOSED | 5a |
 | 11 | S7.1 | Pilot tests that carry no rule id: `e1_`...`e4_` (the standard itself names such tests), `cvtra01y_decodesTheBalanceOfI01` and three like it, `sysout_matchesRecorded`, `rcJson_matchesRecorded`, `rcJson_recordedFormat`, `i01Baseline_datasetsMatchRecorded`, `jobRepository_oneCompletedExecutionWithOneStep`, `schemaCarddemo_holdsOnlyTheTablesOfTheEstate`, plus `hostFormatRefusedUntilTicket03` and `outputDirectoryHoldsOnlyTheRecordedFiles` | List the prefixes allowed besides a rule id (encoding rule, layout, output file, ticket assertion) | 5a |
 | 12 | Section 4, rows m and h | The pilot's test is `intT09_emptyInputGivesNoItem`, the standard names `intT09_emptyInputWritesNothing`; the pilot's `intR01_readsInKeyOrder` runs on synthetic files, the standard names fixture i05 on PostgreSQL | Either rename in the ticket that builds the JDBC step, or accept an adapter-level name; say which | 5a |
-| 13 | S3.6 | Its "Do not" keeps width out of the domain, its "Do" writes `elevenDigits(accountId)` in the domain. The pilot formats eleven digits in `domain/InterestCalculator.java` and `file/FileRunWorkspace.java`, and six in `domain/TransactionCounter.java`; the pilot's checklist marked S3.6 PASS | Say whether the digits of an id inside a text (description, transaction id, lookup key) are a domain matter or a codec matter | 5a |
+| 13 (applied) | S3.6 | Its "Do not" keeps width out of the domain, its "Do" writes `elevenDigits(accountId)` in the domain. The pilot formats eleven digits in `domain/InterestCalculator.java` and `file/FileRunWorkspace.java`, and six in `domain/TransactionCounter.java`; the pilot's checklist marked S3.6 PASS | Say whether the digits of an id inside a text (description, transaction id, lookup key) are a domain matter or a codec matter | 5a |
 | 14 | S3.2 against S5.1 | S3.2's example calls `policy.roundingMode()`; S5.1 wants the rule id in the name. The pilot has `intQ01InterestRoundingMode()` | Make the example of S3.2 follow S5.1 | 5a |
-| 15 | Section 6, row "Open fails (five files)" | The standard has one reason per file, `OPEN_<file>`; the pilot has one `StopReason.OPEN_INPUT` for the four inputs and names the file in the message | Decide before ticket 08: one reason per file (the legacy message differs per file) or one reason with the file as data | 5a |
+| 15 (applied) | Section 6, row "Open fails (five files)" | The standard has one reason per file, `OPEN_<file>`; the pilot has one `StopReason.OPEN_INPUT` for the four inputs and names the file in the message | Decide before ticket 08: one reason per file (the legacy message differs per file) or one reason with the file as data | 5a |
 | 16 | S2.1 / `architecture.md` section 2 ("the calculation depends on port and policy only", "domain: no framework") | `policy/InterestPolicy.java` carries Spring Boot's `@ConfigurationProperties`, so the calculation compiles against a Spring type through the policy | Say whether `policy` may carry the binding annotation or needs a plain type bound in `batch` | 5a |
 | 17 | S5.1 ("exactly one named place") | INT-Q02 lives in two places: the prefix in `InterestPolicy.intQ02IdPrefix` and the PARM length check in `batch/InterestJobParameters.java`. INT-Q04 is decided in the reader (`endsInput`) and applied in the calculator, as row m asks | Say that a job-parameter check citing the rule id is allowed beside the policy method | 5a |
 | 18 | S3.4 | The pilot has no `policy.checkFits`; `codec/Field.java` refuses a value that does not fit when it is encoded, which is after the calculation and without naming INT-H05 | Say whether the codec's refusal is enough until ticket 04, and that ticket 04 adds the check before the store | 5a |

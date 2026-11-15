@@ -185,6 +185,13 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
   `make parity-java` does.
 * **Reported by:** ticket 09-parity-gate.
 
+## P20. A test that only builds a job fails with `JobRepository must be set`
+
+* **Symptom.** `IllegalStateException: JobRepository must be set`.
+* **Cause.** `JobBuilder.build()` needs a repository even when the job is never launched.
+* **Fix.** `Mockito.mock(JobRepository.class)` (Mockito is on the test classpath through `spring-boot-starter-test`).
+* **Reported by:** ticket 09-parity-gate (`InterestJobStepsTest`: 2 errors of 6, then 6 of 6).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

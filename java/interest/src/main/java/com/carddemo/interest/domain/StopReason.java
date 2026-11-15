@@ -15,6 +15,8 @@ public enum StopReason {
     CARD_MISSING("INT-R08"),
     /** Several cards for one account: the source does not determine the outcome (INT-H03). */
     MULTI_CARD("INT-H03"),
+    /** A value does not fit its field: interest, an account total or balance, or the transaction number. */
+    OVERFLOW("INT-H05"),
     /** Neither the account's group nor the group DEFAULT has a rate for the balance (CBACT04C:444-459). */
     DEFAULT_RATE_MISSING("INT-R08"),
     /** timestampSource=CYCLE_DATE and the PARM does not start with eight digits (INT-Q03). */

@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: interest
+  main:
+    web-application-type: none
+    banner-mode: "off"
+  datasource:
+    url: ${INTEREST_DB_URL:jdbc:postgresql://localhost:5432/carddemo}
+    username: ${INTEREST_DB_USER:carddemo}
+    password: ${INTEREST_DB_PASSWORD:carddemo}
+    hikari:
+      maximum-pool-size: 2
+      # The job repository lives in schema batch (architecture.md section 3); schema carddemo is not touched.
+      connection-init-sql: CREATE SCHEMA IF NOT EXISTS batch; SET search_path TO batch
+  batch:
+    job:
+      name: interestCalcJob
+    jdbc:
+      initialize-schema: always
+
+interest:
+  # Legacy behaviour is the default of every switch (architecture.md section 8, FI-5).
+  policy:
+    rounding: TRUNCATE          # INT-Q01
+    idPrefix: PARM              # INT-Q02
+    timestampSource: RUN_CLOCK  # INT-Q03
+    updateLastAccount: false    # INT-Q04
+  calc:
+    commitInterval: 100         # accounts per chunk (architecture.md section 5, G11)
+  clock:
+    frozen: ""                  # "yyyy-MM-dd HH:mm:ss.SS" freezes the run clock (tests and parity runs)

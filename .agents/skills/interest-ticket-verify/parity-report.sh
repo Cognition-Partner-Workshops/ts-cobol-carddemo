@@ -48,11 +48,12 @@ for case in $(ls fixtures/interest); do
 done
 git checkout -- tools/parity/__pycache__ 2>/dev/null
 
+dirty=$(git diff --quiet HEAD -- java Makefile ':(exclude)java/interest/evidence' || echo ', with uncommitted changes')
 fence='```'
 {
   echo "# Parity report - ticket $ticket (java/interest)"
   echo
-  echo "Revision of the code: \`$(git rev-parse HEAD)\` (branch \`$(git rev-parse --abbrev-ref HEAD)\`$(git diff --quiet HEAD -- java Makefile || echo ', with uncommitted changes'))."
+  echo "Revision of the code: \`$(git rev-parse HEAD)\` (branch \`$(git rev-parse --abbrev-ref HEAD)\`$dirty)."
   echo "Produced $(date -u +%Y-%m-%dT%H:%M:%SZ), comparator \`tools/parity/compare.py\` unchanged."
   echo
   echo "## Result per case"

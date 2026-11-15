@@ -1,0 +1,179 @@
+{
+  "meta": {
+    "module": "AUTH",
+    "written_by": "batch-chain-analysis skill"
+  },
+  "tables": {
+    "CARDDEMO": {
+      "notes": [
+        {
+          "text": "Of the 17 jobs the CA 7 listing orders in table CARDDEMO, only CBPAUP0J is an AUTH JCL member; the other 16 have no JCL under this module's roots (the estate map places app/jcl in module CARDDEMO), so their chain-step-opaque asks stay open until that module is scanned.",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:18",
+            "app/scheduler/CardDemo.ca7:43",
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:1"
+          ]
+        },
+        {
+          "text": "CBPAUP0J is triggered by CLOSEFIL (TRIGGERED JOBS of CLOSEFIL names JOB=CBPAUP0J SCHID=030) and itself triggers POSTTRAN (JOB=POSTTRAN SCHID=030).",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:42-43",
+            "app/scheduler/CardDemo.ca7:69-70"
+          ]
+        },
+        {
+          "text": "CBPAUP0J.STEP01 runs CBPAUP0C as an IMS BMP under PSB PSBPAUTB (PARM='BMP,CBPAUP0C,PSBPAUTB'). CBPAUP0C has an empty FILE-CONTROL, so none of the DSN-bearing DDs of the step (STEPLIB, DFSRESLB, PROCLIB, DFSSEL, IMS) is opened by the program; the pass lists them as disp-only reads, and whether IMS.SDFSRESL / IMS.PROCLIB / IMS.PSBLIB count as chain inputs is left open for the IMS system owner.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:24-34",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:29-31"
+          ]
+        },
+        {
+          "text": "The job's only business data is the IMS database: CBPAUP0C walks PAUTSUM0 roots (GN) and their PAUTDTL1 children (GNP) and deletes them (DLET) through PCB PAUT-PCB-NUM; PSBPAUTB gives it PROCOPT=AP on DBD DBPAUTP0. No DD in the JCL allocates the database datasets (BMP region).",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:223",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:255",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:310",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:335",
+            "app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb:17-20"
+          ]
+        },
+        {
+          "text": "Run parameters come from in-stream SYSIN '00,00001,00001,Y', accepted into PRM-INFO; a non-numeric expiry-days value defaults to 5.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:36-37",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:189",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:196-200"
+          ]
+        }
+      ],
+      "asks": [
+        {
+          "kind": "restart-semantics-unproven",
+          "severity": "medium",
+          "job": "CBPAUP0J",
+          "message": "CBPAUP0C takes IMS checkpoints (EXEC DLI CHKP ID(WK-CHKPT-ID)) every P-CHKP-FREQ summaries, but the JCL sets IEFRDER and IMSLOGR to DUMMY and nothing in the program reads a restart checkpoint on entry (no XRST); how the job is rerun after a failure is not stated by the JCL or the CA 7 listing",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:160-164",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:352-355",
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:43-44",
+            "app/scheduler/CardDemo.ca7:45-68"
+          ],
+          "request": "Confirm the rerun procedure for CBPAUP0J after an abend (rerun from the start - deletions already committed at the last checkpoint are simply not found again - or a restart from a checkpoint id?)"
+        }
+      ]
+    },
+    "DBPAUTP0": {
+      "notes": [
+        {
+          "text": "DBPAUTP0 runs no application program: STEPDEL (IEFBR14) deletes AWS.M2.CARDDEMO.IMSDATA.DBPAUTP0 and UNLOAD runs DFSRRC00 with PARM=(ULU,DFSURGU0,DBPAUTP0) over DDPAUTP0/DDPAUTX0 (OEM.IMS.IMSP.PAUTHDB / PAUTHDBX), the DD names DBD DBPAUTP0 and DBPAUTX0 declare. The toolbox does not parse this PARM form (chain-step-opaque: ims-parm), so the step's program is not catalogued.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:7-10",
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:15-16",
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:31-32",
+            "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd:24",
+            "app/app-authorization-ims-db2-mq/ims/DBPAUTX0.dbd:23"
+          ]
+        },
+        {
+          "text": "DFSURGU1 (AWS.M2.CARDDEMO.IMSDATA.DBPAUTP0) is the step's output, not an input: DFSURGU1 is allocated new (DISP=(,CATLG,DELETE)) in the DFSRRC00 step whose PARM is (ULU,DFSURGU0,DBPAUTP0) and whose comment reads 'DOWNLOAD DBD DBPAUTP0'; STEPDEL deletes the same DSN first. The pass lists the DD as a disp-only read; mftb 0.2.1 applies a directions[] entry only to DDs bound to a program file, so the direction is recorded here as a note.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:13-16",
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:25-29",
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:5-10"
+          ]
+        }
+      ]
+    },
+    "UNLDGSAM": {
+      "notes": [
+        {
+          "text": "The GSAM output datasets are allocated DISP=(OLD,KEEP,KEEP): the job expects AWS.M2.CARDDEMO.PAUTDB.ROOT.GSAM and .CHILD.GSAM to exist already, and no scanned job creates them.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36-40"
+          ]
+        },
+        {
+          "text": "DD PASFILOP is written, not read: DBUNLDGS inserts (CBLTDLI ISRT) each summary segment through PCB PASFLPCB; PSB DLIGSAMP's second PCB is GSAM DBD PASFLDBD with PROCOPT=LS, and that DBD names DD2=PASFILOP as its output DD; the program's own OPEN OUTPUT statements are commented out. The pass lists the DD as a disp-only read; mftb 0.2.1 applies a directions[] entry only to DDs bound to a program file, so the direction is recorded here as a note.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:300-304",
+            "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB:21",
+            "app/app-authorization-ims-db2-mq/ims/PASFLDBD.DBD:27",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:27",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36-37"
+          ]
+        },
+        {
+          "text": "DD PADFILOP is written, not read: DBUNLDGS inserts (CBLTDLI ISRT) each detail segment through PCB PADFLPCB; PSB DLIGSAMP's third PCB is GSAM DBD PADFLDBD with PROCOPT=LS, and that DBD names DD2=PADFILOP as its output DD. The pass lists the DD as a disp-only read; mftb 0.2.1 applies a directions[] entry only to DDs bound to a program file, so the direction is recorded here as a note.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:319-323",
+            "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB:22",
+            "app/app-authorization-ims-db2-mq/ims/PADFLDBD.DBD:27",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:39-40"
+          ]
+        }
+      ],
+      "closures": [
+        {
+          "kind": "chain-input-unproduced",
+          "job": "UNLDGSAM",
+          "match": "AWS.M2.CARDDEMO.PAUTDB.ROOT.GSAM is read by",
+          "how": "the dataset is this step's output, not an input: DBUNLDGS inserts (CBLTDLI ISRT) each summary segment through PCB PASFLPCB; PSB DLIGSAMP's second PCB is GSAM DBD PASFLDBD with PROCOPT=LS, and that DBD names DD2=PASFILOP as its output DD; the program's own OPEN OUTPUT statements are commented out. Who first allocates it (the JCL uses DISP=(OLD,KEEP,KEEP)) is stated in the chain note",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:300-304",
+            "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB:21",
+            "app/app-authorization-ims-db2-mq/ims/PASFLDBD.DBD:27",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:27",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36-37"
+          ]
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "job": "UNLDGSAM",
+          "match": "AWS.M2.CARDDEMO.PAUTDB.CHILD.GSAM is read by",
+          "how": "the dataset is this step's output, not an input: DBUNLDGS inserts (CBLTDLI ISRT) each detail segment through PCB PADFLPCB; PSB DLIGSAMP's third PCB is GSAM DBD PADFLDBD with PROCOPT=LS, and that DBD names DD2=PADFILOP as its output DD. Who first allocates it (the JCL uses DISP=(OLD,KEEP,KEEP)) is stated in the chain note",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:319-323",
+            "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB:22",
+            "app/app-authorization-ims-db2-mq/ims/PADFLDBD.DBD:27",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:39-40"
+          ]
+        }
+      ]
+    },
+    "UNLDPADB": {
+      "notes": [
+        {
+          "text": "UNLDPADB.STEP01 (PAUDBUNL under PSB PAUTBUNL, PROCOPT=GOTP) writes the root and child flat files AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO / .CHILD.FILEO that LOADPADB.STEP01 (PAUDBLOD) reads as INFILE1 / INFILE2; no scheduler table orders the two jobs, so the hand-off is a dataset fact, not a proven run order.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:38-39",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:48-56",
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:36-38",
+            "app/app-authorization-ims-db2-mq/ims/PAUTBUNL.PSB:18-21"
+          ]
+        },
+        {
+          "text": "STEP0 (IEFBR14) deletes both output files with DISP=(OLD,DELETE,DELETE) before STEP01 recreates them NEW, so the job needs the files to exist from a previous run.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:25",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:33-36",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:48-49"
+          ]
+        }
+      ]
+    },
+    "LOADPADB": {
+      "notes": [
+        {
+          "text": "LOADPADB.STEP01 runs PAUDBLOD as a BMP under PSB PSBPAUTB (PARM='BMP,PAUDBLOD,PSBPAUTB'); the DDPAUTP0/DDPAUTX0 database DDs are commented out in the JCL. It inserts root segments from INFILE1 and child segments from INFILE2 with CBLTDLI ISRT.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:26-27",
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:36-41",
+            "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:244-246",
+            "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:321"
+          ]
+        }
+      ]
+    }
+  }
+}

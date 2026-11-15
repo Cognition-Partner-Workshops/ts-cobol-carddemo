@@ -192,6 +192,15 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Fix.** `Mockito.mock(JobRepository.class)` (Mockito is on the test classpath through `spring-boot-starter-test`).
 * **Reported by:** ticket 09-parity-gate (`InterestJobStepsTest`: 2 errors of 6, then 6 of 6).
 
+## P21. The account table does not equal the unloaded file after the calculation
+
+* **Symptom.** A comparison of `carddemo.account` with ACCTDATA.PS on a run that is CALCULATED or EXPORTED differs
+  in ACCT-CURR-BAL, ACCT-CURR-CYC-CREDIT and ACCT-CURR-CYC-DEBIT (`expected: <NOT_AVAILABLE> but was: <DIFFERENT>`).
+* **Cause.** calcInterestStep writes these three columns (INT-R07) and one launch runs load, calculation and export.
+* **Fix.** Compare the three with `interest_run.loaded_*` (RC2) and with the exported ACCTDATA (RC5), not with the
+  unloaded file; `recon/Reconciliation` leaves them out of RC3 and says so.
+* **Reported by:** ticket 10-data-move-kit (`ReconReportIT.runThatDoesNotExist_isNotAvailable_neverEqual`, 1 failure of 22).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

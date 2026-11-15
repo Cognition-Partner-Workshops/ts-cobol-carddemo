@@ -126,6 +126,17 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Fix.** `TransactionRecord.decode(image, RecordOrigin.IN_MEMORY)`.
 * **Reported by:** ticket 04-calculation-rules (second session, after merging the wave 1 combination).
 
+## P13. The job's connections have `search_path = batch`; `InterestCalcJobIT` mounts only the first init script
+
+* **Symptom.** An integration test on the tables fails with `relation "carddemo.account" does not exist`, or a
+  statement without a schema name does not find a replica table.
+* **Cause.** `application.yml`: `connection-init-sql: CREATE SCHEMA IF NOT EXISTS batch; SET search_path TO batch`.
+  The container of `InterestCalcJobIT` mounts `db/postgres/01-transaction-type.sql` only.
+* **Fix.** Name the schema in every statement (`carddemo.account`) and mount `db/postgres/02-interest.sql` as a
+  second init script (`/docker-entrypoint-initdb.d/02-interest.sql`), as `ReplicaTables.postgres()` does.
+* **Reported by:** tickets 05-extract-loader and 06-calc-step-jdbc. Neither reproduced the failure; both wrote
+  their tests with the fix from the start.
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

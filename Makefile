@@ -9,6 +9,8 @@
 #   make parity [CHAIN=..] [CASE=..]   rerun chains and compare field by field -> work/parity/report.md
 #   make parity-naive CASE=i02-tie-half-cent   half-even Python reference vs golden (fails on the tie)
 #   make chain-graph / chain-graph-check       regenerate / verify docs/chain-graph.md
+#   make rules / rules-check   regenerate / verify the interest rulebook outputs (board, register, expectations)
+#   make board-e2e              Playwright suite for the rules review board (needs: pip install -r e2e/requirements.txt)
 #   make reset                  drop datasets, loadlib, work/ and the database volume
 
 # run the estate container as the invoking user so bind-mounted loadlib/, work/,
@@ -23,7 +25,7 @@ CHAIN   ?=
 CASE    ?=
 PY       = python3
 
-.PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell
+.PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell rules rules-check board-e2e
 
 up:
 	$(COMPOSE) up -d --build --wait
@@ -80,6 +82,22 @@ chain-graph:
 
 chain-graph-check:
 	$(PY) tools/chaingraph/gen_chain_graph.py --check docs/chain-graph.md
+
+# ------------------------------------------------- business rules (host python)
+RULES_TOOLS = modernization/rules/interest/tools
+
+rules:
+	$(PY) $(RULES_TOOLS)/evaluate.py
+	$(PY) $(RULES_TOOLS)/build_register.py
+	$(PY) $(RULES_TOOLS)/build_board.py
+
+rules-check:
+	$(PY) $(RULES_TOOLS)/build_board.py --check
+	$(PY) $(RULES_TOOLS)/build_register.py --check
+	$(PY) $(RULES_TOOLS)/evaluate.py --check
+
+board-e2e:
+	$(PY) -m pytest e2e -v
 
 baseline:
 	$(EXEC) tools/build.sh

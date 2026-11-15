@@ -1,0 +1,520 @@
+{
+ "case": "i06-negative-balance",
+ "status": "OPEN",
+ "notice": "Derived from rules.yaml and this case's input/ files only. Not SME sign-off; the recorded legacy output under fixtures/ was not read.",
+ "derivedFrom": {
+  "rules": "modernization/rules/interest/rules.yaml",
+  "inputs": [
+   "fixtures/interest/i06-negative-balance/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt",
+   "fixtures/interest/i06-negative-balance/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt",
+   "fixtures/interest/i06-negative-balance/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt",
+   "fixtures/interest/i06-negative-balance/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt"
+  ]
+ },
+ "rulesExercised": [
+  "INT-H01",
+  "INT-Q02",
+  "INT-Q03",
+  "INT-Q04",
+  "INT-Q05",
+  "INT-R01",
+  "INT-R02",
+  "INT-R05",
+  "INT-R06"
+ ],
+ "openRules": [
+  "INT-Q02",
+  "INT-Q03",
+  "INT-Q04",
+  "INT-Q05"
+ ],
+ "optionsNotDerivable": [
+  {
+   "rule": "INT-H01",
+   "option": "B",
+   "label": "Fees belong here - the business supplies the fee rule",
+   "outcome": "Would add fee transactions and change balances; the amounts cannot be derived because the estate contains no fee rule."
+  }
+ ],
+ "run": {
+  "end": {
+   "value": "normal end, return code 0",
+   "status": "DETERMINED",
+   "rules": [
+    "INT-T03"
+   ]
+  },
+  "sysout": {
+   "value": [
+    "START OF EXECUTION OF PROGRAM CBACT04C",
+    "000000020080100010000003000}",
+    "END OF EXECUTION OF PROGRAM CBACT04C"
+   ],
+   "status": "DETERMINED",
+   "rules": [
+    "INT-R01",
+    "INT-T02"
+   ],
+   "lineRules": [
+    [
+     "INT-T02"
+    ],
+    [
+     "INT-T02",
+     "INT-R01"
+    ],
+    [
+     "INT-T02"
+    ]
+   ]
+  }
+ },
+ "balances": [
+  {
+   "key": "00000002008/01/0001",
+   "rateGroup": {
+    "value": "GOLD",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R01",
+     "INT-R02"
+    ]
+   },
+   "ratePercent": {
+    "value": "12.00",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R01",
+     "INT-R02"
+    ]
+   },
+   "interestTransactionWritten": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R01",
+     "INT-R02",
+     "INT-R04",
+     "INT-R05",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": true
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": false
+     }
+    ]
+   },
+   "TRAN-ID": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q02",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q02",
+      "option": "A",
+      "label": "Keep as coded - the PARM literal of the job, changed by hand or by the scheduler for each run",
+      "asCoded": true,
+      "value": "2022071800000001"
+     },
+     {
+      "rule": "INT-Q02",
+      "option": "B",
+      "label": "Take it from the date of the run (YYYYMMDD followed by 00)",
+      "asCoded": false,
+      "value": "2022070500000001"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "2022071800000001"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-TYPE-CD": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R06",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "01"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-CAT-CD": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R06",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "0005"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-SOURCE": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R06",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "System"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-DESC": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R06",
+     "INT-T04",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "Int. for a/c 00000002008"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-AMT": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R05",
+     "INT-Q01",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "-3.00"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-MERCHANT-ID": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R06",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "000000000"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-MERCHANT-NAME": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R06",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": ""
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-MERCHANT-CITY": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R06",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": ""
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-MERCHANT-ZIP": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R06",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": ""
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-CARD-NUM": {
+    "status": "OPEN",
+    "rules": [
+     "INT-R06",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "4000000000002008"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-ORIG-TS": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q03",
+     "INT-T05",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q03",
+      "option": "A",
+      "label": "Keep as coded - the system clock of the run",
+      "asCoded": true,
+      "value": "2022-07-05-10.00.00.000000"
+     },
+     {
+      "rule": "INT-Q03",
+      "option": "B",
+      "label": "The cycle date of the PARM at 00.00.00",
+      "asCoded": false,
+      "value": "2022-07-18-00.00.00.000000"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "2022-07-05-10.00.00.000000"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   },
+   "TRAN-PROC-TS": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q03",
+     "INT-T05",
+     "INT-Q05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q03",
+      "option": "A",
+      "label": "Keep as coded - the system clock of the run",
+      "asCoded": true,
+      "value": "2022-07-05-10.00.00.000000"
+     },
+     {
+      "rule": "INT-Q03",
+      "option": "B",
+      "label": "The cycle date of the PARM at 00.00.00",
+      "asCoded": false,
+      "value": "2022-07-18-00.00.00.000000"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "A",
+      "label": "Keep as coded - negative interest is posted",
+      "asCoded": true,
+      "value": "2022-07-05-10.00.00.000000"
+     },
+     {
+      "rule": "INT-Q05",
+      "option": "B",
+      "label": "No interest and no transaction on a credit balance",
+      "asCoded": false,
+      "value": null
+     }
+    ]
+   }
+  }
+ ],
+ "accounts": [
+  {
+   "ACCT-ID": "00000002008",
+   "ACCT-CURR-BAL": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q04"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q04",
+      "option": "A",
+      "label": "Keep as coded - the last account is not updated",
+      "asCoded": true,
+      "value": "-300.00"
+     },
+     {
+      "rule": "INT-Q04",
+      "option": "B",
+      "label": "Update the last account like the others",
+      "asCoded": false,
+      "value": "-303.00"
+     }
+    ]
+   },
+   "ACCT-CURR-CYC-CREDIT": {
+    "value": "0.00",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-Q04"
+    ]
+   },
+   "ACCT-CURR-CYC-DEBIT": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q04"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q04",
+      "option": "A",
+      "label": "Keep as coded - the last account is not updated",
+      "asCoded": true,
+      "value": "300.00"
+     },
+     {
+      "rule": "INT-Q04",
+      "option": "B",
+      "label": "Update the last account like the others",
+      "asCoded": false,
+      "value": "0.00"
+     }
+    ]
+   }
+  }
+ ]
+}

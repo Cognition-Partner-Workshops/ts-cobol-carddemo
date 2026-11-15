@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rules review board - INTCALC (interest stream)</title>
+<style>
+:root{--ink:#1c2430;--muted:#5b6675;--line:#d5dbe3;--bg:#f5f7fa;--rule:#1f6f4a;--quirk:#9a5b00;--hole:#a3262e;--accent:#1d4ed8}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+#top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:10px 24px}
+#top h1{font-size:19px;margin:0 0 6px}
+#notice{margin:0 0 8px;padding:8px 12px;border:2px solid var(--hole);border-radius:6px;background:#fff4f4;color:#7a141b;font-weight:600}
+#bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+#bar label{font-weight:600}#reviewer{font:inherit;padding:5px 8px;border:1px solid #8b96a5;border-radius:4px;width:220px}
+#reviewer.missing{border-color:var(--hole);outline:2px solid #f3b6ba}
+#totals{display:flex;gap:6px;flex-wrap:wrap}#totals span{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:2px 10px}
+#totals b{font-variant-numeric:tabular-nums}
+button{font:inherit;padding:5px 12px;border:1px solid #8b96a5;border-radius:4px;background:#fff;cursor:pointer}
+button:hover{background:#eef2f7}button:focus-visible,summary:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#barError{color:var(--hole);font-weight:600}
+main{max-width:1080px;margin:0 auto;padding:18px 24px 60px}
+#summary{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 20px;margin-bottom:22px}
+#summary h2{margin:12px 0 4px;font-size:17px}
+.group h2{font-size:17px;margin:26px 0 10px}.group h2 small{font-weight:400;color:var(--muted);margin-left:8px}
+.count{display:inline-block;min-width:26px;text-align:center;border-radius:12px;background:var(--ink);color:#fff;padding:0 8px;font-size:14px}
+.card{background:#fff;border:1px solid var(--line);border-left:6px solid var(--muted);border-radius:8px;padding:12px 18px;margin:0 0 14px}
+.card.rule{border-left-color:var(--rule)}.card.quirk{border-left-color:var(--quirk)}.card.hole{border-left-color:var(--hole)}
+.card header{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.card h3{margin:0;font-size:16px;flex:1 1 300px}
+.type{font-size:12px;font-weight:700;letter-spacing:.04em;color:#fff;border-radius:4px;padding:1px 8px;background:var(--muted)}
+.rule .type{background:var(--rule)}.quirk .type{background:var(--quirk)}.hole .type{background:var(--hole)}
+.rid{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--muted)}
+.decision{font-size:12px;font-weight:700;border-radius:4px;padding:2px 9px;border:1px solid var(--line);color:var(--muted)}
+.decision.approved{background:#e3f4ea;border-color:var(--rule);color:var(--rule)}
+.decision.rejected{background:#fde8e9;border-color:var(--hole);color:var(--hole)}
+.statement{font-size:16px;margin:8px 0}.why,.question{margin:6px 0}.options{margin:4px 0 8px;padding-left:22px}
+dl{display:grid;grid-template-columns:110px 1fr;gap:2px 12px;margin:8px 0;font-size:14px}dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
+details{margin:8px 0}summary{cursor:pointer;color:var(--accent);font-weight:600}
+.cite{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--muted);margin-top:8px}
+pre{margin:2px 0 0;padding:8px;background:#0f1722;color:#e6edf5;border-radius:6px;overflow-x:auto;font:12.5px/1.45 ui-monospace,Menlo,Consolas,monospace}
+.ln{display:inline-block;width:42px;color:#8391a5;user-select:none}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:8px}
+.approve.on{background:var(--rule);color:#fff;border-color:var(--rule)}.reject.on{background:var(--hole);color:#fff;border-color:var(--hole)}
+.commentLabel{display:flex;flex-direction:column;font-size:13px;color:var(--muted);flex:1 1 280px}
+textarea{font:inherit;padding:5px 8px;border:1px solid #8b96a5;border-radius:4px;resize:vertical;color:var(--ink)}
+.meta{font-size:13px;color:var(--muted);flex-basis:100%}
+.cardError{color:var(--hole);font-weight:600;margin:6px 0 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:#fff}th,td{border:1px solid var(--line);padding:4px 8px;text-align:left;vertical-align:top}th{background:#eef2f7}
+.appendix details{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 14px}
+footer{color:var(--muted);font-size:13px;margin-top:24px}
+</style></head><body>
+<div id="top">
+<h1>Rules review board - INTCALC, the monthly interest run</h1>
+<p id="notice" role="note">Not SME sign-off. These rules were read out of the code by an agent. Nothing on this board has been confirmed by a business owner; decisions recorded here stay in this browser until exported.</p>
+<div id="bar">
+<label for="reviewer">Reviewer name</label><input id="reviewer" type="text" autocomplete="off" placeholder="your name">
+<div id="totals" aria-live="polite">
+<span>Approved <b id="total-approved">0</b></span><span>Rejected <b id="total-rejected">0</b></span>
+<span>Commented <b id="total-commented">0</b></span><span>Undecided <b id="total-undecided">20</b></span>
+<span>Cards <b id="total-cards">20</b></span></div>
+<button type="button" id="export">Export CSV</button>
+<button type="button" id="clear">Clear decisions</button>
+<button type="button" id="clearConfirm" hidden>Yes, clear all</button>
+<button type="button" id="clearCancel" hidden>Cancel</button>
+<span id="barError" role="alert"></span>
+</div></div>
+<main>
+<section id="summary"><h2>What the monthly interest run does</h2><p>Once a month the job INTCALC charges interest on card accounts. It runs one
+program, CBACT04C, which reads the file of balances that the posting job
+keeps per account and per kind of transaction (purchases, cash advances,
+payments and so on).</p><p>For each of those balances the program looks up the yearly interest rate that
+applies to the account&#x27;s disclosure group and to that kind of transaction. If
+the group has no rate of its own, the rate of the group called DEFAULT is
+used. A rate of zero means no interest. Otherwise one month of interest is
+worked out as balance x yearly rate / 1200 and cut off at the cent, and one
+interest transaction for that amount is written to a new transaction file,
+which a later job merges into the transaction history.</p><p>When the program moves on to the next account, it adds the interest of the
+account it just finished to that account&#x27;s current balance and sets the
+account&#x27;s cycle credit and cycle debit to zero.</p><p>Things a business owner should know before this is rebuilt: interest is cut
+off, not rounded; the last account on the file gets its interest transactions
+but its balance is never updated; a credit (negative) balance gets negative
+interest; the transaction id starts with a date typed into the job, and the
+timestamp is the moment the job ran; fees are announced in the job but not
+calculated; and nothing stops a second run from charging the same interest
+again.</p></section>
+<section class="group" id="group-RULE"><h2>RULE <span class="count" id="count-RULE">8</span> <small>policy implemented on purpose</small></h2>
+<article class="card rule" id="INT-R01" data-id="INT-R01" data-type="RULE">
+<header><span class="type">RULE</span><span class="rid">INT-R01</span><h3>One interest decision per category balance</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">Every balance on the category-balance file is considered once, in account, transaction-type and category order, and the balances of one account are handled together.</p>
+
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1000-TCATBALF-GET-NEXT -&gt; D1 (read TCATBALF, sequential by key)</dd><dt>Fixture cases</dt><dd>i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:188-222, app/cbl/CBACT04C.cbl:325-348</dd></dl>
+<details class="excerpt"><summary>Source excerpt (2 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:188-222</div><pre data-cite="app/cbl/CBACT04C.cbl:188-222"><span class="ln">188</span><span class="src">           PERFORM UNTIL END-OF-FILE = &#x27;Y&#x27;</span>
+<span class="ln">189</span><span class="src">               IF  END-OF-FILE = &#x27;N&#x27;</span>
+<span class="ln">190</span><span class="src">                   PERFORM 1000-TCATBALF-GET-NEXT</span>
+<span class="ln">191</span><span class="src">                   IF  END-OF-FILE = &#x27;N&#x27;</span>
+<span class="ln">192</span><span class="src">                     ADD 1 TO WS-RECORD-COUNT</span>
+<span class="ln">193</span><span class="src">                     DISPLAY TRAN-CAT-BAL-RECORD</span>
+<span class="ln">194</span><span class="src">                     IF TRANCAT-ACCT-ID NOT= WS-LAST-ACCT-NUM</span>
+<span class="ln">195</span><span class="src">                       IF WS-FIRST-TIME NOT = &#x27;Y&#x27;</span>
+<span class="ln">196</span><span class="src">                          PERFORM 1050-UPDATE-ACCOUNT</span>
+<span class="ln">197</span><span class="src">                       ELSE</span>
+<span class="ln">198</span><span class="src">                          MOVE &#x27;N&#x27; TO WS-FIRST-TIME</span>
+<span class="ln">199</span><span class="src">                       END-IF</span>
+<span class="ln">200</span><span class="src">                       MOVE 0 TO WS-TOTAL-INT</span>
+<span class="ln">201</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO WS-LAST-ACCT-NUM</span>
+<span class="ln">202</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO FD-ACCT-ID</span>
+<span class="ln">203</span><span class="src">                       PERFORM 1100-GET-ACCT-DATA</span>
+<span class="ln">204</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO FD-XREF-ACCT-ID</span>
+<span class="ln">205</span><span class="src">                       PERFORM 1110-GET-XREF-DATA</span>
+<span class="ln">206</span><span class="src">                     END-IF</span>
+<span class="ln">207</span><span class="src">      *              DISPLAY &#x27;ACCT-GROUP-ID: &#x27; ACCT-GROUP-ID</span>
+<span class="ln">208</span><span class="src">      *              DISPLAY &#x27;TRANCAT-CD: &#x27; TRANCAT-CD</span>
+<span class="ln">209</span><span class="src">      *              DISPLAY &#x27;TRANCAT-TYPE-CD: &#x27; TRANCAT-TYPE-CD</span>
+<span class="ln">210</span><span class="src">                     MOVE ACCT-GROUP-ID TO FD-DIS-ACCT-GROUP-ID</span>
+<span class="ln">211</span><span class="src">                     MOVE TRANCAT-CD TO FD-DIS-TRAN-CAT-CD</span>
+<span class="ln">212</span><span class="src">                     MOVE TRANCAT-TYPE-CD TO FD-DIS-TRAN-TYPE-CD</span>
+<span class="ln">213</span><span class="src">                     PERFORM 1200-GET-INTEREST-RATE</span>
+<span class="ln">214</span><span class="src">                     IF DIS-INT-RATE NOT = 0</span>
+<span class="ln">215</span><span class="src">                       PERFORM 1300-COMPUTE-INTEREST</span>
+<span class="ln">216</span><span class="src">                       PERFORM 1400-COMPUTE-FEES</span>
+<span class="ln">217</span><span class="src">                     END-IF</span>
+<span class="ln">218</span><span class="src">                   END-IF</span>
+<span class="ln">219</span><span class="src">               ELSE</span>
+<span class="ln">220</span><span class="src">                    PERFORM 1050-UPDATE-ACCOUNT</span>
+<span class="ln">221</span><span class="src">               END-IF</span>
+<span class="ln">222</span><span class="src">           END-PERFORM.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:325-348</div><pre data-cite="app/cbl/CBACT04C.cbl:325-348"><span class="ln">325</span><span class="src">       1000-TCATBALF-GET-NEXT.</span>
+<span class="ln">326</span><span class="src">           READ TCATBAL-FILE INTO TRAN-CAT-BAL-RECORD.</span>
+<span class="ln">327</span><span class="src">           IF  TCATBALF-STATUS  = &#x27;00&#x27;</span>
+<span class="ln">328</span><span class="src">               MOVE 0 TO APPL-RESULT</span>
+<span class="ln">329</span><span class="src">           ELSE</span>
+<span class="ln">330</span><span class="src">               IF  TCATBALF-STATUS  = &#x27;10&#x27;</span>
+<span class="ln">331</span><span class="src">                   MOVE 16 TO APPL-RESULT</span>
+<span class="ln">332</span><span class="src">               ELSE</span>
+<span class="ln">333</span><span class="src">                   MOVE 12 TO APPL-RESULT</span>
+<span class="ln">334</span><span class="src">               END-IF</span>
+<span class="ln">335</span><span class="src">           END-IF</span>
+<span class="ln">336</span><span class="src">           IF  APPL-AOK</span>
+<span class="ln">337</span><span class="src">               CONTINUE</span>
+<span class="ln">338</span><span class="src">           ELSE</span>
+<span class="ln">339</span><span class="src">               IF  APPL-EOF</span>
+<span class="ln">340</span><span class="src">                   MOVE &#x27;Y&#x27; TO END-OF-FILE</span>
+<span class="ln">341</span><span class="src">               ELSE</span>
+<span class="ln">342</span><span class="src">                   DISPLAY &#x27;ERROR READING TRANSACTION CATEGORY FILE&#x27;</span>
+<span class="ln">343</span><span class="src">                   MOVE TCATBALF-STATUS TO IO-STATUS</span>
+<span class="ln">344</span><span class="src">                   PERFORM 9910-DISPLAY-IO-STATUS</span>
+<span class="ln">345</span><span class="src">                   PERFORM 9999-ABEND-PROGRAM</span>
+<span class="ln">346</span><span class="src">               END-IF</span>
+<span class="ln">347</span><span class="src">           END-IF</span>
+<span class="ln">348</span><span class="src">           EXIT.</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-R01"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card rule" id="INT-R02" data-id="INT-R02" data-type="RULE">
+<header><span class="type">RULE</span><span class="rid">INT-R02</span><h3>Rate comes from the account&#x27;s disclosure group</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">The yearly interest rate for a balance is the one listed for the account&#x27;s disclosure group, the balance&#x27;s transaction type and its category.</p>
+
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1100-GET-ACCT-DATA -&gt; D4 (read ACCTFILE by account id) -&gt; 1200-GET-INTEREST-RATE -&gt; D6 (read DISCGRP by group, type, category)</dd><dt>Fixture cases</dt><dd>i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:202-203, app/cbl/CBACT04C.cbl:210-213, app/cbl/CBACT04C.cbl:415-420</dd></dl>
+<details class="excerpt"><summary>Source excerpt (3 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:202-203</div><pre data-cite="app/cbl/CBACT04C.cbl:202-203"><span class="ln">202</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO FD-ACCT-ID</span>
+<span class="ln">203</span><span class="src">                       PERFORM 1100-GET-ACCT-DATA</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:210-213</div><pre data-cite="app/cbl/CBACT04C.cbl:210-213"><span class="ln">210</span><span class="src">                     MOVE ACCT-GROUP-ID TO FD-DIS-ACCT-GROUP-ID</span>
+<span class="ln">211</span><span class="src">                     MOVE TRANCAT-CD TO FD-DIS-TRAN-CAT-CD</span>
+<span class="ln">212</span><span class="src">                     MOVE TRANCAT-TYPE-CD TO FD-DIS-TRAN-TYPE-CD</span>
+<span class="ln">213</span><span class="src">                     PERFORM 1200-GET-INTEREST-RATE</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:415-420</div><pre data-cite="app/cbl/CBACT04C.cbl:415-420"><span class="ln">415</span><span class="src">       1200-GET-INTEREST-RATE.</span>
+<span class="ln">416</span><span class="src">           READ DISCGRP-FILE INTO DIS-GROUP-RECORD</span>
+<span class="ln">417</span><span class="src">                INVALID KEY</span>
+<span class="ln">418</span><span class="src">                   DISPLAY &#x27;DISCLOSURE GROUP RECORD MISSING&#x27;</span>
+<span class="ln">419</span><span class="src">                   DISPLAY &#x27;TRY WITH DEFAULT GROUP CODE&#x27;</span>
+<span class="ln">420</span><span class="src">           END-READ.</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-R02"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card rule" id="INT-R03" data-id="INT-R03" data-type="RULE">
+<header><span class="type">RULE</span><span class="rid">INT-R03</span><h3>Fallback to the DEFAULT disclosure group</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">When the account&#x27;s disclosure group has no rate for the balance&#x27;s transaction type and category, the rate of the group named DEFAULT for the same type and category is used and the job log says so.</p>
+
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1200-GET-INTEREST-RATE (status 23) -&gt; 1200-A-GET-DEFAULT-INT-RATE -&gt; D6 (read DISCGRP by DEFAULT, type, category)</dd><dt>Fixture cases</dt><dd>i04-default-group-fallback</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:416-420, app/cbl/CBACT04C.cbl:436-439, app/cbl/CBACT04C.cbl:443-444</dd></dl>
+<details class="excerpt"><summary>Source excerpt (3 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:416-420</div><pre data-cite="app/cbl/CBACT04C.cbl:416-420"><span class="ln">416</span><span class="src">           READ DISCGRP-FILE INTO DIS-GROUP-RECORD</span>
+<span class="ln">417</span><span class="src">                INVALID KEY</span>
+<span class="ln">418</span><span class="src">                   DISPLAY &#x27;DISCLOSURE GROUP RECORD MISSING&#x27;</span>
+<span class="ln">419</span><span class="src">                   DISPLAY &#x27;TRY WITH DEFAULT GROUP CODE&#x27;</span>
+<span class="ln">420</span><span class="src">           END-READ.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:436-439</div><pre data-cite="app/cbl/CBACT04C.cbl:436-439"><span class="ln">436</span><span class="src">           IF  DISCGRP-STATUS  = &#x27;23&#x27;</span>
+<span class="ln">437</span><span class="src">               MOVE &#x27;DEFAULT&#x27; TO FD-DIS-ACCT-GROUP-ID</span>
+<span class="ln">438</span><span class="src">               PERFORM 1200-A-GET-DEFAULT-INT-RATE</span>
+<span class="ln">439</span><span class="src">           END-IF</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:443-444</div><pre data-cite="app/cbl/CBACT04C.cbl:443-444"><span class="ln">443</span><span class="src">       1200-A-GET-DEFAULT-INT-RATE.</span>
+<span class="ln">444</span><span class="src">           READ DISCGRP-FILE INTO DIS-GROUP-RECORD</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-R03"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card rule" id="INT-R04" data-id="INT-R04" data-type="RULE">
+<header><span class="type">RULE</span><span class="rid">INT-R04</span><h3>A zero rate means no interest</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">A balance whose rate is zero gets no interest and no interest transaction.</p>
+
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop (IF DIS-INT-RATE NOT = 0) -&gt; no data edge</dd><dt>Fixture cases</dt><dd>i03-zero-rate-skipped</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:214-217</dd></dl>
+<details class="excerpt"><summary>Source excerpt (1 citation)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:214-217</div><pre data-cite="app/cbl/CBACT04C.cbl:214-217"><span class="ln">214</span><span class="src">                     IF DIS-INT-RATE NOT = 0</span>
+<span class="ln">215</span><span class="src">                       PERFORM 1300-COMPUTE-INTEREST</span>
+<span class="ln">216</span><span class="src">                       PERFORM 1400-COMPUTE-FEES</span>
+<span class="ln">217</span><span class="src">                     END-IF</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-R04"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card rule" id="INT-R05" data-id="INT-R05" data-type="RULE">
+<header><span class="type">RULE</span><span class="rid">INT-R05</span><h3>Monthly interest formula</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">One month of interest on a balance is the balance multiplied by the yearly rate in percent and divided by 1200.</p>
+
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1300-COMPUTE-INTEREST -&gt; no data edge</dd><dt>Fixture cases</dt><dd>i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:464-465</dd></dl>
+<details class="excerpt"><summary>Source excerpt (1 citation)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:464-465</div><pre data-cite="app/cbl/CBACT04C.cbl:464-465"><span class="ln">464</span><span class="src">           COMPUTE WS-MONTHLY-INT</span>
+<span class="ln">465</span><span class="src">            = ( TRAN-CAT-BAL * DIS-INT-RATE) / 1200</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-R05"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card rule" id="INT-R06" data-id="INT-R06" data-type="RULE">
+<header><span class="type">RULE</span><span class="rid">INT-R06</span><h3>Interest is posted as a system transaction</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">Each interest amount is written as one transaction of type 01 and category 0005 from source System, described as &quot;Int. for a/c&quot; followed by the account number, with no merchant and carrying the account&#x27;s card number.</p>
+
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1110-GET-XREF-DATA -&gt; D2/D3 (read XREFFILE by account id) -&gt; 1300-COMPUTE-INTEREST -&gt; 1300-B-WRITE-TX -&gt; D7 (write TRANSACT, SYSTRAN(+1))</dd><dt>Fixture cases</dt><dd>i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:482-495, app/cbl/CBACT04C.cbl:500, app/cbl/CBACT04C.cbl:204-205, app/cbl/CBACT04C.cbl:393-398</dd></dl>
+<details class="excerpt"><summary>Source excerpt (4 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:482-495</div><pre data-cite="app/cbl/CBACT04C.cbl:482-495"><span class="ln">482</span><span class="src">           MOVE &#x27;01&#x27;                 TO TRAN-TYPE-CD</span>
+<span class="ln">483</span><span class="src">           MOVE &#x27;05&#x27;                 TO TRAN-CAT-CD</span>
+<span class="ln">484</span><span class="src">           MOVE &#x27;System&#x27;             TO TRAN-SOURCE</span>
+<span class="ln">485</span><span class="src">           STRING &#x27;Int. for a/c &#x27; ,</span>
+<span class="ln">486</span><span class="src">                  ACCT-ID</span>
+<span class="ln">487</span><span class="src">                  DELIMITED BY SIZE</span>
+<span class="ln">488</span><span class="src">            INTO TRAN-DESC</span>
+<span class="ln">489</span><span class="src">           END-STRING</span>
+<span class="ln">490</span><span class="src">           MOVE WS-MONTHLY-INT       TO TRAN-AMT</span>
+<span class="ln">491</span><span class="src">           MOVE 0                    TO TRAN-MERCHANT-ID</span>
+<span class="ln">492</span><span class="src">           MOVE SPACES               TO TRAN-MERCHANT-NAME</span>
+<span class="ln">493</span><span class="src">           MOVE SPACES               TO TRAN-MERCHANT-CITY</span>
+<span class="ln">494</span><span class="src">           MOVE SPACES               TO TRAN-MERCHANT-ZIP</span>
+<span class="ln">495</span><span class="src">           MOVE XREF-CARD-NUM        TO TRAN-CARD-NUM</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:500</div><pre data-cite="app/cbl/CBACT04C.cbl:500"><span class="ln">500</span><span class="src">           WRITE FD-TRANFILE-REC FROM TRAN-RECORD</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:204-205</div><pre data-cite="app/cbl/CBACT04C.cbl:204-205"><span class="ln">204</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO FD-XREF-ACCT-ID</span>
+<span class="ln">205</span><span class="src">                       PERFORM 1110-GET-XREF-DATA</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:393-398</div><pre data-cite="app/cbl/CBACT04C.cbl:393-398"><span class="ln">393</span><span class="src">       1110-GET-XREF-DATA.</span>
+<span class="ln">394</span><span class="src">           READ XREF-FILE INTO CARD-XREF-RECORD</span>
+<span class="ln">395</span><span class="src">            KEY IS FD-XREF-ACCT-ID</span>
+<span class="ln">396</span><span class="src">               INVALID KEY</span>
+<span class="ln">397</span><span class="src">                  DISPLAY &#x27;ACCOUNT NOT FOUND: &#x27; FD-XREF-ACCT-ID</span>
+<span class="ln">398</span><span class="src">           END-READ</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-R06"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card rule" id="INT-R07" data-id="INT-R07" data-type="RULE">
+<header><span class="type">RULE</span><span class="rid">INT-R07</span><h3>Interest is added to the account at the account break</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">When all balances of an account have been handled, the account&#x27;s total interest is added to its current balance and its cycle credit and cycle debit are set to zero.</p>
+
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop (account id changes) -&gt; 1050-UPDATE-ACCOUNT -&gt; D5 (rewrite ACCTFILE)</dd><dt>Fixture cases</dt><dd>i01-baseline, i02-tie-half-cent, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:194-201, app/cbl/CBACT04C.cbl:350-356, app/cbl/CBACT04C.cbl:467</dd></dl>
+<details class="excerpt"><summary>Source excerpt (3 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:194-201</div><pre data-cite="app/cbl/CBACT04C.cbl:194-201"><span class="ln">194</span><span class="src">                     IF TRANCAT-ACCT-ID NOT= WS-LAST-ACCT-NUM</span>
+<span class="ln">195</span><span class="src">                       IF WS-FIRST-TIME NOT = &#x27;Y&#x27;</span>
+<span class="ln">196</span><span class="src">                          PERFORM 1050-UPDATE-ACCOUNT</span>
+<span class="ln">197</span><span class="src">                       ELSE</span>
+<span class="ln">198</span><span class="src">                          MOVE &#x27;N&#x27; TO WS-FIRST-TIME</span>
+<span class="ln">199</span><span class="src">                       END-IF</span>
+<span class="ln">200</span><span class="src">                       MOVE 0 TO WS-TOTAL-INT</span>
+<span class="ln">201</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO WS-LAST-ACCT-NUM</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:350-356</div><pre data-cite="app/cbl/CBACT04C.cbl:350-356"><span class="ln">350</span><span class="src">       1050-UPDATE-ACCOUNT.</span>
+<span class="ln">351</span><span class="src">      * Update the balances in account record to reflect posted trans.</span>
+<span class="ln">352</span><span class="src">           ADD WS-TOTAL-INT  TO ACCT-CURR-BAL</span>
+<span class="ln">353</span><span class="src">           MOVE 0 TO ACCT-CURR-CYC-CREDIT</span>
+<span class="ln">354</span><span class="src">           MOVE 0 TO ACCT-CURR-CYC-DEBIT</span>
+<span class="ln">355</span><span class="src"></span>
+<span class="ln">356</span><span class="src">           REWRITE FD-ACCTFILE-REC FROM  ACCOUNT-RECORD</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:467</div><pre data-cite="app/cbl/CBACT04C.cbl:467"><span class="ln">467</span><span class="src">           ADD WS-MONTHLY-INT  TO WS-TOTAL-INT</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-R07"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card rule" id="INT-R08" data-id="INT-R08" data-type="RULE">
+<header><span class="type">RULE</span><span class="rid">INT-R08</span><h3>A missing record or a file error stops the run</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">If an account or its card cross-reference is missing, the DEFAULT rate is missing, or any file cannot be opened, read, written or closed, the job reports the file status and ends abnormally with code 999.</p>
+
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; any paragraph with a file statement (status not 00) -&gt; 9910-DISPLAY-IO-STATUS -&gt; 9999-ABEND-PROGRAM -&gt; C3 (CALL CEE3ABD) -&gt; D10 (SYSOUT)</dd><dt>Fixture cases</dt><dd>none - No fixture drives an error branch.</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:372-391, app/cbl/CBACT04C.cbl:393-413, app/cbl/CBACT04C.cbl:443-460, app/cbl/CBACT04C.cbl:628-632, app/cbl/CBACT04C.cbl:635-648</dd></dl>
+<details class="excerpt"><summary>Source excerpt (5 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:372-391</div><pre data-cite="app/cbl/CBACT04C.cbl:372-391"><span class="ln">372</span><span class="src">       1100-GET-ACCT-DATA.</span>
+<span class="ln">373</span><span class="src">           READ ACCOUNT-FILE INTO ACCOUNT-RECORD</span>
+<span class="ln">374</span><span class="src">               INVALID KEY</span>
+<span class="ln">375</span><span class="src">                  DISPLAY &#x27;ACCOUNT NOT FOUND: &#x27; FD-ACCT-ID</span>
+<span class="ln">376</span><span class="src">           END-READ</span>
+<span class="ln">377</span><span class="src"></span>
+<span class="ln">378</span><span class="src">           IF  ACCTFILE-STATUS  = &#x27;00&#x27;</span>
+<span class="ln">379</span><span class="src">               MOVE 0 TO APPL-RESULT</span>
+<span class="ln">380</span><span class="src">           ELSE</span>
+<span class="ln">381</span><span class="src">               MOVE 12 TO APPL-RESULT</span>
+<span class="ln">382</span><span class="src">           END-IF</span>
+<span class="ln">383</span><span class="src">           IF  APPL-AOK</span>
+<span class="ln">384</span><span class="src">               CONTINUE</span>
+<span class="ln">385</span><span class="src">           ELSE</span>
+<span class="ln">386</span><span class="src">               DISPLAY &#x27;ERROR READING ACCOUNT FILE&#x27;</span>
+<span class="ln">387</span><span class="src">               MOVE ACCTFILE-STATUS  TO IO-STATUS</span>
+<span class="ln">388</span><span class="src">               PERFORM 9910-DISPLAY-IO-STATUS</span>
+<span class="ln">389</span><span class="src">               PERFORM 9999-ABEND-PROGRAM</span>
+<span class="ln">390</span><span class="src">           END-IF</span>
+<span class="ln">391</span><span class="src">           EXIT.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:393-413</div><pre data-cite="app/cbl/CBACT04C.cbl:393-413"><span class="ln">393</span><span class="src">       1110-GET-XREF-DATA.</span>
+<span class="ln">394</span><span class="src">           READ XREF-FILE INTO CARD-XREF-RECORD</span>
+<span class="ln">395</span><span class="src">            KEY IS FD-XREF-ACCT-ID</span>
+<span class="ln">396</span><span class="src">               INVALID KEY</span>
+<span class="ln">397</span><span class="src">                  DISPLAY &#x27;ACCOUNT NOT FOUND: &#x27; FD-XREF-ACCT-ID</span>
+<span class="ln">398</span><span class="src">           END-READ</span>
+<span class="ln">399</span><span class="src"></span>
+<span class="ln">400</span><span class="src">           IF  XREFFILE-STATUS   = &#x27;00&#x27;</span>
+<span class="ln">401</span><span class="src">               MOVE 0 TO APPL-RESULT</span>
+<span class="ln">402</span><span class="src">           ELSE</span>
+<span class="ln">403</span><span class="src">               MOVE 12 TO APPL-RESULT</span>
+<span class="ln">404</span><span class="src">           END-IF</span>
+<span class="ln">405</span><span class="src">           IF  APPL-AOK</span>
+<span class="ln">406</span><span class="src">               CONTINUE</span>
+<span class="ln">407</span><span class="src">           ELSE</span>
+<span class="ln">408</span><span class="src">               DISPLAY &#x27;ERROR READING XREF FILE&#x27;</span>
+<span class="ln">409</span><span class="src">               MOVE XREFFILE-STATUS  TO IO-STATUS</span>
+<span class="ln">410</span><span class="src">               PERFORM 9910-DISPLAY-IO-STATUS</span>
+<span class="ln">411</span><span class="src">               PERFORM 9999-ABEND-PROGRAM</span>
+<span class="ln">412</span><span class="src">           END-IF</span>
+<span class="ln">413</span><span class="src">           EXIT.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:443-460</div><pre data-cite="app/cbl/CBACT04C.cbl:443-460"><span class="ln">443</span><span class="src">       1200-A-GET-DEFAULT-INT-RATE.</span>
+<span class="ln">444</span><span class="src">           READ DISCGRP-FILE INTO DIS-GROUP-RECORD</span>
+<span class="ln">445</span><span class="src"></span>
+<span class="ln">446</span><span class="src">           IF  DISCGRP-STATUS  = &#x27;00&#x27;</span>
+<span class="ln">447</span><span class="src">               MOVE 0 TO APPL-RESULT</span>
+<span class="ln">448</span><span class="src">           ELSE</span>
+<span class="ln">449</span><span class="src">               MOVE 12 TO APPL-RESULT</span>
+<span class="ln">450</span><span class="src">           END-IF</span>
+<span class="ln">451</span><span class="src"></span>
+<span class="ln">452</span><span class="src">           IF  APPL-AOK</span>
+<span class="ln">453</span><span class="src">               CONTINUE</span>
+<span class="ln">454</span><span class="src">           ELSE</span>
+<span class="ln">455</span><span class="src">               DISPLAY &#x27;ERROR READING DEFAULT DISCLOSURE GROUP&#x27;</span>
+<span class="ln">456</span><span class="src">               MOVE DISCGRP-STATUS  TO IO-STATUS</span>
+<span class="ln">457</span><span class="src">               PERFORM 9910-DISPLAY-IO-STATUS</span>
+<span class="ln">458</span><span class="src">               PERFORM 9999-ABEND-PROGRAM</span>
+<span class="ln">459</span><span class="src">           END-IF</span>
+<span class="ln">460</span><span class="src">           EXIT.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:628-632</div><pre data-cite="app/cbl/CBACT04C.cbl:628-632"><span class="ln">628</span><span class="src">       9999-ABEND-PROGRAM.</span>
+<span class="ln">629</span><span class="src">           DISPLAY &#x27;ABENDING PROGRAM&#x27;</span>
+<span class="ln">630</span><span class="src">           MOVE 0 TO TIMING</span>
+<span class="ln">631</span><span class="src">           MOVE 999 TO ABCODE</span>
+<span class="ln">632</span><span class="src">           CALL &#x27;CEE3ABD&#x27; USING ABCODE, TIMING.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:635-648</div><pre data-cite="app/cbl/CBACT04C.cbl:635-648"><span class="ln">635</span><span class="src">       9910-DISPLAY-IO-STATUS.</span>
+<span class="ln">636</span><span class="src">           IF  IO-STATUS NOT NUMERIC</span>
+<span class="ln">637</span><span class="src">           OR  IO-STAT1 = &#x27;9&#x27;</span>
+<span class="ln">638</span><span class="src">               MOVE IO-STAT1 TO IO-STATUS-04(1:1)</span>
+<span class="ln">639</span><span class="src">               MOVE 0        TO TWO-BYTES-BINARY</span>
+<span class="ln">640</span><span class="src">               MOVE IO-STAT2 TO TWO-BYTES-RIGHT</span>
+<span class="ln">641</span><span class="src">               MOVE TWO-BYTES-BINARY TO IO-STATUS-0403</span>
+<span class="ln">642</span><span class="src">               DISPLAY &#x27;FILE STATUS IS: NNNN&#x27; IO-STATUS-04</span>
+<span class="ln">643</span><span class="src">           ELSE</span>
+<span class="ln">644</span><span class="src">               MOVE &#x27;0000&#x27; TO IO-STATUS-04</span>
+<span class="ln">645</span><span class="src">               MOVE IO-STATUS TO IO-STATUS-04(3:2)</span>
+<span class="ln">646</span><span class="src">               DISPLAY &#x27;FILE STATUS IS: NNNN&#x27; IO-STATUS-04</span>
+<span class="ln">647</span><span class="src">           END-IF</span>
+<span class="ln">648</span><span class="src">           EXIT.</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-R08"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article></section>
+<section class="group" id="group-QUIRK"><h2>QUIRK <span class="count" id="count-QUIRK">6</span> <small>behaviour that follows from how the code is written, not confirmed as policy</small></h2>
+<article class="card quirk" id="INT-Q01" data-id="INT-Q01" data-type="QUIRK">
+<header><span class="type">QUIRK</span><span class="rid">INT-Q01</span><h3>Interest is cut off at the cent, not rounded</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">The interest amount is truncated to two decimals towards zero, so 12.355 is charged as 12.35.</p>
+<p class="why"><b>Why it is open:</b> The COMPUTE statement has no ROUNDED phrase; nothing in the estate says truncation was chosen. docs/BASELINE.md:104-106 records it as behaviour to keep for parity, which is not a statement of policy.</p><p class="question"><b>Question for the business:</b> Should monthly interest be cut off at the cent, or rounded?</p><ul class="options"><li><b>A</b> Keep as coded - truncate towards zero</li><li><b>B</b> Round half up to the nearest cent</li><li><b>C</b> Round half to even (banker&#x27;s rounding)</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1300-COMPUTE-INTEREST (COMPUTE without ROUNDED into S9(09)V99) -&gt; no data edge</dd><dt>Fixture cases</dt><dd>i02-tie-half-cent, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:464-465, app/cbl/CBACT04C.cbl:168</dd></dl>
+<details class="excerpt"><summary>Source excerpt (2 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:464-465</div><pre data-cite="app/cbl/CBACT04C.cbl:464-465"><span class="ln">464</span><span class="src">           COMPUTE WS-MONTHLY-INT</span>
+<span class="ln">465</span><span class="src">            = ( TRAN-CAT-BAL * DIS-INT-RATE) / 1200</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:168</div><pre data-cite="app/cbl/CBACT04C.cbl:168"><span class="ln">168</span><span class="src">           05 WS-MONTHLY-INT            PIC S9(09)V99.</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-Q01"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card quirk" id="INT-Q02" data-id="INT-Q02" data-type="QUIRK">
+<header><span class="type">QUIRK</span><span class="rid">INT-Q02</span><h3>Transaction id is the job&#x27;s PARM date plus a counter</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">The transaction id is the ten characters typed into the job&#x27;s PARM followed by a six-digit counter that starts at 000001 in every run.</p>
+<p class="why"><b>Why it is open:</b> The PARM is the literal 2022071800 in the JCL member and the estate does not show who changes it (stream ask A2). Two runs with the same PARM produce the same ids.</p><p class="question"><b>Question for the business:</b> Where should the date part of the interest transaction id come from?</p><ul class="options"><li><b>A</b> Keep as coded - the PARM literal of the job, changed by hand or by the scheduler for each run</li><li><b>B</b> Take it from the date of the run (YYYYMMDD followed by 00)</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 (PARM) -&gt; CBACT04C -&gt; main loop -&gt; 1300-COMPUTE-INTEREST -&gt; 1300-B-WRITE-TX -&gt; D8 (read PARM-DATE) -&gt; D7 (write TRANSACT)</dd><dt>Fixture cases</dt><dd>i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:474-480, app/cbl/CBACT04C.cbl:173, app/cbl/CBACT04C.cbl:176-178, app/jcl/INTCALC.jcl:22</dd></dl>
+<details class="excerpt"><summary>Source excerpt (4 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:474-480</div><pre data-cite="app/cbl/CBACT04C.cbl:474-480"><span class="ln">474</span><span class="src">           ADD 1 TO WS-TRANID-SUFFIX</span>
+<span class="ln">475</span><span class="src"></span>
+<span class="ln">476</span><span class="src">           STRING PARM-DATE,</span>
+<span class="ln">477</span><span class="src">                  WS-TRANID-SUFFIX</span>
+<span class="ln">478</span><span class="src">             DELIMITED BY SIZE</span>
+<span class="ln">479</span><span class="src">             INTO TRAN-ID</span>
+<span class="ln">480</span><span class="src">           END-STRING.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:173</div><pre data-cite="app/cbl/CBACT04C.cbl:173"><span class="ln">173</span><span class="src">           05 WS-TRANID-SUFFIX          PIC 9(06) VALUE 0.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:176-178</div><pre data-cite="app/cbl/CBACT04C.cbl:176-178"><span class="ln">176</span><span class="src">       01  EXTERNAL-PARMS.</span>
+<span class="ln">177</span><span class="src">           05  PARM-LENGTH         PIC S9(04) COMP.</span>
+<span class="ln">178</span><span class="src">           05  PARM-DATE           PIC X(10).</span>
+</pre><div class="cite">app/jcl/INTCALC.jcl:22</div><pre data-cite="app/jcl/INTCALC.jcl:22"><span class="ln">22</span><span class="src">//STEP15 EXEC PGM=CBACT04C,PARM=&#x27;2022071800&#x27;</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-Q02"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card quirk" id="INT-Q03" data-id="INT-Q03" data-type="QUIRK">
+<header><span class="type">QUIRK</span><span class="rid">INT-Q03</span><h3>Timestamps are the moment the job ran</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">The original and the processing timestamp of an interest transaction are both the system clock at the moment the record is written, to the hundredth of a second, not the cycle date.</p>
+<p class="why"><b>Why it is open:</b> A run after midnight or a late rerun stamps a date different from the cycle date in the transaction id; the estate does not say which date statements and reports should show.</p><p class="question"><b>Question for the business:</b> Which date and time should an interest transaction carry?</p><ul class="options"><li><b>A</b> Keep as coded - the system clock of the run</li><li><b>B</b> The cycle date of the PARM at 00.00.00</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1300-COMPUTE-INTEREST -&gt; 1300-B-WRITE-TX -&gt; Z-GET-DB2-FORMAT-TIMESTAMP -&gt; D9 (read system clock) -&gt; D7 (write TRANSACT)</dd><dt>Fixture cases</dt><dd>i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:496-498, app/cbl/CBACT04C.cbl:613-624</dd></dl>
+<details class="excerpt"><summary>Source excerpt (2 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:496-498</div><pre data-cite="app/cbl/CBACT04C.cbl:496-498"><span class="ln">496</span><span class="src">           PERFORM Z-GET-DB2-FORMAT-TIMESTAMP</span>
+<span class="ln">497</span><span class="src">           MOVE DB2-FORMAT-TS        TO TRAN-ORIG-TS</span>
+<span class="ln">498</span><span class="src">           MOVE DB2-FORMAT-TS        TO TRAN-PROC-TS</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:613-624</div><pre data-cite="app/cbl/CBACT04C.cbl:613-624"><span class="ln">613</span><span class="src">       Z-GET-DB2-FORMAT-TIMESTAMP.</span>
+<span class="ln">614</span><span class="src">           MOVE FUNCTION CURRENT-DATE TO COBOL-TS</span>
+<span class="ln">615</span><span class="src">           MOVE COB-YYYY TO DB2-YYYY</span>
+<span class="ln">616</span><span class="src">           MOVE COB-MM   TO DB2-MM</span>
+<span class="ln">617</span><span class="src">           MOVE COB-DD   TO DB2-DD</span>
+<span class="ln">618</span><span class="src">           MOVE COB-HH   TO DB2-HH</span>
+<span class="ln">619</span><span class="src">           MOVE COB-MIN  TO DB2-MIN</span>
+<span class="ln">620</span><span class="src">           MOVE COB-SS   TO DB2-SS</span>
+<span class="ln">621</span><span class="src">           MOVE COB-MIL  TO DB2-MIL</span>
+<span class="ln">622</span><span class="src">           MOVE &#x27;0000&#x27;   TO DB2-REST</span>
+<span class="ln">623</span><span class="src">           MOVE &#x27;-&#x27; TO DB2-STREEP-1 DB2-STREEP-2 DB2-STREEP-3</span>
+<span class="ln">624</span><span class="src">           MOVE &#x27;.&#x27; TO DB2-DOT-1 DB2-DOT-2 DB2-DOT-3</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-Q03"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card quirk" id="INT-Q04" data-id="INT-Q04" data-type="QUIRK">
+<header><span class="type">QUIRK</span><span class="rid">INT-Q04</span><h3>The last account on the file is never updated</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">The account with the highest number on the category-balance file gets its interest transactions, but its current balance is not increased and its cycle amounts are not reset.</p>
+<p class="why"><b>Why it is open:</b> The branch that would update the last account (line 220) sits inside a loop that stops as soon as end of file is seen. The comment on the paragraph and the layout of the IF show the update was intended. docs/BASELINE.md:108 keeps the behaviour for parity only.</p><p class="question"><b>Question for the business:</b> Should the last account on the file have its interest added to its balance like every other account?</p><ul class="options"><li><b>A</b> Keep as coded - the last account is not updated</li><li><b>B</b> Update the last account like the others</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1000-TCATBALF-GET-NEXT (end of file) -&gt; loop ends -&gt; 1050-UPDATE-ACCOUNT not reached -&gt; D5 not written</dd><dt>Fixture cases</dt><dd>i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:188-222, app/cbl/CBACT04C.cbl:339-340</dd></dl>
+<details class="excerpt"><summary>Source excerpt (2 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:188-222</div><pre data-cite="app/cbl/CBACT04C.cbl:188-222"><span class="ln">188</span><span class="src">           PERFORM UNTIL END-OF-FILE = &#x27;Y&#x27;</span>
+<span class="ln">189</span><span class="src">               IF  END-OF-FILE = &#x27;N&#x27;</span>
+<span class="ln">190</span><span class="src">                   PERFORM 1000-TCATBALF-GET-NEXT</span>
+<span class="ln">191</span><span class="src">                   IF  END-OF-FILE = &#x27;N&#x27;</span>
+<span class="ln">192</span><span class="src">                     ADD 1 TO WS-RECORD-COUNT</span>
+<span class="ln">193</span><span class="src">                     DISPLAY TRAN-CAT-BAL-RECORD</span>
+<span class="ln">194</span><span class="src">                     IF TRANCAT-ACCT-ID NOT= WS-LAST-ACCT-NUM</span>
+<span class="ln">195</span><span class="src">                       IF WS-FIRST-TIME NOT = &#x27;Y&#x27;</span>
+<span class="ln">196</span><span class="src">                          PERFORM 1050-UPDATE-ACCOUNT</span>
+<span class="ln">197</span><span class="src">                       ELSE</span>
+<span class="ln">198</span><span class="src">                          MOVE &#x27;N&#x27; TO WS-FIRST-TIME</span>
+<span class="ln">199</span><span class="src">                       END-IF</span>
+<span class="ln">200</span><span class="src">                       MOVE 0 TO WS-TOTAL-INT</span>
+<span class="ln">201</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO WS-LAST-ACCT-NUM</span>
+<span class="ln">202</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO FD-ACCT-ID</span>
+<span class="ln">203</span><span class="src">                       PERFORM 1100-GET-ACCT-DATA</span>
+<span class="ln">204</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO FD-XREF-ACCT-ID</span>
+<span class="ln">205</span><span class="src">                       PERFORM 1110-GET-XREF-DATA</span>
+<span class="ln">206</span><span class="src">                     END-IF</span>
+<span class="ln">207</span><span class="src">      *              DISPLAY &#x27;ACCT-GROUP-ID: &#x27; ACCT-GROUP-ID</span>
+<span class="ln">208</span><span class="src">      *              DISPLAY &#x27;TRANCAT-CD: &#x27; TRANCAT-CD</span>
+<span class="ln">209</span><span class="src">      *              DISPLAY &#x27;TRANCAT-TYPE-CD: &#x27; TRANCAT-TYPE-CD</span>
+<span class="ln">210</span><span class="src">                     MOVE ACCT-GROUP-ID TO FD-DIS-ACCT-GROUP-ID</span>
+<span class="ln">211</span><span class="src">                     MOVE TRANCAT-CD TO FD-DIS-TRAN-CAT-CD</span>
+<span class="ln">212</span><span class="src">                     MOVE TRANCAT-TYPE-CD TO FD-DIS-TRAN-TYPE-CD</span>
+<span class="ln">213</span><span class="src">                     PERFORM 1200-GET-INTEREST-RATE</span>
+<span class="ln">214</span><span class="src">                     IF DIS-INT-RATE NOT = 0</span>
+<span class="ln">215</span><span class="src">                       PERFORM 1300-COMPUTE-INTEREST</span>
+<span class="ln">216</span><span class="src">                       PERFORM 1400-COMPUTE-FEES</span>
+<span class="ln">217</span><span class="src">                     END-IF</span>
+<span class="ln">218</span><span class="src">                   END-IF</span>
+<span class="ln">219</span><span class="src">               ELSE</span>
+<span class="ln">220</span><span class="src">                    PERFORM 1050-UPDATE-ACCOUNT</span>
+<span class="ln">221</span><span class="src">               END-IF</span>
+<span class="ln">222</span><span class="src">           END-PERFORM.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:339-340</div><pre data-cite="app/cbl/CBACT04C.cbl:339-340"><span class="ln">339</span><span class="src">               IF  APPL-EOF</span>
+<span class="ln">340</span><span class="src">                   MOVE &#x27;Y&#x27; TO END-OF-FILE</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-Q04"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card quirk" id="INT-Q05" data-id="INT-Q05" data-type="QUIRK">
+<header><span class="type">QUIRK</span><span class="rid">INT-Q05</span><h3>Credit balances earn negative interest</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">A negative (credit) balance with a non-zero rate produces a negative interest transaction that lowers the account balance.</p>
+<p class="why"><b>Why it is open:</b> The program tests only the rate, never the sign of the balance, so the formula simply runs on a negative number. The same holds for a negative rate. Nothing in the estate says the bank pays interest on credit balances.</p><p class="question"><b>Question for the business:</b> Should a credit balance be paid interest at the lending rate?</p><ul class="options"><li><b>A</b> Keep as coded - negative interest is posted</li><li><b>B</b> No interest and no transaction on a credit balance</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1300-COMPUTE-INTEREST -&gt; 1300-B-WRITE-TX -&gt; D7 (write TRANSACT); later 1050-UPDATE-ACCOUNT -&gt; D5</dd><dt>Fixture cases</dt><dd>i06-negative-balance</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:214-217, app/cbl/CBACT04C.cbl:464-467, app/cbl/CBACT04C.cbl:490</dd></dl>
+<details class="excerpt"><summary>Source excerpt (3 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:214-217</div><pre data-cite="app/cbl/CBACT04C.cbl:214-217"><span class="ln">214</span><span class="src">                     IF DIS-INT-RATE NOT = 0</span>
+<span class="ln">215</span><span class="src">                       PERFORM 1300-COMPUTE-INTEREST</span>
+<span class="ln">216</span><span class="src">                       PERFORM 1400-COMPUTE-FEES</span>
+<span class="ln">217</span><span class="src">                     END-IF</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:464-467</div><pre data-cite="app/cbl/CBACT04C.cbl:464-467"><span class="ln">464</span><span class="src">           COMPUTE WS-MONTHLY-INT</span>
+<span class="ln">465</span><span class="src">            = ( TRAN-CAT-BAL * DIS-INT-RATE) / 1200</span>
+<span class="ln">466</span><span class="src"></span>
+<span class="ln">467</span><span class="src">           ADD WS-MONTHLY-INT  TO WS-TOTAL-INT</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:490</div><pre data-cite="app/cbl/CBACT04C.cbl:490"><span class="ln">490</span><span class="src">           MOVE WS-MONTHLY-INT       TO TRAN-AMT</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-Q05"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card quirk" id="INT-Q06" data-id="INT-Q06" data-type="QUIRK">
+<header><span class="type">QUIRK</span><span class="rid">INT-Q06</span><h3>Interest of 0.00 is still posted</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">A balance with a non-zero rate whose interest is less than one cent still produces an interest transaction of 0.00.</p>
+<p class="why"><b>Why it is open:</b> Only the rate is tested for zero, not the computed amount.</p><p class="question"><b>Question for the business:</b> Should a zero-amount interest transaction be written?</p><ul class="options"><li><b>A</b> Keep as coded - write the 0.00 transaction</li><li><b>B</b> Write nothing when the interest is 0.00</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1300-COMPUTE-INTEREST -&gt; 1300-B-WRITE-TX -&gt; D7 (write TRANSACT)</dd><dt>Fixture cases</dt><dd>none - No fixture has a balance small enough; the behaviour is read from the code only.</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:214-217, app/cbl/CBACT04C.cbl:464-468</dd></dl>
+<details class="excerpt"><summary>Source excerpt (2 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:214-217</div><pre data-cite="app/cbl/CBACT04C.cbl:214-217"><span class="ln">214</span><span class="src">                     IF DIS-INT-RATE NOT = 0</span>
+<span class="ln">215</span><span class="src">                       PERFORM 1300-COMPUTE-INTEREST</span>
+<span class="ln">216</span><span class="src">                       PERFORM 1400-COMPUTE-FEES</span>
+<span class="ln">217</span><span class="src">                     END-IF</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:464-468</div><pre data-cite="app/cbl/CBACT04C.cbl:464-468"><span class="ln">464</span><span class="src">           COMPUTE WS-MONTHLY-INT</span>
+<span class="ln">465</span><span class="src">            = ( TRAN-CAT-BAL * DIS-INT-RATE) / 1200</span>
+<span class="ln">466</span><span class="src"></span>
+<span class="ln">467</span><span class="src">           ADD WS-MONTHLY-INT  TO WS-TOTAL-INT</span>
+<span class="ln">468</span><span class="src">           PERFORM 1300-B-WRITE-TX.</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-Q06"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article></section>
+<section class="group" id="group-HOLE"><h2>HOLE <span class="count" id="count-HOLE">6</span> <small>a case the code does not handle or the estate does not show</small></h2>
+<article class="card hole" id="INT-H01" data-id="INT-H01" data-type="HOLE">
+<header><span class="type">HOLE</span><span class="rid">INT-H01</span><h3>Fees are announced but not calculated</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">The job says it computes interest and fees, but the fee step is empty and no fee is ever charged.</p>
+<p class="why"><b>Why it is open:</b> The estate holds no fee rule (stream ask A8).</p><p class="question"><b>Question for the business:</b> Are fees charged anywhere else, or is a fee rule missing from this job?</p><ul class="options"><li><b>A</b> No fees in this job (as coded)</li><li><b>B</b> Fees belong here - the business supplies the fee rule</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1400-COMPUTE-FEES (empty, &quot;To be implemented&quot;) -&gt; no data edge</dd><dt>Fixture cases</dt><dd>i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding</dd>
+<dt>Source</dt><dd>app/jcl/INTCALC.jcl:20, app/cbl/CBACT04C.cbl:215-216, app/cbl/CBACT04C.cbl:518-520</dd></dl>
+<details class="excerpt"><summary>Source excerpt (3 citations)</summary>
+<div class="cite">app/jcl/INTCALC.jcl:20</div><pre data-cite="app/jcl/INTCALC.jcl:20"><span class="ln">20</span><span class="src">//* Process transaction balance file and compute interest and fees.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:215-216</div><pre data-cite="app/cbl/CBACT04C.cbl:215-216"><span class="ln">215</span><span class="src">                       PERFORM 1300-COMPUTE-INTEREST</span>
+<span class="ln">216</span><span class="src">                       PERFORM 1400-COMPUTE-FEES</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:518-520</div><pre data-cite="app/cbl/CBACT04C.cbl:518-520"><span class="ln">518</span><span class="src">       1400-COMPUTE-FEES.</span>
+<span class="ln">519</span><span class="src">      * To be implemented</span>
+<span class="ln">520</span><span class="src">           EXIT.</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-H01"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card hole" id="INT-H02" data-id="INT-H02" data-type="HOLE">
+<header><span class="type">HOLE</span><span class="rid">INT-H02</span><h3>Nothing prevents charging the same interest twice</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">The job does not mark or clear the balances it has charged, so a second run, or a rerun after a failure part-way, charges interest again on accounts already updated.</p>
+<p class="why"><b>Why it is open:</b> TCATBALF is opened for input only; account rewrites are not backed out on an abend; the scheduler definition allows reruns. The rerun procedure is not in the estate (stream asks A4 and A6, unproven orderings U2, U3, U5).</p><p class="question"><b>Question for the business:</b> What stops a second run in the same cycle, and how is a failed run restarted?</p><ul class="options"><li><b>A</b> Operations procedure only (as the estate shows) - restore the account file and rerun from the start</li><li><b>B</b> The new job must refuse or skip accounts already charged in the cycle</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; 0000-TCATBALF-OPEN (INPUT only) ... 1050-UPDATE-ACCOUNT -&gt; D5 (rewrite, no checkpoint); a failure goes 9999-ABEND-PROGRAM with accounts already rewritten</dd><dt>Fixture cases</dt><dd>none - Every fixture is one clean run.</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:28-32, app/cbl/CBACT04C.cbl:236, app/cbl/CBACT04C.cbl:350-356, app/jcl/INTCALC.jcl:37-41, app/scheduler/CardDemo.controlm:69-74</dd></dl>
+<details class="excerpt"><summary>Source excerpt (5 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:28-32</div><pre data-cite="app/cbl/CBACT04C.cbl:28-32"><span class="ln">28</span><span class="src">           SELECT TCATBAL-FILE ASSIGN TO TCATBALF</span>
+<span class="ln">29</span><span class="src">                  ORGANIZATION IS INDEXED</span>
+<span class="ln">30</span><span class="src">                  ACCESS MODE  IS SEQUENTIAL</span>
+<span class="ln">31</span><span class="src">                  RECORD KEY   IS FD-TRAN-CAT-KEY</span>
+<span class="ln">32</span><span class="src">                  FILE STATUS  IS TCATBALF-STATUS.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:236</div><pre data-cite="app/cbl/CBACT04C.cbl:236"><span class="ln">236</span><span class="src">           OPEN INPUT TCATBAL-FILE</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:350-356</div><pre data-cite="app/cbl/CBACT04C.cbl:350-356"><span class="ln">350</span><span class="src">       1050-UPDATE-ACCOUNT.</span>
+<span class="ln">351</span><span class="src">      * Update the balances in account record to reflect posted trans.</span>
+<span class="ln">352</span><span class="src">           ADD WS-TOTAL-INT  TO ACCT-CURR-BAL</span>
+<span class="ln">353</span><span class="src">           MOVE 0 TO ACCT-CURR-CYC-CREDIT</span>
+<span class="ln">354</span><span class="src">           MOVE 0 TO ACCT-CURR-CYC-DEBIT</span>
+<span class="ln">355</span><span class="src"></span>
+<span class="ln">356</span><span class="src">           REWRITE FD-ACCTFILE-REC FROM  ACCOUNT-RECORD</span>
+</pre><div class="cite">app/jcl/INTCALC.jcl:37-41</div><pre data-cite="app/jcl/INTCALC.jcl:37-41"><span class="ln">37</span><span class="src">//TRANSACT DD DISP=(NEW,CATLG,DELETE),</span>
+<span class="ln">38</span><span class="src">//         UNIT=SYSDA,</span>
+<span class="ln">39</span><span class="src">//         DCB=(RECFM=F,LRECL=350,BLKSIZE=0),</span>
+<span class="ln">40</span><span class="src">//         SPACE=(CYL,(1,1),RLSE),</span>
+<span class="ln">41</span><span class="src">//         DSN=AWS.M2.CARDDEMO.SYSTRAN(+1)</span>
+</pre><div class="cite">app/scheduler/CardDemo.controlm:69-74</div><pre data-cite="app/scheduler/CardDemo.controlm:69-74"><span class="ln">69</span><span class="src">		&lt;JOB JOBISN=&quot;2&quot; APPLICATION=&quot;CARD-DEMO&quot; SUB_APPLICATION=&quot;CTRLM&quot; JOBNAME=&quot;INTCALC&quot; MEMNAME=&quot;INTCALC&quot; DESCRIPTION=&quot;MONTHLY INTCALC&quot; CREATED_BY=&quot;XUEMINGH&quot; RUN_AS=&quot;xuemingh&quot; CRITICAL=&quot;0&quot; TASKTYPE=&quot;Job&quot; CYCLIC=&quot;0&quot; CONFIRM=&quot;0&quot; RETRO=&quot;0&quot; MAXWAIT=&quot;7&quot; MAXRERUN=&quot;5&quot; AUTOARCH=&quot;1&quot; MAXDAYS=&quot;0&quot; MAXRUNS=&quot;0&quot; TIMETO=&quot;23:00&quot; JAN=&quot;1&quot; FEB=&quot;1&quot; MAR=&quot;1&quot; APR=&quot;1&quot; MAY=&quot;1&quot; JUN=&quot;1&quot; JUL=&quot;1&quot; AUG=&quot;1&quot; SEP=&quot;1&quot; OCT=&quot;1&quot; NOV=&quot;1&quot; DEC=&quot;1&quot; DAYS_AND_OR=&quot;O&quot; SYSDB=&quot;1&quot; IND_CYCLIC=&quot;S&quot; CREATION_USER=&quot;emuser&quot; CREATION_DATE=&quot;20250909&quot; CREATION_TIME=&quot;120700&quot; CHANGE_USERID=&quot;xuemingh&quot; CHANGE_DATE=&quot;20250909&quot; CHANGE_TIME=&quot;120700&quot; JOB_VERSION=&quot;01.00&quot; RULE_BASED_CALENDAR_RELATIONSHIP=&quot;O&quot; APPL_TYPE=&quot;OS&quot; MULTY_AGENT=&quot;N&quot; USE_INSTREAM_JCL=&quot;N&quot; VERSION_OPCODE=&quot;N&quot; IS_CURRENT_VERSION=&quot;Y&quot; VERSION_SERIAL=&quot;1&quot; VERSION_HOST=&quot;MY-HOST&quot; CYCLIC_TOLERANCE=&quot;0&quot; CYCLIC_TYPE=&quot;C&quot; PARENT_FOLDER=&quot;MONTHLY-InterestCalculation&quot; END_FOLDER=&quot;N&quot;&gt;</span>
+<span class="ln">70</span><span class="src">			&lt;INCOND NAME=&quot;MONTHLY-InterestCalculation-CLOSEFIL&quot; ODATE=&quot;ODAT&quot; AND_OR=&quot;A&quot; /&gt;</span>
+<span class="ln">71</span><span class="src">			&lt;OUTCOND NAME=&quot;MONTHLY-InterestCalculation-CLOSEFIL&quot; ODATE=&quot;ODAT&quot; SIGN=&quot;-&quot; /&gt;</span>
+<span class="ln">72</span><span class="src">			&lt;OUTCOND NAME=&quot;MONTHLY-InterestCalculation-INTCALC&quot; ODATE=&quot;ODAT&quot; SIGN=&quot;+&quot; /&gt;</span>
+<span class="ln">73</span><span class="src">			&lt;RULE_BASED_CALENDARS NAME=&quot;*&quot; /&gt;</span>
+<span class="ln">74</span><span class="src">		&lt;/JOB&gt;</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-H02"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card hole" id="INT-H03" data-id="INT-H03" data-type="HOLE">
+<header><span class="type">HOLE</span><span class="rid">INT-H03</span><h3>Account with more than one card</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">When an account has several cards, the code does not say which card number is put on the interest transaction, and the run may stop.</p>
+<p class="why"><b>Why it is open:</b> The alternate index is defined NONUNIQUEKEY but the program&#x27;s SELECT does not say WITH DUPLICATES and accepts only status 00; a duplicate-key read normally returns status 02, which this program treats as an error. Which DD the read uses is itself a candidate edge (D3, stream ask A5).</p><p class="question"><b>Question for the business:</b> Which card number belongs on the interest transaction of an account with several cards?</p><ul class="options"><li><b>A</b> The first card in card-number order</li><li><b>B</b> The run stops with abend 999 (duplicate key status is not accepted)</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1110-GET-XREF-DATA -&gt; D2/D3 (read XREFFILE by alternate key account id)</dd><dt>Fixture cases</dt><dd>none - Every fixture has exactly one card per account.</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:34-39, app/cbl/CBACT04C.cbl:393-404, app/jcl/XREFFILE.jcl:72-75</dd></dl>
+<details class="excerpt"><summary>Source excerpt (3 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:34-39</div><pre data-cite="app/cbl/CBACT04C.cbl:34-39"><span class="ln">34</span><span class="src">           SELECT XREF-FILE ASSIGN TO   XREFFILE</span>
+<span class="ln">35</span><span class="src">                  ORGANIZATION IS INDEXED</span>
+<span class="ln">36</span><span class="src">                  ACCESS MODE  IS RANDOM</span>
+<span class="ln">37</span><span class="src">                  RECORD KEY   IS FD-XREF-CARD-NUM</span>
+<span class="ln">38</span><span class="src">                  ALTERNATE RECORD KEY IS FD-XREF-ACCT-ID</span>
+<span class="ln">39</span><span class="src">                  FILE STATUS  IS XREFFILE-STATUS.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:393-404</div><pre data-cite="app/cbl/CBACT04C.cbl:393-404"><span class="ln">393</span><span class="src">       1110-GET-XREF-DATA.</span>
+<span class="ln">394</span><span class="src">           READ XREF-FILE INTO CARD-XREF-RECORD</span>
+<span class="ln">395</span><span class="src">            KEY IS FD-XREF-ACCT-ID</span>
+<span class="ln">396</span><span class="src">               INVALID KEY</span>
+<span class="ln">397</span><span class="src">                  DISPLAY &#x27;ACCOUNT NOT FOUND: &#x27; FD-XREF-ACCT-ID</span>
+<span class="ln">398</span><span class="src">           END-READ</span>
+<span class="ln">399</span><span class="src"></span>
+<span class="ln">400</span><span class="src">           IF  XREFFILE-STATUS   = &#x27;00&#x27;</span>
+<span class="ln">401</span><span class="src">               MOVE 0 TO APPL-RESULT</span>
+<span class="ln">402</span><span class="src">           ELSE</span>
+<span class="ln">403</span><span class="src">               MOVE 12 TO APPL-RESULT</span>
+<span class="ln">404</span><span class="src">           END-IF</span>
+</pre><div class="cite">app/jcl/XREFFILE.jcl:72-75</div><pre data-cite="app/jcl/XREFFILE.jcl:72-75"><span class="ln">72</span><span class="src">   DEFINE ALTERNATEINDEX (NAME(AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX)-</span>
+<span class="ln">73</span><span class="src">   RELATE(AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS)                    -</span>
+<span class="ln">74</span><span class="src">   KEYS(11,25)                                                   -</span>
+<span class="ln">75</span><span class="src">   NONUNIQUEKEY                                                  -</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-H03"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card hole" id="INT-H04" data-id="INT-H04" data-type="HOLE">
+<header><span class="type">HOLE</span><span class="rid">INT-H04</span><h3>Closed or expired accounts are charged like any other</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">The job never looks at the account&#x27;s active flag or expiry date, so closed and expired accounts are charged interest.</p>
+<p class="why"><b>Why it is open:</b> No statement reads ACCT-ACTIVE-STATUS or ACCT-EXPIRAION-DATE.</p><p class="question"><b>Question for the business:</b> Should an inactive account still be charged interest on its balances?</p><ul class="options"><li><b>A</b> Yes - charge every account with a balance (as coded)</li><li><b>B</b> No - skip accounts whose active flag is not Y</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1100-GET-ACCT-DATA -&gt; D4 (read ACCTFILE); no test follows the read</dd><dt>Fixture cases</dt><dd>none - Every fixture account is active (ACCT-ACTIVE-STATUS = Y).</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:202-203, app/cbl/CBACT04C.cbl:372-376, app/cpy/CVACT01Y.cpy:6</dd></dl>
+<details class="excerpt"><summary>Source excerpt (3 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:202-203</div><pre data-cite="app/cbl/CBACT04C.cbl:202-203"><span class="ln">202</span><span class="src">                       MOVE TRANCAT-ACCT-ID TO FD-ACCT-ID</span>
+<span class="ln">203</span><span class="src">                       PERFORM 1100-GET-ACCT-DATA</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:372-376</div><pre data-cite="app/cbl/CBACT04C.cbl:372-376"><span class="ln">372</span><span class="src">       1100-GET-ACCT-DATA.</span>
+<span class="ln">373</span><span class="src">           READ ACCOUNT-FILE INTO ACCOUNT-RECORD</span>
+<span class="ln">374</span><span class="src">               INVALID KEY</span>
+<span class="ln">375</span><span class="src">                  DISPLAY &#x27;ACCOUNT NOT FOUND: &#x27; FD-ACCT-ID</span>
+<span class="ln">376</span><span class="src">           END-READ</span>
+</pre><div class="cite">app/cpy/CVACT01Y.cpy:6</div><pre data-cite="app/cpy/CVACT01Y.cpy:6"><span class="ln">6</span><span class="src">           05  ACCT-ACTIVE-STATUS                PIC X(01).</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-H04"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card hole" id="INT-H05" data-id="INT-H05" data-type="HOLE">
+<header><span class="type">HOLE</span><span class="rid">INT-H05</span><h3>Amounts and counters larger than their fields</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">Interest above 999,999,999.99 or more than 999,999 interest transactions in one run do not fit their fields, and the code does not check for it.</p>
+<p class="why"><b>Why it is open:</b> COMPUTE and ADD have no ON SIZE ERROR; the leading digits would be lost silently and the counter would start again at 000000.</p><p class="question"><b>Question for the business:</b> Are these limits acceptable, and what should happen if one is reached?</p><ul class="options"><li><b>A</b> Accept the limits; stop the run if one is reached</li><li><b>B</b> Widen the fields in the new system</li></ul>
+<dl><dt>Call path</dt><dd>INTCALC.STEP15 -&gt; CBACT04C -&gt; main loop -&gt; 1300-COMPUTE-INTEREST / 1300-B-WRITE-TX -&gt; D7 (write TRANSACT)</dd><dt>Fixture cases</dt><dd>none - No fixture approaches the limits.</dd>
+<dt>Source</dt><dd>app/cbl/CBACT04C.cbl:168-169, app/cbl/CBACT04C.cbl:173, app/cbl/CBACT04C.cbl:464-465, app/cbl/CBACT04C.cbl:474</dd></dl>
+<details class="excerpt"><summary>Source excerpt (4 citations)</summary>
+<div class="cite">app/cbl/CBACT04C.cbl:168-169</div><pre data-cite="app/cbl/CBACT04C.cbl:168-169"><span class="ln">168</span><span class="src">           05 WS-MONTHLY-INT            PIC S9(09)V99.</span>
+<span class="ln">169</span><span class="src">           05 WS-TOTAL-INT              PIC S9(09)V99.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:173</div><pre data-cite="app/cbl/CBACT04C.cbl:173"><span class="ln">173</span><span class="src">           05 WS-TRANID-SUFFIX          PIC 9(06) VALUE 0.</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:464-465</div><pre data-cite="app/cbl/CBACT04C.cbl:464-465"><span class="ln">464</span><span class="src">           COMPUTE WS-MONTHLY-INT</span>
+<span class="ln">465</span><span class="src">            = ( TRAN-CAT-BAL * DIS-INT-RATE) / 1200</span>
+</pre><div class="cite">app/cbl/CBACT04C.cbl:474</div><pre data-cite="app/cbl/CBACT04C.cbl:474"><span class="ln">474</span><span class="src">           ADD 1 TO WS-TRANID-SUFFIX</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-H05"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article>
+<article class="card hole" id="INT-H06" data-id="INT-H06" data-type="HOLE">
+<header><span class="type">HOLE</span><span class="rid">INT-H06</span><h3>Order against posting and the reload of the inputs</h3>
+<span class="decision" data-role="decision">UNDECIDED</span></header>
+<p class="statement">The estate does not show whether interest runs before or after the day&#x27;s posting or the reload of the balance and rate files, so which balances and rates a run sees is not defined.</p>
+<p class="why"><b>Why it is open:</b> Stream asks A3, A6 and A7 and unproven orderings U1-U4 and U6; the two scheduler exports do not order INTCALC against POSTTRAN.</p><p class="question"><b>Question for the business:</b> In which order do posting, the file reloads and the interest run happen, and on which day of the month?</p><ul class="options"><li><b>A</b> Interest runs after the last posting of the cycle, inputs not reloaded in between</li><li><b>B</b> Another order, stated by operations</li></ul>
+<dl><dt>Call path</dt><dd>scheduler folder MONTHLY-InterestCalculation -&gt; INTCALC.STEP15 -&gt; D1, D4, D6 (inputs shared with POSTTRAN, TCATBALF and DISCGRP jobs outside the stream)</dd><dt>Fixture cases</dt><dd>none - Fixtures load fixed inputs; job order is not part of a case.</dd>
+<dt>Source</dt><dd>app/scheduler/CardDemo.controlm:69-74, app/jcl/INTCALC.jcl:27-36</dd></dl>
+<details class="excerpt"><summary>Source excerpt (2 citations)</summary>
+<div class="cite">app/scheduler/CardDemo.controlm:69-74</div><pre data-cite="app/scheduler/CardDemo.controlm:69-74"><span class="ln">69</span><span class="src">		&lt;JOB JOBISN=&quot;2&quot; APPLICATION=&quot;CARD-DEMO&quot; SUB_APPLICATION=&quot;CTRLM&quot; JOBNAME=&quot;INTCALC&quot; MEMNAME=&quot;INTCALC&quot; DESCRIPTION=&quot;MONTHLY INTCALC&quot; CREATED_BY=&quot;XUEMINGH&quot; RUN_AS=&quot;xuemingh&quot; CRITICAL=&quot;0&quot; TASKTYPE=&quot;Job&quot; CYCLIC=&quot;0&quot; CONFIRM=&quot;0&quot; RETRO=&quot;0&quot; MAXWAIT=&quot;7&quot; MAXRERUN=&quot;5&quot; AUTOARCH=&quot;1&quot; MAXDAYS=&quot;0&quot; MAXRUNS=&quot;0&quot; TIMETO=&quot;23:00&quot; JAN=&quot;1&quot; FEB=&quot;1&quot; MAR=&quot;1&quot; APR=&quot;1&quot; MAY=&quot;1&quot; JUN=&quot;1&quot; JUL=&quot;1&quot; AUG=&quot;1&quot; SEP=&quot;1&quot; OCT=&quot;1&quot; NOV=&quot;1&quot; DEC=&quot;1&quot; DAYS_AND_OR=&quot;O&quot; SYSDB=&quot;1&quot; IND_CYCLIC=&quot;S&quot; CREATION_USER=&quot;emuser&quot; CREATION_DATE=&quot;20250909&quot; CREATION_TIME=&quot;120700&quot; CHANGE_USERID=&quot;xuemingh&quot; CHANGE_DATE=&quot;20250909&quot; CHANGE_TIME=&quot;120700&quot; JOB_VERSION=&quot;01.00&quot; RULE_BASED_CALENDAR_RELATIONSHIP=&quot;O&quot; APPL_TYPE=&quot;OS&quot; MULTY_AGENT=&quot;N&quot; USE_INSTREAM_JCL=&quot;N&quot; VERSION_OPCODE=&quot;N&quot; IS_CURRENT_VERSION=&quot;Y&quot; VERSION_SERIAL=&quot;1&quot; VERSION_HOST=&quot;MY-HOST&quot; CYCLIC_TOLERANCE=&quot;0&quot; CYCLIC_TYPE=&quot;C&quot; PARENT_FOLDER=&quot;MONTHLY-InterestCalculation&quot; END_FOLDER=&quot;N&quot;&gt;</span>
+<span class="ln">70</span><span class="src">			&lt;INCOND NAME=&quot;MONTHLY-InterestCalculation-CLOSEFIL&quot; ODATE=&quot;ODAT&quot; AND_OR=&quot;A&quot; /&gt;</span>
+<span class="ln">71</span><span class="src">			&lt;OUTCOND NAME=&quot;MONTHLY-InterestCalculation-CLOSEFIL&quot; ODATE=&quot;ODAT&quot; SIGN=&quot;-&quot; /&gt;</span>
+<span class="ln">72</span><span class="src">			&lt;OUTCOND NAME=&quot;MONTHLY-InterestCalculation-INTCALC&quot; ODATE=&quot;ODAT&quot; SIGN=&quot;+&quot; /&gt;</span>
+<span class="ln">73</span><span class="src">			&lt;RULE_BASED_CALENDARS NAME=&quot;*&quot; /&gt;</span>
+<span class="ln">74</span><span class="src">		&lt;/JOB&gt;</span>
+</pre><div class="cite">app/jcl/INTCALC.jcl:27-36</div><pre data-cite="app/jcl/INTCALC.jcl:27-36"><span class="ln">27</span><span class="src">//TCATBALF DD DISP=SHR,</span>
+<span class="ln">28</span><span class="src">//         DSN=AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS</span>
+<span class="ln">29</span><span class="src">//XREFFILE DD DISP=SHR,</span>
+<span class="ln">30</span><span class="src">//         DSN=AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS</span>
+<span class="ln">31</span><span class="src">//XREFFIL1 DD DISP=SHR,</span>
+<span class="ln">32</span><span class="src">//         DSN=AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH</span>
+<span class="ln">33</span><span class="src">//ACCTFILE DD DISP=SHR,</span>
+<span class="ln">34</span><span class="src">//         DSN=AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS</span>
+<span class="ln">35</span><span class="src">//DISCGRP  DD DISP=SHR,</span>
+<span class="ln">36</span><span class="src">//         DSN=AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS</span>
+</pre></details>
+<div class="controls">
+<button type="button" class="approve" data-role="approve">Approve</button>
+<button type="button" class="reject" data-role="reject">Reject</button>
+<label class="commentLabel">Comment <textarea data-role="comment" rows="2" aria-label="Comment on INT-H06"></textarea></label>
+<button type="button" data-role="saveComment">Save comment</button>
+<span class="meta" data-role="meta"></span>
+</div>
+<p class="cardError" data-role="error" role="alert" hidden></p>
+</article></section>
+<section class="appendix"><h2>Coverage and technical notes</h2>
+<details id="paths"><summary>Paths walked from the job step</summary><table><thead><tr><th>Path</th><th>Walk</th><th>Decides or computes</th><th>Rules</th></tr></thead><tbody><tr><td>P01</td><td>INTCALC.STEP15 -&gt; CBACT04C entry (C1, C2, D8)</td><td>which program runs and the PARM it receives</td><td>INT-Q02</td></tr><tr><td>P02</td><td>entry -&gt; 0000-TCATBALF-OPEN -&gt; D1</td><td>nothing; open for input</td><td>covered: no policy - file open (INT-T01)</td></tr><tr><td>P03</td><td>0000..0400-*-OPEN, status not 00 -&gt; 9910 -&gt; 9999 -&gt; C3</td><td>run stops with 999</td><td>INT-R08</td></tr><tr><td>P04</td><td>entry -&gt; 0100-XREFFILE-OPEN -&gt; D2</td><td>nothing; open for input</td><td>covered: no policy - file open (INT-T01)</td></tr><tr><td>P05</td><td>entry -&gt; 0200-DISCGRP-OPEN -&gt; D6</td><td>nothing; open for input</td><td>covered: no policy - file open (INT-T01, INT-T10)</td></tr><tr><td>P06</td><td>entry -&gt; 0300-ACCTFILE-OPEN -&gt; D4/D5</td><td>nothing; open for update</td><td>covered: no policy - file open (INT-T01)</td></tr><tr><td>P07</td><td>entry -&gt; 0400-TRANFILE-OPEN -&gt; D7</td><td>nothing; open for output</td><td>covered: no policy - file open (INT-T01)</td></tr><tr><td>P08</td><td>loop -&gt; 1000-TCATBALF-GET-NEXT -&gt; D1, status 00</td><td>next balance in key order; record echoed to SYSOUT (D10)</td><td>INT-R01</td></tr><tr><td>P09</td><td>loop -&gt; 1000-TCATBALF-GET-NEXT -&gt; D1, status 10 (end of file)</td><td>loop ends; last account not updated</td><td>INT-Q04</td></tr><tr><td>P10</td><td>loop -&gt; 1000-TCATBALF-GET-NEXT -&gt; D1, other status -&gt; 9910 -&gt; 9999 -&gt; C3</td><td>run stops with 999</td><td>INT-R08, INT-H02</td></tr><tr><td>P11</td><td>loop, first record (WS-FIRST-TIME = Y)</td><td>no account to update yet</td><td>covered: no policy - first-record switch that suppresses the update before any account was read</td></tr><tr><td>P12</td><td>loop, account id changes -&gt; 1050-UPDATE-ACCOUNT -&gt; D5 (rewrite)</td><td>interest added to balance, cycle amounts reset</td><td>INT-R07</td></tr><tr><td>P13</td><td>1050-UPDATE-ACCOUNT, rewrite status not 00 -&gt; 9910 -&gt; 9999 -&gt; C3</td><td>run stops with 999</td><td>INT-R08, INT-H02</td></tr><tr><td>P14</td><td>loop, account id changes -&gt; 1100-GET-ACCT-DATA -&gt; D4, found</td><td>account&#x27;s disclosure group</td><td>INT-R02, INT-H04</td></tr><tr><td>P15</td><td>1100-GET-ACCT-DATA -&gt; D4, not found or error -&gt; 9910 -&gt; 9999 -&gt; C3</td><td>run stops with 999</td><td>INT-R08, INT-H02</td></tr><tr><td>P16</td><td>loop, account id changes -&gt; 1110-GET-XREF-DATA -&gt; D2/D3, found</td><td>card number for the transaction</td><td>INT-R06, INT-H03</td></tr><tr><td>P17</td><td>1110-GET-XREF-DATA -&gt; D2/D3, not found or error -&gt; 9910 -&gt; 9999 -&gt; C3</td><td>run stops with 999</td><td>INT-R08, INT-H03</td></tr><tr><td>P18</td><td>loop -&gt; 1200-GET-INTEREST-RATE -&gt; D6, found</td><td>rate for group, type, category</td><td>INT-R02</td></tr><tr><td>P19</td><td>1200-GET-INTEREST-RATE -&gt; D6, status 23 -&gt; 1200-A-GET-DEFAULT-INT-RATE -&gt; D6, found</td><td>rate of group DEFAULT</td><td>INT-R03</td></tr><tr><td>P20</td><td>1200-A-GET-DEFAULT-INT-RATE -&gt; D6, not found or error -&gt; 9910 -&gt; 9999 -&gt; C3</td><td>run stops with 999</td><td>INT-R08</td></tr><tr><td>P21</td><td>1200-GET-INTEREST-RATE -&gt; D6, status other than 00 or 23 -&gt; 9910 -&gt; 9999 -&gt; C3</td><td>run stops with 999</td><td>INT-R08</td></tr><tr><td>P22</td><td>loop, DIS-INT-RATE = 0</td><td>no interest, no transaction</td><td>INT-R04</td></tr><tr><td>P23</td><td>loop, DIS-INT-RATE not 0 -&gt; 1300-COMPUTE-INTEREST</td><td>interest amount, added to the account&#x27;s total</td><td>INT-R05, INT-Q01, INT-Q05, INT-Q06, INT-H05</td></tr><tr><td>P24</td><td>1300-COMPUTE-INTEREST -&gt; 1300-B-WRITE-TX -&gt; D8 -&gt; Z-GET-DB2-FORMAT-TIMESTAMP -&gt; D9 -&gt; D7 (write)</td><td>content of the interest transaction</td><td>INT-R06, INT-Q02, INT-Q03, INT-H05</td></tr><tr><td>P25</td><td>1300-B-WRITE-TX -&gt; D7, write status not 00 -&gt; 9910 -&gt; 9999 -&gt; C3</td><td>run stops with 999</td><td>INT-R08, INT-H02</td></tr><tr><td>P26</td><td>loop -&gt; 1400-COMPUTE-FEES</td><td>nothing; empty paragraph</td><td>INT-H01</td></tr><tr><td>P27</td><td>loop, ELSE branch at line 219-220 -&gt; 1050-UPDATE-ACCOUNT</td><td>never executed: the loop has ended before END-OF-FILE can be Y here</td><td>INT-Q04</td></tr><tr><td>P28</td><td>after loop -&gt; 9000..9400-*-CLOSE -&gt; D1, D2, D6, D4/D5, D7</td><td>nothing; files closed</td><td>covered: no policy - file close (INT-T01)</td></tr><tr><td>P29</td><td>9000..9400-*-CLOSE, status not 00 -&gt; 9910 -&gt; 9999 -&gt; C3</td><td>run stops with 999</td><td>INT-R08</td></tr><tr><td>P30</td><td>after close -&gt; DISPLAY end message (D10) -&gt; GOBACK</td><td>return code 0</td><td>covered: no policy - normal end (INT-T02, INT-T03)</td></tr></tbody></table></details>
+<details id="coverage"><summary>Coverage: every paragraph and data edge</summary><table><thead><tr><th>Paragraph</th><th>Rules</th><th>Reason when none</th></tr></thead><tbody><tr><td>PROCEDURE DIVISION main (lines 180-232)</td><td>INT-R01, INT-R04, INT-R07, INT-Q04</td><td></td></tr><tr><td>0000-TCATBALF-OPEN</td><td>none</td><td>file open; error branch under INT-R08</td></tr><tr><td>0100-XREFFILE-OPEN</td><td>none</td><td>file open; error branch under INT-R08</td></tr><tr><td>0200-DISCGRP-OPEN</td><td>none</td><td>file open; error branch under INT-R08</td></tr><tr><td>0300-ACCTFILE-OPEN</td><td>none</td><td>file open; error branch under INT-R08</td></tr><tr><td>0400-TRANFILE-OPEN</td><td>none</td><td>file open; error branch under INT-R08</td></tr><tr><td>1000-TCATBALF-GET-NEXT</td><td>INT-R01, INT-Q04, INT-R08</td><td></td></tr><tr><td>1050-UPDATE-ACCOUNT</td><td>INT-R07, INT-Q04, INT-R08, INT-H02</td><td></td></tr><tr><td>1100-GET-ACCT-DATA</td><td>INT-R02, INT-R08, INT-H04</td><td></td></tr><tr><td>1110-GET-XREF-DATA</td><td>INT-R06, INT-R08, INT-H03</td><td></td></tr><tr><td>1200-GET-INTEREST-RATE</td><td>INT-R02, INT-R03, INT-R08</td><td></td></tr><tr><td>1200-A-GET-DEFAULT-INT-RATE</td><td>INT-R03, INT-R08</td><td></td></tr><tr><td>1300-COMPUTE-INTEREST</td><td>INT-R05, INT-Q01, INT-Q05, INT-Q06, INT-H05</td><td></td></tr><tr><td>1300-B-WRITE-TX</td><td>INT-R06, INT-Q02, INT-Q03, INT-R08, INT-H05</td><td></td></tr><tr><td>1400-COMPUTE-FEES</td><td>INT-H01</td><td></td></tr><tr><td>9000-TCATBALF-CLOSE</td><td>none</td><td>file close; error branch under INT-R08</td></tr><tr><td>9100-XREFFILE-CLOSE</td><td>none</td><td>file close; error branch under INT-R08</td></tr><tr><td>9200-DISCGRP-CLOSE</td><td>none</td><td>file close; error branch under INT-R08</td></tr><tr><td>9300-ACCTFILE-CLOSE</td><td>none</td><td>file close; error branch under INT-R08</td></tr><tr><td>9400-TRANFILE-CLOSE</td><td>none</td><td>file close; error branch under INT-R08</td></tr><tr><td>Z-GET-DB2-FORMAT-TIMESTAMP</td><td>INT-Q03</td><td></td></tr><tr><td>9999-ABEND-PROGRAM</td><td>INT-R08</td><td></td></tr><tr><td>9910-DISPLAY-IO-STATUS</td><td>none</td><td>formats the file status for the log (INT-T08)</td></tr></tbody></table><br><table><thead><tr><th>Edge</th><th>What</th><th>Rules</th><th>Reason when none</th></tr></thead><tbody><tr><td>C1</td><td>INTCALC.STEP15 -&gt; load module CBACT04C</td><td>none</td><td>says which program runs (INT-T11)</td></tr><tr><td>C2</td><td>load module CBACT04C -&gt; source CBACT04C (candidate)</td><td>none</td><td>build lineage, stream ask A1 (INT-T11)</td></tr><tr><td>C3</td><td>CBACT04C -&gt; CEE3ABD</td><td>INT-R08</td><td></td></tr><tr><td>I1</td><td>COPY CVTRA01Y</td><td>none</td><td>record layout (INT-T11)</td></tr><tr><td>I2</td><td>COPY CVACT03Y</td><td>none</td><td>record layout (INT-T11)</td></tr><tr><td>I3</td><td>COPY CVTRA02Y</td><td>none</td><td>record layout (INT-T11)</td></tr><tr><td>I4</td><td>COPY CVACT01Y</td><td>none</td><td>record layout (INT-T11)</td></tr><tr><td>I5</td><td>COPY CVTRA05Y</td><td>none</td><td>record layout (INT-T11)</td></tr><tr><td>D1</td><td>TCATBALF -&gt; CBACT04C (read)</td><td>INT-R01, INT-Q04, INT-H02, INT-H06</td><td></td></tr><tr><td>D2</td><td>CARDXREF -&gt; CBACT04C (read)</td><td>INT-R06, INT-H03</td><td></td></tr><tr><td>D3</td><td>CARDXREF alternate-index path -&gt; CBACT04C (read, candidate)</td><td>INT-R06, INT-H03</td><td></td></tr><tr><td>D4</td><td>ACCTDATA -&gt; CBACT04C (read)</td><td>INT-R02, INT-H04, INT-H06</td><td></td></tr><tr><td>D5</td><td>CBACT04C -&gt; ACCTDATA (rewrite)</td><td>INT-R07, INT-Q04, INT-Q05, INT-H02</td><td></td></tr><tr><td>D6</td><td>DISCGRP -&gt; CBACT04C (read)</td><td>INT-R02, INT-R03, INT-H06</td><td></td></tr><tr><td>D7</td><td>CBACT04C -&gt; SYSTRAN(+1) (write)</td><td>INT-R06, INT-Q01, INT-Q02, INT-Q03, INT-Q05, INT-Q06, INT-H05</td><td></td></tr><tr><td>D8</td><td>JCL PARM -&gt; CBACT04C (PARM-DATE)</td><td>INT-Q02</td><td></td></tr><tr><td>D9</td><td>system clock -&gt; CBACT04C</td><td>INT-Q03</td><td></td></tr><tr><td>D10</td><td>CBACT04C -&gt; SYSOUT (candidate)</td><td>none</td><td>log lines only (INT-T02); INT-R03 and INT-R08 say which messages appear</td></tr></tbody></table></details>
+<details id="notes"><summary>Technical notes (no policy)</summary><table><thead><tr><th>Note</th><th>Detail that carries no policy</th><th>Source</th></tr></thead><tbody><tr><td>INT-T01</td><td>The five files are opened before the loop (TCATBALF, XREFFILE, DISCGRP input; ACCTFILE I-O; TRANSACT output) and closed after it. A status other than 00 on any open or close takes the INT-R08 path.</td><td>app/cbl/CBACT04C.cbl:182-186, app/cbl/CBACT04C.cbl:224-228, app/cbl/CBACT04C.cbl:234-323, app/cbl/CBACT04C.cbl:522-611</td></tr><tr><td>INT-T02</td><td>The program writes to SYSOUT &#x27;START OF EXECUTION OF PROGRAM CBACT04C&#x27;, then each category-balance record as read, the two fallback messages when INT-R03 applies, and &#x27;END OF EXECUTION OF PROGRAM CBACT04C&#x27;. Where the DISPLAY output goes on the host is stream ask A10.</td><td>app/cbl/CBACT04C.cbl:181, app/cbl/CBACT04C.cbl:193, app/cbl/CBACT04C.cbl:418-419, app/cbl/CBACT04C.cbl:230</td></tr><tr><td>INT-T03</td><td>A normal run ends with GOBACK and return code 0. An abend calls CEE3ABD with code 999; the off-host stub returns 12 instead (tools/stubs/CEE3ABD.cbl), which is harness behaviour, not the estate&#x27;s.</td><td>app/cbl/CBACT04C.cbl:232, app/cbl/CBACT04C.cbl:628-632</td></tr><tr><td>INT-T04</td><td>TRAN-DESC is filled by STRING, which does not pad, and the 20-byte FILLER of the transaction record is never set, so the bytes after the account number and the filler hold whatever working storage held. Expectations assert the description text, not the padding.</td><td>app/cbl/CBACT04C.cbl:485-489, app/cpy/CVTRA05Y.cpy:9, app/cpy/CVTRA05Y.cpy:18</td></tr><tr><td>INT-T05</td><td>The timestamp format is YYYY-MM-DD-HH.MM.SS.hh0000 - hundredths of a second from FUNCTION CURRENT-DATE followed by four zeros.</td><td>app/cbl/CBACT04C.cbl:140, app/cbl/CBACT04C.cbl:613-624</td></tr><tr><td>INT-T06</td><td>Amount fields are zoned decimal with the sign in the last byte (S9(09)V99 for balances and interest, S9(10)V99 on the account, S9(04)V99 for the rate). Account fields the job does not set are rewritten unchanged.</td><td>app/cpy/CVTRA01Y.cpy:9, app/cpy/CVTRA02Y.cpy:9, app/cpy/CVACT01Y.cpy:7, app/cbl/CBACT04C.cbl:356</td></tr><tr><td>INT-T07</td><td>The record counter WS-RECORD-COUNT is incremented per balance and never used or printed.</td><td>app/cbl/CBACT04C.cbl:172, app/cbl/CBACT04C.cbl:192</td></tr><tr><td>INT-T08</td><td>9910-DISPLAY-IO-STATUS only formats the file status for the log (four digits; a status starting with 9 shows its binary second byte).</td><td>app/cbl/CBACT04C.cbl:635-648</td></tr><tr><td>INT-T09</td><td>An empty category-balance file ends the loop on the first read; no transaction is written, no account is touched, and SYSTRAN(+1) is cataloged empty.</td><td>app/cbl/CBACT04C.cbl:188-191, app/cbl/CBACT04C.cbl:339-340</td></tr><tr><td>INT-T10</td><td>The message for a failed open of the disclosure-group file reads &#x27;ERROR OPENING DALY REJECTS FILE&#x27; - a copied text, with no effect on the outcome.</td><td>app/cbl/CBACT04C.cbl:281</td></tr><tr><td>INT-T11</td><td>Copybooks CVTRA01Y, CVACT03Y, CVTRA02Y, CVACT01Y and CVTRA05Y only describe record layouts (edges I1-I5); STEPLIB and the load module (C1, C2) only say which program runs.</td><td>app/cbl/CBACT04C.cbl:97, app/cbl/CBACT04C.cbl:102, app/cbl/CBACT04C.cbl:107, app/cbl/CBACT04C.cbl:112, app/cbl/CBACT04C.cbl:117, app/jcl/INTCALC.jcl:22-24</td></tr></tbody></table></details>
+</section>
+<footer>Generated from modernization/rules/interest/rules.yaml (sha256 d11064430e43) by tools/build_board.py. Decisions are kept in this browser only (localStorage) and leave it only through Export CSV.</footer>
+</main>
+<script id="boardData" type="application/json">{"rules": [{"id": "INT-R01", "type": "RULE", "title": "One interest decision per category balance"}, {"id": "INT-R02", "type": "RULE", "title": "Rate comes from the account's disclosure group"}, {"id": "INT-R03", "type": "RULE", "title": "Fallback to the DEFAULT disclosure group"}, {"id": "INT-R04", "type": "RULE", "title": "A zero rate means no interest"}, {"id": "INT-R05", "type": "RULE", "title": "Monthly interest formula"}, {"id": "INT-Q01", "type": "QUIRK", "title": "Interest is cut off at the cent, not rounded"}, {"id": "INT-R06", "type": "RULE", "title": "Interest is posted as a system transaction"}, {"id": "INT-Q02", "type": "QUIRK", "title": "Transaction id is the job's PARM date plus a counter"}, {"id": "INT-Q03", "type": "QUIRK", "title": "Timestamps are the moment the job ran"}, {"id": "INT-R07", "type": "RULE", "title": "Interest is added to the account at the account break"}, {"id": "INT-Q04", "type": "QUIRK", "title": "The last account on the file is never updated"}, {"id": "INT-Q05", "type": "QUIRK", "title": "Credit balances earn negative interest"}, {"id": "INT-Q06", "type": "QUIRK", "title": "Interest of 0.00 is still posted"}, {"id": "INT-R08", "type": "RULE", "title": "A missing record or a file error stops the run"}, {"id": "INT-H01", "type": "HOLE", "title": "Fees are announced but not calculated"}, {"id": "INT-H02", "type": "HOLE", "title": "Nothing prevents charging the same interest twice"}, {"id": "INT-H03", "type": "HOLE", "title": "Account with more than one card"}, {"id": "INT-H04", "type": "HOLE", "title": "Closed or expired accounts are charged like any other"}, {"id": "INT-H05", "type": "HOLE", "title": "Amounts and counters larger than their fields"}, {"id": "INT-H06", "type": "HOLE", "title": "Order against posting and the reload of the inputs"}], "rulesSha256": "d11064430e4373479604f5b9e52e852d7ef8851d2fb829f746a11260aba5c6f1"}</script>
+<script>
+(function () {
+  "use strict";
+  var boardData = JSON.parse(document.getElementById("boardData").textContent);
+  var storeKey = "rules-INTCALC-decisions-v1";
+  var reviewerKey = "rules-INTCALC-reviewer-v1";
+  var reviewerInput = document.getElementById("reviewer");
+  var barError = document.getElementById("barError");
+  var decisions = {};
+  try { decisions = JSON.parse(localStorage.getItem(storeKey) || "{}"); } catch (e) { decisions = {}; }
+  try { reviewerInput.value = localStorage.getItem(reviewerKey) || ""; } catch (e) { /* storage unavailable */ }
+
+  function save() {
+    try { localStorage.setItem(storeKey, JSON.stringify(decisions)); barError.textContent = ""; }
+    catch (e) { barError.textContent = "This browser refused to store the decisions; export before closing."; }
+  }
+  function part(cardEl, role) { return cardEl.querySelector('[data-role="' + role + '"]'); }
+  function entryOf(ruleId) { return decisions[ruleId] || { decision: "", comment: "", reviewer: "", at: "" }; }
+
+  function render() {
+    var totals = { approved: 0, rejected: 0, commented: 0, undecided: 0 };
+    document.querySelectorAll(".card").forEach(function (cardEl) {
+      var entry = entryOf(cardEl.dataset.id);
+      var badge = part(cardEl, "decision");
+      badge.textContent = entry.decision || "UNDECIDED";
+      badge.className = "decision " + entry.decision.toLowerCase();
+      part(cardEl, "approve").classList.toggle("on", entry.decision === "APPROVED");
+      part(cardEl, "reject").classList.toggle("on", entry.decision === "REJECTED");
+      part(cardEl, "approve").setAttribute("aria-pressed", String(entry.decision === "APPROVED"));
+      part(cardEl, "reject").setAttribute("aria-pressed", String(entry.decision === "REJECTED"));
+      if (document.activeElement !== part(cardEl, "comment")) { part(cardEl, "comment").value = entry.comment; }
+      var bits = [];
+      if (entry.comment) { bits.push("Comment: " + entry.comment); }
+      if (entry.reviewer) { bits.push("by " + entry.reviewer + (entry.at ? " at " + entry.at : "")); }
+      part(cardEl, "meta").textContent = bits.join(" - ");
+      if (entry.decision === "APPROVED") { totals.approved += 1; }
+      else if (entry.decision === "REJECTED") { totals.rejected += 1; }
+      else { totals.undecided += 1; }
+      if (entry.comment) { totals.commented += 1; }
+    });
+    Object.keys(totals).forEach(function (name) { document.getElementById("total-" + name).textContent = totals[name]; });
+  }
+
+  function reviewerOrRefuse(cardEl) {
+    var reviewerName = reviewerInput.value.trim();
+    var errorEl = part(cardEl, "error");
+    if (!reviewerName) {
+      errorEl.textContent = "Not recorded: enter your name in the Reviewer name field first.";
+      errorEl.hidden = false;
+      reviewerInput.classList.add("missing");
+      return null;
+    }
+    errorEl.hidden = true;
+    reviewerInput.classList.remove("missing");
+    return reviewerName;
+  }
+
+  function record(cardEl, change) {
+    var reviewerName = reviewerOrRefuse(cardEl);
+    if (!reviewerName) { return; }
+    var entry = entryOf(cardEl.dataset.id);
+    Object.keys(change).forEach(function (name) { entry[name] = change[name]; });
+    entry.reviewer = reviewerName;
+    entry.at = new Date().toISOString().slice(0, 19) + "Z";
+    if (!entry.decision && !entry.comment) { delete decisions[cardEl.dataset.id]; } else { decisions[cardEl.dataset.id] = entry; }
+    save();
+    render();
+  }
+
+  document.querySelectorAll(".card").forEach(function (cardEl) {
+    part(cardEl, "approve").addEventListener("click", function () {
+      record(cardEl, { decision: entryOf(cardEl.dataset.id).decision === "APPROVED" ? "" : "APPROVED" });
+    });
+    part(cardEl, "reject").addEventListener("click", function () {
+      record(cardEl, { decision: entryOf(cardEl.dataset.id).decision === "REJECTED" ? "" : "REJECTED" });
+    });
+    part(cardEl, "saveComment").addEventListener("click", function () {
+      record(cardEl, { comment: part(cardEl, "comment").value.trim() });
+    });
+  });
+
+  reviewerInput.addEventListener("input", function () {
+    try { localStorage.setItem(reviewerKey, reviewerInput.value); } catch (e) { /* storage unavailable */ }
+    if (reviewerInput.value.trim()) { reviewerInput.classList.remove("missing"); }
+  });
+
+  function csvCell(value) { return '"' + String(value == null ? "" : value).replace(/"/g, '""') + '"'; }
+  document.getElementById("export").addEventListener("click", function () {
+    var rows = [["id", "type", "title", "decision", "comment", "reviewer", "decidedAt"]];
+    boardData.rules.forEach(function (rule) {
+      var entry = entryOf(rule.id);
+      rows.push([rule.id, rule.type, rule.title, entry.decision || "UNDECIDED", entry.comment, entry.reviewer, entry.at]);
+    });
+    var csvText = rows.map(function (row) { return row.map(csvCell).join(","); }).join("\r\n") + "\r\n";
+    var link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([csvText], { type: "text/csv;charset=utf-8" }));
+    link.download = "rules-INTCALC-decisions.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  });
+
+  var clearButton = document.getElementById("clear");
+  var clearConfirm = document.getElementById("clearConfirm");
+  var clearCancel = document.getElementById("clearCancel");
+  function askClear(asking) { clearButton.hidden = asking; clearConfirm.hidden = !asking; clearCancel.hidden = !asking; }
+  clearButton.addEventListener("click", function () { askClear(true); clearConfirm.focus(); });
+  clearCancel.addEventListener("click", function () { askClear(false); clearButton.focus(); });
+  clearConfirm.addEventListener("click", function () {
+    decisions = {};
+    save();
+    document.querySelectorAll('[data-role="error"]').forEach(function (el) { el.hidden = true; });
+    document.querySelectorAll('[data-role="comment"]').forEach(function (el) { el.value = ""; });
+    askClear(false);
+    render();
+    clearButton.focus();
+  });
+  render();
+}());
+</script>
+</body></html>

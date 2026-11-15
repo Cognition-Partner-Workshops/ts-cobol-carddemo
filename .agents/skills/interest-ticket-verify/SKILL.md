@@ -104,6 +104,9 @@ first. Run every command from the repository root.
    interest/i02-tie-half-cent [java-halfup]: FAIL (4 records, 50 fields, 3 differences)
    ```
    `runId` must be new for every launch. Exit code 0 is a COMPLETED job, 12 a stopped one.
+   When no fixture exercises the option (`inactiveAccounts=SKIP`: every fixture account is active), the run
+   proves only that the job completes: add an integration test on a copy of a fixture input changed in the
+   test's temporary directory, never under `fixtures/`.
 
 5. **Read a difference.** The Markdown report names the dataset, the record with its key, the field,
    the legacy value and the candidate value, already decoded. Each row below was produced in step 5a;

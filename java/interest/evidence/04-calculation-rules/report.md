@@ -2,7 +2,9 @@
 
 Ticket: `modernization/design/tickets/04-calculation-rules.md` (INT-T04). Branch `demo/05-04-calculation-rules`,
 started from `demo/05b-integration` at `a5cce81`; `demo/05b-integration` at `b4ab502` (tickets 02 and 03) was merged
-into it afterwards. Code revision the evidence was produced from: `633b098` (the merge commit).
+into it afterwards (merge commit `633b098`, the last change to code). The evidence in this directory was produced
+again from the committed revision `8ac4b77`, whose code is that of `633b098` (`git diff 633b098 8ac4b77 -- java/interest/src`
+is empty; the commit between them holds evidence only), with a clean working tree.
 
 Read this with [parity-report.md](parity-report.md) (seven PASS sections), [switch-test-output.txt](switch-test-output.txt)
 (the switch test and the empty-input run) and [test-output.txt](test-output.txt) (`mvn clean verify`).
@@ -154,6 +156,13 @@ Skill corrections (interest-ticket-build, interest-ticket-verify, interest-pitfa
    Proposed: "further output a ticket's Verification names goes into the same directory under a name that says what it is".
 2. **interest-ticket-verify step 8, `parity-report.sh`.** When every case is named on the command line the "Why"
    column is left empty, not `_fill in_`; the text of the step should say so.
+5. **interest-ticket-verify step 8, `parity-report.sh`, line 55.** Run a second time on a ticket, the script writes
+   "with uncommitted changes" after the revision although nothing but its own report differs from HEAD: it tests
+   `git diff --quiet HEAD -- java Makefile` after it has started to overwrite the committed
+   `java/interest/evidence/<ticket>/parity-report.md`, and a `test-output.txt` written just before has the same
+   effect. Here the report was written with `REPORT=work/attempt2/parity-report.md` and copied in, and
+   `test-output.txt` likewise. Proposed: the script excludes `java/interest/evidence` from that check
+   (`-- java ':!java/interest/evidence' Makefile`), or the step says to produce both files outside the tree first.
 3. **interest-ticket-build step 5** (layout table) does not say that the module has no JSON library at compile
    scope. Tests that read `modernization/rules/interest/expected/*.json` can use `org.json`, which
    `spring-boot-starter-test` brings, without a new dependency. Worth one line in the table.
@@ -175,6 +184,11 @@ mvn -B -f java/interest/pom.xml verify  # 313 + 20, BUILD SUCCESS; then the evid
 mvn -B -f java/interest/pom.xml clean verify      > java/interest/evidence/04-calculation-rules/test-output.txt
 .agents/skills/interest-ticket-verify/parity-report.sh 04-calculation-rules $(ls fixtures/interest)   # exit 0
 # switch-test-output.txt: interest-ticket-verify step 4 once per switch value, compare.py on each, the empty input, psql
+# second attempt, on 8ac4b77 with a clean tree (the branch already held the merge, so nothing was left to merge):
+git merge-base --is-ancestor origin/demo/05b-integration HEAD                             # true: b4ab502 is in the branch
+mvn -B -f java/interest/pom.xml clean verify      > work/attempt2/test-output.txt         # 313 + 20, BUILD SUCCESS
+REPORT=work/attempt2/parity-report.md .agents/skills/interest-ticket-verify/parity-report.sh 04-calculation-rules $(ls fixtures/interest)   # exit 0
+# the switch test again, same commands; then the three files copied into this directory and committed alone
 ```
 
 Failures hit:
@@ -195,6 +209,14 @@ Failures hit:
    `"Y"` in the one assertion); the switch test now reads zoned amounts by hand. All evidence was produced again.
 3. No JSON library at compile or test scope besides `org.json` and json-path (from `spring-boot-starter-test`); the
    switch test uses `org.json`, so no dependency was added.
+
+5. **Symptom.** The combined check of the workflow failed on `git merge --squash` of this branch at `940f639`
+   (conflicts in `codec/AccountRecord.java` and `codec/RecordLayoutTest.java`). **Cause.** The same as failure 4:
+   the check ran on the head from before the merge commit `633b098` was pushed. **Fix.** None needed in code. The
+   second attempt confirmed that the branch contains `origin/demo/05b-integration` (`b4ab502`), that
+   `git diff origin/demo/05b-integration` in the two files is the one line and the one assertion of the grant, and
+   repeated the whole verification.
+6. **Symptom.** parity-report.md said "with uncommitted changes". **Cause and fix.** Skill correction 5 in section 5.
 
 Nothing in `interest-pitfalls` P1-P7 was hit beyond P6 (the `.pyc` file, undone before each commit).
 

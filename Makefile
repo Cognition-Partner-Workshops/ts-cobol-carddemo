@@ -11,6 +11,7 @@
 #   make chain-graph / chain-graph-check       regenerate / verify docs/chain-graph.md
 #   make rules / rules-check   regenerate / verify the interest rulebook outputs (board, register, expectations)
 #   make board-e2e              Playwright suite for the rules review board (needs: pip install -r e2e/requirements.txt)
+#   make design / design-check  regenerate / verify the interest design outputs (modernization/design)
 #   make reset                  drop datasets, loadlib, work/ and the database volume
 
 # run the estate container as the invoking user so bind-mounted loadlib/, work/,
@@ -25,7 +26,7 @@ CHAIN   ?=
 CASE    ?=
 PY       = python3
 
-.PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell rules rules-check board-e2e
+.PHONY: up down build run record parity parity-naive chain-graph chain-graph-check reset baseline shell rules rules-check board-e2e design design-check
 
 up:
 	$(COMPOSE) up -d --build --wait
@@ -105,3 +106,12 @@ baseline:
 reset:
 	rm -rf datasets loadlib work
 	$(COMPOSE) down -v
+
+# ------------------------------------------- target design (host python)
+DESIGN_TOOLS = modernization/design/tools
+
+design:
+	$(PY) $(DESIGN_TOOLS)/build_design.py
+
+design-check:
+	$(PY) $(DESIGN_TOOLS)/build_design.py --check

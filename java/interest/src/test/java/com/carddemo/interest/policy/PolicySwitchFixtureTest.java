@@ -181,29 +181,13 @@ class PolicySwitchFixtureTest {
 
     /**
      * One run on the file adapters, as calcInterestStep does it: read an account, calculate, write its
-     * transactions, post its update. The active flag (byte 12 of the account record, CVACT01Y.cpy:6) is
-     * added here from the input file, because the file adapter does not supply it.
+     * transactions, post its update. The active flag (byte 12 of the account record, CVACT01Y.cpy:6)
+     * comes from the file adapter (codec/AccountRecord.decode).
      */
     private Path run(String caseName, InterestPolicy policy) {
         Path output = temp.resolve(caseName).resolve("actual");
         FileRunWorkspace workspace = FileRunWorkspace.open(Fixtures.input(caseName), output, "switch-test");
-        Map<Long, Boolean> activeFlags = new LinkedHashMap<>();
-        for (String line : Fixtures.lines(Fixtures.input(caseName).resolve(ACCOUNTS_INPUT))) {
-            activeFlags.put(Long.parseLong(line.substring(0, 11)), line.charAt(11) == 'Y');
-        }
-        AccountStore fileAccounts = workspace.accountStore();
-        AccountStore accounts = new AccountStore() {
-            @Override
-            public Optional<Account> find(long accountId) {
-                return fileAccounts.find(accountId).map(account -> new Account(account.accountId(),
-                        account.currentBalance(), account.groupId(), Optional.of(activeFlags.get(accountId))));
-            }
-
-            @Override
-            public void postInterest(long accountId, BigDecimal newBalance) {
-                fileAccounts.postInterest(accountId, newBalance);
-            }
-        };
+        AccountStore accounts = workspace.accountStore();
         InterestCalculator calculator = new InterestCalculator(accounts, workspace.cardLookup(), workspace.rateLookup(),
                 workspace.runLog(), policy, FROZEN, new TransactionCounter(), Fixtures.PARM_DATE);
 

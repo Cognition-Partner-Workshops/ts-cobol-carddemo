@@ -2,21 +2,30 @@
 # Writes the parity report of an interest ticket in the format of the pilot
 # (java/interest/evidence/parity-report.md of ticket 01).
 #
-#   .agents/skills/interest-ticket-verify/parity-report.sh <case> [<case> ...]
+#   .agents/skills/interest-ticket-verify/parity-report.sh <ticket> <case> [<case> ...]
 #
-# <case> is a fixture case the ticket names in its Acceptance (i01-baseline for ticket 01).
+# <ticket> is the ticket's file name under modernization/design/tickets without ".md"
+# (for example 04-calculation-rules).  <case> is a fixture case the ticket names in its
+# Acceptance (i01-baseline for ticket 01).
 # Runs `make parity-java` for those cases, then for all cases, compares every case with
-# tools/parity/compare.py and writes $REPORT (default java/interest/evidence/parity-report.md).
+# tools/parity/compare.py and writes java/interest/evidence/<ticket>/parity-report.md, so
+# tickets built in parallel never write the same file.  REPORT=<file> writes somewhere else.
 # The columns "In the ticket's scope" and "Why" of cases the ticket does not name are left
 # as "fill in": the session completes them by hand.  Needs JAVA_HOME on a JDK 21 and Docker.
-# Exit code: 0 when every case named on the command line passes, 1 otherwise.
+# Exit code: 0 when every case named on the command line passes, 1 otherwise, 2 on a usage error.
 set -u
 
-[ $# -ge 1 ] || { echo "usage: $0 <case> [<case> ...]" >&2; exit 2; }
+[ $# -ge 2 ] || { echo "usage: $0 <ticket> <case> [<case> ...]" >&2; exit 2; }
 cd "$(git rev-parse --show-toplevel)" || exit 2
 
+ticket="$1"; shift
+[ -f "modernization/design/tickets/$ticket.md" ] || { echo "no ticket file modernization/design/tickets/$ticket.md" >&2; exit 2; }
+for case in "$@"; do
+  [ -d "fixtures/interest/$case" ] || { echo "no fixture case fixtures/interest/$case" >&2; exit 2; }
+done
+
 ticketCases="$*"
-report="${REPORT:-java/interest/evidence/parity-report.md}"
+report="${REPORT:-java/interest/evidence/$ticket/parity-report.md}"
 logDir=work/parity-java-logs
 rm -rf "$logDir"; mkdir -p "$logDir" "$(dirname "$report")"
 
@@ -41,7 +50,7 @@ git checkout -- tools/parity/__pycache__ 2>/dev/null
 
 fence='```'
 {
-  echo "# Parity report (java/interest)"
+  echo "# Parity report - ticket $ticket (java/interest)"
   echo
   echo "Revision of the code: \`$(git rev-parse HEAD)\` (branch \`$(git rev-parse --abbrev-ref HEAD)\`$(git diff --quiet HEAD -- java Makefile || echo ', with uncommitted changes'))."
   echo "Produced $(date -u +%Y-%m-%dT%H:%M:%SZ), comparator \`tools/parity/compare.py\` unchanged."

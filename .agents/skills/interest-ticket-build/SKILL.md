@@ -69,7 +69,7 @@ Run every command from the repository root.
    | `.../batch` | `InterestJobConfig` (job `interestCalcJob`, step `calcInterestStep`), `CalcInterestRun`, `InterestJobParameters`, `InterestExitCode(s)` |
    | `java/interest/src/main/resources/application.yml` | datasource (`INTEREST_DB_URL`, `INTEREST_DB_USER`, `INTEREST_DB_PASSWORD`, default `localhost:5432/carddemo`), job repository in schema `batch`, the `interest.policy.*` defaults, `interest.calc.commitInterval`, `interest.clock.frozen` |
    | `java/interest/src/test/java/com/carddemo/interest` | same packages; `Fixtures.java` reads `fixtures/interest` (Maven runs in `java/interest`, so the path is `../../fixtures/interest`); `batch/InterestCalcJobIT.java` is the integration test on `postgres:15` |
-   | `java/interest/evidence/` | evidence of the last revision (see `interest-ticket-verify`) |
+   | `java/interest/evidence/` | the pilot's three evidence files; each later ticket writes its own under `java/interest/evidence/<ticket file name>/` (see `interest-ticket-verify` step 8) |
    | `Makefile`, target `parity-java` | FI-6, the parity entry point |
    | `docker-compose.yml`, service `db` | `postgres:15`, database, user and password `carddemo`, init scripts from `db/postgres/` |
 

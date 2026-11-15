@@ -151,22 +151,32 @@ first. Run every command from the repository root.
    The job repository is in schema `batch`. The same assertions run in `InterestCalcJobIT` on a
    Testcontainers `postgres:15`; a ticket that adds tables changes the expected list there.
 
-8. **Write the evidence, from the committed revision.** Commit the code first, then produce the files,
-   then commit them alone, so the evidence names the revision it came from. The pilot's three files are
-   in `java/interest/evidence/`:
+8. **Write the evidence, from the committed revision, in the ticket's own directory.** Commit the code
+   first, then produce the files, then commit them alone, so the evidence names the revision it came
+   from. Every ticket writes under `java/interest/evidence/<ticket file name>/`, where the name is the
+   ticket's file under `modernization/design/tickets` without `.md` (for example
+   `java/interest/evidence/04-calculation-rules/`), so tickets built in parallel never write the same
+   file. Write nothing directly in `java/interest/evidence/`: the three files there
+   (`test-output.txt`, `parity-report.md`, `PILOT-REPORT.md`) are the pilot's, written before this
+   rule, and stay as they are.
 
-   | File | How it is produced |
+   | File in `java/interest/evidence/<ticket file name>/` | How it is produced |
    |---|---|
    | `test-output.txt` | the command below |
-   | `parity-report.md` | `.agents/skills/interest-ticket-verify/parity-report.sh <case the ticket names> [...]` |
-   | `PILOT-REPORT.md` (the ticket's report) | by hand, sections below |
+   | `parity-report.md` | `.agents/skills/interest-ticket-verify/parity-report.sh <ticket file name> <case the ticket names> [...]` |
+   | `report.md` (the ticket's report) | by hand, step 9 |
+
+   The commands were run in step 5a with ticket 01, the only ticket built, to prove them; that
+   directory was removed again and is not in the repository.
 
    ```sh
+   ticket=01-pilot-thin-slice          # your ticket's file name without .md
+   mkdir -p java/interest/evidence/$ticket
    { echo "# mvn -B -f java/interest/pom.xml clean verify"
      echo "# revision $(git rev-parse HEAD), $(date -u +%Y-%m-%dT%H:%M:%SZ), $("$JAVA_HOME"/bin/java -version 2>&1 | head -1), Docker $(docker version --format '{{.Server.Version}}')"
      mvn -B -f java/interest/pom.xml clean verify 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
-     echo "# exit code ${PIPESTATUS[0]}"; } > java/interest/evidence/test-output.txt
-   tail -1 java/interest/evidence/test-output.txt; grep -E 'Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|BUILD' java/interest/evidence/test-output.txt
+     echo "# exit code ${PIPESTATUS[0]}"; } > java/interest/evidence/$ticket/test-output.txt
+   tail -1 java/interest/evidence/$ticket/test-output.txt; grep -E 'Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|BUILD' java/interest/evidence/$ticket/test-output.txt
    ```
    ```
    # exit code 0
@@ -175,7 +185,7 @@ first. Run every command from the repository root.
    [INFO] BUILD SUCCESS
    ```
    ```sh
-   .agents/skills/interest-ticket-verify/parity-report.sh i01-baseline
+   .agents/skills/interest-ticket-verify/parity-report.sh $ticket i01-baseline
    ```
    ```
    i01-baseline	0	0
@@ -185,17 +195,19 @@ first. Run every command from the repository root.
    i05-multi-category	0	0
    i06-negative-balance	0	0
    i07-nontie-rounding	0	0
-   report: java/interest/evidence/parity-report.md
+   report: java/interest/evidence/01-pilot-thin-slice/parity-report.md
    ```
    The three columns are case, exit code of the Java job, exit code of the comparator. The script runs
    steps 1 and 3 again and writes the sections of the pilot's parity report: result per case, acceptance
    run with the job's output files, all cases, the comparator's report, job repository and schema. It
    exits 0 when every case named on the command line passes. In the result table it leaves
    `_fill in_` in the columns "In the ticket's scope" and "Why" of the cases the ticket does not name:
-   complete them by hand. `REPORT=<file>` writes somewhere else.
+   complete them by hand. A ticket name with no file under `modernization/design/tickets`, or a case
+   with no directory under `fixtures/interest`, ends the script with exit code 2
+   (`no ticket file modernization/design/tickets/99-nothing.md`). `REPORT=<file>` writes somewhere else.
 
-9. **Write the ticket's report** with the seven sections of `java/interest/evidence/PILOT-REPORT.md`,
-   in this order:
+9. **Write the ticket's report** as `java/interest/evidence/<ticket file name>/report.md`, with the
+   seven sections of the pilot's `java/interest/evidence/PILOT-REPORT.md`, in this order:
 
    1. Result - one row per Acceptance line of the ticket: met or not, and the test or report section that shows it.
    2. What the ticket does not cover - rules and work left, with the owning ticket.
@@ -208,4 +220,5 @@ first. Run every command from the repository root.
 10. **Commit the evidence and open the pull request.** `git checkout -- tools/parity/__pycache__`, then
     the scope check of `interest-ticket-build` step 9, then one pull request against the base your prompt
     names. Put the per-case table, the gaps and the register findings in its description. If you change
-    code after review, repeat steps 1, 3 and 8 and replace the evidence. Do not merge.
+    code after review, repeat steps 1, 3 and 8 and replace the evidence in your ticket's directory. Do not
+    merge.

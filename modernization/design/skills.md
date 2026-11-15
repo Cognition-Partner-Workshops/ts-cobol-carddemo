@@ -48,6 +48,13 @@ GNU Make 4.3, PostgreSQL 15.20 (`postgres:15`).
 | verify 8 | `mvn -B -f java/interest/pom.xml clean verify` into `test-output.txt` | `# exit code 0`, 60 and 12 tests, BUILD SUCCESS |
 | verify 8 | `.agents/skills/interest-ticket-verify/parity-report.sh i01-baseline` | exit 0; report written |
 
+After the replay, on the reviewer's instruction, verify step 8 was changed: every ticket writes its
+evidence under `java/interest/evidence/<ticket file name>/` (`test-output.txt`, `parity-report.md`,
+`report.md`), and `parity-report.sh` takes the ticket file name as its first argument. The changed
+commands were run again with ticket 01 (60 and 12 tests, BUILD SUCCESS; the same seven case results;
+report written to `java/interest/evidence/01-pilot-thin-slice/parity-report.md`), and that directory was
+removed: the pilot's files stay where they are.
+
 Parity per case in the replay, against the pilot's `java/interest/evidence/parity-report.md`:
 
 | Case | Java job exit code | Comparator | Pilot | Same |
@@ -119,10 +126,6 @@ Findings of the pilot for the decision register (not standards) are in section 3
   check `mvn -v` says 21 is proven. Docker Engine older than 29 with Testcontainers 1.21.4 was not run.
 * **`make up`, `make build`, `make parity` (the legacy chain).** Not needed for a ticket and not run here;
   they are in `carddemo-parity`.
-* **Where the evidence of tickets 02-10 goes.** The pilot wrote `java/interest/evidence/` with a report
-  named `PILOT-REPORT.md`. Several tickets writing the same three files will conflict when merged. The
-  skills describe the pilot's files and sections and leave the file name and directory of later tickets
-  to the architect.
 * **The scope check for tickets whose Allowed files differ.** The proven form is the one for
   `java/interest/**` and the `Makefile`.
 * **What the code must be.** By design: `interest-conversion-standards`.

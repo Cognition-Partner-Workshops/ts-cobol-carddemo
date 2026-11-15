@@ -115,7 +115,9 @@ first. Run every command from the repository root.
    | `(file)` `1 records` against `missing` for both datasets, and the whole SYSOUT and rc.json as removed lines | the job stopped (exit 12) and left no output: i03, i04 on the pilot's code. Read the job's own `InterestRunStoppedException: <REASON> (<rule id>)` line in the `make parity-java` output | standards section 6 |
    | `rc.json` `(text)` with `STEP05` ... `STEP30` removed | an `rc.json` holding STEP15 only | pitfall P4 |
 
-6. **Check the error path of the ticket** from the command line. Missing input file (ticket 01):
+6. **Check the error path of the ticket** from the command line. Skip this step when the ticket's
+   Acceptance has no error line that a command-line run can show, and say so in `report.md`.
+   Missing input file (ticket 01):
 
    ```sh
    mkdir -p work/manual/miss/input && cp fixtures/interest/i01-baseline/input/* work/manual/miss/input/ \

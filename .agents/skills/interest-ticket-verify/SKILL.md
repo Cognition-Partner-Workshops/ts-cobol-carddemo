@@ -150,6 +150,11 @@ first. Run every command from the repository root.
    ```
    The job repository is in schema `batch`. The same assertions run in `InterestCalcJobIT` on a
    Testcontainers `postgres:15`; a ticket that adds tables changes the expected list there.
+   The output above is the pilot's. With `db/postgres/02-interest.sql` (ticket 02) on a new db volume the
+   list in `carddemo` is `account, card_xref, disclosure_group, interest_run, interest_transaction,
+   tran_cat_balance, transaction_type, transaction_type_categor`. A db volume created before that file
+   existed does not get the tables (init scripts run only on an empty volume): `make reset`, or
+   `docker compose exec -T db psql -U carddemo -d carddemo -v ON_ERROR_STOP=1 < db/postgres/02-interest.sql`.
 
 8. **Write the evidence, from the committed revision, in the ticket's own directory.** Commit the code
    first, then produce the files, then commit them alone, so the evidence names the revision it came

@@ -51,7 +51,7 @@ class RecordLayoutTest {
         String image = RecordImage.fromLine(
                 Fixtures.lines(Fixtures.input(CASE).resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt")).get(0), AccountRecord.LENGTH);
 
-        assertEquals(new Account(2001L, new BigDecimal("1000.00"), "GOLD"), AccountRecord.decode(image));
+        assertEquals(new Account(2001L, "Y", new BigDecimal("1000.00"), "GOLD"), AccountRecord.decode(image));
     }
 
     @Test

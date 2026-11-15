@@ -116,6 +116,9 @@ first. Run every command from the repository root.
    A value a switch does not have (`--interest.policy.overflow=WIDEN`) ends with exit code 1 (`APPLICATION FAILED
    TO START`) and no output; the comparator then reports every expected record as a difference. Record that as
    the refusal, not as a parity FAIL.
+   The command of this step runs the file adapters. To run what the gate runs, add
+   `--spring.profiles.active=tables` after `--logging.level.root=WARN`, or use
+   `make parity-java CASE=<case> INTEREST_OUT=work/manual INTEREST_OPTS=--interest.policy.rounding=HALF_UP`.
    When no fixture exercises the option (`inactiveAccounts=SKIP`: every fixture account is active), the run
    proves only that the job completes: add an integration test on a copy of a fixture input changed in the
    test's temporary directory, never under `fixtures/`.

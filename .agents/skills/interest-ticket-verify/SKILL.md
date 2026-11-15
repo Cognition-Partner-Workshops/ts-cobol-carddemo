@@ -133,6 +133,10 @@ first. Run every command from the repository root.
    input
    ```
    Only `input` is listed: no output directory and no staging directory were left.
+   For a record error (ticket 03), copy the input the same way, change one byte
+   (`sed -i '2s/^\(.\{12\}\)./\1X/' work/manual/miss/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt`) and expect
+   `InterestRunStoppedException: RECORD_REJECTED (INT-R08): file AWS.M2.CARDDEMO.DISCGRP.PS.txt record 2 field DIS-TRAN-CAT-CD: is not numeric`,
+   `job exit=12` and again only `input`.
 
 7. **Check the database assertions of the ticket** in the `db` service. Skip this step when the ticket's
    Acceptance says "Database assertions: none"; say so in section 6 of `report.md`.

@@ -18,6 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.carddemo.interest.domain.AccountBalances;
 import com.carddemo.interest.domain.AccountInterest;
+import com.carddemo.interest.domain.HoleDecisions;
 import com.carddemo.interest.domain.InterestCalculator;
 import com.carddemo.interest.domain.RunLogLines;
 import com.carddemo.interest.domain.TransactionCounter;
@@ -29,6 +30,8 @@ import com.carddemo.interest.jdbc.calc.JdbcRateLookup;
 import com.carddemo.interest.jdbc.calc.JdbcTransactionSink;
 import com.carddemo.interest.policy.InterestPolicy;
 import com.carddemo.interest.port.AccountStore;
+import com.carddemo.interest.port.BalanceSource;
+import com.carddemo.interest.port.TransactionSink;
 
 /**
  * One execution of calcInterestStep on the tables of schema carddemo (architecture.md sections 5
@@ -36,7 +39,9 @@ import com.carddemo.interest.port.AccountStore;
  * INSERTs of an account's transactions, the UPDATE of its account and the restart state commit
  * together. A restarted execution continues after the last committed account with the saved
  * counter, seq_no and run log length (REL-11 as proposed); a launch with a new runId is a new run
- * and is not refused (INT-H02, rerunGuard OFF).
+ * and is not refused (INT-H02, rerunGuard OFF). A stop of the calculation or a database failure
+ * fails the step (INT-R08): the chunk in work is rolled back, the chunks committed before it stay,
+ * the run log keeps the legacy lines of the stop and interest_run.status becomes FAILED.
  */
 public class CalcInterestTableRun implements StepExecutionListener, ItemStream {
 
@@ -49,15 +54,18 @@ public class CalcInterestTableRun implements StepExecutionListener, ItemStream {
 
     private final JdbcTemplate jdbc;
     private final InterestPolicy policy;
+    private final HoleDecisions holes;
     private final Clock clock;
     private final int balancePageRows;
     private final CalcRunControl runControl;
 
     private StepExecution stepExecution;
     private long interestRunId;
-    private JdbcBalanceSource balances;
+    private BalanceSource balances;
     private AccountStore accounts;
-    private JdbcTransactionSink transactions;
+    private TransactionSink transactions;
+    /** Kept for the seq_no it saves with the commit. */
+    private JdbcTransactionSink transactionRows;
     private RestartableRunLog runLog;
     private InterestCalculator calculator;
     private TransactionCounter counter;
@@ -66,9 +74,11 @@ public class CalcInterestTableRun implements StepExecutionListener, ItemStream {
     /** The account being calculated or written; named in the exit description when the step stops. */
     private OptionalLong accountInWork = OptionalLong.empty();
 
-    public CalcInterestTableRun(JdbcTemplate jdbc, InterestPolicy policy, Clock clock, int balancePageRows) {
+    public CalcInterestTableRun(JdbcTemplate jdbc, InterestPolicy policy, HoleDecisions holes, Clock clock,
+            int balancePageRows) {
         this.jdbc = jdbc;
         this.policy = policy;
+        this.holes = holes;
         this.clock = clock;
         this.balancePageRows = balancePageRows;
         this.runControl = new CalcRunControl(jdbc);
@@ -100,12 +110,16 @@ public class CalcInterestTableRun implements StepExecutionListener, ItemStream {
         interestRunId = state.interestRunId();
         lastAccountId = state.lastAccountId();
         accountsUpdated = state.accountsUpdated();
-        counter = counterAt(state.transactionCounter());
-        balances = new JdbcBalanceSource(jdbc, balancePageRows, state.lastAccountId());
-        accounts = new JdbcAccountStore(jdbc);
-        transactions = new JdbcTransactionSink(jdbc, interestRunId, state.lastSeqNo());
-        calculator = new InterestCalculator(accounts, new JdbcCardLookup(jdbc), new JdbcRateLookup(jdbc), runLog,
-                policy, clock, counter, parameters.getString(InterestJobParameters.PARM_DATE));
+        // INT-Q02: the counter continues after the last id a committed chunk issued.
+        counter = new TransactionCounter(state.transactionCounter());
+        DatabaseFailureStops stopping = new DatabaseFailureStops(runLog);
+        balances = stopping.balances(new JdbcBalanceSource(jdbc, balancePageRows, state.lastAccountId()));
+        accounts = stopping.accounts(new JdbcAccountStore(jdbc));
+        transactionRows = new JdbcTransactionSink(jdbc, interestRunId, state.lastSeqNo());
+        transactions = stopping.transactions(transactionRows);
+        calculator = new InterestCalculator(accounts, stopping.cards(new JdbcCardLookup(jdbc)),
+                stopping.rates(new JdbcRateLookup(jdbc)), runLog, policy, holes, clock, counter,
+                parameters.getString(InterestJobParameters.PARM_DATE));
     }
 
     private long interestRunOf(StepExecution stepExecution, JobParameters parameters) {
@@ -114,15 +128,6 @@ public class CalcInterestTableRun implements StepExecutionListener, ItemStream {
             return jobContext.getLong(INTEREST_RUN_ID);
         }
         return runControl.open(parameters.getString(InterestJobParameters.PARM_DATE));
-    }
-
-    /** INT-Q02: the counter continues after the last id a committed chunk issued. */
-    private static TransactionCounter counterAt(int issued) {
-        TransactionCounter counter = new TransactionCounter();
-        for (int i = 0; i < issued; i++) {
-            counter.next();
-        }
-        return counter;
     }
 
     /** Reader: one item is one account with all its balances; null ends the input. */
@@ -153,7 +158,7 @@ public class CalcInterestTableRun implements StepExecutionListener, ItemStream {
     /** Called inside the transaction of the chunk, after its writes: the restart state commits with them. */
     @Override
     public void update(ExecutionContext context) {
-        new CalcRestartState(interestRunId, lastAccountId, counter.issued(), transactions.lastSeqNo(), accountsUpdated,
+        new CalcRestartState(interestRunId, lastAccountId, counter.issued(), transactionRows.lastSeqNo(), accountsUpdated,
                 runLog.committedLength()).saveIn(context);
     }
 

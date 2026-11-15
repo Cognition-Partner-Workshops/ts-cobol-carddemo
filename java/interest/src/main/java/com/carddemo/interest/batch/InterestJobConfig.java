@@ -21,6 +21,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import com.carddemo.interest.domain.AccountBalances;
 import com.carddemo.interest.domain.AccountInterest;
+import com.carddemo.interest.domain.HoleDecisions;
 import com.carddemo.interest.policy.InterestPolicy;
 
 /**
@@ -54,14 +55,25 @@ public class InterestJobConfig {
         return Clock.fixed(LocalDateTime.parse(frozen, FROZEN_CLOCK_FORMAT).atZone(zone).toInstant(), zone);
     }
 
+    /**
+     * INT-H03 and INT-H05: both stop the run, the proposed default of interest.policy.multiCard and
+     * interest.policy.overflow (architecture.md section 8). The two switches are not read from the
+     * configuration yet: InterestPolicy is the only reader of interest.policy.* and does not hold them.
+     */
     @Bean
-    CalcInterestRun calcInterestRun(InterestPolicy policy, Clock runClock) {
-        return new CalcInterestRun(policy, runClock);
+    HoleDecisions holeDecisions() {
+        return HoleDecisions.stop();
     }
 
     @Bean
-    CalcInterestTableRun calcInterestTableRun(JdbcTemplate jdbcTemplate, InterestPolicy policy, Clock runClock) {
-        return new CalcInterestTableRun(jdbcTemplate, policy, runClock, BALANCE_PAGE_ROWS);
+    CalcInterestRun calcInterestRun(InterestPolicy policy, HoleDecisions holes, Clock runClock) {
+        return new CalcInterestRun(policy, holes, runClock);
+    }
+
+    @Bean
+    CalcInterestTableRun calcInterestTableRun(JdbcTemplate jdbcTemplate, InterestPolicy policy, HoleDecisions holes,
+            Clock runClock) {
+        return new CalcInterestTableRun(jdbcTemplate, policy, holes, runClock, BALANCE_PAGE_ROWS);
     }
 
     /**

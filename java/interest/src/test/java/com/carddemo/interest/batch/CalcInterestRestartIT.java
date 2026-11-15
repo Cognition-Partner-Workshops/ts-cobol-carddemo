@@ -193,8 +193,11 @@ class CalcInterestRestartIT {
         JobParameters parameters = parametersOfANewRun(output);
         refuseTheUpdateOfAccount(2009);
         assertEquals(BatchStatus.FAILED, jobLauncher.run(interestCalcJob, parameters).getStatus());
-        // the run log of the failed execution holds the lines of the chunk that was rolled back
-        assertEquals(WHOLE_RUN_LOG.subList(0, 6), Fixtures.lines(output.resolve(RUN_LOG)));
+        // the run log of the failed execution holds the lines of the chunk that was rolled back and of
+        // the stop (INT-R08, CBACT04C:356-369); the restart cuts all of them off
+        assertEquals(java.util.stream.Stream.concat(WHOLE_RUN_LOG.subList(0, 6).stream(),
+                java.util.stream.Stream.of("ERROR RE-WRITING ACCOUNT FILE", "ABENDING PROGRAM")).toList(),
+                Fixtures.lines(output.resolve(RUN_LOG)));
         jdbc.execute("DROP TRIGGER test_forced_failure ON carddemo.account");
 
         JobExecution restarted = jobLauncher.run(interestCalcJob, parameters);

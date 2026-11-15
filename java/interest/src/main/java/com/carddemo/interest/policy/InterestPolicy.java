@@ -8,15 +8,18 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * The switches of the open decisions (architecture.md section 8, FI-5). The default of each is the
- * legacy behaviour. This is the only class that reads interest.policy.*; the pilot (ticket 01)
- * carries the four decisions it implements: INT-Q01, INT-Q02, INT-Q03, INT-Q04.
+ * legacy behaviour. This is the only class that reads interest.policy.*. It carries the decisions
+ * of the calculation: INT-Q01 to INT-Q06 and INT-H04 (tickets 01 and 04).
  */
 @ConfigurationProperties("interest.policy")
 public record InterestPolicy(
         Rounding rounding,
         IdPrefix idPrefix,
         TimestampSource timestampSource,
-        boolean updateLastAccount) {
+        boolean updateLastAccount,
+        NegativeBalance negativeBalance,
+        ZeroInterest zeroInterest,
+        InactiveAccounts inactiveAccounts) {
 
     /** INT-Q01. */
     public enum Rounding { TRUNCATE, HALF_UP, HALF_EVEN }
@@ -27,21 +30,30 @@ public record InterestPolicy(
     /** INT-Q03. */
     public enum TimestampSource { RUN_CLOCK, CYCLE_DATE }
 
+    /** INT-Q05. */
+    public enum NegativeBalance { CHARGE, SKIP }
+
+    /** INT-Q06. */
+    public enum ZeroInterest { WRITE, SKIP }
+
+    /** INT-H04. */
+    public enum InactiveAccounts { CHARGE, SKIP }
+
     private static final DateTimeFormatter RUN_DATE_PREFIX = DateTimeFormatter.ofPattern("yyyyMMdd'00'");
 
     public InterestPolicy {
         rounding = rounding == null ? Rounding.TRUNCATE : rounding;
         idPrefix = idPrefix == null ? IdPrefix.PARM : idPrefix;
         timestampSource = timestampSource == null ? TimestampSource.RUN_CLOCK : timestampSource;
-        if (timestampSource == TimestampSource.CYCLE_DATE) {
-            throw new IllegalArgumentException("interest.policy.timestampSource=CYCLE_DATE (INT-Q03) is not built: "
-                    + "it needs a cycle-date job parameter that architecture.md section 4 does not list");
-        }
+        negativeBalance = negativeBalance == null ? NegativeBalance.CHARGE : negativeBalance;
+        zeroInterest = zeroInterest == null ? ZeroInterest.WRITE : zeroInterest;
+        inactiveAccounts = inactiveAccounts == null ? InactiveAccounts.CHARGE : inactiveAccounts;
     }
 
     /** The legacy behaviour of every switch. */
     public static InterestPolicy legacy() {
-        return new InterestPolicy(Rounding.TRUNCATE, IdPrefix.PARM, TimestampSource.RUN_CLOCK, false);
+        return new InterestPolicy(Rounding.TRUNCATE, IdPrefix.PARM, TimestampSource.RUN_CLOCK, false,
+                NegativeBalance.CHARGE, ZeroInterest.WRITE, InactiveAccounts.CHARGE);
     }
 
     /**
@@ -68,11 +80,12 @@ public record InterestPolicy(
     }
 
     /**
-     * INT-Q03 (CBACT04C:496-498, 613-624): both timestamps of a transaction are the clock at the
-     * moment the record is written.
+     * INT-Q03 (CBACT04C:496-498, 613-624): as coded, both timestamps of a transaction are the clock
+     * at the moment the record is written. CYCLE_DATE stamps the cycle date of the PARM at 00.00.00
+     * instead.
      */
-    public LocalDateTime intQ03TransactionMoment(LocalDateTime runClock) {
-        return runClock;
+    public boolean intQ03StampsCycleDate() {
+        return timestampSource == TimestampSource.CYCLE_DATE;
     }
 
     /**
@@ -81,5 +94,29 @@ public record InterestPolicy(
      */
     public boolean intQ04UpdatesAccountEndingInput() {
         return updateLastAccount;
+    }
+
+    /**
+     * INT-Q05 (CBACT04C:214-217, 464-467): as coded only the rate is tested, never the sign of the
+     * balance, so a credit balance earns negative interest. SKIP gives it no interest and no transaction.
+     */
+    public boolean intQ05ChargesCreditBalance() {
+        return negativeBalance == NegativeBalance.CHARGE;
+    }
+
+    /**
+     * INT-Q06 (CBACT04C:214-217, 464-468): as coded an interest of 0.00 at a non-zero rate is still
+     * written. SKIP writes nothing for it.
+     */
+    public boolean intQ06WritesZeroInterest() {
+        return zeroInterest == ZeroInterest.WRITE;
+    }
+
+    /**
+     * INT-H04 (CBACT04C:202-203, 372-376): as coded no statement reads the active flag, so every
+     * account with a balance is charged. SKIP leaves an account that is not active untouched.
+     */
+    public boolean intH04ChargesInactiveAccounts() {
+        return inactiveAccounts == InactiveAccounts.CHARGE;
     }
 }

@@ -1,0 +1,399 @@
+# Commands of the kit, run at revision b24ada1545739d644052ef72dc9dc0b58323bf9a, 2026-11-15T16:53:23Z
+# make ends with 0, or with 2 after printing 'Error 1' (a difference or NOT AVAILABLE) or 'Error 2' (could not run)
+
+## All seven cases: reconciliation report, then tools/parity/compare.py on the export of the tables
+
+$ make recon-java CASE=i01-baseline   (lines matching: ^- result|^\| RC5|^- transactions|^- balance change|^- interest not added|Error)
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 2 | table | 2 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 2 | table | 2 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 47.00 | table | 47.00 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+- transactions written: 2, summing 47.00
+- balance change (sum of ACCT-CURR-BAL now minus as loaded): 10.00
+- interest not added to the last account (INT-Q04): 37.00 (account 00000002002)
+# exit code 0
+interest/i01-baseline [recon-export]: PASS (4 records, 50 fields, 0 differences)
+# comparator exit code 0
+
+$ make recon-java CASE=i02-tie-half-cent   (lines matching: ^- result|^\| RC5|^- transactions|^- balance change|^- interest not added|Error)
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 2 | table | 2 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 2 | table | 2 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 24.69 | table | 24.69 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+- transactions written: 2, summing 24.69
+- balance change (sum of ACCT-CURR-BAL now minus as loaded): 12.35
+- interest not added to the last account (INT-Q04): 12.34 (account 00000002004)
+# exit code 0
+interest/i02-tie-half-cent [recon-export]: PASS (4 records, 50 fields, 0 differences)
+# comparator exit code 0
+
+$ make recon-java CASE=i03-zero-rate-skipped   (lines matching: ^- result|^\| RC5|^- transactions|^- balance change|^- interest not added|Error)
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 1 | table | 1 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 1 | table | 1 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 10.00 | table | 10.00 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+- transactions written: 1, summing 10.00
+- balance change (sum of ACCT-CURR-BAL now minus as loaded): 0.00
+- interest not added to the last account (INT-Q04): 10.00 (account 00000002005)
+# exit code 0
+interest/i03-zero-rate-skipped [recon-export]: PASS (2 records, 25 fields, 0 differences)
+# comparator exit code 0
+
+$ make recon-java CASE=i04-default-group-fallback   (lines matching: ^- result|^\| RC5|^- transactions|^- balance change|^- interest not added|Error)
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 1 | table | 1 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 1 | table | 1 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 17.50 | table | 17.50 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+- transactions written: 1, summing 17.50
+- balance change (sum of ACCT-CURR-BAL now minus as loaded): 0.00
+- interest not added to the last account (INT-Q04): 17.50 (account 00000002006)
+# exit code 0
+interest/i04-default-group-fallback [recon-export]: PASS (2 records, 25 fields, 0 differences)
+# comparator exit code 0
+
+$ make recon-java CASE=i05-multi-category   (lines matching: ^- result|^\| RC5|^- transactions|^- balance change|^- interest not added|Error)
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 2 | table | 2 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 2 | table | 2 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 17.50 | table | 17.50 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+- transactions written: 2, summing 17.50
+- balance change (sum of ACCT-CURR-BAL now minus as loaded): 0.00
+- interest not added to the last account (INT-Q04): 17.50 (account 00000002007)
+# exit code 0
+interest/i05-multi-category [recon-export]: PASS (3 records, 38 fields, 0 differences)
+# comparator exit code 0
+
+$ make recon-java CASE=i06-negative-balance   (lines matching: ^- result|^\| RC5|^- transactions|^- balance change|^- interest not added|Error)
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 1 | table | 1 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 1 | table | 1 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | -3.00 | table | -3.00 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+- transactions written: 1, summing -3.00
+- balance change (sum of ACCT-CURR-BAL now minus as loaded): 0.00
+- interest not added to the last account (INT-Q04): -3.00 (account 00000002008)
+# exit code 0
+interest/i06-negative-balance [recon-export]: PASS (2 records, 25 fields, 0 differences)
+# comparator exit code 0
+
+$ make recon-java CASE=i07-nontie-rounding   (lines matching: ^- result|^\| RC5|^- transactions|^- balance change|^- interest not added|Error)
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 2 | table | 2 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 2 | table | 2 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 29.03 | table | 29.03 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+- transactions written: 2, summing 29.03
+- balance change (sum of ACCT-CURR-BAL now minus as loaded): 15.42
+- interest not added to the last account (INT-Q04): 13.61 (account 00000002010)
+# exit code 0
+interest/i07-nontie-rounding [recon-export]: PASS (4 records, 50 fields, 0 differences)
+# comparator exit code 0
+
+## i01-baseline, whole report (work/recon-java/i01-baseline/recon.md)
+# Reconciliation report - interest/i01-baseline
+
+- interest_run: 25, status EXPORTED
+- unloaded files: fixtures/interest/i01-baseline/input (format fixture)
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+
+## Checks
+
+| Check | Item | Figure | From | Figure | From | Result |
+|---|---|---|---|---|---|---|
+| RC1 | account: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | card_xref: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | tran_cat_balance: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | disclosure_group: records and rows | 15 | unloaded file | 15 | table | EQUAL |
+| RC2 | sum of ACCT-CURR-BAL | 3400.00 | unloaded file | 3400.00 | interest_run.loaded_acct_curr_bal_sum | EQUAL |
+| RC2 | sum of ACCT-CREDIT-LIMIT | 11000.00 | unloaded file | 11000.00 | interest_run.loaded_acct_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CASH-CREDIT-LIMIT | 5500.00 | unloaded file | 5500.00 | interest_run.loaded_acct_cash_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-CREDIT | 3400.00 | unloaded file | 3400.00 | interest_run.loaded_acct_curr_cyc_credit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-DEBIT | 0.00 | unloaded file | 0.00 | interest_run.loaded_acct_curr_cyc_debit_sum | EQUAL |
+| RC2 | sum of ACCT-ID | 4003 | unloaded file | 4003.00 | interest_run.loaded_acct_id_sum | EQUAL |
+| RC2 | sum of XREF-ACCT-ID | 4003 | unloaded file | 4003.00 | interest_run.loaded_xref_acct_id_sum | EQUAL |
+| RC2 | sum of TRAN-CAT-BAL | 3400.00 | unloaded file | 3400.00 | interest_run.loaded_tran_cat_bal_sum | EQUAL |
+| RC2 | sum of TRANCAT-ACCT-ID | 4003 | unloaded file | 4003.00 | interest_run.loaded_trancat_acct_id_sum | EQUAL |
+| RC2 | sum of DIS-INT-RATE | 120.50 | unloaded file | 120.50 | interest_run.loaded_dis_int_rate_sum | EQUAL |
+| RC3 | account: records that differ from their row encoded again (the three amounts the calculation writes left out, INT-R07) | 0 | allowed | 0 | unloaded file against table | EQUAL |
+| RC3 | card_xref: records that differ from their row encoded again | 0 | allowed | 0 | unloaded file against table | EQUAL |
+| RC3 | tran_cat_balance: records that differ from their row encoded again | 0 | allowed | 0 | unloaded file against table | EQUAL |
+| RC3 | disclosure_group: records that differ from their row encoded again | 0 | allowed | 0 | unloaded file against table | EQUAL |
+| RC3 | round-trip differences of gap G02 (F-signed amounts) | 0 | unloaded file | 0 | interest_run.loaded_g02_difference_count | EQUAL |
+| RC3 | round-trip differences of gap G03 (minus zero) | 0 | unloaded file | 0 | interest_run.loaded_g03_difference_count | EQUAL |
+| RC4 | account: distinct keys and rows | 2 | table keys | 2 | table rows | EQUAL |
+| RC4 | account: lowest key and first record | 00000002001 | unloaded file | 00000002001 | table | EQUAL |
+| RC4 | account: highest key and last record | 00000002002 | unloaded file | 00000002002 | table | EQUAL |
+| RC4 | card_xref: distinct keys and rows | 2 | table keys | 2 | table rows | EQUAL |
+| RC4 | card_xref: lowest key and first record | 4000000000002001 | unloaded file | 4000000000002001 | table | EQUAL |
+| RC4 | card_xref: highest key and last record | 4000000000002002 | unloaded file | 4000000000002002 | table | EQUAL |
+| RC4 | tran_cat_balance: distinct keys and rows | 2 | table keys | 2 | table rows | EQUAL |
+| RC4 | tran_cat_balance: lowest key and first record | 00000002001/01/0001 | unloaded file | 00000002001/01/0001 | table | EQUAL |
+| RC4 | tran_cat_balance: highest key and last record | 00000002002/01/0001 | unloaded file | 00000002002/01/0001 | table | EQUAL |
+| RC4 | disclosure_group: distinct keys and rows | 15 | table keys | 15 | table rows | EQUAL |
+| RC4 | disclosure_group: lowest key and first record | DEFAULT/01/0001 | unloaded file | DEFAULT/01/0001 | table | EQUAL |
+| RC4 | disclosure_group: highest key and last record | STANDARD/05/0001 | unloaded file | STANDARD/05/0001 | table | EQUAL |
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 2 | table | 2 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 2 | table | 2 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 47.00 | table | 47.00 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+| RC6 | ACCTDATA unloaded again after the write-back: count and five sums | NOT AVAILABLE | mainframe unload | 2 | interest_run.written_acctdata_count | NOT AVAILABLE |
+
+## After the calculation (RC5)
+
+- transactions written: 2, summing 47.00
+- balance change (sum of ACCT-CURR-BAL now minus as loaded): 10.00
+- interest not added to the last account (INT-Q04): 37.00 (account 00000002002)
+
+## Profile of the load (TL4)
+
+| Finding | Asked for by | Count |
+|---|---|---|
+| accounts with several cards | G08, INT-H03 | 0 |
+| accounts with mixed type codes (letters and digits) | G06 | 0 |
+| minus zero amounts | G03 | 0 |
+| F-signed amounts | G02 | 0 |
+| fillers that are not blank | TL4 | 0 |
+| accounts that are not active | INT-H04 | 0 |
+| balances without a rate and without a DEFAULT rate | TL4, INT-R08 | 0 |
+
+## Notes
+
+- RC6 cannot be shown off-host: it needs the mainframe unload of ACCTDATA after the write-back (strategy CO2). The target side of it is in interest_run (written_acctdata_count and the five written_acct_*_sum columns).
+
+## Database assertion: md5 over every row of the six tables and the number of job executions, before and after the report
+
+$ psql: md5 of account, card_xref, tran_cat_balance, disclosure_group, interest_run, interest_transaction; count of batch.batch_job_execution
+9af6ddedff648e066cad91efa1af2ebd
+54
+
+$ make recon-java CASE=i01-baseline STAGE=no   (lines matching: ^- result|report:|Error)
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+report: work/recon-java/i01-baseline/recon.md
+# exit code 0
+
+$ psql: the same two statements
+9af6ddedff648e066cad91efa1af2ebd
+54
+
+## A broken figure from the command line: one cent added to a loaded sum
+
+$ psql: update carddemo.interest_run set loaded_tran_cat_bal_sum = loaded_tran_cat_bal_sum + 0.01 where run_id = (select max(run_id) from carddemo.interest_run)
+UPDATE 1
+
+$ make recon-java CASE=i01-baseline STAGE=no   (lines matching: ^- result|DIFFERENT \||Error)
+- result RC1-RC5: **NOT RECONCILED** - 34 EQUAL, 1 DIFFERENT, 0 NOT AVAILABLE
+| RC2 | sum of TRAN-CAT-BAL | 3400.00 | unloaded file | 3400.01 | interest_run.loaded_tran_cat_bal_sum | DIFFERENT |
+make: *** [Makefile:131: recon-java] Error 1
+# exit code 2
+
+## Errors
+
+(the tables hold i01-baseline, the files are those of i02: the figures differ and are shown as DIFFERENT)
+
+$ make recon-java CASE=i02-tie-half-cent STAGE=no   (lines matching: ^- result|DIFFERENT \||Error)
+- result RC1-RC5: **NOT RECONCILED** - 18 EQUAL, 17 DIFFERENT, 0 NOT AVAILABLE
+| RC2 | sum of ACCT-CURR-BAL | 2470.00 | unloaded file | 3400.00 | interest_run.loaded_acct_curr_bal_sum | DIFFERENT |
+| RC2 | sum of ACCT-CREDIT-LIMIT | 10000.00 | unloaded file | 11000.00 | interest_run.loaded_acct_credit_limit_sum | DIFFERENT |
+| RC2 | sum of ACCT-CASH-CREDIT-LIMIT | 5000.00 | unloaded file | 5500.00 | interest_run.loaded_acct_cash_credit_limit_sum | DIFFERENT |
+| RC2 | sum of ACCT-CURR-CYC-CREDIT | 2470.00 | unloaded file | 3400.00 | interest_run.loaded_acct_curr_cyc_credit_sum | DIFFERENT |
+| RC2 | sum of ACCT-ID | 4007 | unloaded file | 4003.00 | interest_run.loaded_acct_id_sum | DIFFERENT |
+| RC2 | sum of XREF-ACCT-ID | 4007 | unloaded file | 4003.00 | interest_run.loaded_xref_acct_id_sum | DIFFERENT |
+| RC2 | sum of TRAN-CAT-BAL | 2470.00 | unloaded file | 3400.01 | interest_run.loaded_tran_cat_bal_sum | DIFFERENT |
+| RC2 | sum of TRANCAT-ACCT-ID | 4007 | unloaded file | 4003.00 | interest_run.loaded_trancat_acct_id_sum | DIFFERENT |
+| RC3 | account: records that differ from their row encoded again (the three amounts the calculation writes left out, INT-R07) | 0 | allowed | 4 | unloaded file against table | DIFFERENT |
+| RC3 | card_xref: records that differ from their row encoded again | 0 | allowed | 4 | unloaded file against table | DIFFERENT |
+| RC3 | tran_cat_balance: records that differ from their row encoded again | 0 | allowed | 4 | unloaded file against table | DIFFERENT |
+| RC4 | account: lowest key and first record | 00000002003 | unloaded file | 00000002001 | table | DIFFERENT |
+| RC4 | account: highest key and last record | 00000002004 | unloaded file | 00000002002 | table | DIFFERENT |
+# exit code 2
+
+(a run that does not exist: its figures are NOT AVAILABLE)
+
+$ make recon-java CASE=i01-baseline STAGE=no RUN=999999   (lines matching: ^- result|^- interest_run|has no row|\| RC5|Error)
+- interest_run: 999999, status NOT AVAILABLE
+- result RC1-RC5: **NOT RECONCILED** - 19 EQUAL, 1 DIFFERENT, 15 NOT AVAILABLE
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | NOT AVAILABLE | table | NOT AVAILABLE | interest_run.written_systran_count | NOT AVAILABLE |
+| RC5 | rows written to interest_transaction and the count of the calculation step | NOT AVAILABLE | table | NOT AVAILABLE | interest_run.written_transaction_count | NOT AVAILABLE |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | NOT AVAILABLE | table | NOT AVAILABLE | balance change + interest_run.written_interest_not_added_sum | NOT AVAILABLE |
+- interest_run has no row 999999: every figure of the run is NOT AVAILABLE.
+make: *** [Makefile:131: recon-java] Error 1
+# exit code 2
+(an unloaded file that is not there: see ReconciliationReportIT.aFileThatIsMissingOrUndecodableMakesItsLinesNotAvailable)
+
+$ make recon-java
+usage: make recon-java CASE=<interest case> [STAGE=no [RUN=<run_id>]]
+make: *** [Makefile:128: recon-java] Error 2
+# exit code 2
+
+$ make recon-java CASE=no-such-case   (lines matching: InterestRunStoppedException: |could not be staged|Error)
+com.carddemo.interest.domain.InterestRunStoppedException: OPEN_INPUT (INT-R08): cannot read input file AWS.M2.CARDDEMO.TCATBALF.PS.txt
+interest/no-such-case: the case could not be staged
+make: *** [Makefile:131: recon-java] Error 2
+# exit code 2
+
+## Side by side
+
+$ make sidebyside-java LEGACY=fixtures/interest/i01-baseline/expected TARGET=work/recon-java/i01-baseline/actual
+# Side-by-side comparison
+
+- legacy run: fixtures/interest/i01-baseline/expected
+- target run: work/recon-java/i01-baseline/actual
+- timestamp rule (SS3): format only: both values must have the form YYYY-MM-DD-HH.MM.SS.hh0000; their difference is the run clock (INT-Q03)
+- compared: 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, return codes
+- result: **EQUAL** - 0 differences, 0 defects, 0 open decisions or gaps, 0 accepted by the timestamp rule
+
+
+The exit of the side-by-side period (REL-04: cycles without a defect or an unclassified difference; REL-05: the bar for equal) is not decided by this report.
+report: work/sidebyside-java/report.md (legacy fixtures/interest/i01-baseline/expected, target work/recon-java/i01-baseline/actual)
+# exit code 0
+
+(work/sbs-t/tgt: a copy of that target with the timestamps of another moment, as a run on its own clock writes them)
+
+$ make sidebyside-java LEGACY=fixtures/interest/i01-baseline/expected TARGET=work/sbs-t/tgt TS=format
+# Side-by-side comparison
+
+- legacy run: fixtures/interest/i01-baseline/expected
+- target run: work/sbs-t/tgt
+- timestamp rule (SS3): format only: both values must have the form YYYY-MM-DD-HH.MM.SS.hh0000; their difference is the run clock (INT-Q03)
+- compared: 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, return codes
+- result: **EQUAL** - 4 differences, 0 defects, 0 open decisions or gaps, 4 accepted by the timestamp rule
+
+| Class | Differences |
+|---|---|
+| decision INT-Q03 | 4 |
+
+| Where | Field | Legacy | Target | Class | Why |
+|---|---|---|---|---|---|
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-ORIG-TS` | 2022-07-05-10.00.00.000000 | 2022-07-06-11.30.00.120000 | decision INT-Q03 (accepted) | both well-formed; compared for format only (SS3) |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-PROC-TS` | 2022-07-05-10.00.00.000000 | 2022-07-06-11.30.00.120000 | decision INT-Q03 (accepted) | both well-formed; compared for format only (SS3) |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-ORIG-TS` | 2022-07-05-10.00.00.000000 | 2022-07-06-11.30.00.120000 | decision INT-Q03 (accepted) | both well-formed; compared for format only (SS3) |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-PROC-TS` | 2022-07-05-10.00.00.000000 | 2022-07-06-11.30.00.120000 | decision INT-Q03 (accepted) | both well-formed; compared for format only (SS3) |
+
+The exit of the side-by-side period (REL-04: cycles without a defect or an unclassified difference; REL-05: the bar for equal) is not decided by this report.
+report: work/sidebyside-java/report.md (legacy fixtures/interest/i01-baseline/expected, target work/sbs-t/tgt)
+# exit code 0
+
+$ make sidebyside-java LEGACY=fixtures/interest/i01-baseline/expected TARGET=work/sbs-t/tgt TS=exact
+# Side-by-side comparison
+
+- legacy run: fixtures/interest/i01-baseline/expected
+- target run: work/sbs-t/tgt
+- timestamp rule (SS3): exact: the target ran on the legacy run's clock, so any difference is a defect
+- compared: 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, return codes
+- result: **DIFFERENT** - 4 differences, 4 defects, 0 open decisions or gaps, 0 accepted by the timestamp rule
+
+| Class | Differences |
+|---|---|
+| defect | 4 |
+
+| Where | Field | Legacy | Target | Class | Why |
+|---|---|---|---|---|---|
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-ORIG-TS` | 2022-07-05-10.00.00.000000 | 2022-07-06-11.30.00.120000 | defect | timestamps compared exactly (SS3) and they differ |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-PROC-TS` | 2022-07-05-10.00.00.000000 | 2022-07-06-11.30.00.120000 | defect | timestamps compared exactly (SS3) and they differ |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-ORIG-TS` | 2022-07-05-10.00.00.000000 | 2022-07-06-11.30.00.120000 | defect | timestamps compared exactly (SS3) and they differ |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-PROC-TS` | 2022-07-05-10.00.00.000000 | 2022-07-06-11.30.00.120000 | defect | timestamps compared exactly (SS3) and they differ |
+
+The exit of the side-by-side period (REL-04: cycles without a defect or an unclassified difference; REL-05: the bar for equal) is not decided by this report.
+report: work/sidebyside-java/report.md (legacy fixtures/interest/i01-baseline/expected, target work/sbs-t/tgt)
+make: *** [Makefile:148: sidebyside-java] Error 1
+# exit code 2
+
+(target = the job run by hand with --interest.policy.rounding=HALF_UP and --interest.policy.updateLastAccount=true on i02: decisions INT-Q01 and INT-Q04)
+# job exit code 0
+
+$ make sidebyside-java LEGACY=fixtures/interest/i02-tie-half-cent/expected TARGET=work/sbs-t/policy/actual
+# Side-by-side comparison
+
+- legacy run: fixtures/interest/i02-tie-half-cent/expected
+- target run: work/sbs-t/policy/actual
+- timestamp rule (SS3): format only: both values must have the form YYYY-MM-DD-HH.MM.SS.hh0000; their difference is the run clock (INT-Q03)
+- compared: 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, return codes
+- result: **DIFFERENT** - 5 differences, 1 defects, 4 open decisions or gaps, 0 accepted by the timestamp rule
+
+| Class | Differences |
+|---|---|
+| defect | 1 |
+| decision INT-Q04 | 2 |
+| decision INT-Q01 | 2 |
+
+| Where | Field | Legacy | Target | Class | Why |
+|---|---|---|---|---|---|
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 1 (ACCT-ID=2003) | `ACCT-CURR-BAL` | 1247.85 | 1247.86 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2004) | `ACCT-CURR-BAL` | 1234.50 | 1246.85 | decision INT-Q04 | an amount of the account break on the last account record; confirm that this account ends TCATBALF |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2004) | `ACCT-CURR-CYC-CREDIT` | 1234.50 | 0.00 | decision INT-Q04 | an amount of the account break on the last account record; confirm that this account ends TCATBALF |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-AMT` | 12.35 | 12.36 | decision INT-Q01 | one cent apart: rounding instead of cutting off |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-AMT` | 12.34 | 12.35 | decision INT-Q01 | one cent apart: rounding instead of cutting off |
+
+The exit of the side-by-side period (REL-04: cycles without a defect or an unclassified difference; REL-05: the bar for equal) is not decided by this report.
+report: work/sidebyside-java/report.md (legacy fixtures/interest/i02-tie-half-cent/expected, target work/sbs-t/policy/actual)
+make: *** [Makefile:148: sidebyside-java] Error 1
+# exit code 2
+
+(target = the recorded output of another case: differences no decision or gap produces are defects)
+
+$ make sidebyside-java LEGACY=fixtures/interest/i01-baseline/expected TARGET=fixtures/interest/i02-tie-half-cent/expected
+# Side-by-side comparison
+
+- legacy run: fixtures/interest/i01-baseline/expected
+- target run: fixtures/interest/i02-tie-half-cent/expected
+- timestamp rule (SS3): format only: both values must have the form YYYY-MM-DD-HH.MM.SS.hh0000; their difference is the run clock (INT-Q03)
+- compared: 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, return codes
+- result: **DIFFERENT** - 15 differences, 14 defects, 1 open decisions or gaps, 0 accepted by the timestamp rule
+
+| Class | Differences |
+|---|---|
+| defect | 14 |
+| decision INT-Q04 | 1 |
+
+| Where | Field | Legacy | Target | Class | Why |
+|---|---|---|---|---|---|
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 1 (ACCT-ID=2001) | `ACCT-ID` | 2001 | 2003 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 1 (ACCT-ID=2001) | `ACCT-CURR-BAL` | 1010.00 | 1247.85 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-ID` | 2002 | 2004 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-CURR-BAL` | 2400.00 | 1234.50 | decision INT-Q04 | an amount of the account break on the last account record; confirm that this account ends TCATBALF |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-CREDIT-LIMIT` | 6000.00 | 5000.00 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-CASH-CREDIT-LIMIT` | 3000.00 | 2500.00 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-CURR-CYC-CREDIT` | 2400.00 | 1234.50 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-GROUP-ID` | STANDARD | GOLD | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-DESC` | Int. for a/c 00000002001 | Int. for a/c 00000002003 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-AMT` | 10.00 | 12.35 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-CARD-NUM` | 4000000000002001 | 4000000000002003 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-DESC` | Int. for a/c 00000002002 | Int. for a/c 00000002004 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-AMT` | 37.00 | 12.34 | defect | no decision or gap produces this difference |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-CARD-NUM` | 4000000000002002 | 4000000000002004 | defect | no decision or gap produces this difference |
+| SYSOUT INTCALC.STEP15 | `(text)` |  | @@ -2,2 +2,2 @@<br>-000000020010100010000010000{                      <br>-000000020020100010000024000{                      <br>+000000020030100010000012355{                      <br>+000000020040100010000012345{                       | defect | no decision or gap produces this difference |
+
+The exit of the side-by-side period (REL-04: cycles without a defect or an unclassified difference; REL-05: the bar for equal) is not decided by this report.
+report: work/sidebyside-java/report.md (legacy fixtures/interest/i01-baseline/expected, target fixtures/interest/i02-tie-half-cent/expected)
+make: *** [Makefile:148: sidebyside-java] Error 1
+# exit code 2
+
+(a legacy directory without manifest.json: nothing can be compared)
+
+$ make sidebyside-java LEGACY=work/sbs-t/tgt TARGET=work/sbs-t/tgt
+# Side-by-side comparison
+
+- legacy run: work/sbs-t/tgt
+- target run: work/sbs-t/tgt
+- timestamp rule (SS3): format only: both values must have the form YYYY-MM-DD-HH.MM.SS.hh0000; their difference is the run clock (INT-Q03)
+- compared: nothing - the legacy directory has no manifest.json naming its datasets
+- result: **NOT AVAILABLE** - 0 differences, 0 defects, 0 open decisions or gaps, 0 accepted by the timestamp rule
+
+
+The exit of the side-by-side period (REL-04: cycles without a defect or an unclassified difference; REL-05: the bar for equal) is not decided by this report.
+report: work/sidebyside-java/report.md (legacy work/sbs-t/tgt, target work/sbs-t/tgt)
+make: *** [Makefile:148: sidebyside-java] Error 1
+# exit code 2
+
+$ make sidebyside-java LEGACY=fixtures/interest/i01-baseline/expected
+usage: make sidebyside-java LEGACY=<dir> TARGET=<dir> [TS=format|exact]
+make: *** [Makefile:145: sidebyside-java] Error 2
+# exit code 2
+
+$ make sidebyside-java LEGACY=fixtures/interest/i01-baseline/expected TARGET=work/nowhere
+sidebyside-java: LEGACY and TARGET must be directories
+make: *** [Makefile:146: sidebyside-java] Error 2
+# exit code 2
+
+$ make sidebyside-java LEGACY=fixtures/interest/i01-baseline/expected TARGET=work/sbs-t/tgt TS=sometimes
+recon: ts must be format or exact
+report: work/sidebyside-java/report.md (legacy fixtures/interest/i01-baseline/expected, target work/sbs-t/tgt)
+make: *** [Makefile:148: sidebyside-java] Error 2
+# exit code 2

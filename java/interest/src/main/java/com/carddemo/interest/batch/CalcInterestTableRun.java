@@ -225,7 +225,8 @@ public class CalcInterestTableRun implements ItemStream, StepExecutionListener, 
 
     /**
      * A stopped step: FAILED, committed chunks stay committed, the run is marked FAILED in
-     * interest_run. The account the step stopped at is named in the exit description of the step
+     * interest_run, and the run log ends with the lines of the stop and ABENDING PROGRAM (INT-R08).
+     * The account the step stopped at is named in the exit description of the step
      * and of the job (job repository), not in the application log (standards S6.5).
      */
     private ExitStatus stopped(StepExecution stepExecution, String runId, InterestRunStoppedException atEnd) {
@@ -235,6 +236,14 @@ public class CalcInterestTableRun implements ItemStream, StepExecutionListener, 
             } catch (InterestRunStoppedException e) {
                 log.error("run {} step {}: interest_run {} could not be marked FAILED: {}", runId,
                         stepExecution.getStepName(), interestRunId, e.getMessage());
+            }
+        }
+        if (runLog != null) {
+            try {
+                runLog.stopped();
+            } catch (InterestRunStoppedException e) {
+                log.error("run {} step {}: the run log could not take the lines of the stop: {}", runId,
+                        stepExecution.getStepName(), e.getMessage());
             }
         }
         log.error("run {} step {} stopped: accounts committed={}; committed chunks are kept{}", runId,

@@ -27,7 +27,7 @@ CHAIN   ?=
 CASE    ?=
 PY       = python3
 
-.PHONY: up down build run record parity parity-naive parity-java chain-graph chain-graph-check reset baseline shell rules rules-check board-e2e design design-check
+.PHONY: up down build run record parity parity-naive parity-java recon-java sidebyside-java chain-graph chain-graph-check reset baseline shell rules rules-check board-e2e design design-check
 
 up:
 	$(COMPOSE) up -d --build --wait
@@ -106,6 +106,53 @@ parity-java:
 	  $(PY) tools/parity/compare.py interest $$case --actual work/parity-java/$$case/actual --label java --report work/parity-java/report.md || fail=1; \
 	done; \
 	echo "report: work/parity-java/report.md"; exit $$fail
+
+# ------------------------------------- data-move kit (java/interest, ticket 10)
+# recon-java: the reconciliation report (RC1-RC6, TL4) of one loaded and calculated case.
+#   make recon-java CASE=<case>            stage the case (load, calculate, export), then report
+#   make recon-java CASE=<case> STAGE=no   report on what the tables hold now (RUN=<run_id>, default the latest)
+# The report itself only reads.  Output: work/recon-java/<case>/recon.md; the export of the
+# tables: work/recon-java/<case>/actual.  Exit 1 when a line of RC1-RC5 is DIFFERENT or NOT AVAILABLE.
+# sidebyside-java: field-level differences of two output directories in the recorded format
+# (tools/parity/compare.py, unchanged), every difference with its class.
+#   make sidebyside-java LEGACY=<dir> TARGET=<dir> [TS=format|exact]
+# Output: work/sidebyside-java/report.md (and compare.md, the comparator's own report).
+RECON_CMD = java -cp $(INTEREST_JAR) -Dloader.main=com.carddemo.interest.recon.ReconCommand org.springframework.boot.loader.launch.PropertiesLauncher
+STAGE    ?= yes
+RUN      ?=
+TS       ?= format
+LEGACY   ?=
+TARGET   ?=
+
+recon-java:
+	@test -n "$(CASE)" || { echo "usage: make recon-java CASE=<interest case> [STAGE=no [RUN=<run_id>]]"; exit 2; }
+	$(COMPOSE) up -d --wait db
+	mvn -q -f java/interest/pom.xml -DskipTests package
+	@db=$$($(COMPOSE) ps -q db); out=work/recon-java/$(CASE); in=fixtures/interest/$(CASE)/input; \
+	jre="docker run --rm --network container:$$db --user $(UID):$(GID) -v $(CURDIR):/estate -w /estate $(INTEREST_JRE)"; \
+	if [ "$(STAGE)" = yes ]; then \
+	  rm -rf $$out; mkdir -p $$out; \
+	  $$jre java -jar $(INTEREST_JAR) --interest.clock.frozen="$(INTEREST_CLOCK)" --logging.level.root=WARN \
+	    parmDate=$(INTEREST_PARM) runId=$$(date +%s)-$$$$-$(CASE) format=fixture inputDir=$$in outputDir=$$out/calculated \
+	  && $$jre $(RECON_CMD) stage parmDate=$(INTEREST_PARM) format=fixture inputDir=$$in calculatedDir=$$out/calculated outputDir=$$out/actual \
+	  || { echo "interest/$(CASE): the case could not be staged"; exit 2; }; \
+	fi; \
+	mkdir -p $$out; \
+	$$jre $(RECON_CMD) report title=interest/$(CASE) format=fixture inputDir=$$in reportFile=$$out/recon.md $(if $(RUN),runId=$(RUN)); \
+	rc=$$?; echo "report: $$out/recon.md"; exit $$rc
+
+sidebyside-java:
+	@test -n "$(LEGACY)" -a -n "$(TARGET)" || { echo "usage: make sidebyside-java LEGACY=<dir> TARGET=<dir> [TS=format|exact]"; exit 2; }
+	@test -d "$(LEGACY)" -a -d "$(TARGET)" || { echo "sidebyside-java: LEGACY and TARGET must be directories"; exit 2; }
+	mvn -q -f java/interest/pom.xml -DskipTests package
+	@out=work/sidebyside-java; rm -rf $$out; mkdir -p $$out/legacy/interest/run $$out/target; \
+	cp -r "$(LEGACY)" $$out/legacy/interest/run/expected; cp -r "$(TARGET)" $$out/target/actual; \
+	$(PY) -c 'import sys; from pathlib import Path; from tools.parity import compare; out = Path(sys.argv[1]); compare.FIXTURES = out / "legacy"; diffs, checked = compare.compare_case("interest", "run", out / "target" / "actual"); compare.write_report(out / "compare.md", "interest", "side by side", "target", diffs, checked); esc = lambda v: str(v).replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n"); head = ["#checked\t%d datasets, %d records, %d decoded fields, %d SYSOUT files, return codes" % (checked["datasets"], checked["records"], checked["fields"], checked["sysout"])] if checked["datasets"] else ["#nothing"]; (out / "differences.tsv").write_text("\n".join(head + ["\t".join(esc(d[k]) for k in ("where", "field", "expected", "actual")) for d in diffs]) + "\n", encoding="latin-1")' $$out \
+	|| { echo "sidebyside-java: tools/parity/compare.py could not compare the two directories"; exit 2; }; \
+	docker run --rm --user $(UID):$(GID) -v $(CURDIR):/estate -w /estate $(INTEREST_JRE) \
+	  $(RECON_CMD) classify legacy=$$out/legacy/interest/run/expected target=$$out/target/actual ts=$(TS) \
+	    legacyName="$(LEGACY)" targetName="$(TARGET)" differences=$$out/differences.tsv reportFile=$$out/report.md; \
+	rc=$$?; echo "report: $$out/report.md (legacy $(LEGACY), target $(TARGET))"; exit $$rc
 
 # ------------------------------------------------------------ discovery graph
 chain-graph:

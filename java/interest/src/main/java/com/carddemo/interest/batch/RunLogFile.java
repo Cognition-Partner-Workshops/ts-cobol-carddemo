@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 
 import com.carddemo.interest.domain.InterestRunStoppedException;
+import com.carddemo.interest.domain.RunLogLines;
 import com.carddemo.interest.domain.StopReason;
 import com.carddemo.interest.port.RunLog;
 
@@ -22,6 +23,7 @@ import com.carddemo.interest.port.RunLog;
  * <p>Restart (architecture.md section 6): the lines of a chunk reach the file when the chunk
  * commits, and the length of the file at that moment is part of the step's restart state. A
  * restart cuts the file back to that length, so no line is missing and none is written twice.
+ * A run that stops keeps its work file, ending with the lines of the stop (ticket 08).
  */
 final class RunLogFile implements RunLog {
 
@@ -35,9 +37,8 @@ final class RunLogFile implements RunLog {
     private FileChannel channel;
 
     RunLogFile(Path outputDir, String runId, Charset charset) {
-        Path output = outputDir.toAbsolutePath().normalize();
-        this.workFile = output.resolveSibling(output.getFileName() + ".calc-runlog-" + runId);
-        this.completedFile = output.resolve(RUN_LOG_FILE);
+        this.workFile = workFileOf(outputDir, runId);
+        this.completedFile = outputDir.toAbsolutePath().normalize().resolve(RUN_LOG_FILE);
         this.charset = charset;
     }
 
@@ -93,6 +94,25 @@ final class RunLogFile implements RunLog {
         } catch (IOException e) {
             throw new InterestRunStoppedException(StopReason.WRITE_OUTPUT, "cannot write the run log", e);
         }
+    }
+
+    /**
+     * Abnormal end (INT-R08, CBACT04C:628-632): the lines of the chunk that did not commit, which
+     * hold the message of the stop, reach the work file with ABENDING PROGRAM as the last line. The
+     * committed length of the restart state is not moved, so a restart cuts these lines off again.
+     */
+    void stopped() {
+        if (channel == null) {
+            return;
+        }
+        line(RunLogLines.ABENDING);
+        commitLength();
+    }
+
+    /** Where the log of a run is while the run is not completed; a stopped run leaves it there. */
+    static Path workFileOf(Path outputDir, String runId) {
+        Path output = outputDir.toAbsolutePath().normalize();
+        return output.resolveSibling(output.getFileName() + ".calc-runlog-" + runId);
     }
 
     /** Normal end: the work file becomes sysout/INTCALC.STEP15.txt of the output directory. */

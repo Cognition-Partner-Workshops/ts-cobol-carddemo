@@ -10,6 +10,22 @@ success. What the code must be is `.agents/skills/interest-conversion-standards/
 points to its sections and does not repeat them. Set up the shell as in `interest-ticket-build` steps 1-2
 first. Run every command from the repository root.
 
+Corrected in step 5b from what the sessions of tickets 02 to 10 reported. The quoted outputs are the
+pilot's. Since ticket 09 `make parity-java` is the gate: every case runs the whole job under profile
+`tables` (load, calculation on the tables, export), all seven cases end with exit code 0, each case also
+writes `work/parity-java/<case>/recon.md` (RC1-RC5 against `interest_run`), and the variables
+`PARITY_JAVA_OUT` and `ROUNDING` exist (`make parity-java ROUNDING=HALF_EVEN PARITY_JAVA_OUT=work/parity-java-half-even`
+is the negative control). Where a step below shows i03 and i04 ending with 12, that is the pilot's code.
+
+**When the ticket's proof is not job output through the comparator** (a schema, a loader whose result is
+tables, code that is not yet a step of the job, a tool with its own make targets): the proof is the
+ticket's own test or command - the integration test, `db/postgres/tests/run.sh`, the make target - and
+its output goes into the evidence directory of step 8 under a name that says what it is. The comparator
+run of steps 1 and 3 then only shows that nothing changed; say so in `parity-report.md`, and add by hand
+the section for what the ticket proved another way (through the tables, or on a directory the ticket
+wrote itself and compared with `compare.py --actual <dir>`). A ticket that names no fixture case writes
+`parity-report.md` by hand: `parity-report.sh` needs at least one case.
+
 ## Workflow
 
 1. **Run the job on a case the ticket names and compare (FI-6).**
@@ -149,7 +165,11 @@ first. Run every command from the repository root.
     carddemo     | transaction_type_categor
    ```
    The job repository is in schema `batch`. The same assertions run in `InterestCalcJobIT` on a
-   Testcontainers `postgres:15`; a ticket that adds tables changes the expected list there.
+   Testcontainers `postgres:15`; a ticket that adds tables changes the expected list there only when
+   the test's container applies them: it does not apply `db/postgres` by itself, so a ticket that only
+   adds a script under `db/postgres` (ticket 02) leaves the list as it is. Since ticket 09 the RC1-RC5
+   assertions are part of `make parity-java` (`work/parity-java/<case>/recon.md`); psql by hand is only
+   needed to look further.
 
 8. **Write the evidence, from the committed revision, in the ticket's own directory.** Commit the code
    first, then produce the files, then commit them alone, so the evidence names the revision it came
@@ -165,6 +185,7 @@ first. Run every command from the repository root.
    | `test-output.txt` | the command below |
    | `parity-report.md` | `.agents/skills/interest-ticket-verify/parity-report.sh <ticket file name> <case the ticket names> [...]` |
    | `report.md` (the ticket's report) | by hand, step 9 |
+   | further output the ticket's Verification names (for example `switch-test-output.txt`, `kit-output.txt`) | the command the Verification gives, under a name that says what it is |
 
    The commands were run in step 5a with ticket 01, the only ticket built, to prove them; that
    directory was removed again and is not in the repository.
@@ -202,7 +223,12 @@ first. Run every command from the repository root.
    run with the job's output files, all cases, the comparator's report, job repository and schema. It
    exits 0 when every case named on the command line passes. In the result table it leaves
    `_fill in_` in the columns "In the ticket's scope" and "Why" of the cases the ticket does not name:
-   complete them by hand. A ticket name with no file under `modernization/design/tickets`, or a case
+   complete them by hand. For a case named on the command line "Why" is left empty, not `_fill in_`,
+   and the scope column says "acceptance case of the ticket": correct that label by hand when the
+   ticket's acceptance is not `make parity-java`. The script pulls `eclipse-temurin:21-jre` quietly
+   before the run, so the pull progress does not land in the report. Run again on a ticket whose
+   evidence is already committed, it no longer writes "with uncommitted changes" for files under
+   `java/interest/evidence`. A ticket name with no file under `modernization/design/tickets`, or a case
    with no directory under `fixtures/interest`, ends the script with exit code 2
    (`no ticket file modernization/design/tickets/99-nothing.md`). `REPORT=<file>` writes somewhere else.
 

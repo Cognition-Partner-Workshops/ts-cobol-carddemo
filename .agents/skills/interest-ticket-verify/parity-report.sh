@@ -37,6 +37,7 @@ for case in $ticketCases; do
   rm -rf "$logDir/actual-$case"; cp -r "work/parity-java/$case/actual" "$logDir/actual-$case" 2>/dev/null
 done
 
+docker pull -q eclipse-temurin:21-jre > /dev/null 2>&1
 make parity-java > "$logDir/all.log" 2>&1; allExit=$?
 
 rm -f work/parity-java/compare.md; : > "$logDir/cases.tsv"
@@ -52,7 +53,7 @@ fence='```'
 {
   echo "# Parity report - ticket $ticket (java/interest)"
   echo
-  echo "Revision of the code: \`$(git rev-parse HEAD)\` (branch \`$(git rev-parse --abbrev-ref HEAD)\`$(git diff --quiet HEAD -- java Makefile || echo ', with uncommitted changes'))."
+  echo "Revision of the code: \`$(git rev-parse HEAD)\` (branch \`$(git rev-parse --abbrev-ref HEAD)\`$(git diff --quiet HEAD -- java Makefile ':(exclude)java/interest/evidence' || echo ', with uncommitted changes'))."
   echo "Produced $(date -u +%Y-%m-%dT%H:%M:%SZ), comparator \`tools/parity/compare.py\` unchanged."
   echo
   echo "## Result per case"

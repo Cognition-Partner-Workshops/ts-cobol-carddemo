@@ -7,14 +7,26 @@ package com.carddemo.interest.domain;
 public class InterestRunStoppedException extends RuntimeException {
 
     private final StopReason reason;
+    private final LegacyFile file;
 
     public InterestRunStoppedException(StopReason reason, String detail) {
         this(reason, detail, null);
     }
 
     public InterestRunStoppedException(StopReason reason, String detail, Throwable cause) {
+        this(reason, null, detail, cause);
+    }
+
+    /** OPEN_INPUT carries the file that could not be opened as data (standards section 6). */
+    public InterestRunStoppedException(StopReason reason, LegacyFile file, String detail, Throwable cause) {
         super(reason + " (" + reason.ruleId() + "): " + detail, cause);
         this.reason = reason;
+        this.file = file;
+    }
+
+    /** The file of an OPEN_INPUT stop; null for every other reason and where the adapter did not name one. */
+    public LegacyFile file() {
+        return file;
     }
 
     public StopReason reason() {

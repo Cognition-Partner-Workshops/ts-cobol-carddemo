@@ -218,6 +218,8 @@ first. Run every command from the repository root.
    | `parity-report.md` | `.agents/skills/interest-ticket-verify/parity-report.sh <ticket file name> <case the ticket names> [...]` |
    | `schema-test-output.txt` | tickets with SQL assertions under `db/postgres/tests`: `db/postgres/tests/run.sh > java/interest/evidence/<ticket file name>/schema-test-output.txt 2>&1` |
    | `switch-test-output.txt` | tickets with switch tests: the step 4 command once per switch value, each followed by the job exit code, the comparator line and the rows of its report |
+   | `recon-report.md` | ticket 10: the output of `make recon-java`, the error-path run, then `work/recon-java/report.md` (the seven reports) |
+   | `sidebyside-report.md` | ticket 10: the output of `make sidebyside-java`, of `TS=exact`, of a target run with `INTEREST_OPTS=--interest.policy.rounding=HALF_EVEN INTEREST_CLOCK="2022-08-05 11:00:00.00"` under both rules, then `work/sidebyside-java/report.md` |
    | `report.md` (the ticket's report) | by hand, step 9 |
 
    The commands were run in step 5a with ticket 01, the only ticket built, to prove them; that

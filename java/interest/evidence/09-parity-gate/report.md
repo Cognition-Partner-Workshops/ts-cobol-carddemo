@@ -10,7 +10,7 @@ Evidence in this directory: `test-output.txt`, `parity-report.md`, `switch-test-
 | Run: make parity-java. 7 of 7 cases PASS in work/parity-java/report.md | yes | `parity-report.md`: "All cases" (exit code 0) and "The gate's own report" (Gate: PASS, seven rows `0 / PASS / PASS`). Every launch is loadExtractsStep, calcInterestStep on the tables, exportDatasetsStep ("Job repository") |
 | the legacy make parity is still green | yes | `parity-report.md`, last section: `make up && make build && make parity`, 27 cases PASS, exit code 0 |
 | Negative control: with interest.policy.rounding=HALF_EVEN the gate fails on i02-tie-half-cent only | yes | `switch-test-output.txt`: exit code non-zero, i02 FAIL with 2 differences (TRAN-AMT 12.35/12.36, ACCT-CURR-BAL 1247.85/1247.86), six cases PASS, every job exit code 0 |
-| CI: the workflow runs the gate and the negative control on every pull request and uploads the report | see section 6 | `.github/workflows/parity.yml`: five new steps; the run of the last commit is named in section 6 |
+| CI: the workflow runs the gate and the negative control on every pull request and uploads the report | yes (the check is not marked required: a branch protection setting) | `.github/workflows/parity.yml`: five new steps; the run is named at the end of this file |
 | Errors: a case whose run fails is reported as failed, not skipped | yes | `switch-test-output.txt`: a job ending with exit code 12 gives `java job ended with exit code 12`, comparator FAIL, interest_run FAIL, a row in the summary and a non-zero exit of the target |
 | Database assertions: after each case RC1, RC2 and RC5 hold in interest_run | yes | the gate: 20 assertions per case against the input files and the exported files (`parity-report.md`, "The gate's own report"); `InterestJobTablesIT.fixtureCase_loadCalcExportGiveTheRecordedFiles` with the figures of the RC table of strategy-interest.md |
 | java/interest/README.md lists every legacy behaviour reproduced on purpose, each with its decision id | yes | `java/interest/README.md`, "Legacy behaviours reproduced on purpose" |
@@ -142,3 +142,13 @@ CI run of the last code commit: see the end of this file.
 None added to `java/interest/pom.xml` (frozen). The tests use Mockito, which `spring-boot-starter-test` already brings.
 CI: `actions/setup-java@v4` (Temurin 21) to build and test `java/interest` on the runner; the alternative, building
 inside a Maven container, would not give Testcontainers the runner's Docker as simply.
+
+## CI run (Final-revision evidence of the ticket)
+
+Workflow `estate-parity`, job `parity`, event `pull_request`, commit `87fbae6cfe552cb52b3a02891dc7ce939685152e`
+(code commit `93d0eee` plus the first evidence commit; the commit that adds this section changes this file only):
+https://github.com/Cognition-Partner-Workshops/ts-cobol-carddemo/actions/runs/43714496306 - success. Steps: legacy
+`make parity` and `make parity-naive` as before; `mvn -B -f java/interest/pom.xml verify` (234 unit, 101 integration
+tests, BUILD SUCCESS); `make parity-java` (seven cases PASS, 20 of 20 assertions each); the negative control (i02 FAIL
+with 2 differences, six PASS); artifact `parity-java-report` uploaded (both `report.md` files and the log of the
+negative control). Section 1, line "CI": met.

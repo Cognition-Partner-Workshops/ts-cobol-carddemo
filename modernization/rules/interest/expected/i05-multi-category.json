@@ -1,0 +1,471 @@
+{
+ "case": "i05-multi-category",
+ "status": "OPEN",
+ "notice": "Derived from rules.yaml and this case's input/ files only. Not SME sign-off; the recorded legacy output under fixtures/ was not read.",
+ "derivedFrom": {
+  "rules": "modernization/rules/interest/rules.yaml",
+  "inputs": [
+   "fixtures/interest/i05-multi-category/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt",
+   "fixtures/interest/i05-multi-category/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt",
+   "fixtures/interest/i05-multi-category/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt",
+   "fixtures/interest/i05-multi-category/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt"
+  ]
+ },
+ "rulesExercised": [
+  "INT-H01",
+  "INT-Q02",
+  "INT-Q03",
+  "INT-Q04",
+  "INT-R01",
+  "INT-R02",
+  "INT-R05",
+  "INT-R06"
+ ],
+ "openRules": [
+  "INT-Q02",
+  "INT-Q03",
+  "INT-Q04"
+ ],
+ "optionsNotDerivable": [
+  {
+   "rule": "INT-H01",
+   "option": "B",
+   "label": "Fees belong here - the business supplies the fee rule",
+   "outcome": "Would add fee transactions and change balances; the amounts cannot be derived because the estate contains no fee rule."
+  }
+ ],
+ "run": {
+  "end": {
+   "value": "normal end, return code 0",
+   "status": "DETERMINED",
+   "rules": [
+    "INT-T03"
+   ]
+  },
+  "sysout": {
+   "value": [
+    "START OF EXECUTION OF PROGRAM CBACT04C",
+    "000000020070100010000010000{",
+    "000000020070100020000005000{",
+    "END OF EXECUTION OF PROGRAM CBACT04C"
+   ],
+   "status": "DETERMINED",
+   "rules": [
+    "INT-R01",
+    "INT-T02"
+   ],
+   "lineRules": [
+    [
+     "INT-T02"
+    ],
+    [
+     "INT-T02",
+     "INT-R01"
+    ],
+    [
+     "INT-T02",
+     "INT-R01"
+    ],
+    [
+     "INT-T02"
+    ]
+   ]
+  }
+ },
+ "balances": [
+  {
+   "key": "00000002007/01/0001",
+   "rateGroup": {
+    "value": "GOLD",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R01",
+     "INT-R02"
+    ]
+   },
+   "ratePercent": {
+    "value": "12.00",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R01",
+     "INT-R02"
+    ]
+   },
+   "interestTransactionWritten": {
+    "value": true,
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R01",
+     "INT-R02",
+     "INT-R04",
+     "INT-R05"
+    ]
+   },
+   "TRAN-ID": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q02"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q02",
+      "option": "A",
+      "label": "Keep as coded - the PARM literal of the job, changed by hand or by the scheduler for each run",
+      "asCoded": true,
+      "value": "2022071800000001"
+     },
+     {
+      "rule": "INT-Q02",
+      "option": "B",
+      "label": "Take it from the date of the run (YYYYMMDD followed by 00)",
+      "asCoded": false,
+      "value": "2022070500000001"
+     }
+    ]
+   },
+   "TRAN-TYPE-CD": {
+    "value": "01",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-CAT-CD": {
+    "value": "0005",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-SOURCE": {
+    "value": "System",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-DESC": {
+    "value": "Int. for a/c 00000002007",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06",
+     "INT-T04"
+    ]
+   },
+   "TRAN-AMT": {
+    "value": "10.00",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R05",
+     "INT-Q01"
+    ]
+   },
+   "TRAN-MERCHANT-ID": {
+    "value": "000000000",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-MERCHANT-NAME": {
+    "value": "",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-MERCHANT-CITY": {
+    "value": "",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-MERCHANT-ZIP": {
+    "value": "",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-CARD-NUM": {
+    "value": "4000000000002007",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-ORIG-TS": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q03",
+     "INT-T05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q03",
+      "option": "A",
+      "label": "Keep as coded - the system clock of the run",
+      "asCoded": true,
+      "value": "2022-07-05-10.00.00.000000"
+     },
+     {
+      "rule": "INT-Q03",
+      "option": "B",
+      "label": "The cycle date of the PARM at 00.00.00",
+      "asCoded": false,
+      "value": "2022-07-18-00.00.00.000000"
+     }
+    ]
+   },
+   "TRAN-PROC-TS": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q03",
+     "INT-T05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q03",
+      "option": "A",
+      "label": "Keep as coded - the system clock of the run",
+      "asCoded": true,
+      "value": "2022-07-05-10.00.00.000000"
+     },
+     {
+      "rule": "INT-Q03",
+      "option": "B",
+      "label": "The cycle date of the PARM at 00.00.00",
+      "asCoded": false,
+      "value": "2022-07-18-00.00.00.000000"
+     }
+    ]
+   }
+  },
+  {
+   "key": "00000002007/01/0002",
+   "rateGroup": {
+    "value": "GOLD",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R01",
+     "INT-R02"
+    ]
+   },
+   "ratePercent": {
+    "value": "18.00",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R01",
+     "INT-R02"
+    ]
+   },
+   "interestTransactionWritten": {
+    "value": true,
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R01",
+     "INT-R02",
+     "INT-R04",
+     "INT-R05"
+    ]
+   },
+   "TRAN-ID": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q02"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q02",
+      "option": "A",
+      "label": "Keep as coded - the PARM literal of the job, changed by hand or by the scheduler for each run",
+      "asCoded": true,
+      "value": "2022071800000002"
+     },
+     {
+      "rule": "INT-Q02",
+      "option": "B",
+      "label": "Take it from the date of the run (YYYYMMDD followed by 00)",
+      "asCoded": false,
+      "value": "2022070500000002"
+     }
+    ]
+   },
+   "TRAN-TYPE-CD": {
+    "value": "01",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-CAT-CD": {
+    "value": "0005",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-SOURCE": {
+    "value": "System",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-DESC": {
+    "value": "Int. for a/c 00000002007",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06",
+     "INT-T04"
+    ]
+   },
+   "TRAN-AMT": {
+    "value": "7.50",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R05",
+     "INT-Q01"
+    ]
+   },
+   "TRAN-MERCHANT-ID": {
+    "value": "000000000",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-MERCHANT-NAME": {
+    "value": "",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-MERCHANT-CITY": {
+    "value": "",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-MERCHANT-ZIP": {
+    "value": "",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-CARD-NUM": {
+    "value": "4000000000002007",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-R06"
+    ]
+   },
+   "TRAN-ORIG-TS": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q03",
+     "INT-T05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q03",
+      "option": "A",
+      "label": "Keep as coded - the system clock of the run",
+      "asCoded": true,
+      "value": "2022-07-05-10.00.00.000000"
+     },
+     {
+      "rule": "INT-Q03",
+      "option": "B",
+      "label": "The cycle date of the PARM at 00.00.00",
+      "asCoded": false,
+      "value": "2022-07-18-00.00.00.000000"
+     }
+    ]
+   },
+   "TRAN-PROC-TS": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q03",
+     "INT-T05"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q03",
+      "option": "A",
+      "label": "Keep as coded - the system clock of the run",
+      "asCoded": true,
+      "value": "2022-07-05-10.00.00.000000"
+     },
+     {
+      "rule": "INT-Q03",
+      "option": "B",
+      "label": "The cycle date of the PARM at 00.00.00",
+      "asCoded": false,
+      "value": "2022-07-18-00.00.00.000000"
+     }
+    ]
+   }
+  }
+ ],
+ "accounts": [
+  {
+   "ACCT-ID": "00000002007",
+   "ACCT-CURR-BAL": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q04"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q04",
+      "option": "A",
+      "label": "Keep as coded - the last account is not updated",
+      "asCoded": true,
+      "value": "1500.00"
+     },
+     {
+      "rule": "INT-Q04",
+      "option": "B",
+      "label": "Update the last account like the others",
+      "asCoded": false,
+      "value": "1517.50"
+     }
+    ]
+   },
+   "ACCT-CURR-CYC-CREDIT": {
+    "status": "OPEN",
+    "rules": [
+     "INT-Q04"
+    ],
+    "candidates": [
+     {
+      "rule": "INT-Q04",
+      "option": "A",
+      "label": "Keep as coded - the last account is not updated",
+      "asCoded": true,
+      "value": "1500.00"
+     },
+     {
+      "rule": "INT-Q04",
+      "option": "B",
+      "label": "Update the last account like the others",
+      "asCoded": false,
+      "value": "0.00"
+     }
+    ]
+   },
+   "ACCT-CURR-CYC-DEBIT": {
+    "value": "0.00",
+    "status": "DETERMINED",
+    "rules": [
+     "INT-Q04"
+    ]
+   }
+  }
+ ]
+}

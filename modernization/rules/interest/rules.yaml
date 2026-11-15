@@ -1,0 +1,584 @@
+# Business rules of the interest stream (INTCALC -> CBACT04C)
+#
+# NOT SME SIGN-OFF. Everything here was read out of the code and the stream
+# manifest. No business owner has confirmed any entry. QUIRK and HOLE entries
+# are open questions (decisions.md); RULE entries still need a reviewer's
+# Approve on the board (rules-INTCALC.html).
+#
+# Built from the call graph: modernization/streams/interest/manifest.json
+# (edges C1-C3, I1-I5, D1-D10) and modernization/legacy/call-graph.md, walking
+# job step -> program entry -> each PERFORM-ed paragraph in execution order.
+# Regenerate the board, register and expectations with `make rules`.
+
+summary: |
+  Once a month the job INTCALC charges interest on card accounts. It runs one
+  program, CBACT04C, which reads the file of balances that the posting job
+  keeps per account and per kind of transaction (purchases, cash advances,
+  payments and so on).
+
+  For each of those balances the program looks up the yearly interest rate that
+  applies to the account's disclosure group and to that kind of transaction. If
+  the group has no rate of its own, the rate of the group called DEFAULT is
+  used. A rate of zero means no interest. Otherwise one month of interest is
+  worked out as balance x yearly rate / 1200 and cut off at the cent, and one
+  interest transaction for that amount is written to a new transaction file,
+  which a later job merges into the transaction history.
+
+  When the program moves on to the next account, it adds the interest of the
+  account it just finished to that account's current balance and sets the
+  account's cycle credit and cycle debit to zero.
+
+  Things a business owner should know before this is rebuilt: interest is cut
+  off, not rounded; the last account on the file gets its interest transactions
+  but its balance is never updated; a credit (negative) balance gets negative
+  interest; the transaction id starts with a date typed into the job, and the
+  timestamp is the moment the job ran; fees are announced in the job but not
+  calculated; and nothing stops a second run from charging the same interest
+  again.
+
+stream:
+  manifest: modernization/streams/interest/manifest.json
+  callGraph: modernization/legacy/call-graph.md
+  job: INTCALC
+  step: STEP15
+  program: CBACT04C
+  source: app/cbl/CBACT04C.cbl
+  fixtures: fixtures/interest
+
+types:
+  RULE: policy implemented on purpose
+  QUIRK: behaviour that follows from how the code is written, not confirmed as policy
+  HOLE: a case the code does not handle or the estate does not show
+
+# Values the run takes from outside the input files. The evaluator reads them
+# here, not from the JCL or the harness.
+runParameters:
+  parmDate:
+    value: "2022071800"
+    source: app/jcl/INTCALC.jcl:22
+    note: PARM of STEP15, a literal in the JCL member
+  runClock:
+    value: "2022-07-05 10:00:00.00"
+    source: tools/runjcl/chains.json:45
+    note: clock the off-host harness freezes for the interest chain; on the host it is the time of the run
+
+# Where the evaluator finds each field in a case's input/ files (one record per
+# line, zoned decimals with the sign in the last character). Layout only.
+inputLayouts:
+  balances:
+    file: AWS.M2.CARDDEMO.TCATBALF.PS.txt
+    source: app/cpy/CVTRA01Y.cpy:4-10
+    fields:
+      TRANCAT-ACCT-ID: {at: 0, len: 11}
+      TRANCAT-TYPE-CD: {at: 11, len: 2}
+      TRANCAT-CD: {at: 13, len: 4}
+      TRAN-CAT-BAL: {at: 17, len: 11, decimals: 2}
+  rates:
+    file: AWS.M2.CARDDEMO.DISCGRP.PS.txt
+    source: app/cpy/CVTRA02Y.cpy:4-10
+    fields:
+      DIS-ACCT-GROUP-ID: {at: 0, len: 10}
+      DIS-TRAN-TYPE-CD: {at: 10, len: 2}
+      DIS-TRAN-CAT-CD: {at: 12, len: 4}
+      DIS-INT-RATE: {at: 16, len: 6, decimals: 2}
+  accounts:
+    file: AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+    source: app/cpy/CVACT01Y.cpy:4-17
+    fields:
+      ACCT-ID: {at: 0, len: 11}
+      ACCT-ACTIVE-STATUS: {at: 11, len: 1}
+      ACCT-CURR-BAL: {at: 12, len: 12, decimals: 2}
+      ACCT-CURR-CYC-CREDIT: {at: 78, len: 12, decimals: 2}
+      ACCT-CURR-CYC-DEBIT: {at: 90, len: 12, decimals: 2}
+      ACCT-GROUP-ID: {at: 112, len: 10}
+  cards:
+    file: AWS.M2.CARDDEMO.CARDXREF.PS.txt
+    source: app/cpy/CVACT03Y.cpy:4-8
+    fields:
+      XREF-CARD-NUM: {at: 0, len: 16}
+      XREF-ACCT-ID: {at: 25, len: 11}
+
+rules:
+  - id: INT-R01
+    type: RULE
+    title: One interest decision per category balance
+    statement: Every balance on the category-balance file is considered once, in account, transaction-type and category order, and the balances of one account are handled together.
+    source:
+      - app/cbl/CBACT04C.cbl:188-222
+      - app/cbl/CBACT04C.cbl:325-348
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1000-TCATBALF-GET-NEXT -> D1 (read TCATBALF, sequential by key)
+    fixtures: [i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding]
+    logic:
+      order: [TRANCAT-ACCT-ID, TRANCAT-TYPE-CD, TRANCAT-CD]
+
+  - id: INT-R02
+    type: RULE
+    title: Rate comes from the account's disclosure group
+    statement: The yearly interest rate for a balance is the one listed for the account's disclosure group, the balance's transaction type and its category.
+    source:
+      - app/cbl/CBACT04C.cbl:202-203
+      - app/cbl/CBACT04C.cbl:210-213
+      - app/cbl/CBACT04C.cbl:415-420
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1100-GET-ACCT-DATA -> D4 (read ACCTFILE by account id) -> 1200-GET-INTEREST-RATE -> D6 (read DISCGRP by group, type, category)
+    fixtures: [i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding]
+    logic:
+      rateKey: [ACCT-GROUP-ID, TRANCAT-TYPE-CD, TRANCAT-CD]
+
+  - id: INT-R03
+    type: RULE
+    title: Fallback to the DEFAULT disclosure group
+    statement: When the account's disclosure group has no rate for the balance's transaction type and category, the rate of the group named DEFAULT for the same type and category is used and the job log says so.
+    source:
+      - app/cbl/CBACT04C.cbl:416-420
+      - app/cbl/CBACT04C.cbl:436-439
+      - app/cbl/CBACT04C.cbl:443-444
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1200-GET-INTEREST-RATE (status 23) -> 1200-A-GET-DEFAULT-INT-RATE -> D6 (read DISCGRP by DEFAULT, type, category)
+    fixtures: [i04-default-group-fallback]
+    logic:
+      defaultGroup: DEFAULT
+      messages: [DISCLOSURE GROUP RECORD MISSING, TRY WITH DEFAULT GROUP CODE]
+
+  - id: INT-R04
+    type: RULE
+    title: A zero rate means no interest
+    statement: A balance whose rate is zero gets no interest and no interest transaction.
+    source:
+      - app/cbl/CBACT04C.cbl:214-217
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop (IF DIS-INT-RATE NOT = 0) -> no data edge
+    fixtures: [i03-zero-rate-skipped]
+    logic:
+      skipZeroRate: true
+
+  - id: INT-R05
+    type: RULE
+    title: Monthly interest formula
+    statement: One month of interest on a balance is the balance multiplied by the yearly rate in percent and divided by 1200.
+    source:
+      - app/cbl/CBACT04C.cbl:464-465
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1300-COMPUTE-INTEREST -> no data edge
+    fixtures: [i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding]
+    logic:
+      divisor: 1200
+
+  - id: INT-Q01
+    type: QUIRK
+    title: Interest is cut off at the cent, not rounded
+    statement: The interest amount is truncated to two decimals towards zero, so 12.355 is charged as 12.35.
+    source:
+      - app/cbl/CBACT04C.cbl:464-465
+      - app/cbl/CBACT04C.cbl:168
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1300-COMPUTE-INTEREST (COMPUTE without ROUNDED into S9(09)V99) -> no data edge
+    fixtures: [i02-tie-half-cent, i07-nontie-rounding]
+    why: The COMPUTE statement has no ROUNDED phrase; nothing in the estate says truncation was chosen. docs/BASELINE.md:104-106 records it as behaviour to keep for parity, which is not a statement of policy.
+    question: Should monthly interest be cut off at the cent, or rounded?
+    options:
+      - id: A
+        label: Keep as coded - truncate towards zero
+        asCoded: true
+        set: {rounding: truncate}
+      - id: B
+        label: Round half up to the nearest cent
+        set: {rounding: halfUp}
+      - id: C
+        label: Round half to even (banker's rounding)
+        set: {rounding: halfEven}
+
+  - id: INT-R06
+    type: RULE
+    title: Interest is posted as a system transaction
+    statement: Each interest amount is written as one transaction of type 01 and category 0005 from source System, described as "Int. for a/c" followed by the account number, with no merchant and carrying the account's card number.
+    source:
+      - app/cbl/CBACT04C.cbl:482-495
+      - app/cbl/CBACT04C.cbl:500
+      - app/cbl/CBACT04C.cbl:204-205
+      - app/cbl/CBACT04C.cbl:393-398
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1110-GET-XREF-DATA -> D2/D3 (read XREFFILE by account id) -> 1300-COMPUTE-INTEREST -> 1300-B-WRITE-TX -> D7 (write TRANSACT, SYSTRAN(+1))
+    fixtures: [i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding]
+    logic:
+      tranTypeCd: "01"
+      tranCatCd: "0005"
+      tranSource: System
+      descPrefix: "Int. for a/c "
+      merchantId: "000000000"
+
+  - id: INT-Q02
+    type: QUIRK
+    title: Transaction id is the job's PARM date plus a counter
+    statement: The transaction id is the ten characters typed into the job's PARM followed by a six-digit counter that starts at 000001 in every run.
+    source:
+      - app/cbl/CBACT04C.cbl:474-480
+      - app/cbl/CBACT04C.cbl:173
+      - app/cbl/CBACT04C.cbl:176-178
+      - app/jcl/INTCALC.jcl:22
+    callPath: INTCALC.STEP15 (PARM) -> CBACT04C -> main loop -> 1300-COMPUTE-INTEREST -> 1300-B-WRITE-TX -> D8 (read PARM-DATE) -> D7 (write TRANSACT)
+    fixtures: [i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding]
+    why: The PARM is the literal 2022071800 in the JCL member and the estate does not show who changes it (stream ask A2). Two runs with the same PARM produce the same ids.
+    question: Where should the date part of the interest transaction id come from?
+    options:
+      - id: A
+        label: Keep as coded - the PARM literal of the job, changed by hand or by the scheduler for each run
+        asCoded: true
+        set: {idPrefix: parm}
+      - id: B
+        label: Take it from the date of the run (YYYYMMDD followed by 00)
+        set: {idPrefix: runDate}
+
+  - id: INT-Q03
+    type: QUIRK
+    title: Timestamps are the moment the job ran
+    statement: The original and the processing timestamp of an interest transaction are both the system clock at the moment the record is written, to the hundredth of a second, not the cycle date.
+    source:
+      - app/cbl/CBACT04C.cbl:496-498
+      - app/cbl/CBACT04C.cbl:613-624
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1300-COMPUTE-INTEREST -> 1300-B-WRITE-TX -> Z-GET-DB2-FORMAT-TIMESTAMP -> D9 (read system clock) -> D7 (write TRANSACT)
+    fixtures: [i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding]
+    why: A run after midnight or a late rerun stamps a date different from the cycle date in the transaction id; the estate does not say which date statements and reports should show.
+    question: Which date and time should an interest transaction carry?
+    options:
+      - id: A
+        label: Keep as coded - the system clock of the run
+        asCoded: true
+        set: {timestampSource: runClock}
+      - id: B
+        label: The cycle date of the PARM at 00.00.00
+        set: {timestampSource: cycleDate}
+
+  - id: INT-R07
+    type: RULE
+    title: Interest is added to the account at the account break
+    statement: When all balances of an account have been handled, the account's total interest is added to its current balance and its cycle credit and cycle debit are set to zero.
+    source:
+      - app/cbl/CBACT04C.cbl:194-201
+      - app/cbl/CBACT04C.cbl:350-356
+      - app/cbl/CBACT04C.cbl:467
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop (account id changes) -> 1050-UPDATE-ACCOUNT -> D5 (rewrite ACCTFILE)
+    fixtures: [i01-baseline, i02-tie-half-cent, i07-nontie-rounding]
+    logic:
+      resetCycleAmounts: true
+
+  - id: INT-Q04
+    type: QUIRK
+    title: The last account on the file is never updated
+    statement: The account with the highest number on the category-balance file gets its interest transactions, but its current balance is not increased and its cycle amounts are not reset.
+    source:
+      - app/cbl/CBACT04C.cbl:188-222
+      - app/cbl/CBACT04C.cbl:339-340
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1000-TCATBALF-GET-NEXT (end of file) -> loop ends -> 1050-UPDATE-ACCOUNT not reached -> D5 not written
+    fixtures: [i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding]
+    why: The branch that would update the last account (line 220) sits inside a loop that stops as soon as end of file is seen. The comment on the paragraph and the layout of the IF show the update was intended. docs/BASELINE.md:108 keeps the behaviour for parity only.
+    question: Should the last account on the file have its interest added to its balance like every other account?
+    options:
+      - id: A
+        label: Keep as coded - the last account is not updated
+        asCoded: true
+        set: {updateLastAccount: false}
+      - id: B
+        label: Update the last account like the others
+        set: {updateLastAccount: true}
+
+  - id: INT-Q05
+    type: QUIRK
+    title: Credit balances earn negative interest
+    statement: A negative (credit) balance with a non-zero rate produces a negative interest transaction that lowers the account balance.
+    source:
+      - app/cbl/CBACT04C.cbl:214-217
+      - app/cbl/CBACT04C.cbl:464-467
+      - app/cbl/CBACT04C.cbl:490
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1300-COMPUTE-INTEREST -> 1300-B-WRITE-TX -> D7 (write TRANSACT); later 1050-UPDATE-ACCOUNT -> D5
+    fixtures: [i06-negative-balance]
+    why: The program tests only the rate, never the sign of the balance, so the formula simply runs on a negative number. The same holds for a negative rate. Nothing in the estate says the bank pays interest on credit balances.
+    question: Should a credit balance be paid interest at the lending rate?
+    options:
+      - id: A
+        label: Keep as coded - negative interest is posted
+        asCoded: true
+        set: {negativeBalance: charge}
+      - id: B
+        label: No interest and no transaction on a credit balance
+        set: {negativeBalance: skip}
+
+  - id: INT-Q06
+    type: QUIRK
+    title: Interest of 0.00 is still posted
+    statement: A balance with a non-zero rate whose interest is less than one cent still produces an interest transaction of 0.00.
+    source:
+      - app/cbl/CBACT04C.cbl:214-217
+      - app/cbl/CBACT04C.cbl:464-468
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1300-COMPUTE-INTEREST -> 1300-B-WRITE-TX -> D7 (write TRANSACT)
+    fixtures: []
+    fixtureNote: No fixture has a balance small enough; the behaviour is read from the code only.
+    why: Only the rate is tested for zero, not the computed amount.
+    question: Should a zero-amount interest transaction be written?
+    options:
+      - id: A
+        label: Keep as coded - write the 0.00 transaction
+        asCoded: true
+        set: {zeroInterest: write}
+      - id: B
+        label: Write nothing when the interest is 0.00
+        set: {zeroInterest: skip}
+
+  - id: INT-R08
+    type: RULE
+    title: A missing record or a file error stops the run
+    statement: If an account or its card cross-reference is missing, the DEFAULT rate is missing, or any file cannot be opened, read, written or closed, the job reports the file status and ends abnormally with code 999.
+    source:
+      - app/cbl/CBACT04C.cbl:372-391
+      - app/cbl/CBACT04C.cbl:393-413
+      - app/cbl/CBACT04C.cbl:443-460
+      - app/cbl/CBACT04C.cbl:628-632
+      - app/cbl/CBACT04C.cbl:635-648
+    callPath: INTCALC.STEP15 -> CBACT04C -> any paragraph with a file statement (status not 00) -> 9910-DISPLAY-IO-STATUS -> 9999-ABEND-PROGRAM -> C3 (CALL CEE3ABD) -> D10 (SYSOUT)
+    fixtures: []
+    fixtureNote: No fixture drives an error branch.
+    logic:
+      abendCode: 999
+
+  - id: INT-H01
+    type: HOLE
+    title: Fees are announced but not calculated
+    statement: The job says it computes interest and fees, but the fee step is empty and no fee is ever charged.
+    source:
+      - app/jcl/INTCALC.jcl:20
+      - app/cbl/CBACT04C.cbl:215-216
+      - app/cbl/CBACT04C.cbl:518-520
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1400-COMPUTE-FEES (empty, "To be implemented") -> no data edge
+    fixtures: [i01-baseline, i02-tie-half-cent, i03-zero-rate-skipped, i04-default-group-fallback, i05-multi-category, i06-negative-balance, i07-nontie-rounding]
+    why: The estate holds no fee rule (stream ask A8).
+    question: Are fees charged anywhere else, or is a fee rule missing from this job?
+    options:
+      - id: A
+        label: No fees in this job (as coded)
+        asCoded: true
+        set: {}
+      - id: B
+        label: Fees belong here - the business supplies the fee rule
+        notDerivable: Would add fee transactions and change balances; the amounts cannot be derived because the estate contains no fee rule.
+
+  - id: INT-H02
+    type: HOLE
+    title: Nothing prevents charging the same interest twice
+    statement: The job does not mark or clear the balances it has charged, so a second run, or a rerun after a failure part-way, charges interest again on accounts already updated.
+    source:
+      - app/cbl/CBACT04C.cbl:28-32
+      - app/cbl/CBACT04C.cbl:236
+      - app/cbl/CBACT04C.cbl:350-356
+      - app/jcl/INTCALC.jcl:37-41
+      - app/scheduler/CardDemo.controlm:69-74
+    callPath: INTCALC.STEP15 -> CBACT04C -> 0000-TCATBALF-OPEN (INPUT only) ... 1050-UPDATE-ACCOUNT -> D5 (rewrite, no checkpoint); a failure goes 9999-ABEND-PROGRAM with accounts already rewritten
+    fixtures: []
+    fixtureNote: Every fixture is one clean run.
+    why: TCATBALF is opened for input only; account rewrites are not backed out on an abend; the scheduler definition allows reruns. The rerun procedure is not in the estate (stream asks A4 and A6, unproven orderings U2, U3, U5).
+    question: What stops a second run in the same cycle, and how is a failed run restarted?
+    options:
+      - id: A
+        label: Operations procedure only (as the estate shows) - restore the account file and rerun from the start
+        asCoded: true
+        set: {}
+      - id: B
+        label: The new job must refuse or skip accounts already charged in the cycle
+        notDerivable: No effect on a single clean run; a rerun fixture would be needed to show it.
+
+  - id: INT-H03
+    type: HOLE
+    title: Account with more than one card
+    statement: When an account has several cards, the code does not say which card number is put on the interest transaction, and the run may stop.
+    source:
+      - app/cbl/CBACT04C.cbl:34-39
+      - app/cbl/CBACT04C.cbl:393-404
+      - app/jcl/XREFFILE.jcl:72-75
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1110-GET-XREF-DATA -> D2/D3 (read XREFFILE by alternate key account id)
+    fixtures: []
+    fixtureNote: Every fixture has exactly one card per account.
+    why: The alternate index is defined NONUNIQUEKEY but the program's SELECT does not say WITH DUPLICATES and accepts only status 00; a duplicate-key read normally returns status 02, which this program treats as an error. Which DD the read uses is itself a candidate edge (D3, stream ask A5).
+    question: Which card number belongs on the interest transaction of an account with several cards?
+    options:
+      - id: A
+        label: The first card in card-number order
+        notDerivable: The source does not determine it; needs a host run or the business answer.
+      - id: B
+        label: The run stops with abend 999 (duplicate key status is not accepted)
+        notDerivable: The source does not determine it; needs a host run or the business answer.
+    unresolvedWhen: duplicateCardForAccount
+
+  - id: INT-H04
+    type: HOLE
+    title: Closed or expired accounts are charged like any other
+    statement: The job never looks at the account's active flag or expiry date, so closed and expired accounts are charged interest.
+    source:
+      - app/cbl/CBACT04C.cbl:202-203
+      - app/cbl/CBACT04C.cbl:372-376
+      - app/cpy/CVACT01Y.cpy:6
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1100-GET-ACCT-DATA -> D4 (read ACCTFILE); no test follows the read
+    fixtures: []
+    fixtureNote: Every fixture account is active (ACCT-ACTIVE-STATUS = Y).
+    why: No statement reads ACCT-ACTIVE-STATUS or ACCT-EXPIRAION-DATE.
+    question: Should an inactive account still be charged interest on its balances?
+    options:
+      - id: A
+        label: Yes - charge every account with a balance (as coded)
+        asCoded: true
+        set: {inactiveAccounts: charge}
+      - id: B
+        label: No - skip accounts whose active flag is not Y
+        set: {inactiveAccounts: skip}
+
+  - id: INT-H05
+    type: HOLE
+    title: Amounts and counters larger than their fields
+    statement: Interest above 999,999,999.99 or more than 999,999 interest transactions in one run do not fit their fields, and the code does not check for it.
+    source:
+      - app/cbl/CBACT04C.cbl:168-169
+      - app/cbl/CBACT04C.cbl:173
+      - app/cbl/CBACT04C.cbl:464-465
+      - app/cbl/CBACT04C.cbl:474
+    callPath: INTCALC.STEP15 -> CBACT04C -> main loop -> 1300-COMPUTE-INTEREST / 1300-B-WRITE-TX -> D7 (write TRANSACT)
+    fixtures: []
+    fixtureNote: No fixture approaches the limits.
+    why: COMPUTE and ADD have no ON SIZE ERROR; the leading digits would be lost silently and the counter would start again at 000000.
+    question: Are these limits acceptable, and what should happen if one is reached?
+    options:
+      - id: A
+        label: Accept the limits; stop the run if one is reached
+        notDerivable: The result of an overflow depends on compiler options the estate does not show.
+      - id: B
+        label: Widen the fields in the new system
+        notDerivable: The result of an overflow depends on compiler options the estate does not show.
+    unresolvedWhen: fieldOverflow
+
+  - id: INT-H06
+    type: HOLE
+    title: Order against posting and the reload of the inputs
+    statement: The estate does not show whether interest runs before or after the day's posting or the reload of the balance and rate files, so which balances and rates a run sees is not defined.
+    source:
+      - app/scheduler/CardDemo.controlm:69-74
+      - app/jcl/INTCALC.jcl:27-36
+    callPath: scheduler folder MONTHLY-InterestCalculation -> INTCALC.STEP15 -> D1, D4, D6 (inputs shared with POSTTRAN, TCATBALF and DISCGRP jobs outside the stream)
+    fixtures: []
+    fixtureNote: Fixtures load fixed inputs; job order is not part of a case.
+    why: Stream asks A3, A6 and A7 and unproven orderings U1-U4 and U6; the two scheduler exports do not order INTCALC against POSTTRAN.
+    question: In which order do posting, the file reloads and the interest run happen, and on which day of the month?
+    options:
+      - id: A
+        label: Interest runs after the last posting of the cycle, inputs not reloaded in between
+        notDerivable: No effect on the fixtures; the order is outside a single case.
+      - id: B
+        label: Another order, stated by operations
+        notDerivable: No effect on the fixtures; the order is outside a single case.
+
+# Detail that carries no policy. The evaluator may cite these ids for values
+# that follow from mechanics rather than from a rule.
+technicalNotes:
+  - id: INT-T01
+    note: The five files are opened before the loop (TCATBALF, XREFFILE, DISCGRP input; ACCTFILE I-O; TRANSACT output) and closed after it. A status other than 00 on any open or close takes the INT-R08 path.
+    source: [app/cbl/CBACT04C.cbl:182-186, app/cbl/CBACT04C.cbl:224-228, app/cbl/CBACT04C.cbl:234-323, app/cbl/CBACT04C.cbl:522-611]
+  - id: INT-T02
+    note: The program writes to SYSOUT 'START OF EXECUTION OF PROGRAM CBACT04C', then each category-balance record as read, the two fallback messages when INT-R03 applies, and 'END OF EXECUTION OF PROGRAM CBACT04C'. Where the DISPLAY output goes on the host is stream ask A10.
+    source: [app/cbl/CBACT04C.cbl:181, app/cbl/CBACT04C.cbl:193, app/cbl/CBACT04C.cbl:418-419, app/cbl/CBACT04C.cbl:230]
+  - id: INT-T03
+    note: A normal run ends with GOBACK and return code 0. An abend calls CEE3ABD with code 999; the off-host stub returns 12 instead (tools/stubs/CEE3ABD.cbl), which is harness behaviour, not the estate's.
+    source: [app/cbl/CBACT04C.cbl:232, app/cbl/CBACT04C.cbl:628-632]
+  - id: INT-T04
+    note: TRAN-DESC is filled by STRING, which does not pad, and the 20-byte FILLER of the transaction record is never set, so the bytes after the account number and the filler hold whatever working storage held. Expectations assert the description text, not the padding.
+    source: [app/cbl/CBACT04C.cbl:485-489, app/cpy/CVTRA05Y.cpy:9, app/cpy/CVTRA05Y.cpy:18]
+  - id: INT-T05
+    note: The timestamp format is YYYY-MM-DD-HH.MM.SS.hh0000 - hundredths of a second from FUNCTION CURRENT-DATE followed by four zeros.
+    source: [app/cbl/CBACT04C.cbl:140, app/cbl/CBACT04C.cbl:613-624]
+  - id: INT-T06
+    note: Amount fields are zoned decimal with the sign in the last byte (S9(09)V99 for balances and interest, S9(10)V99 on the account, S9(04)V99 for the rate). Account fields the job does not set are rewritten unchanged.
+    source: [app/cpy/CVTRA01Y.cpy:9, app/cpy/CVTRA02Y.cpy:9, app/cpy/CVACT01Y.cpy:7, app/cbl/CBACT04C.cbl:356]
+  - id: INT-T07
+    note: The record counter WS-RECORD-COUNT is incremented per balance and never used or printed.
+    source: [app/cbl/CBACT04C.cbl:172, app/cbl/CBACT04C.cbl:192]
+  - id: INT-T08
+    note: 9910-DISPLAY-IO-STATUS only formats the file status for the log (four digits; a status starting with 9 shows its binary second byte).
+    source: [app/cbl/CBACT04C.cbl:635-648]
+  - id: INT-T09
+    note: An empty category-balance file ends the loop on the first read; no transaction is written, no account is touched, and SYSTRAN(+1) is cataloged empty.
+    source: [app/cbl/CBACT04C.cbl:188-191, app/cbl/CBACT04C.cbl:339-340]
+  - id: INT-T10
+    note: The message for a failed open of the disclosure-group file reads 'ERROR OPENING DALY REJECTS FILE' - a copied text, with no effect on the outcome.
+    source: [app/cbl/CBACT04C.cbl:281]
+  - id: INT-T11
+    note: Copybooks CVTRA01Y, CVACT03Y, CVTRA02Y, CVACT01Y and CVTRA05Y only describe record layouts (edges I1-I5); STEPLIB and the load module (C1, C2) only say which program runs.
+    source: [app/cbl/CBACT04C.cbl:97, app/cbl/CBACT04C.cbl:102, app/cbl/CBACT04C.cbl:107, app/cbl/CBACT04C.cbl:112, app/cbl/CBACT04C.cbl:117, app/jcl/INTCALC.jcl:22-24]
+
+# Every path walked from the job step, in execution order. A path with no rule
+# is listed as covered with the reason.
+paths:
+  - {id: P01, path: "INTCALC.STEP15 -> CBACT04C entry (C1, C2, D8)", decides: "which program runs and the PARM it receives", rules: [INT-Q02], notes: [INT-T11]}
+  - {id: P02, path: "entry -> 0000-TCATBALF-OPEN -> D1", decides: "nothing; open for input", rules: [], covered: "no policy - file open (INT-T01)"}
+  - {id: P03, path: "0000..0400-*-OPEN, status not 00 -> 9910 -> 9999 -> C3", decides: "run stops with 999", rules: [INT-R08]}
+  - {id: P04, path: "entry -> 0100-XREFFILE-OPEN -> D2", decides: "nothing; open for input", rules: [], covered: "no policy - file open (INT-T01)"}
+  - {id: P05, path: "entry -> 0200-DISCGRP-OPEN -> D6", decides: "nothing; open for input", rules: [], covered: "no policy - file open (INT-T01, INT-T10)"}
+  - {id: P06, path: "entry -> 0300-ACCTFILE-OPEN -> D4/D5", decides: "nothing; open for update", rules: [], covered: "no policy - file open (INT-T01)"}
+  - {id: P07, path: "entry -> 0400-TRANFILE-OPEN -> D7", decides: "nothing; open for output", rules: [], covered: "no policy - file open (INT-T01)"}
+  - {id: P08, path: "loop -> 1000-TCATBALF-GET-NEXT -> D1, status 00", decides: "next balance in key order; record echoed to SYSOUT (D10)", rules: [INT-R01], notes: [INT-T02, INT-T07]}
+  - {id: P09, path: "loop -> 1000-TCATBALF-GET-NEXT -> D1, status 10 (end of file)", decides: "loop ends; last account not updated", rules: [INT-Q04], notes: [INT-T09]}
+  - {id: P10, path: "loop -> 1000-TCATBALF-GET-NEXT -> D1, other status -> 9910 -> 9999 -> C3", decides: "run stops with 999", rules: [INT-R08, INT-H02]}
+  - {id: P11, path: "loop, first record (WS-FIRST-TIME = Y)", decides: "no account to update yet", rules: [], covered: "no policy - first-record switch that suppresses the update before any account was read"}
+  - {id: P12, path: "loop, account id changes -> 1050-UPDATE-ACCOUNT -> D5 (rewrite)", decides: "interest added to balance, cycle amounts reset", rules: [INT-R07]}
+  - {id: P13, path: "1050-UPDATE-ACCOUNT, rewrite status not 00 -> 9910 -> 9999 -> C3", decides: "run stops with 999", rules: [INT-R08, INT-H02]}
+  - {id: P14, path: "loop, account id changes -> 1100-GET-ACCT-DATA -> D4, found", decides: "account's disclosure group", rules: [INT-R02, INT-H04]}
+  - {id: P15, path: "1100-GET-ACCT-DATA -> D4, not found or error -> 9910 -> 9999 -> C3", decides: "run stops with 999", rules: [INT-R08, INT-H02]}
+  - {id: P16, path: "loop, account id changes -> 1110-GET-XREF-DATA -> D2/D3, found", decides: "card number for the transaction", rules: [INT-R06, INT-H03]}
+  - {id: P17, path: "1110-GET-XREF-DATA -> D2/D3, not found or error -> 9910 -> 9999 -> C3", decides: "run stops with 999", rules: [INT-R08, INT-H03]}
+  - {id: P18, path: "loop -> 1200-GET-INTEREST-RATE -> D6, found", decides: "rate for group, type, category", rules: [INT-R02]}
+  - {id: P19, path: "1200-GET-INTEREST-RATE -> D6, status 23 -> 1200-A-GET-DEFAULT-INT-RATE -> D6, found", decides: "rate of group DEFAULT", rules: [INT-R03]}
+  - {id: P20, path: "1200-A-GET-DEFAULT-INT-RATE -> D6, not found or error -> 9910 -> 9999 -> C3", decides: "run stops with 999", rules: [INT-R08]}
+  - {id: P21, path: "1200-GET-INTEREST-RATE -> D6, status other than 00 or 23 -> 9910 -> 9999 -> C3", decides: "run stops with 999", rules: [INT-R08]}
+  - {id: P22, path: "loop, DIS-INT-RATE = 0", decides: "no interest, no transaction", rules: [INT-R04]}
+  - {id: P23, path: "loop, DIS-INT-RATE not 0 -> 1300-COMPUTE-INTEREST", decides: "interest amount, added to the account's total", rules: [INT-R05, INT-Q01, INT-Q05, INT-Q06, INT-H05]}
+  - {id: P24, path: "1300-COMPUTE-INTEREST -> 1300-B-WRITE-TX -> D8 -> Z-GET-DB2-FORMAT-TIMESTAMP -> D9 -> D7 (write)", decides: "content of the interest transaction", rules: [INT-R06, INT-Q02, INT-Q03, INT-H05], notes: [INT-T04, INT-T05]}
+  - {id: P25, path: "1300-B-WRITE-TX -> D7, write status not 00 -> 9910 -> 9999 -> C3", decides: "run stops with 999", rules: [INT-R08, INT-H02]}
+  - {id: P26, path: "loop -> 1400-COMPUTE-FEES", decides: "nothing; empty paragraph", rules: [INT-H01]}
+  - {id: P27, path: "loop, ELSE branch at line 219-220 -> 1050-UPDATE-ACCOUNT", decides: "never executed: the loop has ended before END-OF-FILE can be Y here", rules: [INT-Q04]}
+  - {id: P28, path: "after loop -> 9000..9400-*-CLOSE -> D1, D2, D6, D4/D5, D7", decides: "nothing; files closed", rules: [], covered: "no policy - file close (INT-T01)"}
+  - {id: P29, path: "9000..9400-*-CLOSE, status not 00 -> 9910 -> 9999 -> C3", decides: "run stops with 999", rules: [INT-R08]}
+  - {id: P30, path: "after close -> DISPLAY end message (D10) -> GOBACK", decides: "return code 0", rules: [], covered: "no policy - normal end (INT-T02, INT-T03)"}
+
+# Coverage: every paragraph and every data edge of the stream.
+coverage:
+  paragraphs:
+    - {name: "PROCEDURE DIVISION main (lines 180-232)", rules: [INT-R01, INT-R04, INT-R07, INT-Q04]}
+    - {name: 0000-TCATBALF-OPEN, rules: none, reason: "file open; error branch under INT-R08"}
+    - {name: 0100-XREFFILE-OPEN, rules: none, reason: "file open; error branch under INT-R08"}
+    - {name: 0200-DISCGRP-OPEN, rules: none, reason: "file open; error branch under INT-R08"}
+    - {name: 0300-ACCTFILE-OPEN, rules: none, reason: "file open; error branch under INT-R08"}
+    - {name: 0400-TRANFILE-OPEN, rules: none, reason: "file open; error branch under INT-R08"}
+    - {name: 1000-TCATBALF-GET-NEXT, rules: [INT-R01, INT-Q04, INT-R08]}
+    - {name: 1050-UPDATE-ACCOUNT, rules: [INT-R07, INT-Q04, INT-R08, INT-H02]}
+    - {name: 1100-GET-ACCT-DATA, rules: [INT-R02, INT-R08, INT-H04]}
+    - {name: 1110-GET-XREF-DATA, rules: [INT-R06, INT-R08, INT-H03]}
+    - {name: 1200-GET-INTEREST-RATE, rules: [INT-R02, INT-R03, INT-R08]}
+    - {name: 1200-A-GET-DEFAULT-INT-RATE, rules: [INT-R03, INT-R08]}
+    - {name: 1300-COMPUTE-INTEREST, rules: [INT-R05, INT-Q01, INT-Q05, INT-Q06, INT-H05]}
+    - {name: 1300-B-WRITE-TX, rules: [INT-R06, INT-Q02, INT-Q03, INT-R08, INT-H05]}
+    - {name: 1400-COMPUTE-FEES, rules: [INT-H01]}
+    - {name: 9000-TCATBALF-CLOSE, rules: none, reason: "file close; error branch under INT-R08"}
+    - {name: 9100-XREFFILE-CLOSE, rules: none, reason: "file close; error branch under INT-R08"}
+    - {name: 9200-DISCGRP-CLOSE, rules: none, reason: "file close; error branch under INT-R08"}
+    - {name: 9300-ACCTFILE-CLOSE, rules: none, reason: "file close; error branch under INT-R08"}
+    - {name: 9400-TRANFILE-CLOSE, rules: none, reason: "file close; error branch under INT-R08"}
+    - {name: Z-GET-DB2-FORMAT-TIMESTAMP, rules: [INT-Q03]}
+    - {name: 9999-ABEND-PROGRAM, rules: [INT-R08]}
+    - {name: 9910-DISPLAY-IO-STATUS, rules: none, reason: "formats the file status for the log (INT-T08)"}
+  edges:
+    - {id: C1, edge: "INTCALC.STEP15 -> load module CBACT04C", rules: none, reason: "says which program runs (INT-T11)"}
+    - {id: C2, edge: "load module CBACT04C -> source CBACT04C (candidate)", rules: none, reason: "build lineage, stream ask A1 (INT-T11)"}
+    - {id: C3, edge: "CBACT04C -> CEE3ABD", rules: [INT-R08]}
+    - {id: I1, edge: "COPY CVTRA01Y", rules: none, reason: "record layout (INT-T11)"}
+    - {id: I2, edge: "COPY CVACT03Y", rules: none, reason: "record layout (INT-T11)"}
+    - {id: I3, edge: "COPY CVTRA02Y", rules: none, reason: "record layout (INT-T11)"}
+    - {id: I4, edge: "COPY CVACT01Y", rules: none, reason: "record layout (INT-T11)"}
+    - {id: I5, edge: "COPY CVTRA05Y", rules: none, reason: "record layout (INT-T11)"}
+    - {id: D1, edge: "TCATBALF -> CBACT04C (read)", rules: [INT-R01, INT-Q04, INT-H02, INT-H06]}
+    - {id: D2, edge: "CARDXREF -> CBACT04C (read)", rules: [INT-R06, INT-H03]}
+    - {id: D3, edge: "CARDXREF alternate-index path -> CBACT04C (read, candidate)", rules: [INT-R06, INT-H03]}
+    - {id: D4, edge: "ACCTDATA -> CBACT04C (read)", rules: [INT-R02, INT-H04, INT-H06]}
+    - {id: D5, edge: "CBACT04C -> ACCTDATA (rewrite)", rules: [INT-R07, INT-Q04, INT-Q05, INT-H02]}
+    - {id: D6, edge: "DISCGRP -> CBACT04C (read)", rules: [INT-R02, INT-R03, INT-H06]}
+    - {id: D7, edge: "CBACT04C -> SYSTRAN(+1) (write)", rules: [INT-R06, INT-Q01, INT-Q02, INT-Q03, INT-Q05, INT-Q06, INT-H05]}
+    - {id: D8, edge: "JCL PARM -> CBACT04C (PARM-DATE)", rules: [INT-Q02]}
+    - {id: D9, edge: "system clock -> CBACT04C", rules: [INT-Q03]}
+    - {id: D10, edge: "CBACT04C -> SYSOUT (candidate)", rules: none, reason: "log lines only (INT-T02); INT-R03 and INT-R08 say which messages appear"}

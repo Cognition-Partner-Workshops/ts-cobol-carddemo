@@ -48,7 +48,8 @@ Run every command from the repository root.
    gh pr list --state open --json number,title,headRefName,baseRefName
    git checkout -b <your-branch> origin/<base-branch>
    ```
-   Stop and report if a branch or an open PR already covers the ticket.
+   Stop and report if a branch or an open PR already covers the ticket, unless your prompt names that branch
+   and pull request as the ones to continue; then check out the branch and reuse the pull request.
 
 4. **Read, in this order** (standard S1.1): the ticket file, the rules it names in
    `modernization/rules/interest/rules.yaml`, `modernization/design/architecture.md`,
@@ -67,14 +68,17 @@ Run every command from the repository root.
    | `.../file` | file adapters of the ports (`FileRunWorkspace`), recorded output format |
    | `.../codec` | `Field` (encoding rules) and one `*Record` class per copybook layout |
    | `.../batch` | `InterestJobConfig` (job `interestCalcJob`, step `calcInterestStep`), `CalcInterestRun`, `InterestJobParameters`, `InterestExitCode(s)` |
-   | `java/interest/src/main/resources/application.yml` | datasource (`INTEREST_DB_URL`, `INTEREST_DB_USER`, `INTEREST_DB_PASSWORD`, default `localhost:5432/carddemo`), job repository in schema `batch`, the `interest.policy.*` defaults, `interest.calc.commitInterval`, `interest.clock.frozen` |
+   | `java/interest/src/main/resources/application.yml` | datasource (`INTEREST_DB_URL`, `INTEREST_DB_USER`, `INTEREST_DB_PASSWORD`, default `localhost:5432/carddemo`), job repository in schema `batch`, the `interest.policy.*` defaults, `interest.calc.commitInterval`, `interest.clock.frozen`. A ticket that may not edit this file gives a new switch its legacy default in the compact constructor of `InterestPolicy` and reports the `application.yml` lines in its pull request |
    | `java/interest/src/test/java/com/carddemo/interest` | same packages; `Fixtures.java` reads `fixtures/interest` (Maven runs in `java/interest`, so the path is `../../fixtures/interest`); `batch/InterestCalcJobIT.java` is the integration test on `postgres:15` |
    | `java/interest/evidence/` | the pilot's three evidence files; each later ticket writes its own under `java/interest/evidence/<ticket file name>/` (see `interest-ticket-verify` step 8) |
    | `Makefile`, target `parity-java` | FI-6, the parity entry point |
    | `docker-compose.yml`, service `db` | `postgres:15`, database, user and password `carddemo`, init scripts from `db/postgres/` |
 
-   Packages `jdbc`, `load`, `export` and `recon` are named in `architecture.md` section 2 and do not
-   exist yet. No table exists in schema `carddemo` beyond `db/postgres/01-transaction-type.sql`.
+   Package `recon` is named in `architecture.md` section 2 and exists only once its ticket is combined;
+   `load` and `jdbc/load` (ticket 05), `jdbc/calc` (ticket 06, the JDBC adapters of the ports) and `export`
+   and `jdbc/export` (ticket 07) exist since wave 2. The tables of the stream are in
+   `db/postgres/02-interest.sql` (ticket 02); every connection of the job has `search_path = batch`
+   (`application.yml`), so SQL names `carddemo.<table>`.
 
 6. **Start PostgreSQL 15.** Only the `db` service is needed; the `estate` image is not.
 
@@ -111,6 +115,7 @@ Run every command from the repository root.
    [INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
    [INFO] BUILD SUCCESS
    ```
+   On `demo/05b-integration` after wave 1 (tickets 02, 03, 04) the totals are 176 unit and 28 integration tests.
    The first total is surefire (unit), the second failsafe (integration). Your ticket adds to both
    numbers; neither may go down. One unit test class while you work:
    ```sh
@@ -130,6 +135,11 @@ Run every command from the repository root.
    ```
    The `git diff --stat` line must print nothing for a ticket whose Allowed files are `java/interest/**`
    and the `Makefile`; take out of that list only a path your ticket's Scope allows (pitfall P6).
+   A ticket whose Allowed files are under `db/` (ticket 02) checks instead that
+   `git diff --stat origin/<base-branch> -- app fixtures tools modernization .agents docker-compose.yml Makefile java/interest/pom.xml java/interest/src db/postgres/01-transaction-type.sql`
+   prints nothing. A ticket with narrower Allowed files inside `java/interest` adds the frozen build file, CI and
+   packages to the list and takes out only what it is allowed:
+   `git diff --stat origin/<base-branch> -- app fixtures tools modernization .agents db docker-compose.yml Makefile .github java/interest/pom.xml java/interest/src/main/resources java/interest/src/main/java/com/carddemo/interest/port java/interest/src/main/java/com/carddemo/interest/batch java/interest/src/main/java/com/carddemo/interest/file java/interest/src/main/java/com/carddemo/interest/codec java/interest/src/main/java/com/carddemo/interest/domain java/interest/src/main/java/com/carddemo/interest/policy`.
 
 10. **Go on with `interest-ticket-verify`:** run the fixture cases, compare, write the evidence, open the
     pull request. Do not merge it.

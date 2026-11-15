@@ -81,7 +81,9 @@ first. Run every command from the repository root.
      exit 0
    ```
    `make parity-java` printed for i03 and i04 `java job ended with exit code 12` and ended with
-   `make: *** [Makefile:96: parity-java] Error 1`. A case your ticket does not name may pass or fail;
+   `make: *** [Makefile:96: parity-java] Error 1`. Since ticket 04 (step 5b, wave 1) all seven pass:
+   `interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)` and
+   `interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)`, exit 0. A case your ticket does not name may pass or fail;
    report it, do not claim it.
 
 4. **Run the job by hand when you need another setting** (a policy switch, another input directory).
@@ -102,6 +104,9 @@ first. Run every command from the repository root.
    interest/i02-tie-half-cent [java-halfup]: FAIL (4 records, 50 fields, 3 differences)
    ```
    `runId` must be new for every launch. Exit code 0 is a COMPLETED job, 12 a stopped one.
+   When no fixture exercises the option (`inactiveAccounts=SKIP`: every fixture account is active), the run
+   proves only that the job completes: add an integration test on a copy of a fixture input changed in the
+   test's temporary directory, never under `fixtures/`.
 
 5. **Read a difference.** The Markdown report names the dataset, the record with its key, the field,
    the legacy value and the candidate value, already decoded. Each row below was produced in step 5a;
@@ -109,13 +114,17 @@ first. Run every command from the repository root.
 
    | What the report shows | How it was produced | Where the rule is |
    |---|---|---|
-   | `TRAN-AMT` 12.35 against 12.36 and `ACCT-CURR-BAL` 1247.85 against 1247.86 on i02-tie-half-cent | step 4 with `--interest.policy.rounding=HALF_UP` | standards S3.2, section 4 row a |
+   | `TRAN-AMT` 12.35 against 12.36 and `ACCT-CURR-BAL` 1247.85 against 1247.86 on i02-tie-half-cent | step 4 with `--interest.policy.rounding=HALF_UP` (3 differences). With `--interest.policy.rounding=HALF_EVEN`: 2 differences on i02-tie-half-cent (account 2003 only, the same two fields and values) and none on i07-nontie-rounding | standards S3.2, section 4 row a |
    | `ACCT-CURR-BAL` 2400.00 against 2437.00 and `ACCT-CURR-CYC-CREDIT` 2400.00 against 0.00 on the last account (i01-baseline, ACCT-ID=2002) | step 4 with `--interest.policy.updateLastAccount=true` | standards S5.1, section 4 row m |
    | `TRAN-ORIG-TS` and `TRAN-PROC-TS` 2022-07-05-10.00.00.000000 against today's time | step 4 without `--interest.clock.frozen` | standards S3.8, section 4 rows t and u |
    | `(file)` `1 records` against `missing` for both datasets, and the whole SYSOUT and rc.json as removed lines | the job stopped (exit 12) and left no output: i03, i04 on the pilot's code. Read the job's own `InterestRunStoppedException: <REASON> (<rule id>)` line in the `make parity-java` output | standards section 6 |
    | `rc.json` `(text)` with `STEP05` ... `STEP30` removed | an `rc.json` holding STEP15 only | pitfall P4 |
 
-6. **Check the error path of the ticket** from the command line. Missing input file (ticket 01):
+6. **Check the error path of the ticket** from the command line. Skip this step when the ticket's
+   Acceptance has no error line that a command-line run can show, and say so in `report.md`.
+   A ticket whose step is not a step of `interestCalcJob` yet, or whose error line needs loaded tables
+   (05, 06, 07, 08), shows the error line by an integration test on PostgreSQL 15 and names the test in `report.md`.
+   Missing input file (ticket 01):
 
    ```sh
    mkdir -p work/manual/miss/input && cp fixtures/interest/i01-baseline/input/* work/manual/miss/input/ \
@@ -133,8 +142,17 @@ first. Run every command from the repository root.
    input
    ```
    Only `input` is listed: no output directory and no staging directory were left.
+   For a record error (ticket 03), copy the input the same way, change one byte
+   (`sed -i '2s/^\(.\{12\}\)./\1X/' work/manual/miss/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt`) and expect
+   `InterestRunStoppedException: RECORD_REJECTED (INT-R08): file AWS.M2.CARDDEMO.DISCGRP.PS.txt record 2 field DIS-TRAN-CAT-CD: is not numeric`,
+   `job exit=12` and again only `input`.
 
-7. **Check the database assertions of the ticket** in the `db` service.
+7. **Check the database assertions of the ticket** in the `db` service. Skip this step when the ticket's
+   Acceptance says "Database assertions: none"; say so in section 6 of `report.md`.
+   Where the run under test exists only in the Testcontainers database (the ticket's step is not in the job,
+   or nothing loads the tables of the `db` service yet), make the database assertions in the ticket's `*IT`
+   class on `postgres:15` started with both init scripts (`db/postgres/01-transaction-type.sql` and
+   `02-interest.sql`) and name the test in `report.md`; the query of this step then shows the job repository only.
 
    ```sh
    docker compose exec -T db psql -U carddemo -d carddemo \
@@ -150,6 +168,11 @@ first. Run every command from the repository root.
    ```
    The job repository is in schema `batch`. The same assertions run in `InterestCalcJobIT` on a
    Testcontainers `postgres:15`; a ticket that adds tables changes the expected list there.
+   The output above is the pilot's. With `db/postgres/02-interest.sql` (ticket 02) on a new db volume the
+   list in `carddemo` is `account, card_xref, disclosure_group, interest_run, interest_transaction,
+   tran_cat_balance, transaction_type, transaction_type_categor`. A db volume created before that file
+   existed does not get the tables (init scripts run only on an empty volume): `make reset`, or
+   `docker compose exec -T db psql -U carddemo -d carddemo -v ON_ERROR_STOP=1 < db/postgres/02-interest.sql`.
 
 8. **Write the evidence, from the committed revision, in the ticket's own directory.** Commit the code
    first, then produce the files, then commit them alone, so the evidence names the revision it came
@@ -164,6 +187,8 @@ first. Run every command from the repository root.
    |---|---|
    | `test-output.txt` | the command below |
    | `parity-report.md` | `.agents/skills/interest-ticket-verify/parity-report.sh <ticket file name> <case the ticket names> [...]` |
+   | `schema-test-output.txt` | tickets with SQL assertions under `db/postgres/tests`: `db/postgres/tests/run.sh > java/interest/evidence/<ticket file name>/schema-test-output.txt 2>&1` |
+   | `switch-test-output.txt` | tickets with switch tests: the step 4 command once per switch value, each followed by the job exit code, the comparator line and the rows of its report |
    | `report.md` (the ticket's report) | by hand, step 9 |
 
    The commands were run in step 5a with ticket 01, the only ticket built, to prove them; that
@@ -178,6 +203,10 @@ first. Run every command from the repository root.
      echo "# exit code ${PIPESTATUS[0]}"; } > java/interest/evidence/$ticket/test-output.txt
    tail -1 java/interest/evidence/$ticket/test-output.txt; grep -E 'Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|BUILD' java/interest/evidence/$ticket/test-output.txt
    ```
+   If the unit phase fails, the integration tests do not run. Report the failure as it is; to show the rest,
+   append a second, labelled run that leaves out the failing test:
+   `mvn -B -f java/interest/pom.xml clean verify -Dtest='!<Class>#<method>' -Dsurefire.failIfNoSpecifiedTests=false`.
+   With `-Dtest` surefire also runs the `*IT` classes, so its count is unit plus integration tests.
    ```
    # exit code 0
    [INFO] Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
@@ -202,9 +231,22 @@ first. Run every command from the repository root.
    run with the job's output files, all cases, the comparator's report, job repository and schema. It
    exits 0 when every case named on the command line passes. In the result table it leaves
    `_fill in_` in the columns "In the ticket's scope" and "Why" of the cases the ticket does not name:
-   complete them by hand. A ticket name with no file under `modernization/design/tickets`, or a case
+   complete them by hand. Before changing code, run `make parity-java` on the base and keep its output; use
+   it for the "Why" of a case outside the ticket that already failed there.
+   For a case outside the ticket that passes, replace `_fill in_` with `no - not named by the ticket; run to
+   show no regression`.
+   When the parity run does not execute the ticket's code (its step is not in `interestCalcJob`, or
+   `make parity-java` still runs the file adapters), say so under the table: `The parity run does not execute
+   <step>; the cases prove that nothing else changed.` Prove the ticket's own cases with an integration test
+   that writes `java/interest/target/<name>/<case>/actual`, run after `mvn clean verify`
+   `python3 tools/parity/compare.py interest <case> --actual java/interest/target/<name>/<case>/actual --label java-<name>; echo "exit $?"`
+   and add the output by hand as its own section of `parity-report.md`. A ticket name with no file under `modernization/design/tickets`, or a case
    with no directory under `fixtures/interest`, ends the script with exit code 2
    (`no ticket file modernization/design/tickets/99-nothing.md`). `REPORT=<file>` writes somewhere else.
+   A ticket whose Verification says "Fixture cases: none" passes one case that passed on the base branch
+   (`i01-baseline`), because the script needs at least one case, and then, in the result table, replaces
+   `**yes - acceptance case of the ticket**` with `no - N/A, the ticket names no fixture case` and renames
+   the section "Acceptance run" to "Run of one case".
 
 9. **Write the ticket's report** as `java/interest/evidence/<ticket file name>/report.md`, with the
    seven sections of the pilot's `java/interest/evidence/PILOT-REPORT.md`, in this order:

@@ -1,0 +1,139 @@
+# Combined check, wave 2, branch demo/05b-integration at c31fc1d779a66b6cf93993c97c2314260b83ccdf
+# 2026-11-15T11:47:46Z, openjdk version "21.0.13.0.3" 2026-10-24, Docker 29.9.2
+# cases expected to pass: i01-baseline i02-tie-half-cent i03-zero-rate-skipped i04-default-group-fallback i05-multi-category i06-negative-balance i07-nontie-rounding 
+
+## make reset && make up && make build
+ Volume ts-cobol-carddemo_carddemo-db Removing 
+ Volume ts-cobol-carddemo_carddemo-db Removed 
+ Network ts-cobol-carddemo_default Removed 
+ Container ts-cobol-carddemo-db-1 Waiting 
+ Container ts-cobol-carddemo-estate-1 Healthy 
+ Container ts-cobol-carddemo-db-1 Healthy 
+COBTUPDT: precompiled (ocesql) and compiled
+DSNEXIT: precompiled (ocesql) and compiled
+DSNRUN: precompiled (ocesql) and compiled
+# exit code 0
+
+## mvn -B -f java/interest/pom.xml clean verify
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.122 s -- in com.carddemo.interest.export.DatasetExportTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.carddemo.interest.batch.InterestJobParametersTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in com.carddemo.interest.batch.RestartableRunLogTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in com.carddemo.interest.file.FileRunWorkspaceTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in com.carddemo.interest.codec.RecordLayoutTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.025 s -- in com.carddemo.interest.codec.RecordCodecTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.carddemo.interest.codec.CopybookTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 s -- in com.carddemo.interest.codec.AccountRecordActiveStatusTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in com.carddemo.interest.codec.FileAdapterCodecTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.carddemo.interest.codec.RecordFormatTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 s -- in com.carddemo.interest.codec.FixtureRoundTripTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 s -- in com.carddemo.interest.policy.InterestPolicyBindingTest
+[INFO] Tests run: 63, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.200 s -- in com.carddemo.interest.policy.PolicySwitchFixtureTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.carddemo.interest.domain.InterestFormulaTest
+[INFO] Tests run: 38, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 s -- in com.carddemo.interest.domain.InterestCalculatorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in com.carddemo.interest.domain.RunTimestampTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in com.carddemo.interest.load.ExtractDecoderTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.carddemo.interest.load.ExtractProfileTest
+[INFO] Tests run: 213, Failures: 0, Errors: 0, Skipped: 0
+2026-11-15T11:48:13.790Z ERROR 106725 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step exportDatasetsStep in job exportOnlyJob
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.479 s -- in com.carddemo.interest.export.DatasetExportIT
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.085 s -- in com.carddemo.interest.jdbc.calc.JdbcCalcAdaptersIT
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.460 s -- in com.carddemo.interest.batch.InactiveAccountsSkipJobIT
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.656 s -- in com.carddemo.interest.batch.CalcInterestTablesIT
+2026-11-15T11:48:22.492Z ERROR 106725 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T11:48:22.493Z ERROR 106725 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 8276dc09-2daa-4dfb-a141-caa3f3651154 step calcInterestStep stopped before any work
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.476 s -- in com.carddemo.interest.batch.InterestCalcJobIT
+2026-11-15T11:48:23.810Z ERROR 106725 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+org.springframework.jdbc.UncategorizedSQLException: PreparedStatementCallback; uncategorized SQLException for SQL [UPDATE carddemo.account SET acct_curr_bal = ?, acct_curr_cyc_credit = 0, acct_curr_cyc_debit = 0 WHERE acct_id = ?]; SQL state [P0001]; error code [0]; ERROR: forced failure between the inserts and the update
+Caused by: org.postgresql.util.PSQLException: ERROR: forced failure between the inserts and the update
+2026-11-15T11:48:23.811Z ERROR 106725 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 03de0de7-7bce-4d04-97e8-bdb32bc6d924 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T11:48:23.880Z ERROR 106725 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T11:48:23.881Z ERROR 106725 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 0de25051-6ad7-4fcc-94a4-df335fe506f0 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T11:48:23.958Z ERROR 106725 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+org.springframework.jdbc.UncategorizedSQLException: PreparedStatementCallback; uncategorized SQLException for SQL [UPDATE carddemo.account SET acct_curr_bal = ?, acct_curr_cyc_credit = 0, acct_curr_cyc_debit = 0 WHERE acct_id = ?]; SQL state [P0001]; error code [0]; ERROR: forced failure between the inserts and the update
+Caused by: org.postgresql.util.PSQLException: ERROR: forced failure between the inserts and the update
+2026-11-15T11:48:23.959Z ERROR 106725 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run a87fcc08-fd83-4275-ae91-35313e34fbd8 step calcInterestStep stopped: accounts committed=2; committed chunks stay, the step can be restarted
+2026-11-15T11:48:23.987Z ERROR 106725 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+org.springframework.jdbc.UncategorizedSQLException: PreparedStatementCallback; uncategorized SQLException for SQL [UPDATE carddemo.account SET acct_curr_bal = ?, acct_curr_cyc_credit = 0, acct_curr_cyc_debit = 0 WHERE acct_id = ?]; SQL state [P0001]; error code [0]; ERROR: forced failure between the inserts and the update
+Caused by: org.postgresql.util.PSQLException: ERROR: forced failure between the inserts and the update
+2026-11-15T11:48:23.987Z ERROR 106725 --- [interest] [           main] c.c.interest.batch.CalcInterestTableRun  : run 37e945fc-0136-47e7-9b02-b0daa900b106 step calcInterestStep stopped: accounts committed=0; committed chunks stay, the step can be restarted
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.510 s -- in com.carddemo.interest.batch.CalcInterestRestartIT
+2026-11-15T11:48:25.313Z ERROR 106725 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step loadExtractsStep in job loadOnlyJob
+2026-11-15T11:48:25.361Z ERROR 106725 --- [interest] [           main] c.carddemo.interest.load.ExtractLoader   : loadExtractsStep run 7 FAILED: 1 rejected records, no table was changed
+2026-11-15T11:48:25.362Z ERROR 106725 --- [interest] [           main] c.c.i.load.LoadExtractsStepConfig        : loadExtractsStep reject: file AWS.M2.CARDDEMO.TCATBALF.PS.txt record 2 field TRAN-CAT-BAL: is not numeric
+2026-11-15T11:48:25.363Z ERROR 106725 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step loadExtractsStep in job loadOnlyJob
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.574 s -- in com.carddemo.interest.load.LoadExtractsStepIT
+[INFO] Tests run: 80, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+# exit code 0
+
+## db/postgres/tests (schema assertions, db service)
+PASS  rejects: a negative xref_acct_id
+PASS  rejects: tran_cat_bal = 1000000000.00
+PASS  rejects: trancat_cd = 10000 (five digits)
+PASS  order: ORDER BY trancat_acct_id, trancat_type_cd, trancat_cd gives 01, 1A, A1, B0, a1 (COLLATE "C", E6)
+43 assertions, 0 failed
+# db/postgres/tests/02-interest-assertions.sql exit code 0
+
+## make parity-java (every case under fixtures/interest, tools/parity/compare.py)
+docker compose up -d --wait db
+ Container ts-cobol-carddemo-db-1 Running 
+ Container ts-cobol-carddemo-db-1 Waiting 
+ Container ts-cobol-carddemo-db-1 Healthy 
+mvn -q -f java/interest/pom.xml -DskipTests package
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+report: work/parity-java/report.md
+# exit code 0
+
+## per case: python3 tools/parity/compare.py interest <case> --actual work/parity-java/<case>/actual --label java
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+  exit 0
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+
+## make parity (legacy lane)
+posting/p01-baseline-mixed [legacy rerun]: PASS (23 records, 92 fields, 0 differences)
+posting/p02-invalid-card [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p03-account-missing [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p04-overlimit-reject [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p05-expired-account [legacy rerun]: PASS (14 records, 60 fields, 0 differences)
+posting/p06-credits-new-category [legacy rerun]: PASS (18 records, 67 fields, 0 differences)
+posting/p07-empty-day [legacy rerun]: PASS (2 records, 16 fields, 0 differences)
+interest/i01-baseline [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i03-zero-rate-skipped [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i05-multi-category [legacy rerun]: PASS (3 records, 38 fields, 0 differences)
+interest/i06-negative-balance [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i07-nontie-rounding [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+trantype-update/t01-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t02-update [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t03-delete [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t04-comments [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t05-delete-missing [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t06-duplicate-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t07-mixed-batch [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d01-update-then-apply [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d02-delete-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d03-bad-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+report: work/parity/report.md
+# exit code 0
+
+## git status --short (must be empty apart from this file)
+
+# COMBINED CHECK: PASS

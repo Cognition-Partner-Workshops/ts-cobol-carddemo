@@ -9,12 +9,15 @@ import java.time.format.DateTimeParseException;
 import java.util.function.BooleanSupplier;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
 /**
  * The switches of the open decisions (architecture.md section 8, FI-5). The default of each is the
  * legacy behaviour. This is the only class that reads interest.policy.*. It carries the decisions
- * of the calculation: INT-Q01 to INT-Q06 and INT-H04. INT-H01 has no switch (the fee hook is empty);
- * rerunGuard (INT-H02), multiCard (INT-H03) and overflow (INT-H05) belong to tickets 06 and 08.
+ * of the calculation: INT-Q01 to INT-Q06 and INT-H04, and the switches of the two holes the source
+ * does not determine, multiCard (INT-H03) and overflow (INT-H05), whose decisions are made in
+ * domain.HoleDecisions. INT-H01 has no switch (the fee hook is empty); rerunGuard (INT-H02) belongs
+ * to ticket 06.
  */
 @ConfigurationProperties("interest.policy")
 public record InterestPolicy(
@@ -24,7 +27,9 @@ public record InterestPolicy(
         boolean updateLastAccount,
         NegativeBalance negativeBalance,
         ZeroInterest zeroInterest,
-        InactiveAccounts inactiveAccounts) {
+        InactiveAccounts inactiveAccounts,
+        MultiCard multiCard,
+        Overflow overflow) {
 
     /** INT-Q01. */
     public enum Rounding { TRUNCATE, HALF_UP, HALF_EVEN }
@@ -44,8 +49,19 @@ public record InterestPolicy(
     /** INT-H04. */
     public enum InactiveAccounts { CHARGE, SKIP }
 
+    /** INT-H03. STOP is the proposed default: the source does not determine the behaviour. */
+    public enum MultiCard { STOP, FIRST_BY_CARD_NUM }
+
+    /**
+     * INT-H05. STOP is the proposed default: the source does not determine the behaviour. WIDEN
+     * (architecture.md section 8) needs wider columns and record layouts (FI-1, FI-4) and is not built.
+     */
+    public enum Overflow { STOP }
+
     private static final DateTimeFormatter RUN_DATE_PREFIX = DateTimeFormatter.ofPattern("yyyyMMdd'00'");
 
+    /** The constructor the configuration binds: every switch by its name. */
+    @ConstructorBinding
     public InterestPolicy {
         rounding = rounding == null ? Rounding.TRUNCATE : rounding;
         idPrefix = idPrefix == null ? IdPrefix.PARM : idPrefix;
@@ -53,6 +69,16 @@ public record InterestPolicy(
         negativeBalance = negativeBalance == null ? NegativeBalance.CHARGE : negativeBalance;
         zeroInterest = zeroInterest == null ? ZeroInterest.WRITE : zeroInterest;
         inactiveAccounts = inactiveAccounts == null ? InactiveAccounts.CHARGE : inactiveAccounts;
+        multiCard = multiCard == null ? MultiCard.STOP : multiCard;
+        overflow = overflow == null ? Overflow.STOP : overflow;
+    }
+
+    /** The switches of the calculation, with multiCard and overflow at their default STOP. */
+    public InterestPolicy(Rounding rounding, IdPrefix idPrefix, TimestampSource timestampSource,
+            boolean updateLastAccount, NegativeBalance negativeBalance, ZeroInterest zeroInterest,
+            InactiveAccounts inactiveAccounts) {
+        this(rounding, idPrefix, timestampSource, updateLastAccount, negativeBalance, zeroInterest,
+                inactiveAccounts, MultiCard.STOP, Overflow.STOP);
     }
 
     /** The legacy behaviour of every switch. */

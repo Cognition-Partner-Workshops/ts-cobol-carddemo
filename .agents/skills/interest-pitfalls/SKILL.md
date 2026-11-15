@@ -84,6 +84,75 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
   `make parity-java` does this for `work/parity-java/report.md`.
 * **Reproduced by:** running the same comparison twice; `grep -c '^## ' work/parity/report.md` printed `2`.
 
+## P8. Catalog text is unqualified for the role `carddemo`
+
+* **Symptom.** SQL assertions that compare with `carddemo.account` fail with `(nothing)` or with
+  `FOREIGN KEY (run_id) REFERENCES interest_run(run_id)`; first run of `db/postgres/tests/run.sh`:
+  `43 assertions, 9 failed`, e.g. `FAIL  keys: primary key of account is (acct_id) / (nothing)`.
+* **Cause.** The role has schema `carddemo` on its search_path (`"$user", public`), so `regclass` text and
+  `pg_get_constraintdef()` leave the schema out.
+* **Fix.** `SET LOCAL search_path = pg_catalog;` in the test transaction. After it: `43 assertions, 0 failed`.
+* **Reported by:** ticket 02-schema (step 5b, wave 1).
+
+## P9. A test cannot read `modernization/rules/interest/expected/<case>.json`
+
+* **Symptom.** `NullPointerException: Cannot invoke "java.util.List.iterator()" because the return value of "java.util.Map.get(Object)" is null`.
+* **Cause.** Spring Boot's `BasicJsonParser` does not read the nested, indented files.
+* **Fix.** `com.jayway.jsonpath.JsonPath.parse(text).read("$")`; `json-path` is on the test classpath through
+  `spring-boot-starter-test`, no new dependency.
+* **Reported by:** ticket 04-calculation-rules (`PolicySwitchFixtureTest`; 63 of 63 pass with JsonPath).
+
+## P10. The expectation files give the SYSOUT record echo without trailing spaces
+
+* **Symptom.** `run log ==> expected "000000020010100010000010000{" but was "000000020010100010000010000{                      "`.
+* **Cause.** `run.sysout.value` in `modernization/rules/interest/expected/<case>.json` is trimmed; the recorded
+  SYSOUT has the 50-byte record.
+* **Fix.** Compare with the expectation file after `stripTrailing`; compare byte for byte only with
+  `fixtures/interest/<case>/expected/sysout`.
+* **Reported by:** ticket 04-calculation-rules (`PolicySwitchFixtureTest`).
+
+## P11. `mvn -o` fails on a machine that never built the module
+
+* **Symptom.** `mvn -q -o -DskipTests compile` ends with `maven-failsafe-plugin:jar:3.5.4 has not been downloaded`.
+* **Cause.** Offline mode with an empty local repository.
+* **Fix.** Run once without `-o`.
+* **Reported by:** ticket 04-calculation-rules.
+
+## P12. `TransactionRecord.decode` takes a `RecordOrigin`
+
+* **Symptom.** `method decode in class com.carddemo.interest.codec.TransactionRecord cannot be applied to given types`
+  when a test decodes a transaction line.
+* **Cause.** Since ticket 03 the method has a second parameter.
+* **Fix.** `TransactionRecord.decode(image, RecordOrigin.IN_MEMORY)`.
+* **Reported by:** ticket 04-calculation-rules (second session, after merging the wave 1 combination).
+
+## P13. The job's connections have `search_path = batch`; `InterestCalcJobIT` mounts only the first init script
+
+* **Symptom.** An integration test on the tables fails with `relation "carddemo.account" does not exist`, or a
+  statement without a schema name does not find a replica table.
+* **Cause.** `application.yml`: `connection-init-sql: CREATE SCHEMA IF NOT EXISTS batch; SET search_path TO batch`.
+  The container of `InterestCalcJobIT` mounts `db/postgres/01-transaction-type.sql` only.
+* **Fix.** Name the schema in every statement (`carddemo.account`) and mount `db/postgres/02-interest.sql` as a
+  second init script (`/docker-entrypoint-initdb.d/02-interest.sql`), as `ReplicaTables.postgres()` does.
+* **Reported by:** tickets 05-extract-loader and 06-calc-step-jdbc. Neither reproduced the failure; both wrote
+  their tests with the fix from the start.
+
+## P14. Opening the pull request fails with a GitHub secondary rate limit
+
+* **Symptom.** `You have exceeded a secondary rate limit and have been temporarily blocked from content creation.`
+* **Cause.** Several ticket sessions of one wave open pull requests at the same moment. The push is not affected.
+* **Fix.** Wait (90 seconds was enough once, 300 seconds once) and create the pull request again; do not open a
+  second branch and do not retry at once.
+* **Reported by:** tickets 05-extract-loader (PR 181) and 06-calc-step-jdbc (PR 180).
+
+## P15. Hand-written amounts a factor of ten too small
+
+* **Symptom.** `expected 0000000030} but was 0000000003}` in a test with hand-written rows.
+* **Cause.** TRAN-AMT and ACCT-CURR-BAL have two decimals: 3.00 is `0000000030` with the overpunch on the last digit.
+* **Fix.** Correct the test, not the code. Take hand-written expected amounts from the RC table of
+  `strategy-interest.md` (i01 47.00 and 3410.00; i06 -3.00 and -300.00).
+* **Reported by:** ticket 07-dataset-export (`DatasetExportTest.i06NegativeBalance_rows_giveTheRecordedFiles`).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

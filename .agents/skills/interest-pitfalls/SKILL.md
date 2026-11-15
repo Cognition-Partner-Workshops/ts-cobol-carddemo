@@ -111,6 +111,13 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
   `fixtures/interest/<case>/expected/sysout`.
 * **Reported by:** ticket 04-calculation-rules (`PolicySwitchFixtureTest`).
 
+## P11. `mvn -o` fails on a machine that never built the module
+
+* **Symptom.** `mvn -q -o -DskipTests compile` ends with `maven-failsafe-plugin:jar:3.5.4 has not been downloaded`.
+* **Cause.** Offline mode with an empty local repository.
+* **Fix.** Run once without `-o`.
+* **Reported by:** ticket 04-calculation-rules.
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

@@ -125,7 +125,7 @@ Proposals only.
 
 | Standard | What the work shows | Proposal |
 |---|---|---|
-| Section 9 | Most lines are about Java; a schema-only ticket marks 40 lines N/A and several "PASS for the schema half" | Add under the heading: "A ticket with no Java marks S2.x, S6.x and behaviours a, c, l, m, o, q, s, w, x, z, aa N/A in one line." |
+| Section 9 | Most lines are about Java; a schema-only ticket marks most lines N/A and several "PASS for the schema half" | Add under the heading: "A ticket with no Java marks S2.x, S6.x and behaviours a, c, l, m, o, q, s, w, x, z, aa N/A in one line." |
 | S3.6 | `CHAR(n)` does not enforce the width: shorter text is padded by the database | Add: "The schema enforces exact length only for FILLER (`BYTEA` + `octet_length`); the width of text fields is enforced by the codec before the insert." |
 | S7.3 | Names Testcontainers only; SQL assertions run with psql in the compose `db` service are the test form the ticket prescribes | Add: "SQL assertions under `db/postgres/tests`, run by `db/postgres/tests/run.sh` on a scratch database of the `db` service, count as integration tests of the schema." |
 | (missing) | No standard says how a schema script behaves on re-application or how it is changed once FI-4 is frozen | Add a standard: "Schema scripts are one transaction, never DROP or ALTER an existing object, and fail on re-application; a change to FI-4 is a new numbered script." |

@@ -1,0 +1,335 @@
+{
+  "meta": {
+    "module": "VSAMMQ",
+    "generated_at": "2026-11-15T06:04:31Z",
+    "tool": "mftb 0.2.1",
+    "inputs": {
+      "from": [
+        "connections.json",
+        "programs.json",
+        "chains.json",
+        "onlinenotes.json"
+      ]
+    }
+  },
+  "region": {
+    "csd_scanned": true,
+    "groups": [
+      "CARDDEMO"
+    ],
+    "definitions": {
+      "LIBRARY": 1,
+      "PROGRAM": 2,
+      "TRANSACTION": 2
+    }
+  },
+  "transactions": [
+    {
+      "transid": "CDRA",
+      "basis": "csd",
+      "definition": {
+        "program": "COACCT01",
+        "group": "CARDDEMO",
+        "source": "app/app-vsam-mq/csd/CRDDEMOM.csd:17",
+        "remote_system": null,
+        "twasize": "0",
+        "dynamic": "NO",
+        "description": null
+      },
+      "initial_program": "COACCT01",
+      "programs": [
+        {
+          "id": "COACCT01",
+          "how": "initial",
+          "via": null,
+          "certainty": "proven",
+          "in_inventory": true,
+          "source": null,
+          "level": 0
+        }
+      ],
+      "edges": [],
+      "back_edges": [],
+      "maps": [],
+      "conversation": {
+        "pseudo_conversational": false,
+        "returns": [],
+        "commarea": null
+      },
+      "resources": {
+        "files": [
+          {
+            "name": "ACCTDAT",
+            "csd": null,
+            "dsn": null,
+            "uses": [
+              {
+                "program": "COACCT01",
+                "command": "READ",
+                "direction": "read",
+                "source": "app/app-vsam-mq/cbl/COACCT01.cbl:396"
+              }
+            ],
+            "directions": [
+              "read"
+            ]
+          }
+        ],
+        "ts_queues": [],
+        "td_queues": [],
+        "db2": {
+          "entries": [],
+          "plan": null,
+          "tables": []
+        }
+      },
+      "starts": [],
+      "remote": [],
+      "notes": [
+        {
+          "transid": "CDRA",
+          "note": "No screen: COACCT01 sends and receives no map. It issues EXEC CICS RETRIEVE INTO(MQTM) and takes the request queue name from MQTM-QNAME, so the program expects to be started with an MQ trigger message; the trigger monitor, process and initiation queue that would start CDRA are not in the scanned inputs, so how CDRA is entered stays open.",
+          "evidence": [
+            "app/app-vsam-mq/cbl/COACCT01.cbl:188-197",
+            "app/app-vsam-mq/csd/CRDDEMOM.csd:17-18"
+          ]
+        },
+        {
+          "transid": "CDRA",
+          "note": "Queue names: the request queue is a run-time value (MQTM-QNAME) and is not derived here; the reply queue CARD.DEMO.REPLY.ACCT and the error queue CARD.DEMO.ERROR are literals. The module README defines CARDDEMO.REQUEST.QUEUE and CARDDEMO.RESPONSE.QUEUE instead, which the program does not name - which definitions are installed is a question for the MQ administrator.",
+          "evidence": [
+            "app/app-vsam-mq/cbl/COACCT01.cbl:197-198",
+            "app/app-vsam-mq/cbl/COACCT01.cbl:294",
+            "app/app-vsam-mq/README.md:53-54",
+            "app/app-vsam-mq/README.md:71-72"
+          ]
+        },
+        {
+          "transid": "CDRA",
+          "note": "Not pseudo-conversational: one task drains the queue (MQGET under syncpoint with a 5000 ms wait, EXEC CICS SYNCPOINT per message) and ends with a plain EXEC CICS RETURN when MQGET reports no message available. ACCTDAT is read only (EXEC CICS READ, no UPDATE).",
+          "evidence": [
+            "app/app-vsam-mq/cbl/COACCT01.cbl:325-331",
+            "app/app-vsam-mq/cbl/COACCT01.cbl:336-352",
+            "app/app-vsam-mq/cbl/COACCT01.cbl:377-378",
+            "app/app-vsam-mq/cbl/COACCT01.cbl:396-404",
+            "app/app-vsam-mq/cbl/COACCT01.cbl:549"
+          ]
+        }
+      ],
+      "role": "entry",
+      "reached_by": [],
+      "asks": [
+        {
+          "kind": "online-entry-point-unproven",
+          "severity": "info",
+          "transid": "CDRA",
+          "message": "nothing in the scanned estate transfers to TRANID CDRA, so it is taken to be entered from outside it (typed at a terminal, started by an unscanned program or region)",
+          "evidence": [
+            "app/app-vsam-mq/csd/CRDDEMOM.csd:17"
+          ],
+          "request": "Confirm how CDRA is started (a terminal user, another region, an operator or automation product), or provide the caller that transfers to it",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "transid": "CDRD",
+      "basis": "csd",
+      "definition": {
+        "program": "CODATE01",
+        "group": "CARDDEMO",
+        "source": "app/app-vsam-mq/csd/CRDDEMOM.csd:27",
+        "remote_system": null,
+        "twasize": "0",
+        "dynamic": "NO",
+        "description": null
+      },
+      "initial_program": "CODATE01",
+      "programs": [
+        {
+          "id": "CODATE01",
+          "how": "initial",
+          "via": null,
+          "certainty": "proven",
+          "in_inventory": true,
+          "source": null,
+          "level": 0
+        }
+      ],
+      "edges": [],
+      "back_edges": [],
+      "maps": [],
+      "conversation": {
+        "pseudo_conversational": false,
+        "returns": [],
+        "commarea": null
+      },
+      "resources": {
+        "files": [],
+        "ts_queues": [],
+        "td_queues": [],
+        "db2": {
+          "entries": [],
+          "plan": null,
+          "tables": []
+        }
+      },
+      "starts": [],
+      "remote": [],
+      "notes": [
+        {
+          "transid": "CDRD",
+          "note": "No screen: CODATE01 sends and receives no map. It issues EXEC CICS RETRIEVE INTO(MQTM) and takes the request queue name from MQTM-QNAME, so the program expects to be started with an MQ trigger message; the trigger monitor, process and initiation queue that would start CDRD are not in the scanned inputs, so how CDRD is entered stays open.",
+          "evidence": [
+            "app/app-vsam-mq/cbl/CODATE01.cbl:137-146",
+            "app/app-vsam-mq/csd/CRDDEMOM.csd:27-28"
+          ]
+        },
+        {
+          "transid": "CDRD",
+          "note": "Queue names: the request queue is a run-time value (MQTM-QNAME) and is not derived here; the reply queue CARD.DEMO.REPLY.DATE and the error queue CARD.DEMO.ERROR are literals. The module README defines CARDDEMO.REQUEST.QUEUE and CARDDEMO.RESPONSE.QUEUE instead, which the program does not name.",
+          "evidence": [
+            "app/app-vsam-mq/cbl/CODATE01.cbl:146-147",
+            "app/app-vsam-mq/cbl/CODATE01.cbl:243",
+            "app/app-vsam-mq/README.md:53-54",
+            "app/app-vsam-mq/README.md:71-72"
+          ]
+        },
+        {
+          "transid": "CDRD",
+          "note": "Not pseudo-conversational and touches no file: per message it runs ASKTIME/FORMATTIME, puts the date and time on the reply queue, syncpoints, and ends with a plain EXEC CICS RETURN when MQGET reports no message available.",
+          "evidence": [
+            "app/app-vsam-mq/cbl/CODATE01.cbl:274-280",
+            "app/app-vsam-mq/cbl/CODATE01.cbl:343-362",
+            "app/app-vsam-mq/cbl/CODATE01.cbl:453"
+          ]
+        }
+      ],
+      "role": "entry",
+      "reached_by": [],
+      "asks": [
+        {
+          "kind": "online-entry-point-unproven",
+          "severity": "info",
+          "transid": "CDRD",
+          "message": "nothing in the scanned estate transfers to TRANID CDRD, so it is taken to be entered from outside it (typed at a terminal, started by an unscanned program or region)",
+          "evidence": [
+            "app/app-vsam-mq/csd/CRDDEMOM.csd:27"
+          ],
+          "request": "Confirm how CDRD is started (a terminal user, another region, an operator or automation product), or provide the caller that transfers to it",
+          "status": "open"
+        }
+      ]
+    }
+  ],
+  "entry_points": [
+    {
+      "transid": "CDRA",
+      "basis": "csd",
+      "role": "entry",
+      "reached_by": [],
+      "program": "COACCT01",
+      "in_inventory": true,
+      "source": "app/app-vsam-mq/csd/CRDDEMOM.csd:17",
+      "programs": 1,
+      "maps": 0,
+      "pseudo_conversational": false
+    },
+    {
+      "transid": "CDRD",
+      "basis": "csd",
+      "role": "entry",
+      "reached_by": [],
+      "program": "CODATE01",
+      "in_inventory": true,
+      "source": "app/app-vsam-mq/csd/CRDDEMOM.csd:27",
+      "programs": 1,
+      "maps": 0,
+      "pseudo_conversational": false
+    }
+  ],
+  "dispatch": {
+    "edges": [],
+    "return_edges": []
+  },
+  "boundary": {
+    "triggers": [],
+    "submits": [],
+    "datasets": []
+  },
+  "unreached": [],
+  "notes": [
+    {
+      "transid": "CDRA",
+      "note": "No screen: COACCT01 sends and receives no map. It issues EXEC CICS RETRIEVE INTO(MQTM) and takes the request queue name from MQTM-QNAME, so the program expects to be started with an MQ trigger message; the trigger monitor, process and initiation queue that would start CDRA are not in the scanned inputs, so how CDRA is entered stays open.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/COACCT01.cbl:188-197",
+        "app/app-vsam-mq/csd/CRDDEMOM.csd:17-18"
+      ]
+    },
+    {
+      "transid": "CDRA",
+      "note": "Queue names: the request queue is a run-time value (MQTM-QNAME) and is not derived here; the reply queue CARD.DEMO.REPLY.ACCT and the error queue CARD.DEMO.ERROR are literals. The module README defines CARDDEMO.REQUEST.QUEUE and CARDDEMO.RESPONSE.QUEUE instead, which the program does not name - which definitions are installed is a question for the MQ administrator.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/COACCT01.cbl:197-198",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:294",
+        "app/app-vsam-mq/README.md:53-54",
+        "app/app-vsam-mq/README.md:71-72"
+      ]
+    },
+    {
+      "transid": "CDRA",
+      "note": "Not pseudo-conversational: one task drains the queue (MQGET under syncpoint with a 5000 ms wait, EXEC CICS SYNCPOINT per message) and ends with a plain EXEC CICS RETURN when MQGET reports no message available. ACCTDAT is read only (EXEC CICS READ, no UPDATE).",
+      "evidence": [
+        "app/app-vsam-mq/cbl/COACCT01.cbl:325-331",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:336-352",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:377-378",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:396-404",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:549"
+      ]
+    },
+    {
+      "transid": "CDRD",
+      "note": "No screen: CODATE01 sends and receives no map. It issues EXEC CICS RETRIEVE INTO(MQTM) and takes the request queue name from MQTM-QNAME, so the program expects to be started with an MQ trigger message; the trigger monitor, process and initiation queue that would start CDRD are not in the scanned inputs, so how CDRD is entered stays open.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/CODATE01.cbl:137-146",
+        "app/app-vsam-mq/csd/CRDDEMOM.csd:27-28"
+      ]
+    },
+    {
+      "transid": "CDRD",
+      "note": "Queue names: the request queue is a run-time value (MQTM-QNAME) and is not derived here; the reply queue CARD.DEMO.REPLY.DATE and the error queue CARD.DEMO.ERROR are literals. The module README defines CARDDEMO.REQUEST.QUEUE and CARDDEMO.RESPONSE.QUEUE instead, which the program does not name.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/CODATE01.cbl:146-147",
+        "app/app-vsam-mq/cbl/CODATE01.cbl:243",
+        "app/app-vsam-mq/README.md:53-54",
+        "app/app-vsam-mq/README.md:71-72"
+      ]
+    },
+    {
+      "transid": "CDRD",
+      "note": "Not pseudo-conversational and touches no file: per message it runs ASKTIME/FORMATTIME, puts the date and time on the reply queue, syncpoints, and ends with a plain EXEC CICS RETURN when MQGET reports no message available.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/CODATE01.cbl:274-280",
+        "app/app-vsam-mq/cbl/CODATE01.cbl:343-362",
+        "app/app-vsam-mq/cbl/CODATE01.cbl:453"
+      ]
+    }
+  ],
+  "asks": [],
+  "summary": {
+    "transactions": 2,
+    "transactions_defined": 2,
+    "pseudo_conversational": 0,
+    "programs_reached": 2,
+    "programs_unreached": 0,
+    "maps": 0,
+    "entries": 2,
+    "menus": 0,
+    "screens": 0,
+    "boundary_datasets": 0,
+    "boundary_triggers": 0,
+    "boundary_submits": 0,
+    "asks": 2
+  }
+}

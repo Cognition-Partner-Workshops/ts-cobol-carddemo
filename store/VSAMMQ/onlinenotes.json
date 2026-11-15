@@ -1,0 +1,62 @@
+{
+  "notes": [
+    {
+      "transid": "CDRA",
+      "note": "No screen: COACCT01 sends and receives no map. It issues EXEC CICS RETRIEVE INTO(MQTM) and takes the request queue name from MQTM-QNAME, so the program expects to be started with an MQ trigger message; the trigger monitor, process and initiation queue that would start CDRA are not in the scanned inputs, so how CDRA is entered stays open.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/COACCT01.cbl:188-197",
+        "app/app-vsam-mq/csd/CRDDEMOM.csd:17-18"
+      ]
+    },
+    {
+      "transid": "CDRA",
+      "note": "Queue names: the request queue is a run-time value (MQTM-QNAME) and is not derived here; the reply queue CARD.DEMO.REPLY.ACCT and the error queue CARD.DEMO.ERROR are literals. The module README defines CARDDEMO.REQUEST.QUEUE and CARDDEMO.RESPONSE.QUEUE instead, which the program does not name - which definitions are installed is a question for the MQ administrator.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/COACCT01.cbl:197-198",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:294",
+        "app/app-vsam-mq/README.md:53-54",
+        "app/app-vsam-mq/README.md:71-72"
+      ]
+    },
+    {
+      "transid": "CDRA",
+      "note": "Not pseudo-conversational: one task drains the queue (MQGET under syncpoint with a 5000 ms wait, EXEC CICS SYNCPOINT per message) and ends with a plain EXEC CICS RETURN when MQGET reports no message available. ACCTDAT is read only (EXEC CICS READ, no UPDATE).",
+      "evidence": [
+        "app/app-vsam-mq/cbl/COACCT01.cbl:325-331",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:336-352",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:377-378",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:396-404",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:549"
+      ]
+    },
+    {
+      "transid": "CDRD",
+      "note": "No screen: CODATE01 sends and receives no map. It issues EXEC CICS RETRIEVE INTO(MQTM) and takes the request queue name from MQTM-QNAME, so the program expects to be started with an MQ trigger message; the trigger monitor, process and initiation queue that would start CDRD are not in the scanned inputs, so how CDRD is entered stays open.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/CODATE01.cbl:137-146",
+        "app/app-vsam-mq/csd/CRDDEMOM.csd:27-28"
+      ]
+    },
+    {
+      "transid": "CDRD",
+      "note": "Queue names: the request queue is a run-time value (MQTM-QNAME) and is not derived here; the reply queue CARD.DEMO.REPLY.DATE and the error queue CARD.DEMO.ERROR are literals. The module README defines CARDDEMO.REQUEST.QUEUE and CARDDEMO.RESPONSE.QUEUE instead, which the program does not name.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/CODATE01.cbl:146-147",
+        "app/app-vsam-mq/cbl/CODATE01.cbl:243",
+        "app/app-vsam-mq/README.md:53-54",
+        "app/app-vsam-mq/README.md:71-72"
+      ]
+    },
+    {
+      "transid": "CDRD",
+      "note": "Not pseudo-conversational and touches no file: per message it runs ASKTIME/FORMATTIME, puts the date and time on the reply queue, syncpoints, and ends with a plain EXEC CICS RETURN when MQGET reports no message available.",
+      "evidence": [
+        "app/app-vsam-mq/cbl/CODATE01.cbl:274-280",
+        "app/app-vsam-mq/cbl/CODATE01.cbl:343-362",
+        "app/app-vsam-mq/cbl/CODATE01.cbl:453"
+      ]
+    }
+  ],
+  "closures": [],
+  "asks": []
+}

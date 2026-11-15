@@ -35,6 +35,10 @@ first. Run every command from the repository root.
    every case passed all three: job exit code 0, comparator, assertions. `INTEREST_PROFILE=default` runs
    calcInterestStep alone on the file adapters; `INTEREST_OPTS=<option>` and `INTEREST_OUT=<directory>` run the
    gate with another setting into another directory.
+   Since ticket 10 `make recon-java [CASE=<case>]` runs this target with `INTEREST_OUT=work/recon-java/run` and
+   then writes `work/recon-java/<case>.md`; `make sidebyside-java [CASE=<case>] [TS=format|exact]` compares
+   `fixtures/interest/<case>/expected` with `work/parity-java/<case>/actual`, so `make parity-java` must have run
+   before it (otherwise: `NOT AVAILABLE (the target directory does not exist)`).
 
 2. **Know the files the comparator reads.** The job writes them itself; nothing has to be converted.
 

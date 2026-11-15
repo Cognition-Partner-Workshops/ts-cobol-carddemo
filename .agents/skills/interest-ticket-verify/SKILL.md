@@ -188,6 +188,8 @@ first. Run every command from the repository root.
    tran_cat_balance, transaction_type, transaction_type_categor`. A db volume created before that file
    existed does not get the tables (init scripts run only on an empty volume): `make reset`, or
    `docker compose exec -T db psql -U carddemo -d carddemo -v ON_ERROR_STOP=1 < db/postgres/02-interest.sql`.
+   Since ticket 09 `make parity-java` applies `db/postgres/02-interest.sql` itself when `carddemo.interest_run`
+   is missing and prints `db volume has no interest tables: applying db/postgres/02-interest.sql`.
 
 8. **Write the evidence, from the committed revision, in the ticket's own directory.** Commit the code
    first, then produce the files, then commit them alone, so the evidence names the revision it came

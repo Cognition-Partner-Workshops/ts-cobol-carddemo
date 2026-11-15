@@ -152,6 +152,10 @@ Run every command from the repository root.
    prints nothing. A ticket with narrower Allowed files inside `java/interest` adds the frozen build file, CI and
    packages to the list and takes out only what it is allowed:
    `git diff --stat origin/<base-branch> -- app fixtures tools modernization .agents db docker-compose.yml Makefile .github java/interest/pom.xml java/interest/src/main/resources java/interest/src/main/java/com/carddemo/interest/port java/interest/src/main/java/com/carddemo/interest/batch java/interest/src/main/java/com/carddemo/interest/file java/interest/src/main/java/com/carddemo/interest/codec java/interest/src/main/java/com/carddemo/interest/domain java/interest/src/main/java/com/carddemo/interest/policy`.
+   A ticket allowed one package only (ticket 10: `recon`) checks that
+   `git diff --stat origin/<base-branch> -- . ':(exclude)java/interest/src/main/java/com/carddemo/interest/recon' ':(exclude)java/interest/src/test/java/com/carddemo/interest/recon' ':(exclude)java/interest/README.md' ':(exclude)Makefile' ':(exclude)java/interest/evidence/<ticket file name>'`
+   prints nothing, and that `git diff origin/<base-branch> -- Makefile java/interest/README.md | grep -c '^-[^-]'`
+   prints 0 (lines were added, none changed).
 
 10. **Go on with `interest-ticket-verify`:** run the fixture cases, compare, write the evidence, open the
     pull request. Do not merge it.

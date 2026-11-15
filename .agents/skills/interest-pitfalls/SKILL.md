@@ -74,6 +74,8 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Cause.** The `.pyc` files are tracked and Python rewrites them.
 * **Fix.** `git checkout -- tools/parity/__pycache__ tools/runjcl/__pycache__` before every commit (standard S8.1);
   `make parity` (legacy) rewrites the one under `tools/runjcl`.
+  `make recon-java` calls `make parity-java` and rewrites the same file; `make sidebyside-java` sets
+  `PYTHONDONTWRITEBYTECODE=1` and does not.
 * **Reproduced by:** `python3 tools/parity/compare.py interest i01-baseline --actual work/parity-java/i01-baseline/actual --label java; git status --short`.
 
 ## P7. The comparator report holds old results

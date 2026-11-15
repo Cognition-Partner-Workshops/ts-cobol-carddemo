@@ -104,6 +104,9 @@ first. Run every command from the repository root.
    interest/i02-tie-half-cent [java-halfup]: FAIL (4 records, 50 fields, 3 differences)
    ```
    `runId` must be new for every launch. Exit code 0 is a COMPLETED job, 12 a stopped one.
+   A value a switch does not have (`--interest.policy.overflow=WIDEN`) ends with exit code 1 (`APPLICATION FAILED
+   TO START`) and no output; the comparator then reports every expected record as a difference. Record that as
+   the refusal, not as a parity FAIL.
    When no fixture exercises the option (`inactiveAccounts=SKIP`: every fixture account is active), the run
    proves only that the job completes: add an integration test on a copy of a fixture input changed in the
    test's temporary directory, never under `fixtures/`.

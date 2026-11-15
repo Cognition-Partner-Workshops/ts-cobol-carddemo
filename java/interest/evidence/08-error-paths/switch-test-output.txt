@@ -1,0 +1,48 @@
+# interest-ticket-verify step 4, once per value of the two switches of ticket 08; revision f7c780758d60b7a5c7251aaa5b95a8a073b0977c, 2026-11-15T12:10:38Z
+# file adapters, case i01-baseline: every fixture account has one card and no amount overflows, so each accepted value must leave the case at PASS
+
+## --interest.policy.multiCard=STOP
+job exit=0
+interest/i01-baseline [java-interest-policy-multiCard-STOP]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+
+## --interest.policy.multiCard=FIRST_BY_CARD_NUM
+job exit=0
+interest/i01-baseline [java-interest-policy-multiCard-FIRST_BY_CARD_NUM]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+
+## --interest.policy.overflow=STOP
+job exit=0
+interest/i01-baseline [java-interest-policy-overflow-STOP]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+
+## --interest.policy.overflow=WIDEN
+2026-11-15T12:10:45.431Z  WARN 1 --- [interest] [           main] s.c.a.AnnotationConfigApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'holeDecisions' defined in class path resource [com/carddemo/interest/batch/InterestJobConfig.class]: Unsatisfied
+2026-11-15T12:10:45.447Z ERROR 1 --- [interest] [           main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Failed to bind properties under 'interest.policy.overflow' to com.carddemo.interest.policy.InterestPolicy$Overflow:
+
+    Property: interest.policy.overflow
+    Value: "WIDEN"
+    Origin: "interest.policy.overflow" from property source "commandLineArgs"
+    Reason: failed to convert java.lang.String to com.carddemo.interest.policy.InterestPolicy$Overflow (caused by java.lang.IllegalArgumentException: No enum constant com.carddemo.interest.policy.InterestPolicy.Overflow.WIDEN)
+
+Action:
+
+Update your application's configuration. The following values are valid:
+
+    STOP
+
+job exit=1
+interest/i01-baseline [java-interest-policy-overflow-WIDEN]: FAIL (4 records, 50 fields, 4 differences)
+comparator exit=1
+
+# overflow=WIDEN is not a value of the switch (INT-H05 is OPEN; WIDEN needs wider columns and layouts, FI-1, FI-4): the
+# application does not start (exit 1), writes no output, and the comparator therefore reports the 4 expected records as
+# differences. That FAIL is the intended refusal, not a parity regression.

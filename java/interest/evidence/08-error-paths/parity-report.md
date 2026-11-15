@@ -1,7 +1,7 @@
 # Parity report - ticket 08-error-paths (java/interest)
 
-Revision of the code: `5c4976dceb0ca8cd7386fe0adf28bbaec44dd3f7` (branch `demo/05-08-error-paths`).
-Produced 2026-11-15T12:00:10Z, comparator `tools/parity/compare.py` unchanged.
+Revision of the code: `f7c780758d60b7a5c7251aaa5b95a8a073b0977c` (branch `demo/05-08-error-paths`).
+Produced 2026-11-15T12:10:09Z, comparator `tools/parity/compare.py` unchanged.
 
 ## Result per case
 
@@ -27,10 +27,45 @@ output of an abend exists, and what CBACT04C does on the host for INT-H03 and IN
 
 ```
 docker compose up -d --wait db
- Container ts-cobol-carddemo-db-1 Running 
+ Network ts-cobol-carddemo_default Creating 
+ Network ts-cobol-carddemo_default Creating 
+ Volume ts-cobol-carddemo_carddemo-db Creating 
+ Volume ts-cobol-carddemo_carddemo-db Creating 
+ Volume ts-cobol-carddemo_carddemo-db Created 
+ Volume ts-cobol-carddemo_carddemo-db Created 
+ Network ts-cobol-carddemo_default Created 
+ Network ts-cobol-carddemo_default Created 
+ Container ts-cobol-carddemo-db-1 Creating 
+ Container ts-cobol-carddemo-db-1 Created 
+ Container ts-cobol-carddemo-db-1 Starting 
+ Container ts-cobol-carddemo-db-1 Started 
  Container ts-cobol-carddemo-db-1 Waiting 
  Container ts-cobol-carddemo-db-1 Healthy 
 mvn -q -f java/interest/pom.xml -DskipTests package
+Unable to find image 'eclipse-temurin:21-jre' locally
+21-jre: Pulling from library/eclipse-temurin
+d2157724d428: Pulling fs layer
+96aae9022e0e: Pulling fs layer
+a034bdfd5bba: Pulling fs layer
+60ca781aad8b: Pulling fs layer
+1ed58412d3b9: Pulling fs layer
+517b871c26ea: Pulling fs layer
+96aae9022e0e: Already exists
+a034bdfd5bba: Already exists
+517b871c26ea: Already exists
+d2157724d428: Download complete
+1ed58412d3b9: Download complete
+60ca781aad8b: Download complete
+dfe24317d103: Download complete
+1b2a18b4af3a: Download complete
+517b871c26ea: Pull complete
+96aae9022e0e: Pull complete
+a034bdfd5bba: Pull complete
+60ca781aad8b: Pull complete
+d2157724d428: Pull complete
+1ed58412d3b9: Pull complete
+Digest: sha256:18bb4a91a3dea3f03ee31d3755af34dfb40f904fc77ab56cdc2f092e32fff9c2
+Status: Downloaded newer image for eclipse-temurin:21-jre
 interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
 report: work/parity-java/report.md
 ```
@@ -571,20 +606,20 @@ Checked 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, 0 table snapsh
 
     job_name     |  status   |                   steps                   |                   run_id                    
 -----------------+-----------+-------------------------------------------+---------------------------------------------
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794744009-23804-i07-nontie-rounding
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744007-23804-i06-negative-balance
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744005-23804-i05-multi-category
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744004-23804-i04-default-group-fallback
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744002-23804-i03-zero-rate-skipped
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794744001-23804-i02-tie-half-cent
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794743999-23804-i01-baseline
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794743995-23531-i07-nontie-rounding
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794743991-23227-i06-negative-balance
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794743988-22952-i05-multi-category
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794743984-22680-i04-default-group-fallback
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794743980-22362-i03-zero-rate-skipped
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794743977-22089-i02-tie-half-cent
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794743973-21772-i01-baseline
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794744607-15326-i07-nontie-rounding
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744605-15326-i06-negative-balance
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744603-15326-i05-multi-category
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744601-15326-i04-default-group-fallback
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744600-15326-i03-zero-rate-skipped
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794744598-15326-i02-tie-half-cent
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794744596-15326-i01-baseline
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794744592-15032-i07-nontie-rounding
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744588-14722-i06-negative-balance
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744584-14450-i05-multi-category
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744581-14172-i04-default-group-fallback
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794744577-13850-i03-zero-rate-skipped
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794744573-13576-i02-tie-half-cent
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794744564-13181-i01-baseline
 (14 rows)
 
  table_schema |        table_name        

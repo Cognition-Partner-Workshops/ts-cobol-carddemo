@@ -223,7 +223,7 @@ Nothing in the authorization sub-application runs off-host (Part A section 3).
 
 **MQ**: three online programs call the MQ API (PROVEN calls): COACCT01 reads (`app/app-vsam-mq/cbl/COACCT01.cbl:352`); COACCT01 writes (`app/app-vsam-mq/cbl/COACCT01.cbl:479`); CODATE01 reads (`app/app-vsam-mq/cbl/CODATE01.cbl:301`); CODATE01 writes (`app/app-vsam-mq/cbl/CODATE01.cbl:383`); COPAUA0C reads (`app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:400`); COPAUA0C writes (`app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:758`). The queue names are moved into the object descriptor at run time, so which queues exist is OPEN (Part D section 3.4). The catalogue holds no MQ definition member (queues, channels, queue manager) (`store/catalog.json`).
 
-**Maps**: 21 BMS mapset members; each online program with a screen sends and receives its own mapset (Part D section 3.1). The VSAMMQ programs have no map.
+**Maps**: 21 BMS mapset members; which program sends and receives which mapset is in Part D section 3.1; four programs name the map through a field the scan did not settle (Part D section 3.4). The VSAMMQ programs have no map.
 
 **TD queues**: CORPT00C writes `JOBS` (`app/cbl/CORPT00C.cbl:517`); COPAUA0C writes `CSSL` (`app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:1001`).
 

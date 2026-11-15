@@ -9,44 +9,46 @@ import com.carddemo.interest.domain.InterestTransaction;
  */
 public final class TransactionRecord {
 
-    public static final int LENGTH = 350;
+    private static final RecordLayout.Builder COPYBOOK = RecordLayout.builder("CVTRA05Y");
+    private static final FieldSpec ID = COPYBOOK.field("TRAN-ID", "X(16)");
+    private static final FieldSpec TYPE_CODE = COPYBOOK.field("TRAN-TYPE-CD", "X(02)");
+    private static final FieldSpec CATEGORY_CODE = COPYBOOK.field("TRAN-CAT-CD", "9(04)");
+    private static final FieldSpec SOURCE = COPYBOOK.field("TRAN-SOURCE", "X(10)");
+    private static final FieldSpec DESCRIPTION = COPYBOOK.field("TRAN-DESC", "X(100)");
+    private static final FieldSpec AMOUNT = COPYBOOK.field("TRAN-AMT", "S9(09)V99");
+    private static final FieldSpec MERCHANT_ID = COPYBOOK.field("TRAN-MERCHANT-ID", "9(09)");
+    private static final FieldSpec MERCHANT_NAME = COPYBOOK.field("TRAN-MERCHANT-NAME", "X(50)");
+    private static final FieldSpec MERCHANT_CITY = COPYBOOK.field("TRAN-MERCHANT-CITY", "X(50)");
+    private static final FieldSpec MERCHANT_ZIP = COPYBOOK.field("TRAN-MERCHANT-ZIP", "X(10)");
+    private static final FieldSpec CARD_NUMBER = COPYBOOK.field("TRAN-CARD-NUM", "X(16)");
+    private static final FieldSpec ORIGIN_TIMESTAMP = COPYBOOK.field("TRAN-ORIG-TS", "X(26)");
+    private static final FieldSpec PROCESSED_TIMESTAMP = COPYBOOK.field("TRAN-PROC-TS", "X(26)");
+    private static final FieldSpec FILLER = COPYBOOK.filler("X(20)");
+    public static final RecordLayout LAYOUT = COPYBOOK.build();
 
-    private static final Field ID = new Field("TRAN-ID", 0, 16);
-    private static final Field TYPE_CODE = new Field("TRAN-TYPE-CD", 16, 2);
-    private static final Field CATEGORY_CODE = new Field("TRAN-CAT-CD", 18, 4);
-    private static final Field SOURCE = new Field("TRAN-SOURCE", 22, 10);
-    private static final Field DESCRIPTION = new Field("TRAN-DESC", 32, 100);
-    private static final Field AMOUNT = new Field("TRAN-AMT", 132, 11);
-    private static final Field MERCHANT_ID = new Field("TRAN-MERCHANT-ID", 143, 9);
-    private static final Field MERCHANT_NAME = new Field("TRAN-MERCHANT-NAME", 152, 50);
-    private static final Field MERCHANT_CITY = new Field("TRAN-MERCHANT-CITY", 202, 50);
-    private static final Field MERCHANT_ZIP = new Field("TRAN-MERCHANT-ZIP", 252, 10);
-    private static final Field CARD_NUMBER = new Field("TRAN-CARD-NUM", 262, 16);
-    private static final Field ORIGIN_TIMESTAMP = new Field("TRAN-ORIG-TS", 278, 26);
-    private static final Field PROCESSED_TIMESTAMP = new Field("TRAN-PROC-TS", 304, 26);
-    private static final int FILLER_LENGTH = 20;
+    private final RecordCodec codec;
 
-    private TransactionRecord() {
+    public TransactionRecord(CodePage codePage) {
+        this.codec = new RecordCodec(LAYOUT, codePage);
     }
 
-    public static String encode(InterestTransaction transaction) {
-        String image = ID.encodeText(transaction.id())
-                + TYPE_CODE.encodeText(transaction.typeCode())
-                + CATEGORY_CODE.encodeUnsigned(transaction.categoryCode())
-                + SOURCE.encodeText(transaction.source())
-                + DESCRIPTION.encodeText(transaction.description())
-                + AMOUNT.encodeSigned(transaction.amount(), 2)
-                + MERCHANT_ID.encodeUnsigned(transaction.merchantId())
-                + MERCHANT_NAME.encodeText("")
-                + MERCHANT_CITY.encodeText("")
-                + MERCHANT_ZIP.encodeText("")
-                + CARD_NUMBER.encodeText(transaction.cardNumber())
-                + ORIGIN_TIMESTAMP.encodeText(transaction.originTimestamp())
-                + PROCESSED_TIMESTAMP.encodeText(transaction.processedTimestamp())
-                + " ".repeat(FILLER_LENGTH);
-        if (image.length() != LENGTH) {
-            throw new IllegalStateException("CVTRA05Y record is " + image.length() + " bytes, not " + LENGTH);
-        }
-        return image;
+    public RecordCodec codec() {
+        return codec;
+    }
+
+    /** The merchant texts and the FILLER are not set: they are written as spaces of the output code page (G05). */
+    public byte[] encode(InterestTransaction transaction, RecordSource source) {
+        RecordValues values = RecordValues.of(LAYOUT)
+                .withText(ID, transaction.id())
+                .withText(TYPE_CODE, transaction.typeCode())
+                .withUnsigned(CATEGORY_CODE, transaction.categoryCode())
+                .withText(SOURCE, transaction.source())
+                .withText(DESCRIPTION, transaction.description())
+                .withSigned(AMOUNT, transaction.amount())
+                .withUnsigned(MERCHANT_ID, transaction.merchantId())
+                .withText(CARD_NUMBER, transaction.cardNumber())
+                .withText(ORIGIN_TIMESTAMP, transaction.originTimestamp())
+                .withText(PROCESSED_TIMESTAMP, transaction.processedTimestamp());
+        return codec.encode(values, source);
     }
 }

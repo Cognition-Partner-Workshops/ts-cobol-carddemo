@@ -1,0 +1,714 @@
+# mvn -B -f java/interest/pom.xml clean verify
+# revision c2fe2644c6abba4f5636c4adb22d0bb9726f75fb, 2026-11-15T19:35:59Z, openjdk version "21.0.13.0.3" 2026-10-24, Docker 29.9.2
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< com.carddemo:interest >------------------------
+[INFO] Building interest 0.1.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.4.1:clean (default-clean) @ interest ---
+[INFO] Deleting /home/ubuntu/repos/ts-cobol-carddemo/java/interest/target
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ interest ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.14.0:compile (default-compile) @ interest ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 66 source files with javac [debug parameters release 21] to target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:testResources (default-testResources) @ interest ---
+[INFO] skip non existing resourceDirectory /home/ubuntu/repos/ts-cobol-carddemo/java/interest/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.14.0:testCompile (default-testCompile) @ interest ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 22 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:3.5.4:test (default-test) @ interest ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.carddemo.interest.export.ExportedReturnCodesTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.079 s -- in com.carddemo.interest.export.ExportedReturnCodesTest
+[INFO] Running com.carddemo.interest.batch.InterestJobParametersTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.carddemo.interest.batch.InterestJobParametersTest
+[INFO] Running com.carddemo.interest.file.FileRunWorkspaceTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.080 s -- in com.carddemo.interest.file.FileRunWorkspaceTest
+[INFO] Running com.carddemo.interest.codec.RecordCodecErrorTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.carddemo.interest.codec.RecordCodecErrorTest
+[INFO] Running com.carddemo.interest.codec.RecordLayoutTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.020 s -- in com.carddemo.interest.codec.RecordLayoutTest
+[INFO] Running com.carddemo.interest.codec.ZonedDecimalTest
+[INFO] Tests run: 51, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.101 s -- in com.carddemo.interest.codec.ZonedDecimalTest
+[INFO] Running com.carddemo.interest.codec.CopybookTest
+[INFO] Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.044 s -- in com.carddemo.interest.codec.CopybookTest
+[INFO] Running com.carddemo.interest.codec.TextAndFillerTest
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in com.carddemo.interest.codec.TextAndFillerTest
+[INFO] Running com.carddemo.interest.codec.FixtureRoundTripTest
+ticket 03 cp037: 228 records, 454 numeric fields equal, 228 sign bytes in X'C0'-X'C9' or X'D0'-X'D9', all re-encoded to the same cp037 bytes
+ticket 03 round trip, fixture code page: 56 files under fixtures/interest
+  round-tripped 10 records of AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+  round-tripped 10 records of AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+  round-tripped 10 records of AWS.M2.CARDDEMO.CARDXREF.PS.txt
+  round-tripped 105 records of AWS.M2.CARDDEMO.DISCGRP.PS.txt
+  round-tripped 11 records of AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+  round-tripped 12 records of AWS.M2.CARDDEMO.TCATBALF.PS.txt
+  round-tripped 35 records of AWS.M2.CARDDEMO.TRANCATG.PS.txt
+  round-tripped 35 records of AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+  total 228 records, 0 differences
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.035 s -- in com.carddemo.interest.codec.FixtureRoundTripTest
+[INFO] Running com.carddemo.interest.domain.InterestFormulaTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.carddemo.interest.domain.InterestFormulaTest
+[INFO] Running com.carddemo.interest.domain.InterestCalculatorTest
+[INFO] Tests run: 21, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in com.carddemo.interest.domain.InterestCalculatorTest
+[INFO] Running com.carddemo.interest.domain.RunTimestampTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.carddemo.interest.domain.RunTimestampTest
+[INFO] Running com.carddemo.interest.load.ExtractFormatTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.carddemo.interest.load.ExtractFormatTest
+[INFO] Running com.carddemo.interest.load.RoundTripTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.carddemo.interest.load.RoundTripTest
+[INFO] Running com.carddemo.interest.load.ExtractDecoderTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in com.carddemo.interest.load.ExtractDecoderTest
+[INFO] Running com.carddemo.interest.load.ExtractProfileTest
+TL4 profile i01-baseline: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+TL4 profile i02-tie-half-cent: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+TL4 profile i03-zero-rate-skipped: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01, 02] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+TL4 profile i04-default-group-fallback: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=1 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+TL4 profile i05-multi-category: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+TL4 profile i06-negative-balance: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+TL4 profile i07-nontie-rounding: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.carddemo.interest.load.ExtractProfileTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 204, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- maven-jar-plugin:3.4.2:jar (default-jar) @ interest ---
+[INFO] Building jar: /home/ubuntu/repos/ts-cobol-carddemo/java/interest/target/interest.jar
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:3.5.6:repackage (repackage) @ interest ---
+[INFO] Replacing main artifact /home/ubuntu/repos/ts-cobol-carddemo/java/interest/target/interest.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /home/ubuntu/repos/ts-cobol-carddemo/java/interest/target/interest.jar.original
+[INFO] 
+[INFO] --- maven-failsafe-plugin:3.5.4:integration-test (default) @ interest ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.carddemo.interest.export.DatasetExporterIT
+19:36:04.359 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.carddemo.interest.export.DatasetExporterIT]: DatasetExporterIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+19:36:04.394 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+19:36:04.396 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+19:36:04.417 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.21.4
+19:36:04.517 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.UnixSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+19:36:04.683 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+19:36:04.684 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+19:36:04.696 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.9.2
+  API Version: 1.56
+  Operating System: Ubuntu 22.04.5 LTS
+  Total Memory: 32096 MB
+19:36:04.847 [main] INFO tc.testcontainers/ryuk:0.12.0 -- Creating container for image: testcontainers/ryuk:0.12.0
+19:36:04.850 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: testcontainers/ryuk:0.12.0, configFile: /home/ubuntu/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /home/ubuntu/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+19:36:04.946 [main] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 is starting: 9149801c4dc8dc94d2bc7a6e5803b8894b88399111b65f3dae4f4f505d08c4a5
+19:36:05.159 [main] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 started in PT0.312491723S
+19:36:05.166 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+19:36:05.166 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+19:36:05.166 [main] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+19:36:05.257 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.carddemo.interest.InterestApplication for test class com.carddemo.interest.export.DatasetExporterIT
+19:36:05.310 [main] INFO tc.postgres:15 -- Creating container for image: postgres:15
+19:36:05.378 [main] INFO tc.postgres:15 -- Container postgres:15 is starting: bbd1ce9745a1b232fb791ba39a517cf9e7a0c691330f7543525da7ac2141eeb2
+19:36:06.330 [main] INFO tc.postgres:15 -- Container postgres:15 started in PT1.020006561S
+19:36:06.330 [main] INFO tc.postgres:15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:32785/carddemo?loggerLevel=OFF)
+2026-11-15T19:36:06.532Z  INFO 20113 --- [interest] [           main] c.c.interest.export.DatasetExporterIT    : Starting DatasetExporterIT using Java 21.0.13.0.3 with PID 20113 (started by ubuntu in /home/ubuntu/repos/ts-cobol-carddemo/java/interest)
+2026-11-15T19:36:06.533Z  INFO 20113 --- [interest] [           main] c.c.interest.export.DatasetExporterIT    : No active profile set, falling back to 1 default profile: "default"
+2026-11-15T19:36:06.969Z  INFO 20113 --- [interest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-15T19:36:07.100Z  INFO 20113 --- [interest] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@74a58a06
+2026-11-15T19:36:07.102Z  INFO 20113 --- [interest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-15T19:36:07.281Z  INFO 20113 --- [interest] [           main] c.c.interest.export.DatasetExporterIT    : Started DatasetExporterIT in 0.929 seconds (process running for 3.379)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/home/ubuntu/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.7/byte-buddy-agent-1.17.7.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-15T19:36:07.831Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=exportDatasetsStepOnly]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-11137877137975340490/out, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=dbbcc596-2bce-4697-8595-8e4e00334c57, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:07.845Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [exportDatasetsStep]
+2026-11-15T19:36:07.852Z ERROR 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step exportDatasetsStep in job exportDatasetsStepOnly
+
+com.carddemo.interest.domain.InterestRunStoppedException: WRITE_OUTPUT (INT-R08): export refused: no run with status CALCULATED
+	at com.carddemo.interest.export.DatasetExporter.lambda$newestCalculatedRun$0(DatasetExporter.java:75) ~[classes/:na]
+	at java.base/java.util.Optional.orElseThrow(Optional.java:403) ~[na:na]
+	at com.carddemo.interest.export.DatasetExporter.newestCalculatedRun(DatasetExporter.java:75) ~[classes/:na]
+	at com.carddemo.interest.export.ExportDatasetsStepConfig.lambda$exportDatasetsStep$0(ExportDatasetsStepConfig.java:41) ~[classes/:na]
+	at org.springframework.batch.core.step.tasklet.TaskletStep$ChunkTransactionCallback.doInTransaction(TaskletStep.java:383) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.tasklet.TaskletStep$ChunkTransactionCallback.doInTransaction(TaskletStep.java:307) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:140) ~[spring-tx-6.2.11.jar:6.2.11]
+	at org.springframework.batch.core.step.tasklet.TaskletStep$2.doInChunkContext(TaskletStep.java:250) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.scope.context.StepContextRepeatCallback.doInIteration(StepContextRepeatCallback.java:82) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.repeat.support.RepeatTemplate.getNextResult(RepeatTemplate.java:369) ~[spring-batch-infrastructure-5.2.3.jar:5.2.3]
+	at org.springframework.batch.repeat.support.RepeatTemplate.executeInternal(RepeatTemplate.java:206) ~[spring-batch-infrastructure-5.2.3.jar:5.2.3]
+	at org.springframework.batch.repeat.support.RepeatTemplate.iterate(RepeatTemplate.java:140) ~[spring-batch-infrastructure-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.tasklet.TaskletStep.doExecute(TaskletStep.java:235) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.AbstractStep.execute(AbstractStep.java:230) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleStepHandler.handleStep(SimpleStepHandler.java:153) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.handleStep(AbstractJob.java:408) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleJob.doExecute(SimpleJob.java:127) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.execute(AbstractJob.java:307) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher$1.run(TaskExecutorJobLauncher.java:155) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.core.task.SyncTaskExecutor.execute(SyncTaskExecutor.java:50) ~[spring-core-6.2.11.jar:6.2.11]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.run(TaskExecutorJobLauncher.java:146) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at com.carddemo.interest.export.DatasetExporterIT.launchStep(DatasetExporterIT.java:423) ~[test-classes/:na]
+	at com.carddemo.interest.export.DatasetExporterIT.exportDatasetsStep_withoutACalculatedRun_fails(DatasetExporterIT.java:451) ~[test-classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.4.jar:3.5.4]
+
+2026-11-15T19:36:07.854Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [exportDatasetsStep] executed in 8ms
+2026-11-15T19:36:07.861Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=exportDatasetsStepOnly]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-11137877137975340490/out, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=dbbcc596-2bce-4697-8595-8e4e00334c57, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [FAILED] in 21ms
+RC5 i01-baseline: transactions 2, SUM(tran_amt) 47.00, accounts 2, SUM(acct_curr_bal) 3410.00
+RC5 i02-tie-half-cent: transactions 2, SUM(tran_amt) 24.69, accounts 2, SUM(acct_curr_bal) 2482.35
+RC5 i03-zero-rate-skipped: transactions 1, SUM(tran_amt) 10.00, accounts 1, SUM(acct_curr_bal) 700.00
+RC5 i04-default-group-fallback: transactions 1, SUM(tran_amt) 17.50, accounts 1, SUM(acct_curr_bal) 1000.00
+RC5 i05-multi-category: transactions 2, SUM(tran_amt) 17.50, accounts 1, SUM(acct_curr_bal) 1500.00
+RC5 i06-negative-balance: transactions 1, SUM(tran_amt) -3.00, accounts 1, SUM(acct_curr_bal) -300.00
+RC5 i07-nontie-rounding: transactions 2, SUM(tran_amt) 29.03, accounts 2, SUM(acct_curr_bal) 1793.52
+2026-11-15T19:36:08.422Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=exportDatasetsStepOnly]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-9039816921311531438/out, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=c73228b5-07e7-48e6-a28f-3f7a50c864ad, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:08.426Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [exportDatasetsStep]
+2026-11-15T19:36:08.432Z  INFO 20113 --- [interest] [           main] c.c.i.export.ExportDatasetsStepConfig    : exportDatasetsStep: interest_run 24 EXPORTED, 1 transactions, 1 accounts
+2026-11-15T19:36:08.434Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [exportDatasetsStep] executed in 7ms
+2026-11-15T19:36:08.437Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=exportDatasetsStepOnly]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-9039816921311531438/out, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=c73228b5-07e7-48e6-a28f-3f7a50c864ad, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 14ms
+[INFO] Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.362 s -- in com.carddemo.interest.export.DatasetExporterIT
+[INFO] Running com.carddemo.interest.batch.InterestCalcJobIT
+2026-11-15T19:36:08.634Z  INFO 20113 --- [interest] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.carddemo.interest.batch.InterestCalcJobIT]: InterestCalcJobIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-11-15T19:36:08.642Z  INFO 20113 --- [interest] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.carddemo.interest.InterestApplication for test class com.carddemo.interest.batch.InterestCalcJobIT
+2026-11-15T19:36:08.643Z  INFO 20113 --- [interest] [           main] tc.postgres:15                           : Creating container for image: postgres:15
+2026-11-15T19:36:08.690Z  INFO 20113 --- [interest] [           main] tc.postgres:15                           : Container postgres:15 is starting: ed73105944842c979e35d9a16f9ed240f77e874d39a113c22b89b567221ac76d
+2026-11-15T19:36:09.587Z  INFO 20113 --- [interest] [           main] tc.postgres:15                           : Container postgres:15 started in PT0.94406248S
+2026-11-15T19:36:09.587Z  INFO 20113 --- [interest] [           main] tc.postgres:15                           : Container is started (JDBC URL: jdbc:postgresql://localhost:32786/carddemo?loggerLevel=OFF)
+2026-11-15T19:36:09.603Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.InterestCalcJobIT     : Starting InterestCalcJobIT using Java 21.0.13.0.3 with PID 20113 (started by ubuntu in /home/ubuntu/repos/ts-cobol-carddemo/java/interest)
+2026-11-15T19:36:09.603Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.InterestCalcJobIT     : No active profile set, falling back to 1 default profile: "default"
+2026-11-15T19:36:09.707Z  INFO 20113 --- [interest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-15T19:36:09.724Z  INFO 20113 --- [interest] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@5a35ae82
+2026-11-15T19:36:09.725Z  INFO 20113 --- [interest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-15T19:36:09.757Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.InterestCalcJobIT     : Started InterestCalcJobIT in 0.168 seconds (process running for 5.855)
+2026-11-15T19:36:09.769Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-1610552079900679290/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=3c6f965b-1c53-4435-bd82-ff78f3a5ff9a, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.773Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.786Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 12ms
+2026-11-15T19:36:09.787Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 3c6f965b-1c53-4435-bd82-ff78f3a5ff9a step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.791Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-1610552079900679290/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=3c6f965b-1c53-4435-bd82-ff78f3a5ff9a, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 20ms
+2026-11-15T19:36:09.800Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14496968003760055430/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a5807d04-9f6d-4ce9-9a00-ebcd4dd2e323, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.803Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.809Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 6ms
+2026-11-15T19:36:09.810Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run a5807d04-9f6d-4ce9-9a00-ebcd4dd2e323 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.813Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14496968003760055430/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a5807d04-9f6d-4ce9-9a00-ebcd4dd2e323, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 11ms
+2026-11-15T19:36:09.818Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15630938357224021436/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a6f19e71-929d-4737-b58c-f66a0c7637f9, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.822Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.826Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 4ms
+2026-11-15T19:36:09.827Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run a6f19e71-929d-4737-b58c-f66a0c7637f9 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.831Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15630938357224021436/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a6f19e71-929d-4737-b58c-f66a0c7637f9, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 11ms
+2026-11-15T19:36:09.835Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15630938357224021436/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a4173e3b-08ee-4ca5-8053-e895416ca153, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.838Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.841Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 2ms
+2026-11-15T19:36:09.842Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run a4173e3b-08ee-4ca5-8053-e895416ca153 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.845Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15630938357224021436/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a4173e3b-08ee-4ca5-8053-e895416ca153, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 8ms
+2026-11-15T19:36:09.851Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-272937590135046438/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=c04c7993-8274-45ed-a745-a7eb479ce212, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.854Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.866Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 12ms
+2026-11-15T19:36:09.867Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run c04c7993-8274-45ed-a745-a7eb479ce212 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.873Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-272937590135046438/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=c04c7993-8274-45ed-a745-a7eb479ce212, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 19ms
+2026-11-15T19:36:09.880Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-8888855956823779038/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=8463f0d8-967c-4f89-8774-692bd96447a7, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.883Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.887Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T19:36:09.887Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 8463f0d8-967c-4f89-8774-692bd96447a7 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.890Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-8888855956823779038/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=8463f0d8-967c-4f89-8774-692bd96447a7, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 9ms
+2026-11-15T19:36:09.896Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-11524707997071315207/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=44d2bcd7-27d2-48ab-9fbe-852d2b3b97a1, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.901Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.904Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 2ms
+2026-11-15T19:36:09.904Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 44d2bcd7-27d2-48ab-9fbe-852d2b3b97a1 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.909Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-11524707997071315207/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=44d2bcd7-27d2-48ab-9fbe-852d2b3b97a1, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 10ms
+2026-11-15T19:36:09.919Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-8634765935169872453/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=910ee2e8-c895-4b17-9ee0-4811d6d526ed, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.922Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.927Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 4ms
+2026-11-15T19:36:09.927Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 910ee2e8-c895-4b17-9ee0-4811d6d526ed step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.931Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-8634765935169872453/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=910ee2e8-c895-4b17-9ee0-4811d6d526ed, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 10ms
+2026-11-15T19:36:09.937Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-11883351661671730308/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=bb38a6a5-cd83-442a-81a0-77579b6fb2e3, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.940Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.943Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T19:36:09.944Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run bb38a6a5-cd83-442a-81a0-77579b6fb2e3 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.947Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-11883351661671730308/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=bb38a6a5-cd83-442a-81a0-77579b6fb2e3, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 8ms
+2026-11-15T19:36:09.953Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-11818064925776172693/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=4d38554b-8639-4e22-a8b4-6728ea47a34a, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i04-default-group-fallback/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.956Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.958Z ERROR 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+
+com.carddemo.interest.domain.InterestRunStoppedException: RATE_FALLBACK_NOT_BUILT (INT-R03): a group has no rate for a balance; the DEFAULT fallback is ticket 04
+	at com.carddemo.interest.domain.InterestCalculator.lambda$rateFor$1(InterestCalculator.java:105) ~[classes/:na]
+	at java.base/java.util.Optional.orElseThrow(Optional.java:403) ~[na:na]
+	at com.carddemo.interest.domain.InterestCalculator.rateFor(InterestCalculator.java:105) ~[classes/:na]
+	at com.carddemo.interest.domain.InterestCalculator.calculate(InterestCalculator.java:67) ~[classes/:na]
+	at com.carddemo.interest.batch.CalcInterestRun.process(CalcInterestRun.java:65) ~[classes/:na]
+	at org.springframework.batch.core.step.item.SimpleChunkProcessor.doProcess(SimpleChunkProcessor.java:146) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.item.SimpleChunkProcessor.transform(SimpleChunkProcessor.java:322) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.item.SimpleChunkProcessor.process(SimpleChunkProcessor.java:220) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.item.ChunkOrientedTasklet.execute(ChunkOrientedTasklet.java:75) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.tasklet.TaskletStep$ChunkTransactionCallback.doInTransaction(TaskletStep.java:383) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.tasklet.TaskletStep$ChunkTransactionCallback.doInTransaction(TaskletStep.java:307) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:140) ~[spring-tx-6.2.11.jar:6.2.11]
+	at org.springframework.batch.core.step.tasklet.TaskletStep$2.doInChunkContext(TaskletStep.java:250) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.scope.context.StepContextRepeatCallback.doInIteration(StepContextRepeatCallback.java:82) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.repeat.support.RepeatTemplate.getNextResult(RepeatTemplate.java:369) ~[spring-batch-infrastructure-5.2.3.jar:5.2.3]
+	at org.springframework.batch.repeat.support.RepeatTemplate.executeInternal(RepeatTemplate.java:206) ~[spring-batch-infrastructure-5.2.3.jar:5.2.3]
+	at org.springframework.batch.repeat.support.RepeatTemplate.iterate(RepeatTemplate.java:140) ~[spring-batch-infrastructure-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.tasklet.TaskletStep.doExecute(TaskletStep.java:235) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.AbstractStep.execute(AbstractStep.java:230) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleStepHandler.handleStep(SimpleStepHandler.java:153) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.handleStep(AbstractJob.java:408) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleJob.doExecute(SimpleJob.java:127) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.execute(AbstractJob.java:307) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher$1.run(TaskExecutorJobLauncher.java:155) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.core.task.SyncTaskExecutor.execute(SyncTaskExecutor.java:50) ~[spring-core-6.2.11.jar:6.2.11]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.run(TaskExecutorJobLauncher.java:146) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at com.carddemo.interest.batch.InterestCalcJobIT.launch(InterestCalcJobIT.java:72) ~[test-classes/:na]
+	at com.carddemo.interest.batch.InterestCalcJobIT.intR03_caseOutsideThePilotFailsWithoutOutput(InterestCalcJobIT.java:219) ~[test-classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.4.jar:3.5.4]
+
+2026-11-15T19:36:09.959Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T19:36:09.959Z ERROR 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 4d38554b-8639-4e22-a8b4-6728ea47a34a step calcInterestStep stopped: accounts=0 transactions=0; no output kept
+2026-11-15T19:36:09.965Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-11818064925776172693/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=4d38554b-8639-4e22-a8b4-6728ea47a34a, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i04-default-group-fallback/input, type=class java.lang.String, identifying=true}'}] and the following status: [FAILED] in 8ms
+2026-11-15T19:36:09.971Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-1298548127336879168/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a361b313-2337-4726-b59b-a6034f0709d0, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.974Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.977Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 2ms
+2026-11-15T19:36:09.977Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run a361b313-2337-4726-b59b-a6034f0709d0 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.980Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-1298548127336879168/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a361b313-2337-4726-b59b-a6034f0709d0, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 7ms
+2026-11-15T19:36:09.990Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-7491071686583960314/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=2b3629b3-56e1-4c50-9d3b-c1f86160991a, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:09.993Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:09.996Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 2ms
+2026-11-15T19:36:09.996Z  INFO 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 2b3629b3-56e1-4c50-9d3b-c1f86160991a step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T19:36:09.999Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-7491071686583960314/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=2b3629b3-56e1-4c50-9d3b-c1f86160991a, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 7ms
+2026-11-15T19:36:10.008Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-10707999719728341793/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=5d277273-85eb-4a69-a610-44da02efb9d4, type=class java.lang.String, identifying=true}','inputDir':'{value=/tmp/junit-10707999719728341793/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:10.011Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T19:36:10.012Z ERROR 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+
+com.carddemo.interest.domain.InterestRunStoppedException: OPEN_INPUT (INT-R08): cannot read input file AWS.M2.CARDDEMO.DISCGRP.PS.txt
+	at com.carddemo.interest.file.FileRunWorkspace.readRecords(FileRunWorkspace.java:109) ~[classes/:na]
+	at com.carddemo.interest.file.FileRunWorkspace.<init>(FileRunWorkspace.java:88) ~[classes/:na]
+	at com.carddemo.interest.file.FileRunWorkspace.open(FileRunWorkspace.java:96) ~[classes/:na]
+	at com.carddemo.interest.batch.CalcInterestRun.beforeStep(CalcInterestRun.java:49) ~[classes/:na]
+	at org.springframework.batch.core.listener.CompositeStepExecutionListener.beforeStep(CompositeStepExecutionListener.java:80) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.AbstractStep.execute(AbstractStep.java:226) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleStepHandler.handleStep(SimpleStepHandler.java:153) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.handleStep(AbstractJob.java:408) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleJob.doExecute(SimpleJob.java:127) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.execute(AbstractJob.java:307) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher$1.run(TaskExecutorJobLauncher.java:155) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.core.task.SyncTaskExecutor.execute(SyncTaskExecutor.java:50) ~[spring-core-6.2.11.jar:6.2.11]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.run(TaskExecutorJobLauncher.java:146) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at com.carddemo.interest.batch.InterestCalcJobIT.launch(InterestCalcJobIT.java:72) ~[test-classes/:na]
+	at com.carddemo.interest.batch.InterestCalcJobIT.intR08_missingInputFileFailsTheJobAndLeavesNoOutput(InterestCalcJobIT.java:202) ~[test-classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.4.jar:3.5.4]
+Caused by: java.nio.file.NoSuchFileException: /tmp/junit-10707999719728341793/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92) ~[na:na]
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106) ~[na:na]
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111) ~[na:na]
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261) ~[na:na]
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380) ~[na:na]
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432) ~[na:na]
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:420) ~[na:na]
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160) ~[na:na]
+	at java.base/java.nio.file.Files.newBufferedReader(Files.java:2910) ~[na:na]
+	at java.base/java.nio.file.Files.readAllLines(Files.java:3405) ~[na:na]
+	at com.carddemo.interest.file.FileRunWorkspace.readRecords(FileRunWorkspace.java:106) ~[classes/:na]
+	... 89 common frames omitted
+
+2026-11-15T19:36:10.013Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 2ms
+2026-11-15T19:36:10.013Z ERROR 20113 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 5d277273-85eb-4a69-a610-44da02efb9d4 step calcInterestStep stopped before any work
+2026-11-15T19:36:10.016Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-10707999719728341793/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=5d277273-85eb-4a69-a610-44da02efb9d4, type=class java.lang.String, identifying=true}','inputDir':'{value=/tmp/junit-10707999719728341793/input, type=class java.lang.String, identifying=true}'}] and the following status: [FAILED] in 6ms
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.552 s -- in com.carddemo.interest.batch.InterestCalcJobIT
+[INFO] Running com.carddemo.interest.load.ExtractLoaderIT
+2026-11-15T19:36:10.188Z  INFO 20113 --- [interest] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.carddemo.interest.load.ExtractLoaderIT]: ExtractLoaderIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-11-15T19:36:10.197Z  INFO 20113 --- [interest] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.carddemo.interest.InterestApplication for test class com.carddemo.interest.load.ExtractLoaderIT
+2026-11-15T19:36:10.198Z  INFO 20113 --- [interest] [           main] tc.postgres:15                           : Creating container for image: postgres:15
+2026-11-15T19:36:10.248Z  INFO 20113 --- [interest] [           main] tc.postgres:15                           : Container postgres:15 is starting: a2d82fd30ef8918e477e26ccbbb2eab3a51f27aa20011a44272ccb10b96e9809
+2026-11-15T19:36:11.221Z  INFO 20113 --- [interest] [           main] tc.postgres:15                           : Container postgres:15 started in PT1.022704754S
+2026-11-15T19:36:11.221Z  INFO 20113 --- [interest] [           main] tc.postgres:15                           : Container is started (JDBC URL: jdbc:postgresql://localhost:32787/carddemo?loggerLevel=OFF)
+2026-11-15T19:36:11.237Z  INFO 20113 --- [interest] [           main] c.c.interest.load.ExtractLoaderIT        : Starting ExtractLoaderIT using Java 21.0.13.0.3 with PID 20113 (started by ubuntu in /home/ubuntu/repos/ts-cobol-carddemo/java/interest)
+2026-11-15T19:36:11.238Z  INFO 20113 --- [interest] [           main] c.c.interest.load.ExtractLoaderIT        : No active profile set, falling back to 1 default profile: "default"
+2026-11-15T19:36:11.326Z  INFO 20113 --- [interest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-11-15T19:36:11.340Z  INFO 20113 --- [interest] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@b5d7233
+2026-11-15T19:36:11.340Z  INFO 20113 --- [interest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-11-15T19:36:11.383Z  INFO 20113 --- [interest] [           main] c.c.interest.load.ExtractLoaderIT        : Started ExtractLoaderIT in 0.159 seconds (process running for 7.48)
+2026-11-15T19:36:11.447Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=loadExtractsStepOnly]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-10901199660427683462/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=95728893-0ffb-4cf0-9550-f1e20aac3a41, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:11.451Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [loadExtractsStep]
+2026-11-15T19:36:11.463Z  INFO 20113 --- [interest] [           main] c.c.i.load.LoadExtractsStepConfig        : loadExtractsStep: interest_run 5 LOADED, 21 records
+2026-11-15T19:36:11.465Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [loadExtractsStep] executed in 13ms
+2026-11-15T19:36:11.468Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=loadExtractsStepOnly]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-10901199660427683462/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=95728893-0ffb-4cf0-9550-f1e20aac3a41, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 19ms
+reconciliation i01-baseline: RC1 account=2 card_xref=2 tran_cat_balance=2 disclosure_group=15 | RC2 acct_curr_bal=3400.00 acct_credit_limit=11000.00 acct_cash_credit_limit=5500.00 acct_curr_cyc_credit=3400.00 acct_curr_cyc_debit=0.00 tran_cat_bal=3400.00 dis_int_rate=120.50 acct_id=4003 xref_acct_id=4003 trancat_acct_id=4003
+reconciliation i01-baseline: RC3 RoundTrip[records=21, equal=21, fSigned=0, minusZero=0, other=0] | RC4 key ends equal file ends {ACCOUNT=true, CARD_XREF=true, TRAN_CAT_BALANCE=true, DISCLOSURE_GROUP=true}
+reconciliation i01-baseline: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+reconciliation i02-tie-half-cent: RC1 account=2 card_xref=2 tran_cat_balance=2 disclosure_group=15 | RC2 acct_curr_bal=2470.00 acct_credit_limit=10000.00 acct_cash_credit_limit=5000.00 acct_curr_cyc_credit=2470.00 acct_curr_cyc_debit=0.00 tran_cat_bal=2470.00 dis_int_rate=120.50 acct_id=4007 xref_acct_id=4007 trancat_acct_id=4007
+reconciliation i02-tie-half-cent: RC3 RoundTrip[records=21, equal=21, fSigned=0, minusZero=0, other=0] | RC4 key ends equal file ends {ACCOUNT=true, CARD_XREF=true, TRAN_CAT_BALANCE=true, DISCLOSURE_GROUP=true}
+reconciliation i02-tie-half-cent: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+reconciliation i03-zero-rate-skipped: RC1 account=1 card_xref=1 tran_cat_balance=2 disclosure_group=15 | RC2 acct_curr_bal=700.00 acct_credit_limit=5000.00 acct_cash_credit_limit=2500.00 acct_curr_cyc_credit=1000.00 acct_curr_cyc_debit=300.00 tran_cat_bal=700.00 dis_int_rate=120.50 acct_id=2005 xref_acct_id=2005 trancat_acct_id=4010
+reconciliation i03-zero-rate-skipped: RC3 RoundTrip[records=19, equal=19, fSigned=0, minusZero=0, other=0] | RC4 key ends equal file ends {ACCOUNT=true, CARD_XREF=true, TRAN_CAT_BALANCE=true, DISCLOSURE_GROUP=true}
+reconciliation i03-zero-rate-skipped: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01, 02] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+reconciliation i04-default-group-fallback: RC1 account=1 card_xref=1 tran_cat_balance=1 disclosure_group=15 | RC2 acct_curr_bal=1000.00 acct_credit_limit=5000.00 acct_cash_credit_limit=2500.00 acct_curr_cyc_credit=1000.00 acct_curr_cyc_debit=0.00 tran_cat_bal=1000.00 dis_int_rate=120.50 acct_id=2006 xref_acct_id=2006 trancat_acct_id=2006
+reconciliation i04-default-group-fallback: RC3 RoundTrip[records=18, equal=18, fSigned=0, minusZero=0, other=0] | RC4 key ends equal file ends {ACCOUNT=true, CARD_XREF=true, TRAN_CAT_BALANCE=true, DISCLOSURE_GROUP=true}
+reconciliation i04-default-group-fallback: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=1 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+reconciliation i05-multi-category: RC1 account=1 card_xref=1 tran_cat_balance=2 disclosure_group=15 | RC2 acct_curr_bal=1500.00 acct_credit_limit=5000.00 acct_cash_credit_limit=2500.00 acct_curr_cyc_credit=1500.00 acct_curr_cyc_debit=0.00 tran_cat_bal=1500.00 dis_int_rate=120.50 acct_id=2007 xref_acct_id=2007 trancat_acct_id=4014
+reconciliation i05-multi-category: RC3 RoundTrip[records=19, equal=19, fSigned=0, minusZero=0, other=0] | RC4 key ends equal file ends {ACCOUNT=true, CARD_XREF=true, TRAN_CAT_BALANCE=true, DISCLOSURE_GROUP=true}
+reconciliation i05-multi-category: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+reconciliation i06-negative-balance: RC1 account=1 card_xref=1 tran_cat_balance=1 disclosure_group=15 | RC2 acct_curr_bal=-300.00 acct_credit_limit=5000.00 acct_cash_credit_limit=2500.00 acct_curr_cyc_credit=0.00 acct_curr_cyc_debit=300.00 tran_cat_bal=-300.00 dis_int_rate=120.50 acct_id=2008 xref_acct_id=2008 trancat_acct_id=2008
+reconciliation i06-negative-balance: RC3 RoundTrip[records=18, equal=18, fSigned=0, minusZero=0, other=0] | RC4 key ends equal file ends {ACCOUNT=true, CARD_XREF=true, TRAN_CAT_BALANCE=true, DISCLOSURE_GROUP=true}
+reconciliation i06-negative-balance: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+reconciliation i07-nontie-rounding: RC1 account=2 card_xref=2 tran_cat_balance=2 disclosure_group=15 | RC2 acct_curr_bal=1778.10 acct_credit_limit=10000.00 acct_cash_credit_limit=5000.00 acct_curr_cyc_credit=1778.10 acct_curr_cyc_debit=0.00 tran_cat_bal=1778.10 dis_int_rate=120.50 acct_id=4019 xref_acct_id=4019 trancat_acct_id=4019
+reconciliation i07-nontie-rounding: RC3 RoundTrip[records=21, equal=21, fSigned=0, minusZero=0, other=0] | RC4 key ends equal file ends {ACCOUNT=true, CARD_XREF=true, TRAN_CAT_BALANCE=true, DISCLOSURE_GROUP=true}
+reconciliation i07-nontie-rounding: TL4 several-cards(G08)=0 mixed-type-codes(G06)=0 type-codes=[01] minus-zero(G03)=0 f-signed(G02)=0 non-blank-fillers=0 inactive-accounts(INT-H04)=0 balances-on-DEFAULT-rate(INT-R03)=0 balances-without-rate(INT-R08)=0 balances-without-account(INT-R08)=0
+2026-11-15T19:36:11.719Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=loadExtractsStepOnly]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14268427077650649681/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=c943f957-a435-45a5-b309-a3059de69981, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i07-nontie-rounding/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:11.722Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [loadExtractsStep]
+2026-11-15T19:36:11.734Z  INFO 20113 --- [interest] [           main] c.c.i.load.LoadExtractsStepConfig        : loadExtractsStep: interest_run 21 LOADED, 21 records
+2026-11-15T19:36:11.735Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [loadExtractsStep] executed in 12ms
+2026-11-15T19:36:11.738Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=loadExtractsStepOnly]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14268427077650649681/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=c943f957-a435-45a5-b309-a3059de69981, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i07-nontie-rounding/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 17ms
+2026-11-15T19:36:11.742Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=loadExtractsStepOnly]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14268427077650649681/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=d98f684f-ae7e-4ba9-91c7-8a71a4d5d025, type=class java.lang.String, identifying=true}','inputDir':'{value=/tmp/junit-14268427077650649681/in, type=class java.lang.String, identifying=true}'}]
+2026-11-15T19:36:11.745Z  INFO 20113 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [loadExtractsStep]
+2026-11-15T19:36:11.747Z ERROR 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step loadExtractsStep in job loadExtractsStepOnly
+
+com.carddemo.interest.domain.InterestRunStoppedException: RECORD_REJECTED (INT-R08): 1 rejected, no table was loaded; reject list actual.load-rejects.txt
+	at com.carddemo.interest.load.ExtractLoader.decodeAll(ExtractLoader.java:104) ~[classes/:na]
+	at com.carddemo.interest.load.ExtractLoader.load(ExtractLoader.java:64) ~[classes/:na]
+	at com.carddemo.interest.load.LoadExtractsStepConfig.lambda$loadExtractsStep$0(LoadExtractsStepConfig.java:43) ~[classes/:na]
+	at org.springframework.batch.core.step.tasklet.TaskletStep$ChunkTransactionCallback.doInTransaction(TaskletStep.java:383) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.tasklet.TaskletStep$ChunkTransactionCallback.doInTransaction(TaskletStep.java:307) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.transaction.support.TransactionTemplate.execute(TransactionTemplate.java:140) ~[spring-tx-6.2.11.jar:6.2.11]
+	at org.springframework.batch.core.step.tasklet.TaskletStep$2.doInChunkContext(TaskletStep.java:250) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.scope.context.StepContextRepeatCallback.doInIteration(StepContextRepeatCallback.java:82) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.repeat.support.RepeatTemplate.getNextResult(RepeatTemplate.java:369) ~[spring-batch-infrastructure-5.2.3.jar:5.2.3]
+	at org.springframework.batch.repeat.support.RepeatTemplate.executeInternal(RepeatTemplate.java:206) ~[spring-batch-infrastructure-5.2.3.jar:5.2.3]
+	at org.springframework.batch.repeat.support.RepeatTemplate.iterate(RepeatTemplate.java:140) ~[spring-batch-infrastructure-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.tasklet.TaskletStep.doExecute(TaskletStep.java:235) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.AbstractStep.execute(AbstractStep.java:230) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleStepHandler.handleStep(SimpleStepHandler.java:153) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.handleStep(AbstractJob.java:408) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleJob.doExecute(SimpleJob.java:127) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.execute(AbstractJob.java:307) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher$1.run(TaskExecutorJobLauncher.java:155) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.core.task.SyncTaskExecutor.execute(SyncTaskExecutor.java:50) ~[spring-core-6.2.11.jar:6.2.11]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.run(TaskExecutorJobLauncher.java:146) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at com.carddemo.interest.load.ExtractLoaderIT.launchStep(ExtractLoaderIT.java:114) ~[test-classes/:na]
+	at com.carddemo.interest.load.ExtractLoaderIT.step_endsFailed_onAnUndecodableRecord(ExtractLoaderIT.java:326) ~[test-classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.4.jar:3.5.4]
+
+2026-11-15T19:36:11.748Z  INFO 20113 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [loadExtractsStep] executed in 2ms
+2026-11-15T19:36:11.751Z  INFO 20113 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=loadExtractsStepOnly]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14268427077650649681/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=d98f684f-ae7e-4ba9-91c7-8a71a4d5d025, type=class java.lang.String, identifying=true}','inputDir':'{value=/tmp/junit-14268427077650649681/in, type=class java.lang.String, identifying=true}'}] and the following status: [FAILED] in 8ms
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.740 s -- in com.carddemo.interest.load.ExtractLoaderIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 53, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- maven-failsafe-plugin:3.5.4:verify (default) @ interest ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  11.590 s
+[INFO] Finished at: 2026-11-15T19:36:11Z
+[INFO] ------------------------------------------------------------------------
+# exit code 0

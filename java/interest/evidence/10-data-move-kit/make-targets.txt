@@ -1,0 +1,96 @@
+$ make recon-java CASE=i01-baseline LOAD=1
+trial load: interest_run 2 LOADED, 21 records
+recon i01-baseline: 31 EQUAL, 0 DIFFERENT, 6 NOT AVAILABLE -> work/recon-java/i01-baseline.md
+# exit code 0
+$ make recon-java CASE=i02-tie-half-cent LOAD=1
+trial load: interest_run 3 LOADED, 21 records
+recon i02-tie-half-cent: 31 EQUAL, 0 DIFFERENT, 6 NOT AVAILABLE -> work/recon-java/i02-tie-half-cent.md
+# exit code 0
+$ make recon-java CASE=i03-zero-rate-skipped LOAD=1
+trial load: interest_run 4 LOADED, 19 records
+recon i03-zero-rate-skipped: 30 EQUAL, 0 DIFFERENT, 7 NOT AVAILABLE -> work/recon-java/i03-zero-rate-skipped.md
+# exit code 0
+$ make recon-java CASE=i04-default-group-fallback LOAD=1
+trial load: interest_run 5 LOADED, 18 records
+recon i04-default-group-fallback: 30 EQUAL, 0 DIFFERENT, 7 NOT AVAILABLE -> work/recon-java/i04-default-group-fallback.md
+# exit code 0
+$ make recon-java CASE=i05-multi-category LOAD=1
+trial load: interest_run 6 LOADED, 19 records
+recon i05-multi-category: 31 EQUAL, 0 DIFFERENT, 6 NOT AVAILABLE -> work/recon-java/i05-multi-category.md
+# exit code 0
+$ make recon-java CASE=i06-negative-balance LOAD=1
+trial load: interest_run 7 LOADED, 18 records
+recon i06-negative-balance: 31 EQUAL, 0 DIFFERENT, 6 NOT AVAILABLE -> work/recon-java/i06-negative-balance.md
+# exit code 0
+$ make recon-java CASE=i07-nontie-rounding LOAD=1
+trial load: interest_run 8 LOADED, 21 records
+recon i07-nontie-rounding: 31 EQUAL, 0 DIFFERENT, 6 NOT AVAILABLE -> work/recon-java/i07-nontie-rounding.md
+# exit code 0
+$ make sidebyside-java CASE=i01-baseline TS=format
+interest/i01-baseline [side by side, timestamps format]: PASS (4 records, 50 fields, 0 differences)
+sidebyside i01-baseline: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i01-baseline/report.md
+# exit code 0
+$ make sidebyside-java CASE=i01-baseline TS=exact
+interest/i01-baseline [side by side, timestamps exact]: PASS (4 records, 50 fields, 0 differences)
+sidebyside i01-baseline: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i01-baseline/report.md
+# exit code 0
+$ make sidebyside-java CASE=i02-tie-half-cent TS=format
+interest/i02-tie-half-cent [side by side, timestamps format]: PASS (4 records, 50 fields, 0 differences)
+sidebyside i02-tie-half-cent: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i02-tie-half-cent/report.md
+# exit code 0
+$ make sidebyside-java CASE=i02-tie-half-cent TS=exact
+interest/i02-tie-half-cent [side by side, timestamps exact]: PASS (4 records, 50 fields, 0 differences)
+sidebyside i02-tie-half-cent: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i02-tie-half-cent/report.md
+# exit code 0
+$ make sidebyside-java CASE=i03-zero-rate-skipped TS=format
+sidebyside-prepare: not a directory: work/parity-java/i03-zero-rate-skipped/actual
+make: *** [Makefile:144: sidebyside-java] Error 2
+# exit code 2
+$ make sidebyside-java CASE=i03-zero-rate-skipped TS=exact
+sidebyside-prepare: not a directory: work/parity-java/i03-zero-rate-skipped/actual
+make: *** [Makefile:144: sidebyside-java] Error 2
+# exit code 2
+$ make sidebyside-java CASE=i04-default-group-fallback TS=format
+sidebyside-prepare: not a directory: work/parity-java/i04-default-group-fallback/actual
+make: *** [Makefile:144: sidebyside-java] Error 2
+# exit code 2
+$ make sidebyside-java CASE=i04-default-group-fallback TS=exact
+sidebyside-prepare: not a directory: work/parity-java/i04-default-group-fallback/actual
+make: *** [Makefile:144: sidebyside-java] Error 2
+# exit code 2
+$ make sidebyside-java CASE=i05-multi-category TS=format
+interest/i05-multi-category [side by side, timestamps format]: PASS (3 records, 38 fields, 0 differences)
+sidebyside i05-multi-category: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i05-multi-category/report.md
+# exit code 0
+$ make sidebyside-java CASE=i05-multi-category TS=exact
+interest/i05-multi-category [side by side, timestamps exact]: PASS (3 records, 38 fields, 0 differences)
+sidebyside i05-multi-category: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i05-multi-category/report.md
+# exit code 0
+$ make sidebyside-java CASE=i06-negative-balance TS=format
+interest/i06-negative-balance [side by side, timestamps format]: PASS (2 records, 25 fields, 0 differences)
+sidebyside i06-negative-balance: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i06-negative-balance/report.md
+# exit code 0
+$ make sidebyside-java CASE=i06-negative-balance TS=exact
+interest/i06-negative-balance [side by side, timestamps exact]: PASS (2 records, 25 fields, 0 differences)
+sidebyside i06-negative-balance: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i06-negative-balance/report.md
+# exit code 0
+$ make sidebyside-java CASE=i07-nontie-rounding TS=format
+interest/i07-nontie-rounding [side by side, timestamps format]: PASS (4 records, 50 fields, 0 differences)
+sidebyside i07-nontie-rounding: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i07-nontie-rounding/report.md
+# exit code 0
+$ make sidebyside-java CASE=i07-nontie-rounding TS=exact
+interest/i07-nontie-rounding [side by side, timestamps exact]: PASS (4 records, 50 fields, 0 differences)
+sidebyside i07-nontie-rounding: 0 difference(s), 0 defect(s) -> work/sidebyside-java/i07-nontie-rounding/report.md
+# exit code 0
+
+# A target directory with differences made on purpose (a copy of the i01-baseline golden files: record 1 with a later clock and one cent more, record 2 with another card number)
+$ make sidebyside-java CASE=i01-demo LEGACY=fixtures/interest/i01-baseline/expected TARGET=work/sidebyside-demo-target TS=exact
+interest/i01-demo [side by side, timestamps exact]: FAIL (4 records, 50 fields, 4 differences)
+sidebyside i01-demo: 4 difference(s), 1 defect(s) -> work/sidebyside-java/i01-demo/report.md
+make: *** [Makefile:144: sidebyside-java] Error 1
+# exit code 2
+$ make sidebyside-java CASE=i01-demo LEGACY=fixtures/interest/i01-baseline/expected TARGET=work/sidebyside-demo-target TS=format
+interest/i01-demo [side by side, timestamps format]: FAIL (4 records, 50 fields, 2 differences)
+sidebyside i01-demo: 2 difference(s), 1 defect(s) -> work/sidebyside-java/i01-demo/report.md
+make: *** [Makefile:144: sidebyside-java] Error 1
+# exit code 2

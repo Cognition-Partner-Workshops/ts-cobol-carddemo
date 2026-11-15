@@ -1,0 +1,5938 @@
+{
+ "meta": {
+  "stream": "interest",
+  "title": "Interest stream - INTCALC",
+  "root": {
+   "job": "INTCALC",
+   "jcl": "app/jcl/INTCALC.jcl",
+   "schedulerFolder": "MONTHLY-InterestCalculation",
+   "schedulerExport": "app/scheduler/CardDemo.controlm"
+  },
+  "baseline": {
+   "branch": "demo/01-intake",
+   "sha": "6face58c092d254a9b89ce8bbfbddce561720a40"
+  },
+  "repository": "Cognition-Partner-Workshops/ts-cobol-carddemo",
+  "generatedBy": "modernization/streams/interest/tools/build_stream.py",
+  "inputs": [
+   "store/CARDDEMO (mftb 0.2.1, intake step)",
+   "store/AUTH, store/TRANTYPE, store/VSAMMQ",
+   "docs/chain-graph.md",
+   "tools/runjcl/chains.json",
+   "app/scheduler/CardDemo.controlm",
+   "app/scheduler/CardDemo.ca7",
+   "app/jcl/INTCALC.jcl",
+   "app/cbl/CBACT04C.cbl",
+   "app/cpy"
+  ],
+  "statusLegend": {
+   "PROVEN": "static and cited: a statement in a scanned source names both ends",
+   "CANDIDATE": "dynamic or inferred: rests on a naming convention, a run-time option or a target the source does not name"
+  },
+  "outOfScope": "The posting chain (POSTTRAN, TRANREPT) is not part of this stream; its jobs appear only as outside-stream users of the same datasets. No target code is produced in this step."
+ },
+ "scope": {
+  "jobs": [
+   {
+    "name": "INTCALC",
+    "role": "stream",
+    "jcl": "app/jcl/INTCALC.jcl",
+    "jobCard": "app/jcl/INTCALC.jcl:1",
+    "scheduler": {
+     "export": "app/scheduler/CardDemo.controlm",
+     "folder": "MONTHLY-InterestCalculation",
+     "definition": "app/scheduler/CardDemo.controlm:69",
+     "memname": "INTCALC"
+    },
+    "description": "Reads the transaction-category balances and writes one interest transaction per balance with a non-zero rate, adding the account's interest to its current balance.",
+    "descriptionBasis": [
+     "app/jcl/INTCALC.jcl:20",
+     "app/cbl/CBACT04C.cbl:188-222"
+    ]
+   }
+  ],
+  "steps": [
+   {
+    "job": "INTCALC",
+    "step": "STEP15",
+    "execPgm": "CBACT04C",
+    "parm": "2022071800",
+    "source": "app/jcl/INTCALC.jcl:22",
+    "steplib": {
+     "dd": "STEPLIB",
+     "dsn": "AWS.M2.CARDDEMO.LOADLIB",
+     "source": "app/jcl/INTCALC.jcl:23-24"
+    },
+    "sysout": [
+     {
+      "dd": "SYSPRINT",
+      "source": "app/jcl/INTCALC.jcl:25"
+     },
+     {
+      "dd": "SYSOUT",
+      "source": "app/jcl/INTCALC.jcl:26"
+     }
+    ]
+   }
+  ],
+  "programs": [
+   {
+    "id": "CBACT04C",
+    "kind": "COBOL batch program",
+    "inScope": true,
+    "path": "app/cbl/CBACT04C.cbl",
+    "programId": "app/cbl/CBACT04C.cbl:23",
+    "lines": 652,
+    "entry": "app/cbl/CBACT04C.cbl:180",
+    "notes": [
+     {
+      "text": "Interest is computed as (TRAN-CAT-BAL * DIS-INT-RATE) / 1200 with no ROUNDED phrase.",
+      "evidence": [
+       "app/cbl/CBACT04C.cbl:464-465"
+      ]
+     },
+     {
+      "text": "1400-COMPUTE-FEES is an empty paragraph marked 'To be implemented'.",
+      "evidence": [
+       "app/cbl/CBACT04C.cbl:518-520"
+      ]
+     },
+     {
+      "text": "1050-UPDATE-ACCOUNT runs when the account id changes; the ELSE branch that would run it after the last record sits inside a loop that ends as soon as END-OF-FILE is 'Y'. docs/BASELINE.md records this as legacy behaviour to keep.",
+      "evidence": [
+       "app/cbl/CBACT04C.cbl:188-222",
+       "docs/BASELINE.md:108"
+      ]
+     },
+     {
+      "text": "Any file error path ends in 9999-ABEND-PROGRAM, which calls CEE3ABD with ABCODE 999.",
+      "evidence": [
+       "app/cbl/CBACT04C.cbl:628-632"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "CEE3ABD",
+    "kind": "runtime routine (not in the estate)",
+    "inScope": false,
+    "path": null,
+    "programId": null,
+    "lines": null,
+    "entry": null,
+    "notes": [
+     {
+      "text": "Called by literal name from CBACT04C; no source member of this name is in the scanned estate. The off-host harness supplies a stub (tools/stubs/CEE3ABD.cbl); it is not part of the customer estate.",
+      "evidence": [
+       "app/cbl/CBACT04C.cbl:632",
+       "tools/stubs/CEE3ABD.cbl:1"
+      ]
+     }
+    ]
+   }
+  ],
+  "copybooks": [
+   {
+    "name": "CVTRA01Y",
+    "path": "app/cpy/CVTRA01Y.cpy",
+    "record": "TRAN-CAT-BAL-RECORD",
+    "recordLength": 50,
+    "recordLengthBasis": "sum of the PIC lengths below (all fields are USAGE DISPLAY; a signed field keeps its sign in the last byte)",
+    "statedLength": "app/cpy/CVTRA01Y.cpy:2",
+    "includedAt": "app/cbl/CBACT04C.cbl:97",
+    "file": "TCATBAL-FILE",
+    "fdRecord": "FD-TRAN-CAT-BAL-RECORD",
+    "usedAt": "app/cbl/CBACT04C.cbl:326",
+    "fields": [
+     {
+      "level": 5,
+      "name": "TRAN-CAT-KEY",
+      "pic": null,
+      "offset": null,
+      "length": null,
+      "line": 5
+     },
+     {
+      "level": 10,
+      "name": "TRANCAT-ACCT-ID",
+      "pic": "9(11)",
+      "offset": 0,
+      "length": 11,
+      "line": 6
+     },
+     {
+      "level": 10,
+      "name": "TRANCAT-TYPE-CD",
+      "pic": "X(02)",
+      "offset": 11,
+      "length": 2,
+      "line": 7
+     },
+     {
+      "level": 10,
+      "name": "TRANCAT-CD",
+      "pic": "9(04)",
+      "offset": 13,
+      "length": 4,
+      "line": 8
+     },
+     {
+      "level": 5,
+      "name": "TRAN-CAT-BAL",
+      "pic": "S9(09)V99",
+      "offset": 17,
+      "length": 11,
+      "line": 9
+     },
+     {
+      "level": 5,
+      "name": "FILLER",
+      "pic": "X(22)",
+      "offset": 28,
+      "length": 22,
+      "line": 10
+     }
+    ]
+   },
+   {
+    "name": "CVACT03Y",
+    "path": "app/cpy/CVACT03Y.cpy",
+    "record": "CARD-XREF-RECORD",
+    "recordLength": 50,
+    "recordLengthBasis": "sum of the PIC lengths below (all fields are USAGE DISPLAY; a signed field keeps its sign in the last byte)",
+    "statedLength": "app/cpy/CVACT03Y.cpy:2",
+    "includedAt": "app/cbl/CBACT04C.cbl:102",
+    "file": "XREF-FILE",
+    "fdRecord": "FD-XREFFILE-REC",
+    "usedAt": "app/cbl/CBACT04C.cbl:394",
+    "fields": [
+     {
+      "level": 5,
+      "name": "XREF-CARD-NUM",
+      "pic": "X(16)",
+      "offset": 0,
+      "length": 16,
+      "line": 5
+     },
+     {
+      "level": 5,
+      "name": "XREF-CUST-ID",
+      "pic": "9(09)",
+      "offset": 16,
+      "length": 9,
+      "line": 6
+     },
+     {
+      "level": 5,
+      "name": "XREF-ACCT-ID",
+      "pic": "9(11)",
+      "offset": 25,
+      "length": 11,
+      "line": 7
+     },
+     {
+      "level": 5,
+      "name": "FILLER",
+      "pic": "X(14)",
+      "offset": 36,
+      "length": 14,
+      "line": 8
+     }
+    ]
+   },
+   {
+    "name": "CVTRA02Y",
+    "path": "app/cpy/CVTRA02Y.cpy",
+    "record": "DIS-GROUP-RECORD",
+    "recordLength": 50,
+    "recordLengthBasis": "sum of the PIC lengths below (all fields are USAGE DISPLAY; a signed field keeps its sign in the last byte)",
+    "statedLength": "app/cpy/CVTRA02Y.cpy:2",
+    "includedAt": "app/cbl/CBACT04C.cbl:107",
+    "file": "DISCGRP-FILE",
+    "fdRecord": "FD-DISCGRP-REC",
+    "usedAt": "app/cbl/CBACT04C.cbl:416",
+    "fields": [
+     {
+      "level": 5,
+      "name": "DIS-GROUP-KEY",
+      "pic": null,
+      "offset": null,
+      "length": null,
+      "line": 5
+     },
+     {
+      "level": 10,
+      "name": "DIS-ACCT-GROUP-ID",
+      "pic": "X(10)",
+      "offset": 0,
+      "length": 10,
+      "line": 6
+     },
+     {
+      "level": 10,
+      "name": "DIS-TRAN-TYPE-CD",
+      "pic": "X(02)",
+      "offset": 10,
+      "length": 2,
+      "line": 7
+     },
+     {
+      "level": 10,
+      "name": "DIS-TRAN-CAT-CD",
+      "pic": "9(04)",
+      "offset": 12,
+      "length": 4,
+      "line": 8
+     },
+     {
+      "level": 5,
+      "name": "DIS-INT-RATE",
+      "pic": "S9(04)V99",
+      "offset": 16,
+      "length": 6,
+      "line": 9
+     },
+     {
+      "level": 5,
+      "name": "FILLER",
+      "pic": "X(28)",
+      "offset": 22,
+      "length": 28,
+      "line": 10
+     }
+    ]
+   },
+   {
+    "name": "CVACT01Y",
+    "path": "app/cpy/CVACT01Y.cpy",
+    "record": "ACCOUNT-RECORD",
+    "recordLength": 300,
+    "recordLengthBasis": "sum of the PIC lengths below (all fields are USAGE DISPLAY; a signed field keeps its sign in the last byte)",
+    "statedLength": "app/cpy/CVACT01Y.cpy:2",
+    "includedAt": "app/cbl/CBACT04C.cbl:112",
+    "file": "ACCOUNT-FILE",
+    "fdRecord": "FD-ACCTFILE-REC",
+    "usedAt": "app/cbl/CBACT04C.cbl:373",
+    "fields": [
+     {
+      "level": 5,
+      "name": "ACCT-ID",
+      "pic": "9(11)",
+      "offset": 0,
+      "length": 11,
+      "line": 5
+     },
+     {
+      "level": 5,
+      "name": "ACCT-ACTIVE-STATUS",
+      "pic": "X(01)",
+      "offset": 11,
+      "length": 1,
+      "line": 6
+     },
+     {
+      "level": 5,
+      "name": "ACCT-CURR-BAL",
+      "pic": "S9(10)V99",
+      "offset": 12,
+      "length": 12,
+      "line": 7
+     },
+     {
+      "level": 5,
+      "name": "ACCT-CREDIT-LIMIT",
+      "pic": "S9(10)V99",
+      "offset": 24,
+      "length": 12,
+      "line": 8
+     },
+     {
+      "level": 5,
+      "name": "ACCT-CASH-CREDIT-LIMIT",
+      "pic": "S9(10)V99",
+      "offset": 36,
+      "length": 12,
+      "line": 9
+     },
+     {
+      "level": 5,
+      "name": "ACCT-OPEN-DATE",
+      "pic": "X(10)",
+      "offset": 48,
+      "length": 10,
+      "line": 10
+     },
+     {
+      "level": 5,
+      "name": "ACCT-EXPIRAION-DATE",
+      "pic": "X(10)",
+      "offset": 58,
+      "length": 10,
+      "line": 11
+     },
+     {
+      "level": 5,
+      "name": "ACCT-REISSUE-DATE",
+      "pic": "X(10)",
+      "offset": 68,
+      "length": 10,
+      "line": 12
+     },
+     {
+      "level": 5,
+      "name": "ACCT-CURR-CYC-CREDIT",
+      "pic": "S9(10)V99",
+      "offset": 78,
+      "length": 12,
+      "line": 13
+     },
+     {
+      "level": 5,
+      "name": "ACCT-CURR-CYC-DEBIT",
+      "pic": "S9(10)V99",
+      "offset": 90,
+      "length": 12,
+      "line": 14
+     },
+     {
+      "level": 5,
+      "name": "ACCT-ADDR-ZIP",
+      "pic": "X(10)",
+      "offset": 102,
+      "length": 10,
+      "line": 15
+     },
+     {
+      "level": 5,
+      "name": "ACCT-GROUP-ID",
+      "pic": "X(10)",
+      "offset": 112,
+      "length": 10,
+      "line": 16
+     },
+     {
+      "level": 5,
+      "name": "FILLER",
+      "pic": "X(178)",
+      "offset": 122,
+      "length": 178,
+      "line": 17
+     }
+    ]
+   },
+   {
+    "name": "CVTRA05Y",
+    "path": "app/cpy/CVTRA05Y.cpy",
+    "record": "TRAN-RECORD",
+    "recordLength": 350,
+    "recordLengthBasis": "sum of the PIC lengths below (all fields are USAGE DISPLAY; a signed field keeps its sign in the last byte)",
+    "statedLength": "app/cpy/CVTRA05Y.cpy:2",
+    "includedAt": "app/cbl/CBACT04C.cbl:117",
+    "file": "TRANSACT-FILE",
+    "fdRecord": "FD-TRANFILE-REC",
+    "usedAt": "app/cbl/CBACT04C.cbl:500",
+    "fields": [
+     {
+      "level": 5,
+      "name": "TRAN-ID",
+      "pic": "X(16)",
+      "offset": 0,
+      "length": 16,
+      "line": 5
+     },
+     {
+      "level": 5,
+      "name": "TRAN-TYPE-CD",
+      "pic": "X(02)",
+      "offset": 16,
+      "length": 2,
+      "line": 6
+     },
+     {
+      "level": 5,
+      "name": "TRAN-CAT-CD",
+      "pic": "9(04)",
+      "offset": 18,
+      "length": 4,
+      "line": 7
+     },
+     {
+      "level": 5,
+      "name": "TRAN-SOURCE",
+      "pic": "X(10)",
+      "offset": 22,
+      "length": 10,
+      "line": 8
+     },
+     {
+      "level": 5,
+      "name": "TRAN-DESC",
+      "pic": "X(100)",
+      "offset": 32,
+      "length": 100,
+      "line": 9
+     },
+     {
+      "level": 5,
+      "name": "TRAN-AMT",
+      "pic": "S9(09)V99",
+      "offset": 132,
+      "length": 11,
+      "line": 10
+     },
+     {
+      "level": 5,
+      "name": "TRAN-MERCHANT-ID",
+      "pic": "9(09)",
+      "offset": 143,
+      "length": 9,
+      "line": 11
+     },
+     {
+      "level": 5,
+      "name": "TRAN-MERCHANT-NAME",
+      "pic": "X(50)",
+      "offset": 152,
+      "length": 50,
+      "line": 12
+     },
+     {
+      "level": 5,
+      "name": "TRAN-MERCHANT-CITY",
+      "pic": "X(50)",
+      "offset": 202,
+      "length": 50,
+      "line": 13
+     },
+     {
+      "level": 5,
+      "name": "TRAN-MERCHANT-ZIP",
+      "pic": "X(10)",
+      "offset": 252,
+      "length": 10,
+      "line": 14
+     },
+     {
+      "level": 5,
+      "name": "TRAN-CARD-NUM",
+      "pic": "X(16)",
+      "offset": 262,
+      "length": 16,
+      "line": 15
+     },
+     {
+      "level": 5,
+      "name": "TRAN-ORIG-TS",
+      "pic": "X(26)",
+      "offset": 278,
+      "length": 26,
+      "line": 16
+     },
+     {
+      "level": 5,
+      "name": "TRAN-PROC-TS",
+      "pic": "X(26)",
+      "offset": 304,
+      "length": 26,
+      "line": 17
+     },
+     {
+      "level": 5,
+      "name": "FILLER",
+      "pic": "X(20)",
+      "offset": 330,
+      "length": 20,
+      "line": 18
+     }
+    ]
+   }
+  ],
+  "datasets": [
+   {
+    "dd": "TCATBALF",
+    "dsn": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+    "generation": null,
+    "disp": "SHR",
+    "ddSource": "app/jcl/INTCALC.jcl:27-28",
+    "catalog": {
+     "type": "KSDS",
+     "definedBy": "TCATBALF.STEP10",
+     "source": "app/jcl/TCATBALF.jcl:36",
+     "keys": "17 0",
+     "recordsize": "50 50",
+     "shareoptions": "2 3"
+    },
+    "cobolFile": "TCATBAL-FILE",
+    "direction": "read",
+    "access": "INDEXED, SEQUENTIAL access",
+    "selectSource": "app/cbl/CBACT04C.cbl:28",
+    "fdSource": "app/cbl/CBACT04C.cbl:61",
+    "recordLayout": {
+     "copybook": "CVTRA01Y",
+     "record": "TRAN-CAT-BAL-RECORD",
+     "recordLength": 50,
+     "boundAt": "app/cbl/CBACT04C.cbl:326"
+    }
+   },
+   {
+    "dd": "XREFFILE",
+    "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+    "generation": null,
+    "disp": "SHR",
+    "ddSource": "app/jcl/INTCALC.jcl:29-30",
+    "catalog": {
+     "type": "KSDS",
+     "definedBy": "XREFFILE.STEP10",
+     "source": "app/jcl/XREFFILE.jcl:39",
+     "keys": "16 0",
+     "recordsize": "50 50",
+     "shareoptions": "2 3"
+    },
+    "cobolFile": "XREF-FILE",
+    "direction": "read",
+    "access": "INDEXED, RANDOM access, read by alternate key FD-XREF-ACCT-ID",
+    "selectSource": "app/cbl/CBACT04C.cbl:34",
+    "fdSource": "app/cbl/CBACT04C.cbl:69",
+    "recordLayout": {
+     "copybook": "CVACT03Y",
+     "record": "CARD-XREF-RECORD",
+     "recordLength": 50,
+     "boundAt": "app/cbl/CBACT04C.cbl:394"
+    }
+   },
+   {
+    "dd": "XREFFIL1",
+    "dsn": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+    "generation": null,
+    "disp": "SHR",
+    "ddSource": "app/jcl/INTCALC.jcl:31-32",
+    "catalog": {
+     "type": "PATH",
+     "definedBy": "XREFFILE.STEP25",
+     "source": "app/jcl/XREFFILE.jcl:90",
+     "pathentry": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX"
+    },
+    "cobolFile": null,
+    "direction": "read (candidate)",
+    "access": "no SELECT names this DD",
+    "selectSource": null,
+    "fdSource": null,
+    "recordLayout": {
+     "copybook": "CVACT03Y",
+     "record": "CARD-XREF-RECORD",
+     "recordLength": 50,
+     "boundAt": "candidate - the path returns base-cluster records of CARDXREF"
+    }
+   },
+   {
+    "dd": "ACCTFILE",
+    "dsn": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+    "generation": null,
+    "disp": "SHR",
+    "ddSource": "app/jcl/INTCALC.jcl:33-34",
+    "catalog": {
+     "type": "KSDS",
+     "definedBy": "ACCTFILE.STEP10",
+     "source": "app/jcl/ACCTFILE.jcl:36",
+     "keys": "11 0",
+     "recordsize": "300 300",
+     "shareoptions": "2 3"
+    },
+    "cobolFile": "ACCOUNT-FILE",
+    "direction": "read and rewrite",
+    "access": "INDEXED, RANDOM access",
+    "selectSource": "app/cbl/CBACT04C.cbl:41",
+    "fdSource": "app/cbl/CBACT04C.cbl:84",
+    "recordLayout": {
+     "copybook": "CVACT01Y",
+     "record": "ACCOUNT-RECORD",
+     "recordLength": 300,
+     "boundAt": "app/cbl/CBACT04C.cbl:373"
+    }
+   },
+   {
+    "dd": "DISCGRP",
+    "dsn": "AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS",
+    "generation": null,
+    "disp": "SHR",
+    "ddSource": "app/jcl/INTCALC.jcl:35-36",
+    "catalog": {
+     "type": "KSDS",
+     "definedBy": "DISCGRP.STEP10",
+     "source": "app/jcl/DISCGRP.jcl:36",
+     "keys": "16 0",
+     "recordsize": "50 50",
+     "shareoptions": "2 3"
+    },
+    "cobolFile": "DISCGRP-FILE",
+    "direction": "read",
+    "access": "INDEXED, RANDOM access",
+    "selectSource": "app/cbl/CBACT04C.cbl:47",
+    "fdSource": "app/cbl/CBACT04C.cbl:76",
+    "recordLayout": {
+     "copybook": "CVTRA02Y",
+     "record": "DIS-GROUP-RECORD",
+     "recordLength": 50,
+     "boundAt": "app/cbl/CBACT04C.cbl:416"
+    }
+   },
+   {
+    "dd": "TRANSACT",
+    "dsn": "AWS.M2.CARDDEMO.SYSTRAN",
+    "generation": "+1",
+    "disp": "(NEW,CATLG,DELETE)",
+    "ddSource": "app/jcl/INTCALC.jcl:37-41",
+    "catalog": {
+     "type": "GDG",
+     "definedBy": "DEFGDGB.STEP05",
+     "source": "app/jcl/DEFGDGB.jcl:48",
+     "limit": "5"
+    },
+    "cobolFile": "TRANSACT-FILE",
+    "direction": "write",
+    "access": "SEQUENTIAL",
+    "selectSource": "app/cbl/CBACT04C.cbl:53",
+    "fdSource": "app/cbl/CBACT04C.cbl:89",
+    "recordLayout": {
+     "copybook": "CVTRA05Y",
+     "record": "TRAN-RECORD",
+     "recordLength": 350,
+     "boundAt": "app/cbl/CBACT04C.cbl:500"
+    },
+    "dcb": {
+     "value": "RECFM=F,LRECL=350,BLKSIZE=0",
+     "source": "app/jcl/INTCALC.jcl:39"
+    },
+    "gdg": {
+     "base": "AWS.M2.CARDDEMO.SYSTRAN",
+     "relative": "+1",
+     "limit": "5",
+     "definedAt": "app/jcl/DEFGDGB.jcl:48-51",
+     "note": "(+1) is a new generation cataloged at the end of the job; LIMIT(5) SCRATCH keeps five."
+    }
+   }
+  ]
+ },
+ "edges": [
+  {
+   "id": "C1",
+   "kind": "call",
+   "from": "INTCALC.STEP15",
+   "to": "load module CBACT04C",
+   "label": "EXEC PGM=",
+   "direction": null,
+   "status": "PROVEN",
+   "basis": "JCL EXEC PGM=CBACT04C, fetched from STEPLIB AWS.M2.CARDDEMO.LOADLIB.",
+   "evidence": [
+    "app/jcl/INTCALC.jcl:22",
+    "app/jcl/INTCALC.jcl:23-24"
+   ]
+  },
+  {
+   "id": "C2",
+   "kind": "call",
+   "from": "load module CBACT04C",
+   "to": "CBACT04C (app/cbl/CBACT04C.cbl)",
+   "label": "built from",
+   "direction": null,
+   "status": "CANDIDATE",
+   "basis": "Name match only: the JCL names a load-library member and the source declares PROGRAM-ID CBACT04C, but no link-edit step, binder listing or library directory in the estate ties the member to this source. The sample compile job is generic (MEMNAME=BATCHPGM) and names no program.",
+   "evidence": [
+    "app/jcl/INTCALC.jcl:22",
+    "app/cbl/CBACT04C.cbl:23",
+    "samples/jcl/BATCMP.jcl:33",
+    "samples/jcl/BATCMP.jcl:42"
+   ]
+  },
+  {
+   "id": "C3",
+   "kind": "call",
+   "from": "CBACT04C",
+   "to": "CEE3ABD",
+   "label": "CALL 'CEE3ABD' USING ABCODE, TIMING",
+   "direction": null,
+   "status": "PROVEN",
+   "basis": "Static CALL by literal in 9999-ABEND-PROGRAM (error path only). The target is not in the estate.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:628-632"
+   ]
+  },
+  {
+   "id": "I1",
+   "kind": "copy",
+   "from": "CBACT04C",
+   "to": "CVTRA01Y",
+   "label": "COPY CVTRA01Y",
+   "direction": null,
+   "status": "PROVEN",
+   "basis": "COPY statement; member found at app/cpy/CVTRA01Y.cpy.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:97",
+    "app/cpy/CVTRA01Y.cpy:4"
+   ]
+  },
+  {
+   "id": "I2",
+   "kind": "copy",
+   "from": "CBACT04C",
+   "to": "CVACT03Y",
+   "label": "COPY CVACT03Y",
+   "direction": null,
+   "status": "PROVEN",
+   "basis": "COPY statement; member found at app/cpy/CVACT03Y.cpy.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:102",
+    "app/cpy/CVACT03Y.cpy:4"
+   ]
+  },
+  {
+   "id": "I3",
+   "kind": "copy",
+   "from": "CBACT04C",
+   "to": "CVTRA02Y",
+   "label": "COPY CVTRA02Y",
+   "direction": null,
+   "status": "PROVEN",
+   "basis": "COPY statement; member found at app/cpy/CVTRA02Y.cpy.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:107",
+    "app/cpy/CVTRA02Y.cpy:4"
+   ]
+  },
+  {
+   "id": "I4",
+   "kind": "copy",
+   "from": "CBACT04C",
+   "to": "CVACT01Y",
+   "label": "COPY CVACT01Y",
+   "direction": null,
+   "status": "PROVEN",
+   "basis": "COPY statement; member found at app/cpy/CVACT01Y.cpy.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:112",
+    "app/cpy/CVACT01Y.cpy:4"
+   ]
+  },
+  {
+   "id": "I5",
+   "kind": "copy",
+   "from": "CBACT04C",
+   "to": "CVTRA05Y",
+   "label": "COPY CVTRA05Y",
+   "direction": null,
+   "status": "PROVEN",
+   "basis": "COPY statement; member found at app/cpy/CVTRA05Y.cpy.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:117",
+    "app/cpy/CVTRA05Y.cpy:4"
+   ]
+  },
+  {
+   "id": "D1",
+   "kind": "data",
+   "from": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+   "to": "CBACT04C",
+   "label": "DD TCATBALF",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "SELECT TCATBAL-FILE ASSIGN TO TCATBALF, OPEN INPUT, sequential READ; the JCL binds DD TCATBALF.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:28",
+    "app/cbl/CBACT04C.cbl:236",
+    "app/cbl/CBACT04C.cbl:326",
+    "app/jcl/INTCALC.jcl:27-28"
+   ]
+  },
+  {
+   "id": "D2",
+   "kind": "data",
+   "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "to": "CBACT04C",
+   "label": "DD XREFFILE",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "SELECT XREF-FILE ASSIGN TO XREFFILE, OPEN INPUT, READ ... KEY IS FD-XREF-ACCT-ID; the JCL binds DD XREFFILE.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:34-38",
+    "app/cbl/CBACT04C.cbl:254",
+    "app/cbl/CBACT04C.cbl:394-395",
+    "app/jcl/INTCALC.jcl:29-30"
+   ]
+  },
+  {
+   "id": "D3",
+   "kind": "data",
+   "from": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "to": "CBACT04C",
+   "label": "DD XREFFIL1",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "Inferred. No SELECT assigns XREFFIL1. XREF-FILE declares ALTERNATE RECORD KEY FD-XREF-ACCT-ID and is read by that key, and the JCL allocates the alternate-index path to a DD whose name is XREFFILE with its last character replaced by 1; the alternate index is KEYS(11,25), the offset and length of FD-XREF-ACCT-ID. That the run time opens the path through this DD is a platform convention, not a statement in the source.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:38",
+    "app/cbl/CBACT04C.cbl:394-395",
+    "app/jcl/INTCALC.jcl:31-32",
+    "app/jcl/XREFFILE.jcl:72-74",
+    "app/jcl/XREFFILE.jcl:90-92"
+   ]
+  },
+  {
+   "id": "D4",
+   "kind": "data",
+   "from": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "to": "CBACT04C",
+   "label": "DD ACCTFILE",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "SELECT ACCOUNT-FILE ASSIGN TO ACCTFILE, OPEN I-O, random READ by FD-ACCT-ID; the JCL binds DD ACCTFILE.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:41",
+    "app/cbl/CBACT04C.cbl:291",
+    "app/cbl/CBACT04C.cbl:373",
+    "app/jcl/INTCALC.jcl:33-34"
+   ]
+  },
+  {
+   "id": "D5",
+   "kind": "data",
+   "from": "CBACT04C",
+   "to": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "label": "DD ACCTFILE",
+   "direction": "write",
+   "status": "PROVEN",
+   "basis": "REWRITE FD-ACCTFILE-REC FROM ACCOUNT-RECORD after adding WS-TOTAL-INT to ACCT-CURR-BAL and zeroing the cycle credit and debit.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:350-356",
+    "app/jcl/INTCALC.jcl:33-34"
+   ]
+  },
+  {
+   "id": "D6",
+   "kind": "data",
+   "from": "AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS",
+   "to": "CBACT04C",
+   "label": "DD DISCGRP",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "SELECT DISCGRP-FILE ASSIGN TO DISCGRP, OPEN INPUT, random READ, and a second READ with group 'DEFAULT' on status 23; the JCL binds DD DISCGRP.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:47",
+    "app/cbl/CBACT04C.cbl:272",
+    "app/cbl/CBACT04C.cbl:416",
+    "app/cbl/CBACT04C.cbl:436-444",
+    "app/jcl/INTCALC.jcl:35-36"
+   ]
+  },
+  {
+   "id": "D7",
+   "kind": "data",
+   "from": "CBACT04C",
+   "to": "AWS.M2.CARDDEMO.SYSTRAN(+1)",
+   "label": "DD TRANSACT",
+   "direction": "write",
+   "status": "PROVEN",
+   "basis": "SELECT TRANSACT-FILE ASSIGN TO TRANSACT, OPEN OUTPUT, WRITE FD-TRANFILE-REC FROM TRAN-RECORD; the JCL binds DD TRANSACT to a new generation of the GDG AWS.M2.CARDDEMO.SYSTRAN.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:53",
+    "app/cbl/CBACT04C.cbl:309",
+    "app/cbl/CBACT04C.cbl:500",
+    "app/jcl/INTCALC.jcl:37-41"
+   ]
+  },
+  {
+   "id": "D8",
+   "kind": "data",
+   "from": "JCL PARM '2022071800'",
+   "to": "CBACT04C",
+   "label": "PARM-DATE",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "PROCEDURE DIVISION USING EXTERNAL-PARMS; PARM-DATE is strung with a six-digit counter into TRAN-ID of every record written.",
+   "evidence": [
+    "app/jcl/INTCALC.jcl:22",
+    "app/cbl/CBACT04C.cbl:176-180",
+    "app/cbl/CBACT04C.cbl:474-480"
+   ]
+  },
+  {
+   "id": "D9",
+   "kind": "data",
+   "from": "system clock",
+   "to": "CBACT04C",
+   "label": "FUNCTION CURRENT-DATE",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "Z-GET-DB2-FORMAT-TIMESTAMP moves FUNCTION CURRENT-DATE into the timestamp written to TRAN-ORIG-TS and TRAN-PROC-TS.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:613-614",
+    "app/cbl/CBACT04C.cbl:496-498"
+   ]
+  },
+  {
+   "id": "D10",
+   "kind": "data",
+   "from": "CBACT04C",
+   "to": "SYSOUT (DD SYSOUT)",
+   "label": "DISPLAY",
+   "direction": "write",
+   "status": "CANDIDATE",
+   "basis": "Inferred. The program issues DISPLAY with no UPON phrase and the step allocates DD SYSOUT; that DISPLAY output goes to that DD depends on the compiler/run-time output DD option, which is not in the estate.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:181",
+    "app/jcl/INTCALC.jcl:26"
+   ]
+  }
+ ],
+ "setup": {
+  "meta": {
+   "source": "tools/runjcl/chains.json:52-58",
+   "streamJobs": "tools/runjcl/chains.json:59-61",
+   "note": "The setup list is the off-host harness's order for building the files a fresh run needs. It is not scheduler evidence: the Control-M folder of the stream names none of these jobs.",
+   "inputs": {
+    "AWS.M2.CARDDEMO.ACCTDATA.PS": 300,
+    "AWS.M2.CARDDEMO.CARDXREF.PS": 50,
+    "AWS.M2.CARDDEMO.TCATBALF.PS": 50,
+    "AWS.M2.CARDDEMO.DISCGRP.PS": 50
+   }
+  },
+  "jobs": [
+   {
+    "job": "DEFGDGB",
+    "role": "setup",
+    "order": 1,
+    "jcl": "app/jcl/DEFGDGB.jcl",
+    "listedAt": "tools/runjcl/chains.json:53",
+    "steps": [
+     {
+      "step": "STEP05",
+      "pgm": "IDCAMS",
+      "action": "DEFINE GENERATIONDATAGROUP",
+      "source": "app/jcl/DEFGDGB.jcl:21",
+      "datasets": []
+     }
+    ],
+    "provides": "Defines the GDG base AWS.M2.CARDDEMO.SYSTRAN that DD TRANSACT writes generation (+1) of. The job defines five other GDG bases the stream does not use.",
+    "scheduledIn": []
+   },
+   {
+    "job": "ACCTFILE",
+    "role": "setup",
+    "order": 2,
+    "jcl": "app/jcl/ACCTFILE.jcl",
+    "listedAt": "tools/runjcl/chains.json:54",
+    "steps": [
+     {
+      "step": "STEP05",
+      "pgm": "IDCAMS",
+      "action": "DELETE",
+      "source": "app/jcl/ACCTFILE.jcl:22",
+      "datasets": []
+     },
+     {
+      "step": "STEP10",
+      "pgm": "IDCAMS",
+      "action": "DEFINE CLUSTER",
+      "source": "app/jcl/ACCTFILE.jcl:33",
+      "datasets": []
+     },
+     {
+      "step": "STEP15",
+      "pgm": "IDCAMS",
+      "action": "REPRO",
+      "source": "app/jcl/ACCTFILE.jcl:54",
+      "datasets": [
+       "AWS.M2.CARDDEMO.ACCTDATA.PS",
+       "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS"
+      ]
+     }
+    ],
+    "provides": "Deletes, defines and loads AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS from ACCTDATA.PS (DD ACCTFILE).",
+    "scheduledIn": []
+   },
+   {
+    "job": "XREFFILE",
+    "role": "setup",
+    "order": 3,
+    "jcl": "app/jcl/XREFFILE.jcl",
+    "listedAt": "tools/runjcl/chains.json:55",
+    "steps": [
+     {
+      "step": "STEP05",
+      "pgm": "IDCAMS",
+      "action": "DELETE",
+      "source": "app/jcl/XREFFILE.jcl:22",
+      "datasets": []
+     },
+     {
+      "step": "STEP10",
+      "pgm": "IDCAMS",
+      "action": "DEFINE CLUSTER",
+      "source": "app/jcl/XREFFILE.jcl:36",
+      "datasets": []
+     },
+     {
+      "step": "STEP15",
+      "pgm": "IDCAMS",
+      "action": "REPRO",
+      "source": "app/jcl/XREFFILE.jcl:57",
+      "datasets": [
+       "AWS.M2.CARDDEMO.CARDXREF.PS",
+       "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS"
+      ]
+     },
+     {
+      "step": "STEP20",
+      "pgm": "IDCAMS",
+      "action": "DEFINE ALTERNATEINDEX",
+      "source": "app/jcl/XREFFILE.jcl:69",
+      "datasets": []
+     },
+     {
+      "step": "STEP25",
+      "pgm": "IDCAMS",
+      "action": "DEFINE PATH",
+      "source": "app/jcl/XREFFILE.jcl:87",
+      "datasets": []
+     },
+     {
+      "step": "STEP30",
+      "pgm": "IDCAMS",
+      "action": "BLDINDEX",
+      "source": "app/jcl/XREFFILE.jcl:97",
+      "datasets": []
+     }
+    ],
+    "provides": "Deletes, defines and loads AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS from CARDXREF.PS, then defines and builds its alternate index and path (DDs XREFFILE, XREFFIL1).",
+    "scheduledIn": []
+   },
+   {
+    "job": "TCATBALF",
+    "role": "setup",
+    "order": 4,
+    "jcl": "app/jcl/TCATBALF.jcl",
+    "listedAt": "tools/runjcl/chains.json:56",
+    "steps": [
+     {
+      "step": "STEP05",
+      "pgm": "IDCAMS",
+      "action": "DELETE",
+      "source": "app/jcl/TCATBALF.jcl:22",
+      "datasets": []
+     },
+     {
+      "step": "STEP10",
+      "pgm": "IDCAMS",
+      "action": "DEFINE CLUSTER",
+      "source": "app/jcl/TCATBALF.jcl:33",
+      "datasets": []
+     },
+     {
+      "step": "STEP15",
+      "pgm": "IDCAMS",
+      "action": "REPRO",
+      "source": "app/jcl/TCATBALF.jcl:54",
+      "datasets": [
+       "AWS.M2.CARDDEMO.TCATBALF.PS",
+       "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS"
+      ]
+     }
+    ],
+    "provides": "Deletes, defines and loads AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS from TCATBALF.PS (DD TCATBALF).",
+    "scheduledIn": [
+     "CARDDEMO [ca7-ljob]"
+    ]
+   },
+   {
+    "job": "DISCGRP",
+    "role": "setup",
+    "order": 5,
+    "jcl": "app/jcl/DISCGRP.jcl",
+    "listedAt": "tools/runjcl/chains.json:57",
+    "steps": [
+     {
+      "step": "STEP05",
+      "pgm": "IDCAMS",
+      "action": "DELETE",
+      "source": "app/jcl/DISCGRP.jcl:22",
+      "datasets": []
+     },
+     {
+      "step": "STEP10",
+      "pgm": "IDCAMS",
+      "action": "DEFINE CLUSTER",
+      "source": "app/jcl/DISCGRP.jcl:33",
+      "datasets": []
+     },
+     {
+      "step": "STEP15",
+      "pgm": "IDCAMS",
+      "action": "REPRO",
+      "source": "app/jcl/DISCGRP.jcl:54",
+      "datasets": [
+       "AWS.M2.CARDDEMO.DISCGRP.PS",
+       "AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS"
+      ]
+     }
+    ],
+    "provides": "Deletes, defines and loads AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS from DISCGRP.PS (DD DISCGRP).",
+    "scheduledIn": [
+     "DisclosureGroupsRefresh [controlm-xml]"
+    ]
+   }
+  ]
+ },
+ "outside": [
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "ACCTFILE.STEP05",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "delete",
+   "status": "PROVEN",
+   "basis": "IDCAMS DELETE names the dataset",
+   "evidence": [
+    "app/jcl/ACCTFILE.jcl:25"
+   ],
+   "scheduledIn": [],
+   "relation": "setup",
+   "id": "O1"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "ACCTFILE.STEP10",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "define",
+   "status": "PROVEN",
+   "basis": "IDCAMS DEFINE (vsam-cluster) names the dataset",
+   "evidence": [
+    "app/jcl/ACCTFILE.jcl:36"
+   ],
+   "scheduledIn": [],
+   "relation": "setup",
+   "id": "O2"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "ACCTFILE.STEP15",
+   "module": "CARDDEMO",
+   "via": "DD ACCTVSAM",
+   "program": "IDCAMS",
+   "direction": "write",
+   "status": "PROVEN",
+   "basis": "IDCAMS REPRO OUTFILE names DD ACCTVSAM",
+   "evidence": [
+    "app/jcl/ACCTFILE.jcl:61",
+    "app/jcl/ACCTFILE.jcl:58"
+   ],
+   "scheduledIn": [],
+   "relation": "setup",
+   "id": "O3"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "CBEXPORT.STEP02",
+   "module": "CARDDEMO",
+   "via": "DD ACCTFILE",
+   "program": "CBEXPORT",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "CBEXPORT SELECT ACCOUNT-INPUT ASSIGN TO ACCTFILE, OPEN INPUT",
+   "evidence": [
+    "app/cbl/CBEXPORT.cbl:41",
+    "app/cbl/CBEXPORT.cbl:207",
+    "app/jcl/CBEXPORT.jcl:51"
+   ],
+   "scheduledIn": [],
+   "relation": "other",
+   "id": "O4"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "CLOSEFIL.CLCIFIL",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "SDSF",
+   "direction": "control",
+   "status": "PROVEN",
+   "basis": "SDSF in-stream command /F CICSAWSA,'CEMT SET FIL(ACCTDAT) CLO' - changes the file's open state in the CICS region; it reads and writes no record. That the region acts on the command is not visible in the JCL",
+   "evidence": [
+    "app/jcl/CLOSEFIL.jcl:28",
+    "app/jcl/CLOSEFIL.jcl:22",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]",
+    "DAILY-TransactionBackup [controlm-xml]",
+    "DisclosureGroupsRefresh [controlm-xml]",
+    "MONTHLY-InterestCalculation [controlm-xml]"
+   ],
+   "relation": "predecessor",
+   "id": "O5"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "CREASTMT.STEP040",
+   "module": "CARDDEMO",
+   "via": "DD ACCTFILE",
+   "program": "CBSTM03A -> CBSTM03B",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "CBSTM03B SELECT ACCT-FILE ASSIGN TO ACCTFILE, OPEN INPUT",
+   "evidence": [
+    "app/cbl/CBSTM03B.CBL:49",
+    "app/cbl/CBSTM03B.CBL:209",
+    "app/jcl/CREASTMT.JCL:85"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "other",
+   "id": "O6"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "FEECALC.STEP05",
+   "module": "CARDDEMO",
+   "via": "DD ACCTFILE",
+   "program": "CBFEEDRV",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "CBFEEDRV SELECT ACCTFILE-FILE ASSIGN TO ACCTFILE, OPEN INPUT",
+   "evidence": [
+    "app/cbl/CBFEEDRV.cbl:32",
+    "app/cbl/CBFEEDRV.cbl:75",
+    "app/jcl/FEECALC.jcl:27"
+   ],
+   "scheduledIn": [],
+   "relation": "other",
+   "id": "O7"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "OPENFIL.OPCIFIL",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "SDSF",
+   "direction": "control",
+   "status": "PROVEN",
+   "basis": "SDSF in-stream command /F CICSAWSA,'CEMT SET FIL(ACCTDAT) OPE' - changes the file's open state in the CICS region; it reads and writes no record. That the region acts on the command is not visible in the JCL",
+   "evidence": [
+    "app/jcl/OPENFIL.jcl:28",
+    "app/jcl/OPENFIL.jcl:22",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]",
+    "DAILY-TransactionBackup [controlm-xml]",
+    "DisclosureGroupsRefresh [controlm-xml]",
+    "MONTHLY-InterestCalculation [controlm-xml]"
+   ],
+   "relation": "later in folder",
+   "id": "O8"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "POSTTRAN.STEP15",
+   "module": "CARDDEMO",
+   "via": "DD ACCTFILE",
+   "program": "CBTRN02C",
+   "direction": "read-write",
+   "status": "PROVEN",
+   "basis": "CBTRN02C SELECT ACCOUNT-FILE ASSIGN TO ACCTFILE, OPEN I-O",
+   "evidence": [
+    "app/cbl/CBTRN02C.cbl:51",
+    "app/cbl/CBTRN02C.cbl:311",
+    "app/jcl/POSTTRAN.jcl:39"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "other",
+   "id": "O9"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "READACCT.STEP05",
+   "module": "CARDDEMO",
+   "via": "DD ACCTFILE",
+   "program": "CBACT01C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "CBACT01C SELECT ACCTFILE-FILE ASSIGN TO ACCTFILE, OPEN INPUT",
+   "evidence": [
+    "app/cbl/CBACT01C.cbl:29",
+    "app/cbl/CBACT01C.cbl:319",
+    "app/jcl/READACCT.jcl:35"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "other",
+   "id": "O10"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS program",
+   "actor": "COACCT01",
+   "module": "VSAMMQ",
+   "via": "CICS file ACCTDAT",
+   "program": "COACCT01",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "EXEC CICS READ on file ACCTDAT; DEFINE FILE(ACCTDAT) DSNAME in app/csd/CARDDEMO.CSD:1. Candidate: module VSAMMQ has no DEFINE FILE of its own for ACCTDAT; the binding to this dataset assumes it runs in the region that installs group CARDDEMO",
+   "evidence": [
+    "app/app-vsam-mq/cbl/COACCT01.cbl:396",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O11"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS program",
+   "actor": "COACTUPC",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC",
+   "direction": "read-write",
+   "status": "PROVEN",
+   "basis": "EXEC CICS READ, REWRITE on file ACCTDAT; DEFINE FILE(ACCTDAT) DSNAME in app/csd/CARDDEMO.CSD:1",
+   "evidence": [
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 3,
+   "id": "O12"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS program",
+   "actor": "COACTVWC",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTVWC",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "EXEC CICS READ on file ACCTDAT; DEFINE FILE(ACCTDAT) DSNAME in app/csd/CARDDEMO.CSD:1",
+   "evidence": [
+    "app/cbl/COACTVWC.cbl:776",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O13"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS program",
+   "actor": "COBIL00C",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COBIL00C",
+   "direction": "read-write",
+   "status": "PROVEN",
+   "basis": "EXEC CICS READ, REWRITE on file ACCTDAT; DEFINE FILE(ACCTDAT) DSNAME in app/csd/CARDDEMO.CSD:1",
+   "evidence": [
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 2,
+   "id": "O14"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS program",
+   "actor": "COPAUA0C",
+   "module": "AUTH",
+   "via": "CICS file ACCTDAT",
+   "program": "COPAUA0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "EXEC CICS READ on file ACCTDAT; DEFINE FILE(ACCTDAT) DSNAME in app/csd/CARDDEMO.CSD:1. Candidate: module AUTH has no DEFINE FILE of its own for ACCTDAT; the binding to this dataset assumes it runs in the region that installs group CARDDEMO",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:525",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O15"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS program",
+   "actor": "COPAUS0C",
+   "module": "AUTH",
+   "via": "CICS file ACCTDAT",
+   "program": "COPAUS0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "EXEC CICS READ on file ACCTDAT; DEFINE FILE(ACCTDAT) DSNAME in app/csd/CARDDEMO.CSD:1. Candidate: module AUTH has no DEFINE FILE of its own for ACCTDAT; the binding to this dataset assumes it runs in the region that installs group CARDDEMO",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:869",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O16"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CA00",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CA00 (initial program COADM01C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:327",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O17"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CAUP",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC",
+   "direction": "read-write",
+   "status": "PROVEN",
+   "basis": "transaction CAUP (initial program COACTUPC) reaches COACTUPC [proven], which issue EXEC CICS READ, REWRITE on file ACCTDAT",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:306",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 3,
+   "id": "O18"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CAUP",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CAUP (initial program COACTUPC) reaches COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:306",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 3,
+   "id": "O19"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CAVW",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTVWC",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "transaction CAVW (initial program COACTVWC) reaches COACTVWC [proven], which issue EXEC CICS READ on file ACCTDAT",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:317",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O20"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CAVW",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CAVW (initial program COACTVWC) reaches COACTUPC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:317",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 5,
+   "id": "O21"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CB00",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COBIL00C",
+   "direction": "read-write",
+   "status": "PROVEN",
+   "basis": "transaction CB00 (initial program COBIL00C) reaches COBIL00C [proven], which issue EXEC CICS READ, REWRITE on file ACCTDAT",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:337",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 2,
+   "id": "O22"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CB00",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CB00 (initial program COBIL00C) reaches COACTUPC [candidate], COACTVWC [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:337",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 4,
+   "id": "O23"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CC00",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CC00 (initial program COSGN00C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:378",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O24"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CCDL",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CCDL (initial program COCRDSLC) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:347",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O25"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CCLI",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CCLI (initial program COCRDLIC) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:357",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O26"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CCUP",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CCUP (initial program COCRDUPC) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:367",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O27"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CDRA",
+   "module": "VSAMMQ",
+   "via": "CICS file ACCTDAT",
+   "program": "COACCT01",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CDRA (initial program COACCT01) reaches COACCT01 [proven], which issue EXEC CICS READ on file ACCTDAT. Candidate: module VSAMMQ has no DEFINE FILE of its own for ACCTDAT",
+   "evidence": [
+    "app/app-vsam-mq/csd/CRDDEMOM.csd:17",
+    "app/app-vsam-mq/cbl/COACCT01.cbl:396",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O28"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CM00",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CM00 (initial program COMEN01C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:399",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O29"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CP00",
+   "module": "AUTH",
+   "via": "CICS file ACCTDAT",
+   "program": "COPAUA0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CP00 (initial program COPAUA0C) reaches COPAUA0C [proven], which issue EXEC CICS READ on file ACCTDAT. Candidate: module AUTH has no DEFINE FILE of its own for ACCTDAT",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:59",
+    "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:525",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O30"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CPVD",
+   "module": "AUTH",
+   "via": "CICS file ACCTDAT",
+   "program": "COPAUS0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CPVD (initial program COPAUS1C) reaches COPAUS0C [candidate], which issue EXEC CICS READ on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:39",
+    "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:869",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O31"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CPVS",
+   "module": "AUTH",
+   "via": "CICS file ACCTDAT",
+   "program": "COPAUS0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CPVS (initial program COPAUS0C) reaches COPAUS0C [proven], which issue EXEC CICS READ on file ACCTDAT. Candidate: module AUTH has no DEFINE FILE of its own for ACCTDAT",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:49",
+    "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:869",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O32"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CR00",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CR00 (initial program CORPT00C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:409",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O33"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CT00",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CT00 (initial program COTRN00C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:419",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O34"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CT01",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CT01 (initial program COTRN01C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:429",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O35"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CT02",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CT02 (initial program COTRN02C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:439",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O36"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CU00",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CU00 (initial program COUSR00C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:449",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O37"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CU01",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CU01 (initial program COUSR01C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:459",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O38"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CU02",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CU02 (initial program COUSR02C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:469",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O39"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CU03",
+   "module": "CARDDEMO",
+   "via": "CICS file ACCTDAT",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read-write",
+   "status": "CANDIDATE",
+   "basis": "transaction CU03 (initial program COUSR03C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ, REWRITE on file ACCTDAT. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:479",
+    "app/cbl/COACTUPC.cbl:3703",
+    "app/cbl/COACTUPC.cbl:3894",
+    "app/cbl/COACTUPC.cbl:4065",
+    "app/cbl/COACTVWC.cbl:776",
+    "app/cbl/COBIL00C.cbl:345",
+    "app/cbl/COBIL00C.cbl:379",
+    "app/csd/CARDDEMO.CSD:1"
+   ],
+   "commands": [
+    "READ",
+    "REWRITE"
+   ],
+   "sites": 6,
+   "id": "O40"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "batch job step",
+   "actor": "CLOSEFIL.CLCIFIL",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "SDSF",
+   "direction": "control",
+   "status": "PROVEN",
+   "basis": "SDSF in-stream command /F CICSAWSA,'CEMT SET FIL(CXACAIX) CLO' - changes the file's open state in the CICS region; it reads and writes no record. That the region acts on the command is not visible in the JCL",
+   "evidence": [
+    "app/jcl/CLOSEFIL.jcl:29",
+    "app/jcl/CLOSEFIL.jcl:22",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]",
+    "DAILY-TransactionBackup [controlm-xml]",
+    "DisclosureGroupsRefresh [controlm-xml]",
+    "MONTHLY-InterestCalculation [controlm-xml]"
+   ],
+   "relation": "predecessor",
+   "id": "O41"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "batch job step",
+   "actor": "OPENFIL.OPCIFIL",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "SDSF",
+   "direction": "control",
+   "status": "PROVEN",
+   "basis": "SDSF in-stream command /F CICSAWSA,'CEMT SET FIL(CXACAIX) OPE' - changes the file's open state in the CICS region; it reads and writes no record. That the region acts on the command is not visible in the JCL",
+   "evidence": [
+    "app/jcl/OPENFIL.jcl:29",
+    "app/jcl/OPENFIL.jcl:22",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]",
+    "DAILY-TransactionBackup [controlm-xml]",
+    "DisclosureGroupsRefresh [controlm-xml]",
+    "MONTHLY-InterestCalculation [controlm-xml]"
+   ],
+   "relation": "later in folder",
+   "id": "O42"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "batch job step",
+   "actor": "XREFFILE.STEP25",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "define",
+   "status": "PROVEN",
+   "basis": "IDCAMS DEFINE (path) names the dataset",
+   "evidence": [
+    "app/jcl/XREFFILE.jcl:90"
+   ],
+   "scheduledIn": [],
+   "relation": "setup",
+   "id": "O43"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS program",
+   "actor": "COACTUPC",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "EXEC CICS READ on file CXACAIX; DEFINE FILE(CXACAIX) DSNAME in app/csd/CARDDEMO.CSD:63",
+   "evidence": [
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O44"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS program",
+   "actor": "COACTVWC",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTVWC",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "EXEC CICS READ on file CXACAIX; DEFINE FILE(CXACAIX) DSNAME in app/csd/CARDDEMO.CSD:63",
+   "evidence": [
+    "app/cbl/COACTVWC.cbl:727",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O45"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS program",
+   "actor": "COBIL00C",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COBIL00C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "EXEC CICS READ on file CXACAIX; DEFINE FILE(CXACAIX) DSNAME in app/csd/CARDDEMO.CSD:63",
+   "evidence": [
+    "app/cbl/COBIL00C.cbl:410",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O46"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS program",
+   "actor": "COPAUS0C",
+   "module": "AUTH",
+   "via": "CICS file CXACAIX",
+   "program": "COPAUS0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "EXEC CICS READ on file CXACAIX; DEFINE FILE(CXACAIX) DSNAME in app/csd/CARDDEMO.CSD:63. Candidate: module AUTH has no DEFINE FILE of its own for CXACAIX; the binding to this dataset assumes it runs in the region that installs group CARDDEMO",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:818",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O47"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS program",
+   "actor": "COTRN02C",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "EXEC CICS READ on file CXACAIX; DEFINE FILE(CXACAIX) DSNAME in app/csd/CARDDEMO.CSD:63",
+   "evidence": [
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O48"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CA00",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CA00 (initial program COADM01C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:327",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O49"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CAUP",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "transaction CAUP (initial program COACTUPC) reaches COACTUPC [proven], which issue EXEC CICS READ on file CXACAIX",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:306",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O50"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CAUP",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CAUP (initial program COACTUPC) reaches COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:306",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 3,
+   "id": "O51"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CAVW",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTVWC",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "transaction CAVW (initial program COACTVWC) reaches COACTVWC [proven], which issue EXEC CICS READ on file CXACAIX",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:317",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O52"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CAVW",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CAVW (initial program COACTVWC) reaches COACTUPC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:317",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 3,
+   "id": "O53"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CB00",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COBIL00C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "transaction CB00 (initial program COBIL00C) reaches COBIL00C [proven], which issue EXEC CICS READ on file CXACAIX",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:337",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O54"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CB00",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CB00 (initial program COBIL00C) reaches COACTUPC [candidate], COACTVWC [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:337",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 3,
+   "id": "O55"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CC00",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CC00 (initial program COSGN00C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:378",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O56"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CCDL",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CCDL (initial program COCRDSLC) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:347",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O57"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CCLI",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CCLI (initial program COCRDLIC) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:357",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O58"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CCUP",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CCUP (initial program COCRDUPC) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:367",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O59"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CM00",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CM00 (initial program COMEN01C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:399",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O60"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CPVD",
+   "module": "AUTH",
+   "via": "CICS file CXACAIX",
+   "program": "COPAUS0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CPVD (initial program COPAUS1C) reaches COPAUS0C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:39",
+    "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:818",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O61"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CPVS",
+   "module": "AUTH",
+   "via": "CICS file CXACAIX",
+   "program": "COPAUS0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CPVS (initial program COPAUS0C) reaches COPAUS0C [proven], which issue EXEC CICS READ on file CXACAIX. Candidate: module AUTH has no DEFINE FILE of its own for CXACAIX",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:49",
+    "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:818",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O62"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CR00",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CR00 (initial program CORPT00C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:409",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O63"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CT00",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CT00 (initial program COTRN00C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:419",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O64"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CT01",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CT01 (initial program COTRN01C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:429",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O65"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CT02",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "transaction CT02 (initial program COTRN02C) reaches COTRN02C [proven], which issue EXEC CICS READ on file CXACAIX",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:439",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O66"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CT02",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CT02 (initial program COTRN02C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:439",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 3,
+   "id": "O67"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CU00",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CU00 (initial program COUSR00C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:449",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O68"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CU01",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CU01 (initial program COUSR01C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:459",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O69"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CU02",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CU02 (initial program COUSR02C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:469",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O70"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH",
+   "actorKind": "CICS transaction",
+   "actor": "CU03",
+   "module": "CARDDEMO",
+   "via": "CICS file CXACAIX",
+   "program": "COACTUPC, COACTVWC, COBIL00C, COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CU03 (initial program COUSR03C) reaches COACTUPC [candidate], COACTVWC [candidate], COBIL00C [candidate], COTRN02C [candidate], which issue EXEC CICS READ on file CXACAIX. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:479",
+    "app/cbl/COACTUPC.cbl:3654",
+    "app/cbl/COACTVWC.cbl:727",
+    "app/cbl/COBIL00C.cbl:410",
+    "app/cbl/COTRN02C.cbl:578",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 4,
+   "id": "O71"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "CBEXPORT.STEP02",
+   "module": "CARDDEMO",
+   "via": "DD XREFFILE",
+   "program": "CBEXPORT",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "CBEXPORT SELECT XREF-INPUT ASSIGN TO XREFFILE, OPEN INPUT",
+   "evidence": [
+    "app/cbl/CBEXPORT.cbl:47",
+    "app/cbl/CBEXPORT.cbl:214",
+    "app/jcl/CBEXPORT.jcl:53"
+   ],
+   "scheduledIn": [],
+   "relation": "other",
+   "id": "O72"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "CLOSEFIL.CLCIFIL",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "SDSF",
+   "direction": "control",
+   "status": "PROVEN",
+   "basis": "SDSF in-stream command /F CICSAWSA,'CEMT SET FIL(CCXREF) CLO' - changes the file's open state in the CICS region; it reads and writes no record. That the region acts on the command is not visible in the JCL",
+   "evidence": [
+    "app/jcl/CLOSEFIL.jcl:27",
+    "app/jcl/CLOSEFIL.jcl:22",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]",
+    "DAILY-TransactionBackup [controlm-xml]",
+    "DisclosureGroupsRefresh [controlm-xml]",
+    "MONTHLY-InterestCalculation [controlm-xml]"
+   ],
+   "relation": "predecessor",
+   "id": "O73"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "CREASTMT.STEP040",
+   "module": "CARDDEMO",
+   "via": "DD XREFFILE",
+   "program": "CBSTM03A -> CBSTM03B",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "CBSTM03B SELECT XREF-FILE ASSIGN TO XREFFILE, OPEN INPUT",
+   "evidence": [
+    "app/cbl/CBSTM03B.CBL:37",
+    "app/cbl/CBSTM03B.CBL:160",
+    "app/jcl/CREASTMT.JCL:84"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "other",
+   "id": "O74"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "OPENFIL.OPCIFIL",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "SDSF",
+   "direction": "control",
+   "status": "PROVEN",
+   "basis": "SDSF in-stream command /F CICSAWSA,'CEMT SET FIL(CCXREF) OPE' - changes the file's open state in the CICS region; it reads and writes no record. That the region acts on the command is not visible in the JCL",
+   "evidence": [
+    "app/jcl/OPENFIL.jcl:27",
+    "app/jcl/OPENFIL.jcl:22",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]",
+    "DAILY-TransactionBackup [controlm-xml]",
+    "DisclosureGroupsRefresh [controlm-xml]",
+    "MONTHLY-InterestCalculation [controlm-xml]"
+   ],
+   "relation": "later in folder",
+   "id": "O75"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "POSTTRAN.STEP15",
+   "module": "CARDDEMO",
+   "via": "DD XREFFILE",
+   "program": "CBTRN02C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "CBTRN02C SELECT XREF-FILE ASSIGN TO XREFFILE, OPEN INPUT",
+   "evidence": [
+    "app/cbl/CBTRN02C.cbl:40",
+    "app/cbl/CBTRN02C.cbl:275",
+    "app/jcl/POSTTRAN.jcl:32"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "other",
+   "id": "O76"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "READXREF.STEP05",
+   "module": "CARDDEMO",
+   "via": "DD XREFFILE",
+   "program": "CBACT03C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "CBACT03C SELECT XREFFILE-FILE ASSIGN TO XREFFILE, OPEN INPUT",
+   "evidence": [
+    "app/cbl/CBACT03C.cbl:29",
+    "app/cbl/CBACT03C.cbl:120",
+    "app/jcl/READXREF.jcl:25"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "other",
+   "id": "O77"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "TRANREPT.STEP10R",
+   "module": "CARDDEMO",
+   "via": "DD CARDXREF",
+   "program": "CBTRN03C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "CBTRN03C SELECT XREF-FILE ASSIGN TO CARDXREF, OPEN INPUT",
+   "evidence": [
+    "app/cbl/CBTRN03C.cbl:33",
+    "app/cbl/CBTRN03C.cbl:414",
+    "app/jcl/TRANREPT.jcl:67"
+   ],
+   "scheduledIn": [
+    "TRANREPT [not a scheduler table]"
+   ],
+   "relation": "other",
+   "id": "O78"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "XREFFILE.STEP05",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "delete",
+   "status": "PROVEN",
+   "basis": "IDCAMS DELETE names the dataset",
+   "evidence": [
+    "app/jcl/XREFFILE.jcl:25"
+   ],
+   "scheduledIn": [],
+   "relation": "setup",
+   "id": "O79"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "XREFFILE.STEP10",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "define",
+   "status": "PROVEN",
+   "basis": "IDCAMS DEFINE (vsam-cluster) names the dataset",
+   "evidence": [
+    "app/jcl/XREFFILE.jcl:39"
+   ],
+   "scheduledIn": [],
+   "relation": "setup",
+   "id": "O80"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "XREFFILE.STEP15",
+   "module": "CARDDEMO",
+   "via": "DD XREFVSAM",
+   "program": "IDCAMS",
+   "direction": "write",
+   "status": "PROVEN",
+   "basis": "IDCAMS REPRO OUTFILE names DD XREFVSAM",
+   "evidence": [
+    "app/jcl/XREFFILE.jcl:64",
+    "app/jcl/XREFFILE.jcl:61"
+   ],
+   "scheduledIn": [],
+   "relation": "setup",
+   "id": "O81"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS program",
+   "actor": "COPAUA0C",
+   "module": "AUTH",
+   "via": "CICS file CCXREF",
+   "program": "COPAUA0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "EXEC CICS READ on file CCXREF; DEFINE FILE(CCXREF) DSNAME in app/csd/CARDDEMO.CSD:37. Candidate: module AUTH has no DEFINE FILE of its own for CCXREF; the binding to this dataset assumes it runs in the region that installs group CARDDEMO",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:477",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O82"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS program",
+   "actor": "COTRN02C",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "EXEC CICS READ on file CCXREF; DEFINE FILE(CCXREF) DSNAME in app/csd/CARDDEMO.CSD:37",
+   "evidence": [
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O83"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CA00",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CA00 (initial program COADM01C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:327",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O84"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CAUP",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CAUP (initial program COACTUPC) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:306",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O85"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CAVW",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CAVW (initial program COACTVWC) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:317",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O86"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CB00",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CB00 (initial program COBIL00C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:337",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O87"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CC00",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CC00 (initial program COSGN00C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:378",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O88"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CCDL",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CCDL (initial program COCRDSLC) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:347",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O89"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CCLI",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CCLI (initial program COCRDLIC) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:357",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O90"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CCUP",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CCUP (initial program COCRDUPC) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:367",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O91"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CM00",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CM00 (initial program COMEN01C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:399",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O92"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CP00",
+   "module": "AUTH",
+   "via": "CICS file CCXREF",
+   "program": "COPAUA0C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CP00 (initial program COPAUA0C) reaches COPAUA0C [proven], which issue EXEC CICS READ on file CCXREF. Candidate: module AUTH has no DEFINE FILE of its own for CCXREF",
+   "evidence": [
+    "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:59",
+    "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:477",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O93"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CR00",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CR00 (initial program CORPT00C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:409",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O94"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CT00",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CT00 (initial program COTRN00C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:419",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O95"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CT01",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CT01 (initial program COTRN01C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:429",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O96"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CT02",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "transaction CT02 (initial program COTRN02C) reaches COTRN02C [proven], which issue EXEC CICS READ on file CCXREF",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:439",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O97"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CU00",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CU00 (initial program COUSR00C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:449",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O98"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CU01",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CU01 (initial program COUSR01C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:459",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O99"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CU02",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CU02 (initial program COUSR02C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:469",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O100"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS",
+   "actorKind": "CICS transaction",
+   "actor": "CU03",
+   "module": "CARDDEMO",
+   "via": "CICS file CCXREF",
+   "program": "COTRN02C",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "transaction CU03 (initial program COUSR03C) reaches COTRN02C [candidate], which issue EXEC CICS READ on file CCXREF. Candidate: the program is reached only through a dynamic XCTL/LINK target",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:479",
+    "app/cbl/COTRN02C.cbl:611",
+    "app/csd/CARDDEMO.CSD:37"
+   ],
+   "commands": [
+    "READ"
+   ],
+   "sites": 1,
+   "id": "O101"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "DISCGRP.STEP05",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "delete",
+   "status": "PROVEN",
+   "basis": "IDCAMS DELETE names the dataset",
+   "evidence": [
+    "app/jcl/DISCGRP.jcl:25"
+   ],
+   "scheduledIn": [
+    "DisclosureGroupsRefresh [controlm-xml]"
+   ],
+   "relation": "setup",
+   "id": "O102"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "DISCGRP.STEP10",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "define",
+   "status": "PROVEN",
+   "basis": "IDCAMS DEFINE (vsam-cluster) names the dataset",
+   "evidence": [
+    "app/jcl/DISCGRP.jcl:36"
+   ],
+   "scheduledIn": [
+    "DisclosureGroupsRefresh [controlm-xml]"
+   ],
+   "relation": "setup",
+   "id": "O103"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "DISCGRP.STEP15",
+   "module": "CARDDEMO",
+   "via": "DD DISCVSAM",
+   "program": "IDCAMS",
+   "direction": "write",
+   "status": "PROVEN",
+   "basis": "IDCAMS REPRO OUTFILE names DD DISCVSAM",
+   "evidence": [
+    "app/jcl/DISCGRP.jcl:61",
+    "app/jcl/DISCGRP.jcl:58"
+   ],
+   "scheduledIn": [
+    "DisclosureGroupsRefresh [controlm-xml]"
+   ],
+   "relation": "setup",
+   "id": "O104"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.SYSTRAN",
+   "actorKind": "batch job step",
+   "actor": "COMBTRAN.STEP05R",
+   "module": "CARDDEMO",
+   "via": "DD SORTIN generation (0)",
+   "program": "SORT",
+   "direction": "read",
+   "status": "PROVEN",
+   "basis": "SORT utility convention: SORTIN is the sort input",
+   "evidence": [
+    "app/jcl/COMBTRAN.jcl:25"
+   ],
+   "scheduledIn": [
+    "MONTHLY-InterestCalculation [controlm-xml]"
+   ],
+   "relation": "successor",
+   "id": "O105"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.SYSTRAN",
+   "actorKind": "batch job step",
+   "actor": "DEFGDGB.STEP05",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "define",
+   "status": "PROVEN",
+   "basis": "IDCAMS DEFINE (gdg) names the dataset",
+   "evidence": [
+    "app/jcl/DEFGDGB.jcl:48"
+   ],
+   "scheduledIn": [],
+   "relation": "setup",
+   "id": "O106"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "POSTTRAN.STEP15",
+   "module": "CARDDEMO",
+   "via": "DD TCATBALF",
+   "program": "CBTRN02C",
+   "direction": "read-write",
+   "status": "PROVEN",
+   "basis": "CBTRN02C SELECT TCATBAL-FILE ASSIGN TO TCATBALF, OPEN I-O",
+   "evidence": [
+    "app/cbl/CBTRN02C.cbl:57",
+    "app/cbl/CBTRN02C.cbl:329",
+    "app/jcl/POSTTRAN.jcl:41"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "other",
+   "id": "O107"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "PRTCATBL.STEP05R",
+   "module": "CARDDEMO",
+   "via": "DD FILEIN",
+   "program": "IDCAMS",
+   "direction": "read",
+   "status": "CANDIDATE",
+   "basis": "REPROCT control card REPRO INFILE(FILEIN) OUTFILE(FILEOUT) (intake-step chain note). Candidate: the control member is read from &CNTLLIB(REPROCT); that app/ctl/REPROCT.ctl is that member rests on the estate map, not on a library listing",
+   "evidence": [
+    "app/ctl/REPROCT.ctl:15",
+    "app/proc/REPROC.prc:27-28",
+    "app/jcl/PRTCATBL.jcl:29-33",
+    "app/jcl/PRTCATBL.jcl:32"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "other",
+   "id": "O108"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "TCATBALF.STEP05",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "delete",
+   "status": "PROVEN",
+   "basis": "IDCAMS DELETE names the dataset",
+   "evidence": [
+    "app/jcl/TCATBALF.jcl:25"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "setup",
+   "id": "O109"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "TCATBALF.STEP10",
+   "module": "CARDDEMO",
+   "via": "IDCAMS SYSIN",
+   "program": "IDCAMS",
+   "direction": "define",
+   "status": "PROVEN",
+   "basis": "IDCAMS DEFINE (vsam-cluster) names the dataset",
+   "evidence": [
+    "app/jcl/TCATBALF.jcl:36"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "setup",
+   "id": "O110"
+  },
+  {
+   "dataset": "AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS",
+   "actorKind": "batch job step",
+   "actor": "TCATBALF.STEP15",
+   "module": "CARDDEMO",
+   "via": "DD TCATBALV",
+   "program": "IDCAMS",
+   "direction": "write",
+   "status": "PROVEN",
+   "basis": "IDCAMS REPRO OUTFILE names DD TCATBALV",
+   "evidence": [
+    "app/jcl/TCATBALF.jcl:61",
+    "app/jcl/TCATBALF.jcl:58"
+   ],
+   "scheduledIn": [
+    "CARDDEMO [ca7-ljob]"
+   ],
+   "relation": "setup",
+   "id": "O111"
+  }
+ ],
+ "scheduler": {
+  "exports": [
+   {
+    "file": "app/scheduler/CardDemo.controlm",
+    "dialect": "Control-M folder XML",
+    "namesStreamJob": true,
+    "folder": "app/scheduler/CardDemo.controlm:64"
+   },
+   {
+    "file": "app/scheduler/CardDemo.ca7",
+    "dialect": "CA 7 LJOB listing",
+    "namesStreamJob": false,
+    "note": "No line of the listing names INTCALC or COMBTRAN (0 matches), so CA 7 states no predecessor or successor for the stream. It does define CLOSEFIL, WAITSTEP and OPENFIL with different neighbours.",
+    "evidence": [
+     "app/scheduler/CardDemo.ca7:18",
+     "app/scheduler/CardDemo.ca7:43"
+    ]
+   }
+  ],
+  "folderOrder": [
+   {
+    "position": 1,
+    "job": "CLOSEFIL",
+    "role": "neighbour",
+    "definition": "app/scheduler/CardDemo.controlm:65"
+   },
+   {
+    "position": 2,
+    "job": "INTCALC",
+    "role": "stream",
+    "definition": "app/scheduler/CardDemo.controlm:69"
+   },
+   {
+    "position": 3,
+    "job": "COMBTRAN",
+    "role": "neighbour",
+    "definition": "app/scheduler/CardDemo.controlm:75"
+   },
+   {
+    "position": 4,
+    "job": "WAITSTEP",
+    "role": "neighbour",
+    "definition": "app/scheduler/CardDemo.controlm:81"
+   },
+   {
+    "position": 5,
+    "job": "OPENFIL",
+    "role": "neighbour",
+    "definition": "app/scheduler/CardDemo.controlm:87"
+   }
+  ],
+  "predecessors": [
+   {
+    "job": "CLOSEFIL",
+    "distance": 1,
+    "status": "PROVEN",
+    "basis": "INTCALC waits on IN condition MONTHLY-InterestCalculation-CLOSEFIL (ODAT), which CLOSEFIL adds on completion.",
+    "evidence": [
+     "app/scheduler/CardDemo.controlm:66",
+     "app/scheduler/CardDemo.controlm:70"
+    ],
+    "whatItDoes": "One SDSF step that sends CEMT SET FIL(...) CLO for CICS files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC to region CICSAWSA.",
+    "whatEvidence": [
+     "app/jcl/CLOSEFIL.jcl:22-30"
+    ]
+   }
+  ],
+  "successors": [
+   {
+    "job": "COMBTRAN",
+    "distance": 1,
+    "status": "PROVEN",
+    "basis": "COMBTRAN waits on IN condition MONTHLY-InterestCalculation-INTCALC (ODAT), which INTCALC adds on completion.",
+    "evidence": [
+     "app/scheduler/CardDemo.controlm:72",
+     "app/scheduler/CardDemo.controlm:76"
+    ],
+    "whatItDoes": "SORT of TRANSACT.BKUP(0) concatenated with SYSTRAN(0) into TRANSACT.COMBINED(+1), then IDCAMS REPRO of that generation into TRANSACT.VSAM.KSDS.",
+    "whatEvidence": [
+     "app/jcl/COMBTRAN.jcl:22-26",
+     "app/jcl/COMBTRAN.jcl:41-48"
+    ]
+   },
+   {
+    "job": "WAITSTEP",
+    "distance": 2,
+    "status": "PROVEN",
+    "basis": "Waits on MONTHLY-InterestCalculation-COMBTRAN.",
+    "evidence": [
+     "app/scheduler/CardDemo.controlm:82"
+    ],
+    "whatItDoes": "Runs COBSWAIT.",
+    "whatEvidence": [
+     "app/jcl/WAITSTEP.jcl:22"
+    ]
+   },
+   {
+    "job": "OPENFIL",
+    "distance": 3,
+    "status": "PROVEN",
+    "basis": "Waits on MONTHLY-InterestCalculation-WAITSTEP.",
+    "evidence": [
+     "app/scheduler/CardDemo.controlm:88"
+    ],
+    "whatItDoes": "One SDSF step that sends CEMT SET FIL(...) OPE for the same five CICS files.",
+    "whatEvidence": [
+     "app/jcl/OPENFIL.jcl:22-30"
+    ]
+   }
+  ],
+  "runAttributes": {
+   "definition": "app/scheduler/CardDemo.controlm:69",
+   "stated": {
+    "window": "any-23:00",
+    "rerun": "MAXRERUN 5, MAXWAIT 7, CONFIRM 0",
+    "runAs": "xuemingh"
+   },
+   "notStated": [
+    "frequency",
+    "deadline",
+    "runtime"
+   ]
+  },
+  "unproven": [
+   {
+    "id": "U1",
+    "text": "How often the folder runs. The folder and job descriptions say MONTHLY, but the definition carries every month flag, no day rule and RULE_BASED_CALENDARS NAME=\"*\"; the calendar is not in the export. The store records frequency as unknown.",
+    "evidence": [
+     "app/scheduler/CardDemo.controlm:64",
+     "app/scheduler/CardDemo.controlm:73"
+    ],
+    "ask": "A3"
+   },
+   {
+    "id": "U2",
+    "text": "INTCALC against the posting job. POSTTRAN (CBTRN02C) opens TCATBALF and ACCTDATA I-O and builds the category balances INTCALC reads. POSTTRAN is in the CA 7 listing only; INTCALC is in the Control-M export only. No condition, trigger or dataset trigger orders one against the other.",
+    "evidence": [
+     "app/jcl/POSTTRAN.jcl:39-42",
+     "app/scheduler/CardDemo.ca7:70"
+    ],
+    "ask": "A6"
+   },
+   {
+    "id": "U3",
+    "text": "INTCALC against the reload of its inputs. TCATBALF.STEP05-STEP15 delete, redefine and reload the category-balance file (CA 7 triggers job TCATBALF after CLOSEFIL2); DISCGRP.STEP05-STEP15 do the same for the disclosure-group file (Control-M folder DisclosureGroupsRefresh). Neither is ordered against INTCALC.",
+    "evidence": [
+     "app/scheduler/CardDemo.ca7:271",
+     "app/jcl/TCATBALF.jcl:22-25",
+     "app/jcl/DISCGRP.jcl:22-25"
+    ],
+    "ask": "A6"
+   },
+   {
+    "id": "U4",
+    "text": "That the CICS files are closed before STEP15 opens the datasets. CLOSEFIL only submits modify commands; nothing in the JCL or the export waits for, or checks, the region's response. The folder has a wait job before OPENFIL but none between CLOSEFIL and INTCALC.",
+    "evidence": [
+     "app/jcl/CLOSEFIL.jcl:22-30",
+     "app/scheduler/CardDemo.controlm:81"
+    ],
+    "ask": "A7"
+   },
+   {
+    "id": "U5",
+    "text": "That COMBTRAN's SYSTRAN(0) is the generation this run of INTCALC wrote. INTCALC is the only scanned writer of the GDG, and the folder order puts COMBTRAN after it, so it holds for one clean run per order date. MAXRERUN=5 on INTCALC allows reruns, and each run catalogs another generation.",
+    "evidence": [
+     "app/jcl/COMBTRAN.jcl:25-26",
+     "app/jcl/INTCALC.jcl:37-41",
+     "app/scheduler/CardDemo.controlm:69"
+    ],
+    "ask": "A4"
+   },
+   {
+    "id": "U6",
+    "text": "Which export is authoritative. CLOSEFIL, WAITSTEP and OPENFIL are defined in both; in CA 7 CLOSEFIL triggers CBPAUP0J, in Control-M its condition releases INTCALC. The exports do not say whether both schedulers run, or which replaced which.",
+    "evidence": [
+     "app/scheduler/CardDemo.ca7:43",
+     "app/scheduler/CardDemo.controlm:65-66"
+    ],
+    "ask": "A6"
+   },
+   {
+    "id": "U7",
+    "text": "COMBTRAN's other input. TRANSACT.BKUP(0) is written as (+1) by TRANBKP and by TRANREPT; which ran last before the folder is not ordered. This concerns the successor, not the stream's own logic.",
+    "evidence": [
+     "app/jcl/COMBTRAN.jcl:23-24"
+    ],
+    "ask": null
+   }
+  ]
+ },
+ "views": {
+  "mftb": {
+   "entryPoint": "batch-chain-analysis (mftb 0.2.1)",
+   "command": "python3 -m mftb scan-chains --module CARDDEMO --store store INTCALC",
+   "resolved": "selector INTCALC resolves to table MONTHLY-InterestCalculation (5 jobs, 6 steps); the same record is in store/CARDDEMO/chains.json from the intake step",
+   "rerun": "Re-run in this step to confirm the selector and the chain record; the chain's jobs, steps, reads, writes, lineage and asks came back unchanged. The re-run also refreshed other store files (timestamps, module boundary); those changes were discarded so this branch leaves store/ as the intake step wrote it."
+  },
+  "chainGraph": {
+   "file": "docs/chain-graph.md",
+   "section": "docs/chain-graph.md:84",
+   "generatedBy": "tools/chaingraph/gen_chain_graph.py (make chain-graph)"
+  },
+  "agreements": [
+   "INTCALC has one step, STEP15, EXEC PGM=CBACT04C with PARM 2022071800.",
+   "CBACT04C copies CVACT01Y, CVACT03Y, CVTRA01Y, CVTRA02Y and CVTRA05Y.",
+   "CBACT04C makes no dynamic CALL; the DDs TCATBALF, XREFFILE, ACCTFILE, DISCGRP and TRANSACT are bound to the same five datasets."
+  ],
+  "disagreements": [
+   {
+    "id": "V1",
+    "topic": "What the chain contains",
+    "mftb": "The chain is the Control-M folder MONTHLY-InterestCalculation: CLOSEFIL, INTCALC, COMBTRAN, WAITSTEP, OPENFIL, in that order.",
+    "chainGraph": "The chain 'interest' is INTCALC plus the five setup jobs DEFGDGB, ACCTFILE, XREFFILE, TCATBALF, DISCGRP; no scheduler job appears.",
+    "decision": "Neither set is the stream. The root is INTCALC, so stream logic is INTCALC.STEP15 and what it reaches. CLOSEFIL and COMBTRAN are the predecessor and successor the Control-M export names; the five setup jobs come from the harness list and are marked setup.",
+    "evidence": [
+     "app/scheduler/CardDemo.controlm:64-92",
+     "tools/runjcl/chains.json:52-58",
+     "docs/chain-graph.md:88"
+    ]
+   },
+   {
+    "id": "V2",
+    "topic": "DD XREFFIL1 (alternate-index path)",
+    "mftb": "Listed as a read of STEP15 with basis 'disp-only SHR (no program binding)', and as a chain input 'produced online: CICS FCT CXACAIX'.",
+    "chainGraph": "The DD is in the job table, but the program's DD list omits it and the diagram draws no edge for it.",
+    "decision": "The source reads XREF-FILE by its alternate key, which is what the path serves, but never names XREFFIL1. Recorded as a CANDIDATE read edge (D3). The path is defined by XREFFILE.STEP25, not produced online; CICS file CXACAIX is a second user of the same path.",
+    "evidence": [
+     "app/cbl/CBACT04C.cbl:38",
+     "app/cbl/CBACT04C.cbl:394-395",
+     "app/jcl/INTCALC.jcl:31-32",
+     "app/jcl/XREFFILE.jcl:90-92",
+     "docs/chain-graph.md:257"
+    ]
+   },
+   {
+    "id": "V3",
+    "topic": "CALL 'CEE3ABD'",
+    "mftb": "The chain step lists no reached program (reached: []); programs.json records the call as a system routine.",
+    "chainGraph": "CEE3ABD is listed under Static CALLs of CBACT04C.",
+    "decision": "The source has a static CALL by literal, on the abend path only (C3, PROVEN). The target has no source in the estate, so it is a boundary, not an in-scope program.",
+    "evidence": [
+     "app/cbl/CBACT04C.cbl:632",
+     "docs/chain-graph.md:257"
+    ]
+   },
+   {
+    "id": "V4",
+    "topic": "Direction of the dataset edges",
+    "mftb": "Each DD has a direction taken from the program's OPEN mode: four reads, ACCTFILE read and write, TRANSACT write.",
+    "chainGraph": "Dataset edges are drawn undirected (-.DD.-).",
+    "decision": "The OPEN statements and the READ, REWRITE and WRITE verbs in the source give the directions mftb states (D1, D2, D4-D7).",
+    "evidence": [
+     "app/cbl/CBACT04C.cbl:236",
+     "app/cbl/CBACT04C.cbl:291",
+     "app/cbl/CBACT04C.cbl:309",
+     "app/cbl/CBACT04C.cbl:356",
+     "docs/chain-graph.md:114"
+    ]
+   },
+   {
+    "id": "V5",
+    "topic": "Who reads SYSTRAN",
+    "mftb": "The chain pass listed only the first dataset of COMBTRAN's SORTIN and filed SYSTRAN as read by no job; the intake step closed that ask by hand. connections.json does hold the SYSTRAN(0) allocation.",
+    "chainGraph": "COMBTRAN STEP05R is shown with SORTIN = TRANSACT.BKUP(0) only.",
+    "decision": "Both generated views miss the concatenation. COMBTRAN.jcl allocates SYSTRAN(0) as the second dataset of SORTIN, so COMBTRAN reads the GDG INTCALC writes (outside-stream dependency, successor).",
+    "evidence": [
+     "app/jcl/COMBTRAN.jcl:23-26",
+     "docs/chain-graph.md:161"
+    ]
+   },
+   {
+    "id": "V6",
+    "topic": "Scheduling",
+    "mftb": "Order, conditions, MAXRERUN and window come from the Control-M export; frequency is recorded as unknown.",
+    "chainGraph": "No scheduler information; the graph is built from JCL, procs and source only.",
+    "decision": "The Control-M export is the only evidence of order. Used for predecessor and successor; what it does not prove is listed under Scheduler.",
+    "evidence": [
+     "app/scheduler/CardDemo.controlm:69-74",
+     "docs/chain-graph.md:3"
+    ]
+   }
+  ]
+ },
+ "openAsks": [
+  {
+   "id": "A1",
+   "severity": "medium",
+   "owner": "build / library owner",
+   "question": "Provide the link-edit (binder) listing or the directory of AWS.M2.CARDDEMO.LOADLIB showing which source member CBACT04C was built from.",
+   "why": "The file name, the PROGRAM-ID and the load-module name are the same string, and nothing else in the estate connects the executed member to this source.",
+   "evidence": [
+    "app/jcl/INTCALC.jcl:22",
+    "app/cbl/CBACT04C.cbl:23",
+    "samples/jcl/BATCMP.jcl:33",
+    "samples/jcl/BATCMP.jcl:42"
+   ],
+   "related": [
+    "C2"
+   ]
+  },
+  {
+   "id": "A2",
+   "severity": "medium",
+   "owner": "scheduler / application owner",
+   "question": "Confirm how the cycle date in INTCALC's PARM is changed for each run (manual edit, scheduler variable, or a different production member).",
+   "why": "The member as scanned passes the literal 2022071800, which becomes the first ten characters of every interest transaction id; the Control-M definition supplies no variable. Carried over from the mftb chain ask.",
+   "evidence": [
+    "app/jcl/INTCALC.jcl:22",
+    "app/cbl/CBACT04C.cbl:474-480",
+    "app/scheduler/CardDemo.controlm:69-74"
+   ],
+   "related": [
+    "D8"
+   ]
+  },
+  {
+   "id": "A3",
+   "severity": "medium",
+   "owner": "scheduler owner",
+   "question": "Provide the calendar or day rule the folder MONTHLY-InterestCalculation runs under.",
+   "why": "The export proves order inside the folder, not when or how often the folder is ordered.",
+   "evidence": [
+    "app/scheduler/CardDemo.controlm:64",
+    "app/scheduler/CardDemo.controlm:73"
+   ],
+   "related": [
+    "U1"
+   ]
+  },
+  {
+   "id": "A4",
+   "severity": "high",
+   "owner": "application owner",
+   "question": "State the rerun procedure for INTCALC after a failure or a duplicate submission.",
+   "why": "The definition allows five automatic reruns. STEP15 adds interest to ACCT-CURR-BAL with REWRITE as it goes and catalogs a new SYSTRAN generation per run; nothing in the JCL or the program restores the account file, skips accounts already updated or removes the earlier generation.",
+   "evidence": [
+    "app/scheduler/CardDemo.controlm:69",
+    "app/cbl/CBACT04C.cbl:350-356",
+    "app/jcl/INTCALC.jcl:37-41"
+   ],
+   "related": [
+    "D5",
+    "D7",
+    "U5"
+   ]
+  },
+  {
+   "id": "A5",
+   "severity": "low",
+   "owner": "application owner",
+   "question": "Confirm that DD XREFFIL1 is the alternate-index path CBACT04C uses for the read by FD-XREF-ACCT-ID (a job log showing the DD opened, or the compile listing).",
+   "why": "The program never names the DD; the edge is inferred from the alternate key and the DD name.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:38",
+    "app/cbl/CBACT04C.cbl:394-395",
+    "app/jcl/INTCALC.jcl:31-32",
+    "app/jcl/XREFFILE.jcl:72-74",
+    "app/jcl/XREFFILE.jcl:90-92"
+   ],
+   "related": [
+    "D3",
+    "V2"
+   ]
+  },
+  {
+   "id": "A6",
+   "severity": "high",
+   "owner": "scheduler owner",
+   "question": "State the required order of INTCALC against POSTTRAN, the TCATBALF and DISCGRP reloads and the other writers of the account file, and which scheduler export is authoritative.",
+   "why": "The stream's inputs are written by jobs in other tables or in no table, and the two exports overlap without a cross-reference.",
+   "evidence": [
+    "app/jcl/POSTTRAN.jcl:39-42",
+    "app/scheduler/CardDemo.ca7:70",
+    "app/scheduler/CardDemo.ca7:271",
+    "app/jcl/TCATBALF.jcl:22-25",
+    "app/jcl/DISCGRP.jcl:22-25",
+    "app/scheduler/CardDemo.ca7:43",
+    "app/scheduler/CardDemo.controlm:65-66"
+   ],
+   "related": [
+    "U2",
+    "U3",
+    "U6"
+   ]
+  },
+  {
+   "id": "A7",
+   "severity": "medium",
+   "owner": "CICS / operations owner",
+   "question": "Confirm that the CICS region closes ACCTDAT, CCXREF and CXACAIX before STEP15 runs, and what happens to an online update in flight.",
+   "why": "Online programs rewrite the account file the stream rewrites; the only separation in evidence is a modify command whose outcome is not checked.",
+   "evidence": [
+    "app/jcl/CLOSEFIL.jcl:22-30",
+    "app/scheduler/CardDemo.controlm:81"
+   ],
+   "related": [
+    "U4"
+   ]
+  },
+  {
+   "id": "A8",
+   "severity": "low",
+   "owner": "application owner",
+   "question": "Confirm that fee calculation is not part of this job.",
+   "why": "The JCL comment says the step computes interest and fees; 1400-COMPUTE-FEES is empty.",
+   "evidence": [
+    "app/jcl/INTCALC.jcl:20",
+    "app/cbl/CBACT04C.cbl:518-520"
+   ],
+   "related": []
+  },
+  {
+   "id": "A9",
+   "severity": "low",
+   "owner": "CICS owner",
+   "question": "Confirm that the AUTH and VSAMMQ programs that use files ACCTDAT, CCXREF and CXACAIX run in a region where those names are the CARDDEMO group's definitions.",
+   "why": "Those modules' own CSD members do not define the files; their edges to the stream's datasets are CANDIDATE.",
+   "evidence": [
+    "app/csd/CARDDEMO.CSD:1",
+    "app/csd/CARDDEMO.CSD:37",
+    "app/csd/CARDDEMO.CSD:63"
+   ],
+   "related": []
+  },
+  {
+   "id": "A10",
+   "severity": "low",
+   "owner": "build / operations owner",
+   "question": "Confirm where DISPLAY output of CBACT04C is written.",
+   "why": "The harness compares SYSOUT for this step; the DISPLAY-to-SYSOUT edge rests on a compiler or run-time option not in the estate.",
+   "evidence": [
+    "app/cbl/CBACT04C.cbl:181",
+    "app/jcl/INTCALC.jcl:26"
+   ],
+   "related": [
+    "D10"
+   ]
+  }
+ ],
+ "counts": {
+  "jobs": 1,
+  "steps": 1,
+  "programsInScope": 1,
+  "boundaryRoutines": 1,
+  "copybooks": 5,
+  "ddAllocations": 6,
+  "datasets": 6,
+  "edges": 18,
+  "edgesProven": 15,
+  "edgesCandidate": 3,
+  "callEdges": 3,
+  "copyEdges": 5,
+  "dataEdges": 10,
+  "setupJobs": 5,
+  "setupSteps": 16,
+  "outside": 111,
+  "outsideProven": 48,
+  "outsideCandidate": 63,
+  "outsideBatch": 33,
+  "outsideCicsPrograms": 13,
+  "outsideCicsTransactions": 65,
+  "outsideJobs": 16,
+  "outsidePrograms": 7,
+  "outsideTransactions": 21,
+  "predecessors": 1,
+  "successors": 3,
+  "unprovenOrderings": 7,
+  "disagreements": 6,
+  "openAsks": 10,
+  "citations": 237
+ },
+ "excerpts": {
+  "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:477": {
+   "path": "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl",
+   "first": 477,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:525": {
+   "path": "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl",
+   "first": 525,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:818": {
+   "path": "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl",
+   "first": 818,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:869": {
+   "path": "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl",
+   "first": 869,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:39": {
+   "path": "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd",
+   "first": 39,
+   "lines": [
+    "DEFINE TRANSACTION(CPVD) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:49": {
+   "path": "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd",
+   "first": 49,
+   "lines": [
+    "DEFINE TRANSACTION(CPVS) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:59": {
+   "path": "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd",
+   "first": 59,
+   "lines": [
+    "DEFINE TRANSACTION(CP00) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/app-vsam-mq/cbl/COACCT01.cbl:396": {
+   "path": "app/app-vsam-mq/cbl/COACCT01.cbl",
+   "first": 396,
+   "lines": [
+    "           EXEC CICS READ                                               03700306"
+   ]
+  },
+  "app/app-vsam-mq/csd/CRDDEMOM.csd:17": {
+   "path": "app/app-vsam-mq/csd/CRDDEMOM.csd",
+   "first": 17,
+   "lines": [
+    " DEFINE TRANSACTION(CDRA) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/cbl/CBACT01C.cbl:29": {
+   "path": "app/cbl/CBACT01C.cbl",
+   "first": 29,
+   "lines": [
+    "           SELECT ACCTFILE-FILE ASSIGN TO ACCTFILE"
+   ]
+  },
+  "app/cbl/CBACT01C.cbl:319": {
+   "path": "app/cbl/CBACT01C.cbl",
+   "first": 319,
+   "lines": [
+    "           OPEN INPUT ACCTFILE-FILE"
+   ]
+  },
+  "app/cbl/CBACT03C.cbl:120": {
+   "path": "app/cbl/CBACT03C.cbl",
+   "first": 120,
+   "lines": [
+    "           OPEN INPUT XREFFILE-FILE"
+   ]
+  },
+  "app/cbl/CBACT03C.cbl:29": {
+   "path": "app/cbl/CBACT03C.cbl",
+   "first": 29,
+   "lines": [
+    "           SELECT XREFFILE-FILE ASSIGN TO   XREFFILE"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:102": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 102,
+   "lines": [
+    "       COPY CVACT03Y."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:107": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 107,
+   "lines": [
+    "       COPY CVTRA02Y."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:112": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 112,
+   "lines": [
+    "       COPY CVACT01Y."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:117": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 117,
+   "lines": [
+    "       COPY CVTRA05Y."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:176-180": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 176,
+   "lines": [
+    "       01  EXTERNAL-PARMS.",
+    "           05  PARM-LENGTH         PIC S9(04) COMP.",
+    "           05  PARM-DATE           PIC X(10).",
+    "      *****************************************************************",
+    "       PROCEDURE DIVISION USING EXTERNAL-PARMS."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:180": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 180,
+   "lines": [
+    "       PROCEDURE DIVISION USING EXTERNAL-PARMS."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:181": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 181,
+   "lines": [
+    "           DISPLAY 'START OF EXECUTION OF PROGRAM CBACT04C'."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:188-222": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 188,
+   "lines": [
+    "           PERFORM UNTIL END-OF-FILE = 'Y'",
+    "               IF  END-OF-FILE = 'N'",
+    "                   PERFORM 1000-TCATBALF-GET-NEXT",
+    "                   IF  END-OF-FILE = 'N'",
+    "                     ADD 1 TO WS-RECORD-COUNT",
+    "                     DISPLAY TRAN-CAT-BAL-RECORD",
+    "                     IF TRANCAT-ACCT-ID NOT= WS-LAST-ACCT-NUM",
+    "                       IF WS-FIRST-TIME NOT = 'Y'",
+    "                          PERFORM 1050-UPDATE-ACCOUNT",
+    "                       ELSE",
+    "                          MOVE 'N' TO WS-FIRST-TIME",
+    "                       END-IF",
+    "                       MOVE 0 TO WS-TOTAL-INT",
+    "                       MOVE TRANCAT-ACCT-ID TO WS-LAST-ACCT-NUM",
+    "                       MOVE TRANCAT-ACCT-ID TO FD-ACCT-ID",
+    "                       PERFORM 1100-GET-ACCT-DATA",
+    "                       MOVE TRANCAT-ACCT-ID TO FD-XREF-ACCT-ID",
+    "                       PERFORM 1110-GET-XREF-DATA",
+    "                     END-IF",
+    "      *              DISPLAY 'ACCT-GROUP-ID: ' ACCT-GROUP-ID",
+    "      *              DISPLAY 'TRANCAT-CD: ' TRANCAT-CD",
+    "      *              DISPLAY 'TRANCAT-TYPE-CD: ' TRANCAT-TYPE-CD",
+    "                     MOVE ACCT-GROUP-ID TO FD-DIS-ACCT-GROUP-ID",
+    "                     MOVE TRANCAT-CD TO FD-DIS-TRAN-CAT-CD",
+    "                     MOVE TRANCAT-TYPE-CD TO FD-DIS-TRAN-TYPE-CD",
+    "                     PERFORM 1200-GET-INTEREST-RATE",
+    "                     IF DIS-INT-RATE NOT = 0",
+    "                       PERFORM 1300-COMPUTE-INTEREST",
+    "                       PERFORM 1400-COMPUTE-FEES",
+    "                     END-IF",
+    "                   END-IF",
+    "               ELSE",
+    "                    PERFORM 1050-UPDATE-ACCOUNT",
+    "               END-IF",
+    "           END-PERFORM."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:23": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 23,
+   "lines": [
+    "       PROGRAM-ID.    CBACT04C."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:236": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 236,
+   "lines": [
+    "           OPEN INPUT TCATBAL-FILE"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:254": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 254,
+   "lines": [
+    "           OPEN INPUT XREF-FILE"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:272": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 272,
+   "lines": [
+    "           OPEN INPUT DISCGRP-FILE"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:28": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 28,
+   "lines": [
+    "           SELECT TCATBAL-FILE ASSIGN TO TCATBALF"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:291": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 291,
+   "lines": [
+    "           OPEN I-O ACCOUNT-FILE"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:309": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 309,
+   "lines": [
+    "           OPEN OUTPUT TRANSACT-FILE"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:326": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 326,
+   "lines": [
+    "           READ TCATBAL-FILE INTO TRAN-CAT-BAL-RECORD."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:34": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 34,
+   "lines": [
+    "           SELECT XREF-FILE ASSIGN TO   XREFFILE"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:34-38": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 34,
+   "lines": [
+    "           SELECT XREF-FILE ASSIGN TO   XREFFILE",
+    "                  ORGANIZATION IS INDEXED",
+    "                  ACCESS MODE  IS RANDOM",
+    "                  RECORD KEY   IS FD-XREF-CARD-NUM",
+    "                  ALTERNATE RECORD KEY IS FD-XREF-ACCT-ID"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:350-356": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 350,
+   "lines": [
+    "       1050-UPDATE-ACCOUNT.",
+    "      * Update the balances in account record to reflect posted trans.",
+    "           ADD WS-TOTAL-INT  TO ACCT-CURR-BAL",
+    "           MOVE 0 TO ACCT-CURR-CYC-CREDIT",
+    "           MOVE 0 TO ACCT-CURR-CYC-DEBIT",
+    "",
+    "           REWRITE FD-ACCTFILE-REC FROM  ACCOUNT-RECORD"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:356": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 356,
+   "lines": [
+    "           REWRITE FD-ACCTFILE-REC FROM  ACCOUNT-RECORD"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:373": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 373,
+   "lines": [
+    "           READ ACCOUNT-FILE INTO ACCOUNT-RECORD"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:38": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 38,
+   "lines": [
+    "                  ALTERNATE RECORD KEY IS FD-XREF-ACCT-ID"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:394": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 394,
+   "lines": [
+    "           READ XREF-FILE INTO CARD-XREF-RECORD"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:394-395": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 394,
+   "lines": [
+    "           READ XREF-FILE INTO CARD-XREF-RECORD",
+    "            KEY IS FD-XREF-ACCT-ID"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:41": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 41,
+   "lines": [
+    "           SELECT ACCOUNT-FILE ASSIGN TO ACCTFILE"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:416": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 416,
+   "lines": [
+    "           READ DISCGRP-FILE INTO DIS-GROUP-RECORD"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:436-444": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 436,
+   "lines": [
+    "           IF  DISCGRP-STATUS  = '23'",
+    "               MOVE 'DEFAULT' TO FD-DIS-ACCT-GROUP-ID",
+    "               PERFORM 1200-A-GET-DEFAULT-INT-RATE",
+    "           END-IF",
+    "           EXIT.",
+    "",
+    "      *---------------------------------------------------------------*",
+    "       1200-A-GET-DEFAULT-INT-RATE.",
+    "           READ DISCGRP-FILE INTO DIS-GROUP-RECORD"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:464-465": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 464,
+   "lines": [
+    "           COMPUTE WS-MONTHLY-INT",
+    "            = ( TRAN-CAT-BAL * DIS-INT-RATE) / 1200"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:47": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 47,
+   "lines": [
+    "           SELECT DISCGRP-FILE ASSIGN TO DISCGRP"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:474-480": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 474,
+   "lines": [
+    "           ADD 1 TO WS-TRANID-SUFFIX",
+    "",
+    "           STRING PARM-DATE,",
+    "                  WS-TRANID-SUFFIX",
+    "             DELIMITED BY SIZE",
+    "             INTO TRAN-ID",
+    "           END-STRING."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:496-498": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 496,
+   "lines": [
+    "           PERFORM Z-GET-DB2-FORMAT-TIMESTAMP",
+    "           MOVE DB2-FORMAT-TS        TO TRAN-ORIG-TS",
+    "           MOVE DB2-FORMAT-TS        TO TRAN-PROC-TS"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:500": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 500,
+   "lines": [
+    "           WRITE FD-TRANFILE-REC FROM TRAN-RECORD"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:518-520": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 518,
+   "lines": [
+    "       1400-COMPUTE-FEES.",
+    "      * To be implemented",
+    "           EXIT."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:53": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 53,
+   "lines": [
+    "           SELECT TRANSACT-FILE ASSIGN TO TRANSACT"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:61": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 61,
+   "lines": [
+    "       FD  TCATBAL-FILE."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:613-614": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 613,
+   "lines": [
+    "       Z-GET-DB2-FORMAT-TIMESTAMP.",
+    "           MOVE FUNCTION CURRENT-DATE TO COBOL-TS"
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:628-632": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 628,
+   "lines": [
+    "       9999-ABEND-PROGRAM.",
+    "           DISPLAY 'ABENDING PROGRAM'",
+    "           MOVE 0 TO TIMING",
+    "           MOVE 999 TO ABCODE",
+    "           CALL 'CEE3ABD' USING ABCODE, TIMING."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:632": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 632,
+   "lines": [
+    "           CALL 'CEE3ABD' USING ABCODE, TIMING."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:69": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 69,
+   "lines": [
+    "       FD  XREF-FILE."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:76": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 76,
+   "lines": [
+    "       FD  DISCGRP-FILE."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:84": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 84,
+   "lines": [
+    "       FD  ACCOUNT-FILE."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:89": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 89,
+   "lines": [
+    "       FD  TRANSACT-FILE."
+   ]
+  },
+  "app/cbl/CBACT04C.cbl:97": {
+   "path": "app/cbl/CBACT04C.cbl",
+   "first": 97,
+   "lines": [
+    "       COPY CVTRA01Y."
+   ]
+  },
+  "app/cbl/CBEXPORT.cbl:207": {
+   "path": "app/cbl/CBEXPORT.cbl",
+   "first": 207,
+   "lines": [
+    "           OPEN INPUT ACCOUNT-INPUT"
+   ]
+  },
+  "app/cbl/CBEXPORT.cbl:214": {
+   "path": "app/cbl/CBEXPORT.cbl",
+   "first": 214,
+   "lines": [
+    "           OPEN INPUT XREF-INPUT"
+   ]
+  },
+  "app/cbl/CBEXPORT.cbl:41": {
+   "path": "app/cbl/CBEXPORT.cbl",
+   "first": 41,
+   "lines": [
+    "           SELECT ACCOUNT-INPUT ASSIGN TO ACCTFILE"
+   ]
+  },
+  "app/cbl/CBEXPORT.cbl:47": {
+   "path": "app/cbl/CBEXPORT.cbl",
+   "first": 47,
+   "lines": [
+    "           SELECT XREF-INPUT ASSIGN TO XREFFILE"
+   ]
+  },
+  "app/cbl/CBFEEDRV.cbl:32": {
+   "path": "app/cbl/CBFEEDRV.cbl",
+   "first": 32,
+   "lines": [
+    "           SELECT ACCTFILE-FILE ASSIGN TO ACCTFILE"
+   ]
+  },
+  "app/cbl/CBFEEDRV.cbl:75": {
+   "path": "app/cbl/CBFEEDRV.cbl",
+   "first": 75,
+   "lines": [
+    "           OPEN INPUT ACCTFILE-FILE"
+   ]
+  },
+  "app/cbl/CBSTM03B.CBL:160": {
+   "path": "app/cbl/CBSTM03B.CBL",
+   "first": 160,
+   "lines": [
+    "               OPEN INPUT XREF-FILE"
+   ]
+  },
+  "app/cbl/CBSTM03B.CBL:209": {
+   "path": "app/cbl/CBSTM03B.CBL",
+   "first": 209,
+   "lines": [
+    "               OPEN INPUT ACCT-FILE"
+   ]
+  },
+  "app/cbl/CBSTM03B.CBL:37": {
+   "path": "app/cbl/CBSTM03B.CBL",
+   "first": 37,
+   "lines": [
+    "           SELECT XREF-FILE ASSIGN TO   XREFFILE"
+   ]
+  },
+  "app/cbl/CBSTM03B.CBL:49": {
+   "path": "app/cbl/CBSTM03B.CBL",
+   "first": 49,
+   "lines": [
+    "           SELECT ACCT-FILE ASSIGN TO ACCTFILE"
+   ]
+  },
+  "app/cbl/CBTRN02C.cbl:275": {
+   "path": "app/cbl/CBTRN02C.cbl",
+   "first": 275,
+   "lines": [
+    "           OPEN INPUT XREF-FILE"
+   ]
+  },
+  "app/cbl/CBTRN02C.cbl:311": {
+   "path": "app/cbl/CBTRN02C.cbl",
+   "first": 311,
+   "lines": [
+    "           OPEN I-O  ACCOUNT-FILE"
+   ]
+  },
+  "app/cbl/CBTRN02C.cbl:329": {
+   "path": "app/cbl/CBTRN02C.cbl",
+   "first": 329,
+   "lines": [
+    "           OPEN I-O  TCATBAL-FILE"
+   ]
+  },
+  "app/cbl/CBTRN02C.cbl:40": {
+   "path": "app/cbl/CBTRN02C.cbl",
+   "first": 40,
+   "lines": [
+    "           SELECT XREF-FILE ASSIGN TO   XREFFILE"
+   ]
+  },
+  "app/cbl/CBTRN02C.cbl:51": {
+   "path": "app/cbl/CBTRN02C.cbl",
+   "first": 51,
+   "lines": [
+    "           SELECT ACCOUNT-FILE ASSIGN TO ACCTFILE"
+   ]
+  },
+  "app/cbl/CBTRN02C.cbl:57": {
+   "path": "app/cbl/CBTRN02C.cbl",
+   "first": 57,
+   "lines": [
+    "           SELECT TCATBAL-FILE ASSIGN TO TCATBALF"
+   ]
+  },
+  "app/cbl/CBTRN03C.cbl:33": {
+   "path": "app/cbl/CBTRN03C.cbl",
+   "first": 33,
+   "lines": [
+    "           SELECT XREF-FILE ASSIGN TO CARDXREF"
+   ]
+  },
+  "app/cbl/CBTRN03C.cbl:414": {
+   "path": "app/cbl/CBTRN03C.cbl",
+   "first": 414,
+   "lines": [
+    "           OPEN INPUT XREF-FILE"
+   ]
+  },
+  "app/cbl/COACTUPC.cbl:3654": {
+   "path": "app/cbl/COACTUPC.cbl",
+   "first": 3654,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/cbl/COACTUPC.cbl:3703": {
+   "path": "app/cbl/COACTUPC.cbl",
+   "first": 3703,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/cbl/COACTUPC.cbl:3894": {
+   "path": "app/cbl/COACTUPC.cbl",
+   "first": 3894,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/cbl/COACTUPC.cbl:4065": {
+   "path": "app/cbl/COACTUPC.cbl",
+   "first": 4065,
+   "lines": [
+    "           EXEC CICS"
+   ]
+  },
+  "app/cbl/COACTVWC.cbl:727": {
+   "path": "app/cbl/COACTVWC.cbl",
+   "first": 727,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/cbl/COACTVWC.cbl:776": {
+   "path": "app/cbl/COACTVWC.cbl",
+   "first": 776,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/cbl/COBIL00C.cbl:345": {
+   "path": "app/cbl/COBIL00C.cbl",
+   "first": 345,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/cbl/COBIL00C.cbl:379": {
+   "path": "app/cbl/COBIL00C.cbl",
+   "first": 379,
+   "lines": [
+    "           EXEC CICS REWRITE"
+   ]
+  },
+  "app/cbl/COBIL00C.cbl:410": {
+   "path": "app/cbl/COBIL00C.cbl",
+   "first": 410,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/cbl/COTRN02C.cbl:578": {
+   "path": "app/cbl/COTRN02C.cbl",
+   "first": 578,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/cbl/COTRN02C.cbl:611": {
+   "path": "app/cbl/COTRN02C.cbl",
+   "first": 611,
+   "lines": [
+    "           EXEC CICS READ"
+   ]
+  },
+  "app/cpy/CVACT01Y.cpy:2": {
+   "path": "app/cpy/CVACT01Y.cpy",
+   "first": 2,
+   "lines": [
+    "      *    Data-structure for  account entity (RECLN 300)"
+   ]
+  },
+  "app/cpy/CVACT01Y.cpy:4": {
+   "path": "app/cpy/CVACT01Y.cpy",
+   "first": 4,
+   "lines": [
+    "       01  ACCOUNT-RECORD."
+   ]
+  },
+  "app/cpy/CVACT03Y.cpy:2": {
+   "path": "app/cpy/CVACT03Y.cpy",
+   "first": 2,
+   "lines": [
+    "      *    Data-structure for card xref (RECLN 50)"
+   ]
+  },
+  "app/cpy/CVACT03Y.cpy:4": {
+   "path": "app/cpy/CVACT03Y.cpy",
+   "first": 4,
+   "lines": [
+    "       01 CARD-XREF-RECORD."
+   ]
+  },
+  "app/cpy/CVTRA01Y.cpy:2": {
+   "path": "app/cpy/CVTRA01Y.cpy",
+   "first": 2,
+   "lines": [
+    "      *    Data-structure for transaction category balance (RECLN = 50)"
+   ]
+  },
+  "app/cpy/CVTRA01Y.cpy:4": {
+   "path": "app/cpy/CVTRA01Y.cpy",
+   "first": 4,
+   "lines": [
+    "       01  TRAN-CAT-BAL-RECORD."
+   ]
+  },
+  "app/cpy/CVTRA02Y.cpy:2": {
+   "path": "app/cpy/CVTRA02Y.cpy",
+   "first": 2,
+   "lines": [
+    "      *    Data-structure for disclosure group (RECLN = 50)"
+   ]
+  },
+  "app/cpy/CVTRA02Y.cpy:4": {
+   "path": "app/cpy/CVTRA02Y.cpy",
+   "first": 4,
+   "lines": [
+    "       01  DIS-GROUP-RECORD."
+   ]
+  },
+  "app/cpy/CVTRA05Y.cpy:2": {
+   "path": "app/cpy/CVTRA05Y.cpy",
+   "first": 2,
+   "lines": [
+    "      *    Data-structure for TRANsaction record (RECLN = 350)"
+   ]
+  },
+  "app/cpy/CVTRA05Y.cpy:4": {
+   "path": "app/cpy/CVTRA05Y.cpy",
+   "first": 4,
+   "lines": [
+    "       01  TRAN-RECORD."
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:1": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 1,
+   "lines": [
+    " DEFINE FILE(ACCTDAT) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:306": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 306,
+   "lines": [
+    " DEFINE TRANSACTION(CAUP) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:317": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 317,
+   "lines": [
+    " DEFINE TRANSACTION(CAVW) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:327": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 327,
+   "lines": [
+    " DEFINE TRANSACTION(CA00) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:337": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 337,
+   "lines": [
+    " DEFINE TRANSACTION(CB00) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:347": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 347,
+   "lines": [
+    " DEFINE TRANSACTION(CCDL) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:357": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 357,
+   "lines": [
+    " DEFINE TRANSACTION(CCLI) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:367": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 367,
+   "lines": [
+    " DEFINE TRANSACTION(CCUP) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:37": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 37,
+   "lines": [
+    " DEFINE FILE(CCXREF) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:378": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 378,
+   "lines": [
+    " DEFINE TRANSACTION(CC00) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:399": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 399,
+   "lines": [
+    " DEFINE TRANSACTION(CM00) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:409": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 409,
+   "lines": [
+    " DEFINE TRANSACTION(CR00) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:419": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 419,
+   "lines": [
+    " DEFINE TRANSACTION(CT00) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:429": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 429,
+   "lines": [
+    " DEFINE TRANSACTION(CT01) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:439": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 439,
+   "lines": [
+    " DEFINE TRANSACTION(CT02) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:449": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 449,
+   "lines": [
+    " DEFINE TRANSACTION(CU00) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:459": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 459,
+   "lines": [
+    " DEFINE TRANSACTION(CU01) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:469": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 469,
+   "lines": [
+    " DEFINE TRANSACTION(CU02) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:479": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 479,
+   "lines": [
+    " DEFINE TRANSACTION(CU03) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/csd/CARDDEMO.CSD:63": {
+   "path": "app/csd/CARDDEMO.CSD",
+   "first": 63,
+   "lines": [
+    " DEFINE FILE(CXACAIX) GROUP(CARDDEMO)"
+   ]
+  },
+  "app/ctl/REPROCT.ctl:15": {
+   "path": "app/ctl/REPROCT.ctl",
+   "first": 15,
+   "lines": [
+    "    REPRO INFILE(FILEIN) OUTFILE(FILEOUT)"
+   ]
+  },
+  "app/jcl/ACCTFILE.jcl:22": {
+   "path": "app/jcl/ACCTFILE.jcl",
+   "first": 22,
+   "lines": [
+    "//STEP05 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/ACCTFILE.jcl:25": {
+   "path": "app/jcl/ACCTFILE.jcl",
+   "first": 25,
+   "lines": [
+    "   DELETE AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS -"
+   ]
+  },
+  "app/jcl/ACCTFILE.jcl:33": {
+   "path": "app/jcl/ACCTFILE.jcl",
+   "first": 33,
+   "lines": [
+    "//STEP10 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/ACCTFILE.jcl:36": {
+   "path": "app/jcl/ACCTFILE.jcl",
+   "first": 36,
+   "lines": [
+    "   DEFINE CLUSTER (NAME(AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS) -"
+   ]
+  },
+  "app/jcl/ACCTFILE.jcl:54": {
+   "path": "app/jcl/ACCTFILE.jcl",
+   "first": 54,
+   "lines": [
+    "//STEP15 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/ACCTFILE.jcl:58": {
+   "path": "app/jcl/ACCTFILE.jcl",
+   "first": 58,
+   "lines": [
+    "//ACCTVSAM DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/ACCTFILE.jcl:61": {
+   "path": "app/jcl/ACCTFILE.jcl",
+   "first": 61,
+   "lines": [
+    "   REPRO INFILE(ACCTDATA) OUTFILE(ACCTVSAM)"
+   ]
+  },
+  "app/jcl/CBEXPORT.jcl:51": {
+   "path": "app/jcl/CBEXPORT.jcl",
+   "first": 51,
+   "lines": [
+    "//ACCTFILE DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/CBEXPORT.jcl:53": {
+   "path": "app/jcl/CBEXPORT.jcl",
+   "first": 53,
+   "lines": [
+    "//XREFFILE DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/CLOSEFIL.jcl:22": {
+   "path": "app/jcl/CLOSEFIL.jcl",
+   "first": 22,
+   "lines": [
+    "//CLCIFIL EXEC PGM=SDSF"
+   ]
+  },
+  "app/jcl/CLOSEFIL.jcl:22-30": {
+   "path": "app/jcl/CLOSEFIL.jcl",
+   "first": 22,
+   "lines": [
+    "//CLCIFIL EXEC PGM=SDSF",
+    "//ISFOUT DD SYSOUT=*",
+    "//CMDOUT DD SYSOUT=*",
+    "//ISFIN  DD *",
+    " /F CICSAWSA,'CEMT SET FIL(TRANSACT ) CLO'",
+    " /F CICSAWSA,'CEMT SET FIL(CCXREF ) CLO'",
+    " /F CICSAWSA,'CEMT SET FIL(ACCTDAT ) CLO'",
+    " /F CICSAWSA,'CEMT SET FIL(CXACAIX ) CLO'",
+    " /F CICSAWSA,'CEMT SET FIL(USRSEC ) CLO'"
+   ]
+  },
+  "app/jcl/CLOSEFIL.jcl:27": {
+   "path": "app/jcl/CLOSEFIL.jcl",
+   "first": 27,
+   "lines": [
+    " /F CICSAWSA,'CEMT SET FIL(CCXREF ) CLO'"
+   ]
+  },
+  "app/jcl/CLOSEFIL.jcl:28": {
+   "path": "app/jcl/CLOSEFIL.jcl",
+   "first": 28,
+   "lines": [
+    " /F CICSAWSA,'CEMT SET FIL(ACCTDAT ) CLO'"
+   ]
+  },
+  "app/jcl/CLOSEFIL.jcl:29": {
+   "path": "app/jcl/CLOSEFIL.jcl",
+   "first": 29,
+   "lines": [
+    " /F CICSAWSA,'CEMT SET FIL(CXACAIX ) CLO'"
+   ]
+  },
+  "app/jcl/COMBTRAN.jcl:22-26": {
+   "path": "app/jcl/COMBTRAN.jcl",
+   "first": 22,
+   "lines": [
+    "//STEP05R  EXEC PGM=SORT",
+    "//SORTIN   DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.TRANSACT.BKUP(0)",
+    "//         DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.SYSTRAN(0)"
+   ]
+  },
+  "app/jcl/COMBTRAN.jcl:23-24": {
+   "path": "app/jcl/COMBTRAN.jcl",
+   "first": 23,
+   "lines": [
+    "//SORTIN   DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.TRANSACT.BKUP(0)"
+   ]
+  },
+  "app/jcl/COMBTRAN.jcl:23-26": {
+   "path": "app/jcl/COMBTRAN.jcl",
+   "first": 23,
+   "lines": [
+    "//SORTIN   DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.TRANSACT.BKUP(0)",
+    "//         DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.SYSTRAN(0)"
+   ]
+  },
+  "app/jcl/COMBTRAN.jcl:25": {
+   "path": "app/jcl/COMBTRAN.jcl",
+   "first": 25,
+   "lines": [
+    "//         DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/COMBTRAN.jcl:25-26": {
+   "path": "app/jcl/COMBTRAN.jcl",
+   "first": 25,
+   "lines": [
+    "//         DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.SYSTRAN(0)"
+   ]
+  },
+  "app/jcl/COMBTRAN.jcl:41-48": {
+   "path": "app/jcl/COMBTRAN.jcl",
+   "first": 41,
+   "lines": [
+    "//STEP10 EXEC PGM=IDCAMS",
+    "//SYSPRINT DD   SYSOUT=*",
+    "//TRANSACT DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.TRANSACT.COMBINED(+1)",
+    "//TRANVSAM DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.TRANSACT.VSAM.KSDS",
+    "//SYSIN    DD   *",
+    "   REPRO INFILE(TRANSACT) OUTFILE(TRANVSAM)"
+   ]
+  },
+  "app/jcl/CREASTMT.JCL:84": {
+   "path": "app/jcl/CREASTMT.JCL",
+   "first": 84,
+   "lines": [
+    "//XREFFILE DD  DISP=SHR,DSN=AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS"
+   ]
+  },
+  "app/jcl/CREASTMT.JCL:85": {
+   "path": "app/jcl/CREASTMT.JCL",
+   "first": 85,
+   "lines": [
+    "//ACCTFILE DD  DISP=SHR,DSN=AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS"
+   ]
+  },
+  "app/jcl/DEFGDGB.jcl:21": {
+   "path": "app/jcl/DEFGDGB.jcl",
+   "first": 21,
+   "lines": [
+    "//STEP05 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/DEFGDGB.jcl:48": {
+   "path": "app/jcl/DEFGDGB.jcl",
+   "first": 48,
+   "lines": [
+    "   DEFINE GENERATIONDATAGROUP -"
+   ]
+  },
+  "app/jcl/DEFGDGB.jcl:48-51": {
+   "path": "app/jcl/DEFGDGB.jcl",
+   "first": 48,
+   "lines": [
+    "   DEFINE GENERATIONDATAGROUP -",
+    "   (NAME(AWS.M2.CARDDEMO.SYSTRAN) -",
+    "    LIMIT(5) -",
+    "    SCRATCH -"
+   ]
+  },
+  "app/jcl/DISCGRP.jcl:22": {
+   "path": "app/jcl/DISCGRP.jcl",
+   "first": 22,
+   "lines": [
+    "//STEP05 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/DISCGRP.jcl:22-25": {
+   "path": "app/jcl/DISCGRP.jcl",
+   "first": 22,
+   "lines": [
+    "//STEP05 EXEC PGM=IDCAMS",
+    "//SYSPRINT DD   SYSOUT=*",
+    "//SYSIN    DD   *",
+    "   DELETE AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS -"
+   ]
+  },
+  "app/jcl/DISCGRP.jcl:25": {
+   "path": "app/jcl/DISCGRP.jcl",
+   "first": 25,
+   "lines": [
+    "   DELETE AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS -"
+   ]
+  },
+  "app/jcl/DISCGRP.jcl:33": {
+   "path": "app/jcl/DISCGRP.jcl",
+   "first": 33,
+   "lines": [
+    "//STEP10 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/DISCGRP.jcl:36": {
+   "path": "app/jcl/DISCGRP.jcl",
+   "first": 36,
+   "lines": [
+    "   DEFINE CLUSTER (NAME(AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS) -"
+   ]
+  },
+  "app/jcl/DISCGRP.jcl:54": {
+   "path": "app/jcl/DISCGRP.jcl",
+   "first": 54,
+   "lines": [
+    "//STEP15 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/DISCGRP.jcl:58": {
+   "path": "app/jcl/DISCGRP.jcl",
+   "first": 58,
+   "lines": [
+    "//DISCVSAM DD DISP=OLD,"
+   ]
+  },
+  "app/jcl/DISCGRP.jcl:61": {
+   "path": "app/jcl/DISCGRP.jcl",
+   "first": 61,
+   "lines": [
+    "   REPRO INFILE(DISCGRP) OUTFILE(DISCVSAM)"
+   ]
+  },
+  "app/jcl/FEECALC.jcl:27": {
+   "path": "app/jcl/FEECALC.jcl",
+   "first": 27,
+   "lines": [
+    "//ACCTFILE DD DISP=SHR,DSN=AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:1": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 1,
+   "lines": [
+    "//INTCALC JOB 'INTEREST CALCULATOR',CLASS=A,MSGCLASS=0,"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:20": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 20,
+   "lines": [
+    "//* Process transaction balance file and compute interest and fees."
+   ]
+  },
+  "app/jcl/INTCALC.jcl:22": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 22,
+   "lines": [
+    "//STEP15 EXEC PGM=CBACT04C,PARM='2022071800'"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:23-24": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 23,
+   "lines": [
+    "//STEPLIB  DD DISP=SHR,",
+    "//            DSN=AWS.M2.CARDDEMO.LOADLIB"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:25": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 25,
+   "lines": [
+    "//SYSPRINT DD SYSOUT=*"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:26": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 26,
+   "lines": [
+    "//SYSOUT   DD SYSOUT=*"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:27-28": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 27,
+   "lines": [
+    "//TCATBALF DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:29-30": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 29,
+   "lines": [
+    "//XREFFILE DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:31-32": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 31,
+   "lines": [
+    "//XREFFIL1 DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:33-34": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 33,
+   "lines": [
+    "//ACCTFILE DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:35-36": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 35,
+   "lines": [
+    "//DISCGRP  DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.DISCGRP.VSAM.KSDS"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:37-41": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 37,
+   "lines": [
+    "//TRANSACT DD DISP=(NEW,CATLG,DELETE),",
+    "//         UNIT=SYSDA,",
+    "//         DCB=(RECFM=F,LRECL=350,BLKSIZE=0),",
+    "//         SPACE=(CYL,(1,1),RLSE),",
+    "//         DSN=AWS.M2.CARDDEMO.SYSTRAN(+1)"
+   ]
+  },
+  "app/jcl/INTCALC.jcl:39": {
+   "path": "app/jcl/INTCALC.jcl",
+   "first": 39,
+   "lines": [
+    "//         DCB=(RECFM=F,LRECL=350,BLKSIZE=0),"
+   ]
+  },
+  "app/jcl/OPENFIL.jcl:22": {
+   "path": "app/jcl/OPENFIL.jcl",
+   "first": 22,
+   "lines": [
+    "//OPCIFIL EXEC PGM=SDSF"
+   ]
+  },
+  "app/jcl/OPENFIL.jcl:22-30": {
+   "path": "app/jcl/OPENFIL.jcl",
+   "first": 22,
+   "lines": [
+    "//OPCIFIL EXEC PGM=SDSF",
+    "//ISFOUT DD SYSOUT=*",
+    "//CMDOUT DD SYSOUT=*",
+    "//ISFIN  DD *",
+    " /F CICSAWSA,'CEMT SET FIL(TRANSACT ) OPE'",
+    " /F CICSAWSA,'CEMT SET FIL(CCXREF ) OPE'",
+    " /F CICSAWSA,'CEMT SET FIL(ACCTDAT ) OPE'",
+    " /F CICSAWSA,'CEMT SET FIL(CXACAIX ) OPE'",
+    " /F CICSAWSA,'CEMT SET FIL(USRSEC ) OPE'"
+   ]
+  },
+  "app/jcl/OPENFIL.jcl:27": {
+   "path": "app/jcl/OPENFIL.jcl",
+   "first": 27,
+   "lines": [
+    " /F CICSAWSA,'CEMT SET FIL(CCXREF ) OPE'"
+   ]
+  },
+  "app/jcl/OPENFIL.jcl:28": {
+   "path": "app/jcl/OPENFIL.jcl",
+   "first": 28,
+   "lines": [
+    " /F CICSAWSA,'CEMT SET FIL(ACCTDAT ) OPE'"
+   ]
+  },
+  "app/jcl/OPENFIL.jcl:29": {
+   "path": "app/jcl/OPENFIL.jcl",
+   "first": 29,
+   "lines": [
+    " /F CICSAWSA,'CEMT SET FIL(CXACAIX ) OPE'"
+   ]
+  },
+  "app/jcl/POSTTRAN.jcl:32": {
+   "path": "app/jcl/POSTTRAN.jcl",
+   "first": 32,
+   "lines": [
+    "//XREFFILE DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/POSTTRAN.jcl:39": {
+   "path": "app/jcl/POSTTRAN.jcl",
+   "first": 39,
+   "lines": [
+    "//ACCTFILE DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/POSTTRAN.jcl:39-42": {
+   "path": "app/jcl/POSTTRAN.jcl",
+   "first": 39,
+   "lines": [
+    "//ACCTFILE DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS",
+    "//TCATBALF DD DISP=SHR,",
+    "//         DSN=AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS"
+   ]
+  },
+  "app/jcl/POSTTRAN.jcl:41": {
+   "path": "app/jcl/POSTTRAN.jcl",
+   "first": 41,
+   "lines": [
+    "//TCATBALF DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/PRTCATBL.jcl:29-33": {
+   "path": "app/jcl/PRTCATBL.jcl",
+   "first": 29,
+   "lines": [
+    "//STEP05R EXEC PROC=REPROC,",
+    "// CNTLLIB=AWS.M2.CARDDEMO.CNTL",
+    "//*",
+    "//PRC001.FILEIN  DD DISP=SHR,",
+    "//        DSN=AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS"
+   ]
+  },
+  "app/jcl/PRTCATBL.jcl:32": {
+   "path": "app/jcl/PRTCATBL.jcl",
+   "first": 32,
+   "lines": [
+    "//PRC001.FILEIN  DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/READACCT.jcl:35": {
+   "path": "app/jcl/READACCT.jcl",
+   "first": 35,
+   "lines": [
+    "//ACCTFILE DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/READXREF.jcl:25": {
+   "path": "app/jcl/READXREF.jcl",
+   "first": 25,
+   "lines": [
+    "//XREFFILE DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/TCATBALF.jcl:22": {
+   "path": "app/jcl/TCATBALF.jcl",
+   "first": 22,
+   "lines": [
+    "//STEP05 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/TCATBALF.jcl:22-25": {
+   "path": "app/jcl/TCATBALF.jcl",
+   "first": 22,
+   "lines": [
+    "//STEP05 EXEC PGM=IDCAMS",
+    "//SYSPRINT DD   SYSOUT=*",
+    "//SYSIN    DD   *",
+    "   DELETE AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS -"
+   ]
+  },
+  "app/jcl/TCATBALF.jcl:25": {
+   "path": "app/jcl/TCATBALF.jcl",
+   "first": 25,
+   "lines": [
+    "   DELETE AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS -"
+   ]
+  },
+  "app/jcl/TCATBALF.jcl:33": {
+   "path": "app/jcl/TCATBALF.jcl",
+   "first": 33,
+   "lines": [
+    "//STEP10 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/TCATBALF.jcl:36": {
+   "path": "app/jcl/TCATBALF.jcl",
+   "first": 36,
+   "lines": [
+    "   DEFINE CLUSTER (NAME(AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS) -"
+   ]
+  },
+  "app/jcl/TCATBALF.jcl:54": {
+   "path": "app/jcl/TCATBALF.jcl",
+   "first": 54,
+   "lines": [
+    "//STEP15 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/TCATBALF.jcl:58": {
+   "path": "app/jcl/TCATBALF.jcl",
+   "first": 58,
+   "lines": [
+    "//TCATBALV DD DISP=OLD,"
+   ]
+  },
+  "app/jcl/TCATBALF.jcl:61": {
+   "path": "app/jcl/TCATBALF.jcl",
+   "first": 61,
+   "lines": [
+    "   REPRO INFILE(TCATBAL) OUTFILE(TCATBALV)"
+   ]
+  },
+  "app/jcl/TRANREPT.jcl:67": {
+   "path": "app/jcl/TRANREPT.jcl",
+   "first": 67,
+   "lines": [
+    "//CARDXREF DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/WAITSTEP.jcl:22": {
+   "path": "app/jcl/WAITSTEP.jcl",
+   "first": 22,
+   "lines": [
+    "//WAIT     EXEC PGM=COBSWAIT                                            00040001"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:22": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 22,
+   "lines": [
+    "//STEP05 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:25": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 25,
+   "lines": [
+    "   DELETE AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS -"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:36": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 36,
+   "lines": [
+    "//STEP10 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:39": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 39,
+   "lines": [
+    "   DEFINE CLUSTER (NAME(AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS) -"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:57": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 57,
+   "lines": [
+    "//STEP15 EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:61": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 61,
+   "lines": [
+    "//XREFVSAM DD DISP=SHR,"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:64": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 64,
+   "lines": [
+    "   REPRO INFILE(XREFDATA) OUTFILE(XREFVSAM)"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:69": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 69,
+   "lines": [
+    "//STEP20  EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:72-74": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 72,
+   "lines": [
+    "   DEFINE ALTERNATEINDEX (NAME(AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX)-",
+    "   RELATE(AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS)                    -",
+    "   KEYS(11,25)                                                   -"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:87": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 87,
+   "lines": [
+    "//STEP25  EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:90": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 90,
+   "lines": [
+    "  DEFINE PATH                                           -"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:90-92": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 90,
+   "lines": [
+    "  DEFINE PATH                                           -",
+    "   (NAME(AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX.PATH)        -",
+    "    PATHENTRY(AWS.M2.CARDDEMO.CARDXREF.VSAM.AIX))"
+   ]
+  },
+  "app/jcl/XREFFILE.jcl:97": {
+   "path": "app/jcl/XREFFILE.jcl",
+   "first": 97,
+   "lines": [
+    "//STEP30  EXEC PGM=IDCAMS"
+   ]
+  },
+  "app/proc/REPROC.prc:27-28": {
+   "path": "app/proc/REPROC.prc",
+   "first": 27,
+   "lines": [
+    "//SYSIN   DD DISP=SHR,",
+    "//        DSN=&CNTLLIB(REPROCT)"
+   ]
+  },
+  "app/scheduler/CardDemo.ca7:18": {
+   "path": "app/scheduler/CardDemo.ca7",
+   "first": 18,
+   "lines": [
+    "1LJOB,JOB=CLOSEFIL,LIST=ALL"
+   ]
+  },
+  "app/scheduler/CardDemo.ca7:271": {
+   "path": "app/scheduler/CardDemo.ca7",
+   "first": 271,
+   "lines": [
+    "           JOB=TCATBALF SCHID=032      QTM=0100 LEADTM=0000 SUBMTM=0000"
+   ]
+  },
+  "app/scheduler/CardDemo.ca7:43": {
+   "path": "app/scheduler/CardDemo.ca7",
+   "first": 43,
+   "lines": [
+    "           JOB=CBPAUP0J SCHID=030      QTM=0100 LEADTM=0000 SUBMTM="
+   ]
+  },
+  "app/scheduler/CardDemo.ca7:70": {
+   "path": "app/scheduler/CardDemo.ca7",
+   "first": 70,
+   "lines": [
+    "           JOB=POSTTRAN SCHID=030      QTM=0100 LEADTM=0000 SUBMTM="
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:64": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 64,
+   "lines": [
+    "\t<FOLDER FOLDER_NAME=\"MONTHLY-InterestCalculation\" MODIFIED=\"False\" LAST_UPLOAD=\"20250909\" REAL_FOLDER_ID=\"5\" TYPE=\"1\">"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:64-92": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 64,
+   "lines": [
+    "\t<FOLDER FOLDER_NAME=\"MONTHLY-InterestCalculation\" MODIFIED=\"False\" LAST_UPLOAD=\"20250909\" REAL_FOLDER_ID=\"5\" TYPE=\"1\">",
+    "\t\t<JOB JOBISN=\"1\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"CLOSEFIL\" MEMNAME=\"CLOSEFIL\" DESCRIPTION=\"MONTHLY CLOSEFIL\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Jo",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-CLOSEFIL\" ODATE=\"ODAT\" SIGN=\"+\" />",
+    "\t\t\t<RULE_BASED_CALENDARS NAME=\"*\" />",
+    "\t\t</JOB>",
+    "\t\t<JOB JOBISN=\"2\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"INTCALC\" MEMNAME=\"INTCALC\" DESCRIPTION=\"MONTHLY INTCALC\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Job\" ",
+    "\t\t\t<INCOND NAME=\"MONTHLY-InterestCalculation-CLOSEFIL\" ODATE=\"ODAT\" AND_OR=\"A\" />",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-CLOSEFIL\" ODATE=\"ODAT\" SIGN=\"-\" />",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-INTCALC\" ODATE=\"ODAT\" SIGN=\"+\" />",
+    "\t\t\t<RULE_BASED_CALENDARS NAME=\"*\" />",
+    "\t\t</JOB>",
+    "\t\t<JOB JOBISN=\"3\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"COMBTRAN\" MEMNAME=\"COMBTRAN\" DESCRIPTION=\"MONTHLY COMBTRAN\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Jo",
+    "\t\t\t<INCOND NAME=\"MONTHLY-InterestCalculation-INTCALC\" ODATE=\"ODAT\" AND_OR=\"A\" />",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-INTCALC\" ODATE=\"ODAT\" SIGN=\"-\" />",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-COMBTRAN\" ODATE=\"ODAT\" SIGN=\"+\" />",
+    "\t\t\t<RULE_BASED_CALENDARS NAME=\"*\" />",
+    "\t\t</JOB>",
+    "\t\t<JOB JOBISN=\"4\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"WAITSTEP\" MEMNAME=\"WAITSTEP\" DESCRIPTION=\"MONTHLY WAITSTEP\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Jo",
+    "\t\t\t<INCOND NAME=\"MONTHLY-InterestCalculation-COMBTRAN\" ODATE=\"ODAT\" AND_OR=\"A\" />",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-COMBTRAN\" ODATE=\"ODAT\" SIGN=\"-\" />",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-WAITSTEP\" ODATE=\"ODAT\" SIGN=\"+\" />",
+    "\t\t\t<RULE_BASED_CALENDARS NAME=\"*\" />",
+    "\t\t</JOB>",
+    "\t\t<JOB JOBISN=\"4\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"OPENFIL\" MEMNAME=\"OPENFIL\" DESCRIPTION=\"MONTHLY OPENFIL\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Job\" ",
+    "\t\t\t<INCOND NAME=\"MONTHLY-InterestCalculation-WAITSTEP\" ODATE=\"ODAT\" AND_OR=\"A\" />",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-WAITSTEP\" ODATE=\"ODAT\" SIGN=\"-\" />",
+    "\t\t\t<RULE_BASED_CALENDARS NAME=\"*\" />",
+    "\t\t</JOB>",
+    "\t</FOLDER>"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:65": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 65,
+   "lines": [
+    "\t\t<JOB JOBISN=\"1\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"CLOSEFIL\" MEMNAME=\"CLOSEFIL\" DESCRIPTION=\"MONTHLY CLOSEFIL\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Jo"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:65-66": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 65,
+   "lines": [
+    "\t\t<JOB JOBISN=\"1\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"CLOSEFIL\" MEMNAME=\"CLOSEFIL\" DESCRIPTION=\"MONTHLY CLOSEFIL\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Jo",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-CLOSEFIL\" ODATE=\"ODAT\" SIGN=\"+\" />"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:66": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 66,
+   "lines": [
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-CLOSEFIL\" ODATE=\"ODAT\" SIGN=\"+\" />"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:69": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 69,
+   "lines": [
+    "\t\t<JOB JOBISN=\"2\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"INTCALC\" MEMNAME=\"INTCALC\" DESCRIPTION=\"MONTHLY INTCALC\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Job\" "
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:69-74": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 69,
+   "lines": [
+    "\t\t<JOB JOBISN=\"2\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"INTCALC\" MEMNAME=\"INTCALC\" DESCRIPTION=\"MONTHLY INTCALC\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Job\" ",
+    "\t\t\t<INCOND NAME=\"MONTHLY-InterestCalculation-CLOSEFIL\" ODATE=\"ODAT\" AND_OR=\"A\" />",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-CLOSEFIL\" ODATE=\"ODAT\" SIGN=\"-\" />",
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-INTCALC\" ODATE=\"ODAT\" SIGN=\"+\" />",
+    "\t\t\t<RULE_BASED_CALENDARS NAME=\"*\" />",
+    "\t\t</JOB>"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:70": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 70,
+   "lines": [
+    "\t\t\t<INCOND NAME=\"MONTHLY-InterestCalculation-CLOSEFIL\" ODATE=\"ODAT\" AND_OR=\"A\" />"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:72": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 72,
+   "lines": [
+    "\t\t\t<OUTCOND NAME=\"MONTHLY-InterestCalculation-INTCALC\" ODATE=\"ODAT\" SIGN=\"+\" />"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:73": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 73,
+   "lines": [
+    "\t\t\t<RULE_BASED_CALENDARS NAME=\"*\" />"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:75": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 75,
+   "lines": [
+    "\t\t<JOB JOBISN=\"3\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"COMBTRAN\" MEMNAME=\"COMBTRAN\" DESCRIPTION=\"MONTHLY COMBTRAN\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Jo"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:76": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 76,
+   "lines": [
+    "\t\t\t<INCOND NAME=\"MONTHLY-InterestCalculation-INTCALC\" ODATE=\"ODAT\" AND_OR=\"A\" />"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:81": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 81,
+   "lines": [
+    "\t\t<JOB JOBISN=\"4\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"WAITSTEP\" MEMNAME=\"WAITSTEP\" DESCRIPTION=\"MONTHLY WAITSTEP\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Jo"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:82": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 82,
+   "lines": [
+    "\t\t\t<INCOND NAME=\"MONTHLY-InterestCalculation-COMBTRAN\" ODATE=\"ODAT\" AND_OR=\"A\" />"
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:87": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 87,
+   "lines": [
+    "\t\t<JOB JOBISN=\"4\" APPLICATION=\"CARD-DEMO\" SUB_APPLICATION=\"CTRLM\" JOBNAME=\"OPENFIL\" MEMNAME=\"OPENFIL\" DESCRIPTION=\"MONTHLY OPENFIL\" CREATED_BY=\"XUEMINGH\" RUN_AS=\"xuemingh\" CRITICAL=\"0\" TASKTYPE=\"Job\" "
+   ]
+  },
+  "app/scheduler/CardDemo.controlm:88": {
+   "path": "app/scheduler/CardDemo.controlm",
+   "first": 88,
+   "lines": [
+    "\t\t\t<INCOND NAME=\"MONTHLY-InterestCalculation-WAITSTEP\" ODATE=\"ODAT\" AND_OR=\"A\" />"
+   ]
+  },
+  "docs/BASELINE.md:108": {
+   "path": "docs/BASELINE.md",
+   "first": 108,
+   "lines": [
+    "* **Last account never updated**: `CBACT04C` sets `END-OF-FILE` inside the"
+   ]
+  },
+  "docs/chain-graph.md:114": {
+   "path": "docs/chain-graph.md",
+   "first": 114,
+   "lines": [
+    "    CBACT04C -.TCATBALF.- ds_AWS_M2_CARDDEMO_TCATBALF_VSAM_KSDS[(\"AWS.M2.CARDDEMO.TCATBALF.VSAM.KSDS\")]"
+   ]
+  },
+  "docs/chain-graph.md:161": {
+   "path": "docs/chain-graph.md",
+   "first": 161,
+   "lines": [
+    "| [COMBTRAN](app/jcl/COMBTRAN.jcl) | STEP05R | SORT | - | `SORTIN` AWS.M2.CARDDEMO.TRANSACT.BKUP(0)<br>`SORTOUT` AWS.M2.CARDDEMO.TRANSACT.COMBINED(+1) |"
+   ]
+  },
+  "docs/chain-graph.md:257": {
+   "path": "docs/chain-graph.md",
+   "first": 257,
+   "lines": [
+    "| [CBACT04C](app/cbl/CBACT04C.cbl) | COBOL | CVACT01Y, CVACT03Y, CVTRA01Y, CVTRA02Y, CVTRA05Y | ACCTFILE, DISCGRP, TCATBALF, TRANSACT, XREFFILE | CEE3ABD | - | - | jobs: INTCALC |"
+   ]
+  },
+  "docs/chain-graph.md:3": {
+   "path": "docs/chain-graph.md",
+   "first": 3,
+   "lines": [
+    "Generated by `make chain-graph` from the JCL, procs and source under `app/`."
+   ]
+  },
+  "docs/chain-graph.md:84": {
+   "path": "docs/chain-graph.md",
+   "first": 84,
+   "lines": [
+    "### `interest` - Monthly interest calculation: INTCALC (CBACT04C)"
+   ]
+  },
+  "docs/chain-graph.md:88": {
+   "path": "docs/chain-graph.md",
+   "first": 88,
+   "lines": [
+    "    DEFGDGB_STEP05[\"DEFGDGB STEP05<br/>IDCAMS\"]"
+   ]
+  },
+  "samples/jcl/BATCMP.jcl:33": {
+   "path": "samples/jcl/BATCMP.jcl",
+   "first": 33,
+   "lines": [
+    "//   SET MEMNAME=BATCHPGM"
+   ]
+  },
+  "samples/jcl/BATCMP.jcl:42": {
+   "path": "samples/jcl/BATCMP.jcl",
+   "first": 42,
+   "lines": [
+    "//BATCMP       EXEC BUILDBAT,MEM=&MEMNAME,HLQ=&HLQ"
+   ]
+  },
+  "tools/runjcl/chains.json:52-58": {
+   "path": "tools/runjcl/chains.json",
+   "first": 52,
+   "lines": [
+    "    \"setup\": [",
+    "      \"DEFGDGB\",",
+    "      \"ACCTFILE\",",
+    "      \"XREFFILE\",",
+    "      \"TCATBALF\",",
+    "      \"DISCGRP\"",
+    "    ],"
+   ]
+  },
+  "tools/runjcl/chains.json:53": {
+   "path": "tools/runjcl/chains.json",
+   "first": 53,
+   "lines": [
+    "      \"DEFGDGB\","
+   ]
+  },
+  "tools/runjcl/chains.json:54": {
+   "path": "tools/runjcl/chains.json",
+   "first": 54,
+   "lines": [
+    "      \"ACCTFILE\","
+   ]
+  },
+  "tools/runjcl/chains.json:55": {
+   "path": "tools/runjcl/chains.json",
+   "first": 55,
+   "lines": [
+    "      \"XREFFILE\","
+   ]
+  },
+  "tools/runjcl/chains.json:56": {
+   "path": "tools/runjcl/chains.json",
+   "first": 56,
+   "lines": [
+    "      \"TCATBALF\","
+   ]
+  },
+  "tools/runjcl/chains.json:57": {
+   "path": "tools/runjcl/chains.json",
+   "first": 57,
+   "lines": [
+    "      \"DISCGRP\""
+   ]
+  },
+  "tools/runjcl/chains.json:59-61": {
+   "path": "tools/runjcl/chains.json",
+   "first": 59,
+   "lines": [
+    "    \"jobs\": [",
+    "      \"INTCALC\"",
+    "    ],"
+   ]
+  },
+  "tools/stubs/CEE3ABD.cbl:1": {
+   "path": "tools/stubs/CEE3ABD.cbl",
+   "first": 1,
+   "lines": [
+    "      ******************************************************************"
+   ]
+  }
+ }
+}

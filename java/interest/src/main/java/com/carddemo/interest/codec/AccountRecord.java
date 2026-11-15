@@ -1,13 +1,15 @@
 package com.carddemo.interest.codec;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import com.carddemo.interest.domain.Account;
 
 /**
  * Layout CVACT01Y (app/cpy/CVACT01Y.cpy:4-17, RECLN 300). Data-map rows CVACT01Y/*.
- * The calculation reads ACCT-ID, ACCT-CURR-BAL and ACCT-GROUP-ID; every other byte of the record,
- * the 178-byte FILLER included, is carried untouched (E4).
+ * The calculation reads ACCT-ID, ACCT-CURR-BAL and ACCT-GROUP-ID, and ACCT-ACTIVE-STATUS only under
+ * inactiveAccounts=SKIP (INT-H04 option B); every other byte of the record, the 178-byte FILLER
+ * included, is carried untouched (E4).
  */
 public final class AccountRecord {
 
@@ -29,6 +31,8 @@ public final class AccountRecord {
     public static final int LENGTH = LAYOUT.length();
 
     private static final RecordCodec FIXTURE = new RecordCodec(LAYOUT, CodePage.fixture());
+    /** INT-H04 option B: an account is active when its flag is Y (rules.yaml INT-H04, CVACT01Y.cpy:6). */
+    private static final String ACTIVE = "Y";
     private static final int KEY_LENGTH = LAYOUT.field("ACCT-ID").length();
 
     private AccountRecord() {
@@ -38,7 +42,8 @@ public final class AccountRecord {
         return new Account(
                 values.unsigned("ACCT-ID"),
                 values.signed("ACCT-CURR-BAL"),
-                values.text("ACCT-GROUP-ID"));
+                values.text("ACCT-GROUP-ID"),
+                Optional.of(ACTIVE.equals(values.text("ACCT-ACTIVE-STATUS"))));
     }
 
     /** Decodes a record image of the fixture code page. */

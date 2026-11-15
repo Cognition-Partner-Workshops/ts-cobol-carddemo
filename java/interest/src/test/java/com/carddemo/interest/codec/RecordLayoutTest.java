@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -62,7 +63,7 @@ class RecordLayoutTest {
         String image = image(
                 Fixtures.lines(Fixtures.input(CASE).resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt")).get(0), AccountRecord.LAYOUT);
 
-        assertEquals(new Account(2001L, new BigDecimal("1000.00"), "GOLD"), AccountRecord.decode(image));
+        assertEquals(new Account(2001L, new BigDecimal("1000.00"), "GOLD", Optional.of(true)), AccountRecord.decode(image));
     }
 
     @Test

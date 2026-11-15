@@ -84,6 +84,16 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
   `make parity-java` does this for `work/parity-java/report.md`.
 * **Reproduced by:** running the same comparison twice; `grep -c '^## ' work/parity/report.md` printed `2`.
 
+## P8. Catalog text is unqualified for the role `carddemo`
+
+* **Symptom.** SQL assertions that compare with `carddemo.account` fail with `(nothing)` or with
+  `FOREIGN KEY (run_id) REFERENCES interest_run(run_id)`; first run of `db/postgres/tests/run.sh`:
+  `43 assertions, 9 failed`, e.g. `FAIL  keys: primary key of account is (acct_id) / (nothing)`.
+* **Cause.** The role has schema `carddemo` on its search_path (`"$user", public`), so `regclass` text and
+  `pg_get_constraintdef()` leave the schema out.
+* **Fix.** `SET LOCAL search_path = pg_catalog;` in the test transaction. After it: `43 assertions, 0 failed`.
+* **Reported by:** ticket 02-schema (step 5b, wave 1).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -138,8 +139,11 @@ class CalcInterestTablesRestartIT {
         assertEquals("FAILED", runStatus(interestRunOf(execution)));
         exitCodes.onJobExecution(new JobExecutionEvent(execution));
         assertEquals(InterestExitCode.STOPPED, exitCodes.getExitCode());
-        // the insert was reached before the failure: the run log of the uncommitted chunk never reached the file
-        assertEquals(List.of("START OF EXECUTION OF PROGRAM CBACT04C"), Fixtures.lines(runLogWorkFile(runId)));
+        // ticket 08: a stopped run keeps the lines of the chunk that did not commit and ends with ABENDING PROGRAM
+        // (CBACT04C:193, 629); the echo is the balance record of account 2001 as the recorded run log holds it
+        assertEquals(List.of("START OF EXECUTION OF PROGRAM CBACT04C",
+                expectedLines("i01-baseline", InterestTables.RUN_LOG).get(1),
+                "ABENDING PROGRAM"), Fixtures.lines(runLogWorkFile(runId)));
         assertFalse(Files.exists(temp.resolve("actual")));
     }
 
@@ -167,8 +171,12 @@ class CalcInterestTablesRestartIT {
         assertEquals("FAILED", runStatus(run));
         assertEquals(expectedTransactions.subList(0, 1), InterestTables.transactionLines(jdbc, run));
         assertEquals(expectedAccounts.get(0), InterestTables.accountLines(jdbc).get(0));
-        // the run log holds the committed part only: start line and the record of the first account
-        assertEquals(expectedRunLog.subList(0, 2), Fixtures.lines(runLogWorkFile(runId)));
+        // the run log holds the committed part - start line and the record of the first account - and, since
+        // ticket 08, the lines of the stop: the record of the second account and ABENDING PROGRAM (CBACT04C:629).
+        // The restart below cuts them off again: the completed log is the recorded one.
+        List<String> stoppedRunLog = new ArrayList<>(expectedRunLog.subList(0, 3));
+        stoppedRunLog.add("ABENDING PROGRAM");
+        assertEquals(stoppedRunLog, Fixtures.lines(runLogWorkFile(runId)));
         assertFalse(Files.exists(output));
 
         InterestTables.stopFailingOn(jdbc, TRANSACTION_TABLE);

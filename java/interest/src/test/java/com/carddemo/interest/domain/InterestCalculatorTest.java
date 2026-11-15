@@ -23,6 +23,8 @@ import com.carddemo.interest.domain.AccountBalances.BalanceRead;
 import com.carddemo.interest.policy.InterestPolicy;
 import com.carddemo.interest.policy.InterestPolicy.IdPrefix;
 import com.carddemo.interest.policy.InterestPolicy.InactiveAccounts;
+import com.carddemo.interest.policy.InterestPolicy.MultiCard;
+import com.carddemo.interest.policy.InterestPolicy.Overflow;
 import com.carddemo.interest.policy.InterestPolicy.NegativeBalance;
 import com.carddemo.interest.policy.InterestPolicy.ZeroInterest;
 import com.carddemo.interest.policy.InterestPolicy.TimestampSource;
@@ -164,6 +166,9 @@ class InterestCalculatorTest {
 
         assertEquals(StopReason.DEFAULT_RATE_MISSING, stop.reason());
         assertEquals("INT-R08", stop.reason().ruleId());
+        // CBACT04C:418-419, then 455 and the status line of status 23 (635-648)
+        assertEquals(List.of("image of 2001/01/1", "DISCLOSURE GROUP RECORD MISSING", "TRY WITH DEFAULT GROUP CODE",
+                "ERROR READING DEFAULT DISCLOSURE GROUP", "FILE STATUS IS: NNNN0023"), runLogLines);
     }
 
     @Test
@@ -208,7 +213,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ05_creditBalanceSkippedWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(null, null, null, false, NegativeBalance.SKIP, null, null);
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, NegativeBalance.SKIP, null, null, null, null);
         accounts.put(2001L, new Account(2001L, "Y", new BigDecimal("700.00"), "GOLD"));
         AccountBalances item = new AccountBalances(2001L,
                 List.of(balance(2001L, "01", 1, "-300.00"), balance(2001L, "01", 2, "500.00")), false);
@@ -246,7 +251,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ06_zeroInterestSkippedWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, ZeroInterest.SKIP, null);
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, ZeroInterest.SKIP, null, null, null);
         // 0.50 * 12.00 / 1200 = 0.005 -> 0.00, not written; 500.00 * 18.00 / 1200 = 7.50 gets the first id
         AccountBalances item = new AccountBalances(2001L,
                 List.of(balance(2001L, "01", 1, "0.50"), balance(2001L, "01", 2, "500.00")), false);
@@ -286,7 +291,7 @@ class InterestCalculatorTest {
 
     @Test
     void intH04_inactiveAccountSkippedWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, null, InactiveAccounts.SKIP);
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, null, InactiveAccounts.SKIP, null, null);
         accounts.put(2001L, new Account(2001L, "N", new BigDecimal("1000.00"), "GOLD"));
         InterestCalculator calculator = calculator(policy, FROZEN);
 
@@ -304,7 +309,7 @@ class InterestCalculatorTest {
 
     @Test
     void intH04_activeAccountChargedWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, null, InactiveAccounts.SKIP);
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, null, InactiveAccounts.SKIP, null, null);
 
         assertEquals(Optional.of(new BigDecimal("1010.00")),
                 calculator(policy, FROZEN).calculate(account2001(false)).newBalance());
@@ -341,8 +346,11 @@ class InterestCalculatorTest {
                 () -> calculator().calculate(account2001(false)));
 
         assertEquals(StopReason.ACCOUNT_MISSING, stop.reason());
-        // CBACT04C:193 comes before 202-203: the balance is displayed before the account is looked up
-        assertEquals(List.of("image of 2001/01/1"), runLogLines);
+        assertEquals("INT-R08", stop.reason().ruleId());
+        // CBACT04C:193 comes before 202-203: the balance is displayed before the account is looked up;
+        // then CBACT04C:375, 386 and the status line of status 23 (635-648). ABENDING PROGRAM is the step's line.
+        assertEquals(List.of("image of 2001/01/1", "ACCOUNT NOT FOUND: 00000002001", "ERROR READING ACCOUNT FILE",
+                "FILE STATUS IS: NNNN0023"), runLogLines);
         assertTrue(!stop.getMessage().contains("2001"), "no account id in a message for the application log");
     }
 
@@ -354,6 +362,10 @@ class InterestCalculatorTest {
                 () -> calculator().calculate(account2001(false)));
 
         assertEquals(StopReason.CARD_MISSING, stop.reason());
+        // CBACT04C:397, 408 and the status line of status 23
+        assertEquals(List.of("image of 2001/01/1", "ACCOUNT NOT FOUND: 00000002001", "ERROR READING XREF FILE",
+                "FILE STATUS IS: NNNN0023"), runLogLines);
+        assertTrue(!stop.getMessage().contains("2001"), "no account id in a message for the application log");
     }
 
     @Test
@@ -365,6 +377,134 @@ class InterestCalculatorTest {
 
         assertEquals(StopReason.MULTI_CARD, stop.reason());
         assertEquals("INT-H03", stop.reason().ruleId());
+        assertTrue(stop.getMessage().contains("INT-H03"), stop.getMessage());
+        // no legacy text exists for this stop: the run log names the decision and the account
+        assertEquals(List.of("image of 2001/01/1", "INT-H03 ACCOUNT HAS SEVERAL CARDS: 00000002001"), runLogLines);
+        assertTrue(!stop.getMessage().contains("2001"), "no account id or card number in a message for the application log");
+    }
+
+    @Test
+    void intH03_firstByCardNumberUsesLowerCard() {
+        // the lookup hands the cards over in any order; 4000000000002001 is below 4000000000009001 and above 4000000000001001
+        cards.put(2001L, List.of("4000000000009001", "4000000000002001"));
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, null, null, MultiCard.FIRST_BY_CARD_NUM, null);
+
+        assertEquals("4000000000002001",
+                calculator(policy, FROZEN).calculate(account2001(false)).transactions().get(0).cardNumber());
+
+        cards.put(2001L, List.of("4000000000009001", "4000000000002001", "4000000000001001"));
+        assertEquals("4000000000001001",
+                calculator(policy, FROZEN).calculate(account2001(false)).transactions().get(0).cardNumber());
+        assertEquals(List.of("image of 2001/01/1", "image of 2001/01/1"), runLogLines);
+    }
+
+    @Test
+    void intH05_interestAboveFieldStops() {
+        // by hand: 999999999.99 * 1200.01 / 1200 = 1000008333.32 (cut), one cent and more above 999999999.99
+        rates.put("GOLD/01/1", new BigDecimal("1200.01"));
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "999999999.99")), false);
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(item));
+
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+        assertEquals("INT-H05", stop.reason().ruleId());
+        assertTrue(stop.getMessage().contains("INT-H05"), stop.getMessage());
+        assertEquals(List.of("image of 2001/01/1", "INT-H05 VALUE DOES NOT FIT ITS FIELD: INTEREST OF A BALANCE"), runLogLines);
+        assertEquals(0, counter.issued(), "no transaction number is used for a transaction that is not written");
+    }
+
+    @Test
+    void intH05_largestInterestThatFitsIsWrittenUncut() {
+        // by hand: 999999999.99 * 1200.00 / 1200 = 999999999.99, the largest value of the field
+        rates.put("GOLD/01/1", new BigDecimal("1200.00"));
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "999999999.99")), true);
+
+        assertEquals(new BigDecimal("999999999.99"), calculator().calculate(item).transactions().get(0).amount());
+    }
+
+    @Test
+    void intH05_negativeInterestBelowFieldStops() {
+        // INT-Q05 as coded charges a credit balance: -999999999.99 * 1200.01 / 1200 = -1000008333.32
+        rates.put("GOLD/01/1", new BigDecimal("1200.01"));
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "-999999999.99")), false);
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(item));
+
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+    }
+
+    @Test
+    void intH05_interestOfAnAccountAboveFieldStops() {
+        // by hand: 600000000.00 * 12.00 / 1200 = 6000000.00 ... each balance fits; at 1200.00 % each is 600000000.00
+        // and the two together are 1200000000.00, above the 999999999.99 of the account's total
+        rates.put("GOLD/01/1", new BigDecimal("1200.00"));
+        rates.put("GOLD/01/2", new BigDecimal("1200.00"));
+        AccountBalances item = new AccountBalances(2001L,
+                List.of(balance(2001L, "01", 1, "600000000.00"), balance(2001L, "01", 2, "600000000.00")), false);
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(item));
+
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+        assertEquals("INT-H05 VALUE DOES NOT FIT ITS FIELD: INTEREST OF AN ACCOUNT", runLogLines.get(runLogLines.size() - 1));
+    }
+
+    @Test
+    void intH05_accountBalanceAboveFieldStops() {
+        // by hand: 9999999995.00 + 10.00 = 10000000005.00, above the 9999999999.99 of the balance
+        accounts.put(2001L, new Account(2001L, "Y", new BigDecimal("9999999995.00"), "GOLD"));
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(account2001(false)));
+
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+        assertEquals("INT-H05 VALUE DOES NOT FIT ITS FIELD: ACCOUNT BALANCE", runLogLines.get(runLogLines.size() - 1));
+    }
+
+    @Test
+    void intH05_millionthTransactionStops() {
+        // 999,999 transactions were written: 999999 is the last number six digits hold
+        String last = null;
+        for (int issued = 0; issued < 999_999; issued++) {
+            last = counter.next();
+        }
+        assertEquals("999999", last);
+
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> calculator().calculate(account2001(false)));
+
+        assertEquals(StopReason.OVERFLOW, stop.reason());
+        assertEquals("INT-H05", stop.reason().ruleId());
+        assertTrue(stop.getMessage().contains("INT-H05"), stop.getMessage());
+        assertEquals(List.of("image of 2001/01/1", "INT-H05 VALUE DOES NOT FIT ITS FIELD: TRANSACTION NUMBER"), runLogLines);
+        assertEquals(999_999, counter.issued(), "the counter does not start again at 000000");
+    }
+
+    @Test
+    void intH05_transaction999999IsTheLastOneWritten() {
+        for (int issued = 0; issued < 999_998; issued++) {
+            counter.next();
+        }
+
+        assertEquals("2022071800999999", calculator().calculate(account2001(false)).transactions().get(0).id());
+    }
+
+    @Test
+    void intH05_widenHandsTheValueOnWithEveryDigit() {
+        // by hand: 999999999.99 * 1200.01 / 1200 = 1000008333.3233... cut to 1000008333.32; transaction 1,000,000
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, null, null, null, Overflow.WIDEN);
+        rates.put("GOLD/01/1", new BigDecimal("1200.01"));
+        for (int issued = 0; issued < 999_999; issued++) {
+            counter.next();
+        }
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "999999999.99")), true);
+
+        InterestTransaction transaction = calculator(policy, FROZEN).calculate(item).transactions().get(0);
+
+        assertEquals(new BigDecimal("1000008333.32"), transaction.amount());
+        assertEquals("20220718001000000", transaction.id());
     }
 
     @Test
@@ -397,7 +537,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ04_lastAccountUpdatedWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(null, null, null, true, null, null, null);
+        InterestPolicy policy = new InterestPolicy(null, null, null, true, null, null, null, null, null);
 
         // 2400.00 + 37.00 = 2437.00
         assertEquals(Optional.of(new BigDecimal("2437.00")),
@@ -421,7 +561,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ02_runDatePrefixWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(null, IdPrefix.RUN_DATE, null, false, null, null, null);
+        InterestPolicy policy = new InterestPolicy(null, IdPrefix.RUN_DATE, null, false, null, null, null, null, null);
 
         // date of the frozen clock, 2022-07-05, followed by 00, then the counter
         assertEquals("2022070500000001",
@@ -473,7 +613,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ03_cycleDateWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(null, null, TimestampSource.CYCLE_DATE, false, null, null, null);
+        InterestPolicy policy = new InterestPolicy(null, null, TimestampSource.CYCLE_DATE, false, null, null, null, null, null);
 
         InterestTransaction transaction = calculator(policy, FROZEN).calculate(account2001(false)).transactions().get(0);
 
@@ -495,7 +635,7 @@ class InterestCalculatorTest {
     @Test
     void intQ03_defaultIsRunClock() {
         assertEquals(TimestampSource.RUN_CLOCK,
-                new InterestPolicy(null, null, null, false, null, null, null).timestampSource());
+                new InterestPolicy(null, null, null, false, null, null, null, null, null).timestampSource());
         assertFalse(InterestPolicy.legacy().intQ03StampsTheCycleDate());
     }
 }

@@ -75,7 +75,7 @@ class FixtureCasesTest {
 
     @Test
     void intQ01_halfEvenFailsI02OnTranAmtAndLeavesI07AsRecorded() {
-        InterestPolicy halfEven = new InterestPolicy(Rounding.HALF_EVEN, null, null, false, null, null, null);
+        InterestPolicy halfEven = new InterestPolicy(Rounding.HALF_EVEN, null, null, false, null, null, null, null, null);
 
         List<String> i02 = Fixtures.lines(run("i02-tie-half-cent", halfEven).resolve(TRANSACTIONS));
         List<String> i02Recorded = recorded("i02-tie-half-cent", TRANSACTIONS);

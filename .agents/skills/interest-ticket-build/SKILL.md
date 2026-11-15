@@ -79,7 +79,11 @@ Run every command from the repository root.
    and `jdbc/export` (ticket 07) exist since wave 2. Since ticket 08, `batch/DatabaseFailureStops` turns a database
    failure of the JDBC adapters into the stop exception, `domain/RunStops` holds the legacy lines of every stop and
    `domain/HoleDecisions` the decisions INT-H03 and INT-H05; `InterestCalculator` takes `HoleDecisions` as its sixth
-   constructor argument (a test that builds it passes `HoleDecisions.stop()`). The tables of the stream are in
+   constructor argument (a test that builds it passes `HoleDecisions.stop()`). Since ticket 09, `batch/JobSteps`
+   (`interest.job.steps`: `calc` or `load-calc-export`) chooses the steps of the job and `batch/InterestRunHandover`
+   hands the run key `interestRunId` to `interest.run.id` before exportDatasetsStep; `application.yml` names
+   `interest.calc.store` and `interest.job.steps`, and `application-tables.yml` is the profile `tables` (`jdbc`,
+   `load-calc-export`) that `make parity-java` uses. The tables of the stream are in
    `db/postgres/02-interest.sql` (ticket 02); every connection of the job has `search_path = batch`
    (`application.yml`), so SQL names `carddemo.<table>`.
 
@@ -119,7 +123,7 @@ Run every command from the repository root.
    [INFO] BUILD SUCCESS
    ```
    On `demo/05b-integration` after wave 1 (tickets 02, 03, 04) the totals are 176 unit and 28 integration tests.
-   After wave 2 (tickets 05, 06, 07) they are 213 and 80; after ticket 08, 228 and 90.
+   After wave 2 (tickets 05, 06, 07) they are 213 and 80; after ticket 08, 228 and 90. After ticket 09: 234 and 101.
    The first total is surefire (unit), the second failsafe (integration). Your ticket adds to both
    numbers; neither may go down. One unit test class while you work:
    ```sh
@@ -133,7 +137,7 @@ Run every command from the repository root.
 9. **Before every commit,** undo what the comparator changed and check you stayed in scope.
 
    ```sh
-   git checkout -- tools/parity/__pycache__
+   git checkout -- tools/parity/__pycache__ tools/runjcl/__pycache__
    git diff --stat origin/<base-branch> -- app fixtures tools modernization .agents db docker-compose.yml
    git status --short
    ```

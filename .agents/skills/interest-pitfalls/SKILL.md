@@ -72,7 +72,8 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 
 * **Symptom.** ` M tools/parity/__pycache__/copybook.cpython-310.pyc` after any `compare.py` or `make parity-java`.
 * **Cause.** The `.pyc` files are tracked and Python rewrites them.
-* **Fix.** `git checkout -- tools/parity/__pycache__` before every commit (standard S8.1).
+* **Fix.** `git checkout -- tools/parity/__pycache__ tools/runjcl/__pycache__` before every commit (standard S8.1);
+  `make parity` (legacy) rewrites the one under `tools/runjcl`.
 * **Reproduced by:** `python3 tools/parity/compare.py interest i01-baseline --actual work/parity-java/i01-baseline/actual --label java; git status --short`.
 
 ## P7. The comparator report holds old results
@@ -175,6 +176,21 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Cause.** With more than one constructor Spring Boot does not pick the canonical one for constructor binding.
 * **Fix.** `@ConstructorBinding` (`org.springframework.boot.context.properties.bind`) on the canonical constructor.
 * **Reported by:** ticket 08-error-paths (`InterestPolicyBindingTest`: 5 errors, then 228 tests and 0 failures).
+
+## P19. The interest_run key of a launch cannot be read from the job repository in SQL
+
+* **Symptom.** `select short_context from batch.batch_job_execution_context` returns `rO0ABXNyABFqYXZhLnV0aWwuSGFzaE1hcA...`.
+* **Cause.** Spring Batch 5.2.3 stores the execution context as serialized Java, Base64.
+* **Fix.** Take the `interest_run` row whose `run_id` is above the highest `run_id` before the launch, as
+  `make parity-java` does.
+* **Reported by:** ticket 09-parity-gate.
+
+## P20. A test that only builds a job fails with `JobRepository must be set`
+
+* **Symptom.** `IllegalStateException: JobRepository must be set`.
+* **Cause.** `JobBuilder.build()` needs a repository even when the job is never launched.
+* **Fix.** `Mockito.mock(JobRepository.class)` (Mockito is on the test classpath through `spring-boot-starter-test`).
+* **Reported by:** ticket 09-parity-gate (`InterestJobStepsTest`: 2 errors of 6, then 6 of 6).
 
 ## Reported by the pilot, not reproduced
 

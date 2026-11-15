@@ -208,6 +208,107 @@ parity-java:
 	  echo; printf "$$summary"; } >> $$out/report.md; \
 	echo "report: $$out/report.md"; exit $$fail
 
+# ------------------------------- data-move kit of the interest stream (ticket 10)
+# make recon-java [CASE=..]       reconciliation report of a load and a run (strategy-interest.md RC1-RC6, TL4)
+#                                 -> work/recon-java/<case>.md and work/recon-java/report.md
+#   RECON_LOAD=yes (default)      loads and calculates the case first: make parity-java CASE=<case> INTEREST_OUT=work/recon-java/run
+#   RECON_LOAD=no                 reports on what the tables of the db service hold now (the last case that ran), with
+#                                 RECON_INPUT=<unloaded files> RECON_ACTUAL=<exported files> [RECON_RUN=<interest_run.run_id>]
+# make sidebyside-java [CASE=..] [TS=format|exact]
+#                                 compares a legacy run's files with a target run's files through tools/parity/compare.py
+#                                 and gives every difference a class -> work/sidebyside-java/<name>/report.md
+#   LEGACY=<dir> TARGET=<dir> [NAME=<label>]   two output directories in the recorded format (FI-2); without them
+#                                 fixtures/interest/<case>/expected against work/parity-java/<case>/actual
+# The report reads; it writes nothing to the database.  Exit code 0 only if every report is EQUAL.
+.PHONY: recon-java sidebyside-java
+RECON_OUT       ?= work/recon-java
+RECON_LOAD      ?= yes
+RECON_INPUT     ?=
+RECON_ACTUAL    ?=
+RECON_RUN       ?=
+SIDEBYSIDE_OUT  ?= work/sidebyside-java
+TS              ?= format
+LEGACY          ?=
+TARGET          ?=
+NAME            ?=
+KIT_LAUNCHER     = org.springframework.boot.loader.launch.PropertiesLauncher
+KIT_JAVA         = docker run --rm --user $(UID):$(GID) -v "$(CURDIR)":/estate -w /estate
+
+recon-java:
+	$(COMPOSE) up -d --wait db
+	mvn -q -f java/interest/pom.xml -DskipTests package
+	@out=$(RECON_OUT); mkdir -p $$out; rm -f $$out/report.md; fail=0; \
+	db=$$($(COMPOSE) ps -q db); \
+	cases="$(if $(CASE),$(CASE),$$(ls fixtures/interest))"; \
+	for case in $$cases; do \
+	  input="$(if $(RECON_INPUT),$(RECON_INPUT),fixtures/interest/$$case/input)"; \
+	  if [ "$(RECON_LOAD)" = yes ]; then \
+	    actual=$$out/run/$$case/actual; \
+	    $(MAKE) --no-print-directory parity-java CASE=$$case INTEREST_OUT=$$out/run > $$out/$$case.load.log 2>&1 \
+	      || echo "interest/$$case: the load and the calculation did not pass the gate (see $$out/$$case.load.log)"; \
+	  else \
+	    actual="$(if $(RECON_ACTUAL),$(RECON_ACTUAL),work/parity-java/$$case/actual)"; \
+	  fi; \
+	  $(KIT_JAVA) --network container:$$db $(INTEREST_JRE) \
+	    java -cp $(INTEREST_JAR) -Dloader.main=com.carddemo.interest.recon.ReconCommand $(KIT_LAUNCHER) \
+	      name=$$case inputDir=$$input outputDir=$$actual report=$$out/$$case.md $(if $(RECON_RUN),runId=$(RECON_RUN)) || fail=1; \
+	  if [ -f $$out/$$case.md ]; then cat $$out/$$case.md >> $$out/report.md; fi; \
+	done; \
+	echo "report: $$out/report.md"; exit $$fail
+
+# What the comparator finds between two directories, for the classification: a first line "#" with
+# what was checked, then one difference per line (where, field, legacy, target; tabs).  The comparator
+# is used unchanged; its fixture root is pointed at a link to the legacy directory.
+# argv: legacy directory, target directory, name, output directory.
+define SIDEBYSIDE_COMPARE
+import sys
+from pathlib import Path
+sys.path.insert(0, ".")
+from tools.parity import compare
+legacy, target, name, out = Path(sys.argv[1]).resolve(), Path(sys.argv[2]), sys.argv[3], Path(sys.argv[4])
+stage = out / "legacy" / "interest" / name
+stage.mkdir(parents=True, exist_ok=True)
+link = stage / "expected"
+if link.is_symlink():
+    link.unlink()
+link.symlink_to(legacy, target_is_directory=True)
+compare.FIXTURES = (out / "legacy").resolve()
+diffs, checked = compare.compare_case("interest", name, target)
+(out / "compare.md").unlink(missing_ok=True)
+compare.write_report(out / "compare.md", "interest", name, "side by side", diffs, checked)
+def column(text):
+    return text.replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n")
+with (out / "differences.tsv").open("w", encoding="utf-8") as fh:
+    fh.write("#\t" + "\t".join(f"{key}={value}" for key, value in checked.items()) + "\n")
+    for diff in diffs:
+        fh.write("\t".join(column(diff[key]) for key in ("where", "field", "expected", "actual")) + "\n")
+endef
+export SIDEBYSIDE_COMPARE
+
+sidebyside-java:
+	mvn -q -f java/interest/pom.xml -DskipTests package
+	@out=$(SIDEBYSIDE_OUT); mkdir -p $$out; rm -f $$out/report.md; fail=0; \
+	if [ -n "$(LEGACY)$(TARGET)" ]; then \
+	  [ -n "$(LEGACY)" ] && [ -n "$(TARGET)" ] || { echo "usage: make sidebyside-java LEGACY=<dir> TARGET=<dir> [NAME=<label>] [TS=format|exact]"; exit 2; }; \
+	  names="$(if $(NAME),$(NAME),$(if $(CASE),$(CASE),run))"; \
+	else \
+	  names="$(if $(CASE),$(CASE),$$(ls fixtures/interest))"; \
+	fi; \
+	for name in $$names; do \
+	  legacy="$(if $(LEGACY),$(LEGACY),fixtures/interest/$$name/expected)"; \
+	  target="$(if $(TARGET),$(TARGET),work/parity-java/$$name/actual)"; \
+	  rm -rf $$out/$$name; mkdir -p $$out/$$name; \
+	  if [ -f "$$legacy/manifest.json" ] && [ -d "$$target" ]; then \
+	    PYTHONDONTWRITEBYTECODE=1 $(PY) -c "$$SIDEBYSIDE_COMPARE" "$$legacy" "$$target" $$name $$out/$$name \
+	      || echo "interest/$$name: the comparator did not run"; \
+	  fi; \
+	  $(KIT_JAVA) $(INTEREST_JRE) \
+	    java -cp $(INTEREST_JAR) -Dloader.main=com.carddemo.interest.recon.SideBySideCommand $(KIT_LAUNCHER) \
+	      name=$$name legacy="$$legacy" target="$$target" differences=$$out/$$name/differences.tsv timestamps=$(TS) report=$$out/$$name/report.md || fail=1; \
+	  if [ -f $$out/$$name/report.md ]; then cat $$out/$$name/report.md >> $$out/report.md; fi; \
+	done; \
+	echo "report: $$out/report.md"; exit $$fail
+
 # ------------------------------------------------------------ discovery graph
 chain-graph:
 	$(PY) tools/chaingraph/gen_chain_graph.py --out docs/chain-graph.md

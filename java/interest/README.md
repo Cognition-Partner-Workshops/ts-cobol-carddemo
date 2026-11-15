@@ -126,3 +126,96 @@ The gate proves the as-coded candidate on the seven recorded cases and nothing e
 * The replica tables are replaced by every launch and `interest_transaction` keeps every run (REL-12 is open).
 
 Evidence per ticket: [evidence/](evidence/).
+
+## Data-move kit: reconciliation report and side-by-side comparison (ticket 10)
+
+Two commands for the trial load and the side-by-side period of
+[strategy-interest.md](../../modernization/design/strategy-interest.md), section "Moving the data". The code is the
+package `com.carddemo.interest.recon`; it is not part of `interestCalcJob`. The kit reports. It decides nothing:
+the number of cycles and the bar for "equal" are REL-04 and REL-05, and both are open.
+
+### `make recon-java [CASE=<case>]`
+
+Loads and calculates the case (`make parity-java CASE=<case> INTEREST_OUT=work/recon-java/run`), then writes
+`work/recon-java/<case>.md` and all cases together as `work/recon-java/report.md`. Without `CASE` it runs the seven
+cases. Exit code 0 only if RC1 to RC5 are EQUAL in every report.
+
+Each figure is computed on two sides and both are printed: the unloaded files (`inputDir`) and the exported files
+(`outputDir`) on one side, `carddemo.interest_run` and the tables on the other. A line is `EQUAL`, `DIFFERENT` or
+`NOT AVAILABLE`; a figure that cannot be computed (a missing file, a record on the reject list, no run row, an
+empty column of `interest_run`, a database that cannot be reached) is `NOT AVAILABLE` and never equal.
+
+| Check | What the report compares |
+|---|---|
+| RC1 | records of each unloaded file, rows of its table, and the count `interest_run` recorded at the load |
+| RC2 | the five account sums, the sum of TRAN-CAT-BAL, the sum of DIS-INT-RATE and the three hash totals of the account ids: file against `interest_run`, and file against the table now |
+| RC3 | every row, encoded again, against its source record byte for byte; G02 and G03 sign bytes are counted, any other difference fails |
+| RC4 | distinct keys against rows; lowest and highest key of the table against the first and last record of the file |
+| RC5 | transactions written against the records of the exported SYSTRAN; sum of TRAN-AMT against the exported file; sum of TRAN-AMT against the balance change plus the interest of the last account, which is not added (INT-Q04) |
+| RC6 | `NOT AVAILABLE`: needs ACCTDATA unloaded again on the mainframe after the write-back. It cannot be shown off-host and is not part of the result |
+
+After the calculation the table no longer holds the unloaded ACCT-CURR-BAL, ACCT-CURR-CYC-CREDIT and
+ACCT-CURR-CYC-DEBIT (INT-R07). For these three RC2 compares the file with `interest_run` only, RC3 leaves them
+out and says so, and RC5 covers ACCT-CURR-BAL. The report also holds the columns of the reconciliation table of
+strategy-interest.md (for i01-baseline: 2 transactions, 47.00, a balance change of 10.00, 37.00 not added to the
+last account), the trial-load profile of TL4 (several cards, type codes, minus zero, F signs, fillers that are not
+blank, inactive accounts, balances without a rate) and the reject list of TL3.
+
+The report reads in one read-only transaction and writes nothing to the database.
+
+| Setting | Meaning |
+|---|---|
+| `RECON_LOAD=no` | do not run the job: report on what the tables of the `db` service hold now. They hold the last case that ran |
+| `RECON_INPUT=<dir>` `RECON_ACTUAL=<dir>` | the unloaded files and the exported files of that run (default: `fixtures/interest/<case>/input` and `work/parity-java/<case>/actual`) |
+| `RECON_RUN=<run_id>` | the row of `interest_run` to report on (default: the highest `run_id`) |
+| `RECON_OUT=<dir>` | where the reports go (default `work/recon-java`) |
+
+### `make sidebyside-java [CASE=<case>] [TS=format|exact]`
+
+Compares a legacy run's files with a target run's files field by field through `tools/parity/compare.py`, which is
+used unchanged, and writes `work/sidebyside-java/<name>/report.md` (the comparator's own report is `compare.md`
+next to it). Two output directories in the recorded format (FI-2, with `manifest.json`):
+
+```sh
+make sidebyside-java LEGACY=<legacy run directory> TARGET=<target run directory> NAME=<label> TS=format
+```
+
+Without `LEGACY` and `TARGET` it compares `fixtures/interest/<case>/expected` with `work/parity-java/<case>/actual`
+for one case or for all seven.
+
+`TS` is the timestamp rule of SS3, and the report states the one that was used. `format` (the default) compares
+TRAN-ORIG-TS and TRAN-PROC-TS for the format `YYYY-MM-DD-HH.MM.SS.hh0000` only: two values of that format that
+differ are listed and accepted. `exact` expects the target run to have had the legacy run's clock
+(`--interest.clock.frozen`), and a value that differs is a difference. Which of the two is used is not decided here.
+
+Every difference line carries a class (SS4):
+
+| Class | Given when |
+|---|---|
+| `INT-Q03` | TRAN-ORIG-TS or TRAN-PROC-TS differ and both values have the format |
+| `INT-Q01` | TRAN-AMT differs by exactly one cent (truncated against rounded) |
+| `INT-Q02` | TRAN-ID differs in its first ten characters (the PARM) and the counter is the same |
+| `G05` | TRAN-DESC has the same text and differs only in the bytes after it |
+| `defect` | everything else, including a timestamp of another format, a missing file, a record count, SYSOUT and `rc.json` |
+
+A class other than `defect` is a proposal read from the two values; the test lead confirms it. Exit code 0 when no
+difference is left after the timestamp rule, 1 when one is, 2 when nothing could be compared (the report then says
+`NOT AVAILABLE`, never equal).
+
+### Gaps of the kit
+
+* **RC6** needs a mainframe unload after the write-back and cannot be shown off-host.
+* **Host format.** The kit reads the fixture format only, as the job does (`format=host`, REL-08, is open).
+* **The tables hold one case.** Each load replaces the replica tables, so a report with `RECON_LOAD=no` is about the
+  last case that ran; the kit cannot tell from the database which input directory a run was loaded from.
+* **`interest_run.finished_at` is empty** on an EXPORTED run and `started_at` is the run clock, so the report prints
+  the status and the PARM of the run and no time.
+* **A stopped run** leaves no `rc.json` and a restart of the three steps exports nothing (REL-11): the report of
+  such a run shows RC5 as `NOT AVAILABLE` or `DIFFERENT`; it does not repair the run.
+* **Classes are rules on single lines.** A difference that follows from another one (the balance of an account
+  after a one-cent difference of its interest) is a `defect` until a person classifies it; there is no file of
+  agreed classifications.
+* **The comparator** checks the files the legacy directory names; a file that exists only in the target directory
+  is not reported.
+* With `interest.policy.updateLastAccount=true` the interest of the last account is added, so the RC5 identity as
+  written in the strategy shows `DIFFERENT`; the kit does not read the policy.

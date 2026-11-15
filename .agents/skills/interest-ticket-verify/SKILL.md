@@ -28,6 +28,13 @@ first. Run every command from the repository root.
    `eclipse-temurin:21-jre` container on the network of the `db` container with the PARM `2022071800`
    (`app/jcl/INTCALC.jcl:22`) and the clock frozen at `2022-07-05 10:00:00.00`, and compares. Exit code 0
    only if every case it ran passed. Without `CASE` it runs every case under `fixtures/interest`.
+   Since ticket 09 the target runs the jar with the profile `tables` (loadExtractsStep, calcInterestStep on the
+   tables, exportDatasetsStep), removes `work/parity-java/<case>` first, and after the comparison checks RC1, RC2
+   and RC5 in the `interest_run` row of that launch, printing a second line
+   `interest/<case> [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)`. Exit code 0 only if
+   every case passed all three: job exit code 0, comparator, assertions. `INTEREST_PROFILE=default` runs
+   calcInterestStep alone on the file adapters; `INTEREST_OPTS=<option>` and `INTEREST_OUT=<directory>` run the
+   gate with another setting into another directory.
 
 2. **Know the files the comparator reads.** The job writes them itself; nothing has to be converted.
 
@@ -42,7 +49,9 @@ first. Run every command from the repository root.
      2 work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
      2 work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
    ```
-   A run that stops leaves no `actual` directory at all. `work/` is ignored by git.
+   A run that stops leaves no `datasets` directory and no `rc.json`. On the file adapters it leaves no `actual`
+   directory at all; with the tables a stop in calcInterestStep leaves `actual/sysout/INTCALC.STEP15.txt` with
+   the legacy lines of the stop. `work/` is ignored by git.
 
 3. **Compare each case with the comparator.** One case:
 
@@ -107,6 +116,9 @@ first. Run every command from the repository root.
    A value a switch does not have (`--interest.policy.overflow=WIDEN`) ends with exit code 1 (`APPLICATION FAILED
    TO START`) and no output; the comparator then reports every expected record as a difference. Record that as
    the refusal, not as a parity FAIL.
+   The command of this step runs the file adapters. To run what the gate runs, add
+   `--spring.profiles.active=tables` after `--logging.level.root=WARN`, or use
+   `make parity-java CASE=<case> INTEREST_OUT=work/manual INTEREST_OPTS=--interest.policy.rounding=HALF_UP`.
    When no fixture exercises the option (`inactiveAccounts=SKIP`: every fixture account is active), the run
    proves only that the job completes: add an integration test on a copy of a fixture input changed in the
    test's temporary directory, never under `fixtures/`.
@@ -127,6 +139,9 @@ first. Run every command from the repository root.
    Acceptance has no error line that a command-line run can show, and say so in `report.md`.
    A ticket whose step is not a step of `interestCalcJob` yet, or whose error line needs loaded tables
    (05, 06, 07, 08), shows the error line by an integration test on PostgreSQL 15 and names the test in `report.md`.
+   Ticket 09 (the gate): `make parity-java CASE=i01-baseline INTEREST_OUT=work/parity-java-err INTEREST_PARM=20220718`
+   must print `interest/i01-baseline: java job ended with exit code 12`, a comparator FAIL and
+   `interest_run: FAIL (0 of 1 assertions ...)`, and exit non-zero.
    Missing input file (ticket 01):
 
    ```sh
@@ -159,7 +174,7 @@ first. Run every command from the repository root.
 
    ```sh
    docker compose exec -T db psql -U carddemo -d carddemo \
-     -c "select i.job_name, e.status, (select string_agg(s.step_name || ':' || s.status || ' read=' || s.read_count || ' write=' || s.write_count, ', ') from batch.batch_step_execution s where s.job_execution_id = e.job_execution_id) as steps, p.parameter_value as run_id from batch.batch_job_execution e join batch.batch_job_instance i using (job_instance_id) join batch.batch_job_execution_params p on p.job_execution_id = e.job_execution_id and p.parameter_name = 'runId' where p.parameter_value like '%i01-baseline' order by e.job_execution_id desc limit 1" \
+     -c "select i.job_name, e.status, (select string_agg(s.step_name || ':' || s.status || ' read=' || s.read_count || ' write=' || s.write_count, ', ' order by s.step_execution_id) from batch.batch_step_execution s where s.job_execution_id = e.job_execution_id) as steps, p.parameter_value as run_id from batch.batch_job_execution e join batch.batch_job_instance i using (job_instance_id) join batch.batch_job_execution_params p on p.job_execution_id = e.job_execution_id and p.parameter_name = 'runId' where p.parameter_value like '%i01-baseline' order by e.job_execution_id desc limit 1" \
      -c "select table_schema, table_name from information_schema.tables where table_schema in ('carddemo', 'public') order by 1, 2"
    ```
    Output, without the rule and count lines:
@@ -176,6 +191,8 @@ first. Run every command from the repository root.
    tran_cat_balance, transaction_type, transaction_type_categor`. A db volume created before that file
    existed does not get the tables (init scripts run only on an empty volume): `make reset`, or
    `docker compose exec -T db psql -U carddemo -d carddemo -v ON_ERROR_STOP=1 < db/postgres/02-interest.sql`.
+   Since ticket 09 `make parity-java` applies `db/postgres/02-interest.sql` itself when `carddemo.interest_run`
+   is missing and prints `db volume has no interest tables: applying db/postgres/02-interest.sql`.
 
 8. **Write the evidence, from the committed revision, in the ticket's own directory.** Commit the code
    first, then produce the files, then commit them alone, so the evidence names the revision it came
@@ -246,7 +263,13 @@ first. Run every command from the repository root.
    <step>; the cases prove that nothing else changed.` Prove the ticket's own cases with an integration test
    that writes `java/interest/target/<name>/<case>/actual`, run after `mvn clean verify`
    `python3 tools/parity/compare.py interest <case> --actual java/interest/target/<name>/<case>/actual --label java-<name>; echo "exit $?"`
-   and add the output by hand as its own section of `parity-report.md`. A ticket name with no file under `modernization/design/tickets`, or a case
+   and add the output by hand as its own section of `parity-report.md`.
+   Since ticket 09 `make parity-java` runs the three steps through PostgreSQL, so the paragraph above applies
+   only to code the gate still does not run; a ticket that changes only the file adapters runs
+   `make parity-java INTEREST_PROFILE=default` as well and adds its output as its own section. Ticket 09's
+   `switch-test-output.txt` is the gate with
+   `INTEREST_OPTS=--interest.policy.rounding=HALF_EVEN INTEREST_OUT=work/parity-java-half-even`, followed by
+   the summary table of its report. A ticket name with no file under `modernization/design/tickets`, or a case
    with no directory under `fixtures/interest`, ends the script with exit code 2
    (`no ticket file modernization/design/tickets/99-nothing.md`). `REPORT=<file>` writes somewhere else.
    A ticket whose Verification says "Fixture cases: none" passes one case that passed on the base branch

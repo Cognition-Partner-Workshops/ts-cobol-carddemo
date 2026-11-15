@@ -20,7 +20,12 @@ public enum TimestampRule {
     }
 
     public static TimestampRule ofParameter(String value) {
-        return valueOf(value.toUpperCase(Locale.ROOT));
+        for (TimestampRule rule : values()) {
+            if (rule.name().toLowerCase(Locale.ROOT).equals(value)) {
+                return rule;
+            }
+        }
+        throw new IllegalArgumentException("ts must be format or exact");
     }
 
     public String description() {

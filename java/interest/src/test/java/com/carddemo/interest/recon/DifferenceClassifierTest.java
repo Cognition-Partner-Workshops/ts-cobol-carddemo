@@ -66,6 +66,8 @@ class DifferenceClassifierTest {
         assertEquals("decision INT-Q04", classify(TimestampRule.FORMAT, last, "ACCT-CURR-CYC-CREDIT", "2400.00", "0.00").label());
         assertEquals("defect", classify(TimestampRule.FORMAT, first, "ACCT-CURR-BAL", "1010.00", "1000.00").label());
         assertEquals("defect", classify(TimestampRule.FORMAT, last, "ACCT-CREDIT-LIMIT", "6000.00", "6001.00").label());
+        assertEquals("defect", classify(TimestampRule.FORMAT, last, "ACCT-CURR-CYC-CREDIT", "2400.00", "1234.50").label());
+        assertEquals("defect", classify(TimestampRule.FORMAT, last, "ACCT-CURR-BAL", "2400.00", "").label());
     }
 
     @Test
@@ -88,5 +90,13 @@ class DifferenceClassifierTest {
         assertEquals("defect", classify(TimestampRule.FORMAT, "SYSOUT INTCALC.STEP15", "(text)", "", "-END OF EXECUTION").label());
         assertEquals("defect", classify(TimestampRule.FORMAT, "rc.json", "(text)", "", "+ \"STEP15\": 12").label());
         assertEquals("defect", classify(TimestampRule.FORMAT, "AWS.M2.CARDDEMO.SYSTRAN.G0001V00", "(record count)", "2", "1").label());
+    }
+
+    @Test
+    void theTimestampRuleIsFormatOrExact_nothingElse() {
+        assertEquals(TimestampRule.FORMAT, TimestampRule.ofParameter("format"));
+        assertEquals(TimestampRule.EXACT, TimestampRule.ofParameter("exact"));
+        assertEquals("ts must be format or exact",
+                org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> TimestampRule.ofParameter("sometimes")).getMessage());
     }
 }

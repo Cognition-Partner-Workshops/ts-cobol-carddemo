@@ -40,8 +40,9 @@ make sidebyside-java LEGACY=<dir> TARGET=<dir> [TS=format|exact]
 Every line has two figures, where each comes from, and `EQUAL`, `DIFFERENT` or `NOT AVAILABLE`. One figure is counted
 by the report from the unloaded files or from the tables as they are now; the other is what the loader or the
 exporter stored in `interest_run`. A figure that cannot be computed (a file that is missing or does not decode, an
-empty `interest_run` column, a run that is only `LOADED`) is `NOT AVAILABLE`, never equal. Exit code 0 when every
-line of RC1-RC5 is `EQUAL`, 1 otherwise, 2 when the command could not run.
+empty `interest_run` column, a run that is only `LOADED`) is `NOT AVAILABLE`, never equal. `make` ends with 0 when every
+line of RC1-RC5 is `EQUAL`; otherwise it ends non-zero, printing `Error 1` for a line that is `DIFFERENT` or
+`NOT AVAILABLE` and `Error 2` when the command could not run.
 
 | Check | Left figure | Right figure |
 |---|---|---|
@@ -72,9 +73,10 @@ timestamp rule used and gives every difference line a class:
 | defect | `TS=exact`: the timestamps differ at all; any malformed timestamp in either mode |
 | decision INT-Q01 | `TRAN-AMT` exactly one cent apart |
 | decision INT-Q02 | `TRAN-ID` with the same six-digit counter and another prefix |
-| decision INT-Q04 | one of the three account-break amounts on the last ACCTDATA record |
+| decision INT-Q04 | on the last ACCTDATA record: another `ACCT-CURR-BAL`, or a cycle amount the target has as 0.00 |
 | gap G05 | `TRAN-DESC` where the legacy value continues after the target's text |
 | defect | everything else |
 
-Only the INT-Q03 class under `TS=format` is accepted; every other difference is open. Exit code 0 with no open
-difference, 1 otherwise or when nothing could be compared (`NOT AVAILABLE`), 2 when the command could not run.
+Only the INT-Q03 class under `TS=format` is accepted; every other difference is open. `make` ends with 0 with no open
+difference; otherwise non-zero, printing `Error 1` for an open difference or when nothing could be compared
+(`NOT AVAILABLE`) and `Error 2` when the command could not run.

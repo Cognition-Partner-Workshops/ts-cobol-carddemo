@@ -132,7 +132,9 @@ Run every command from the repository root.
    and the `Makefile`; take out of that list only a path your ticket's Scope allows (pitfall P6).
    A ticket whose Allowed files are under `db/` (ticket 02) checks instead that
    `git diff --stat origin/<base-branch> -- app fixtures tools modernization .agents docker-compose.yml Makefile java/interest/pom.xml java/interest/src db/postgres/01-transaction-type.sql`
-   prints nothing.
+   prints nothing. A ticket with narrower Allowed files inside `java/interest` adds the frozen build file, CI and
+   packages to the list and takes out only what it is allowed:
+   `git diff --stat origin/<base-branch> -- app fixtures tools modernization .agents db docker-compose.yml Makefile .github java/interest/pom.xml java/interest/src/main/resources java/interest/src/main/java/com/carddemo/interest/port java/interest/src/main/java/com/carddemo/interest/batch java/interest/src/main/java/com/carddemo/interest/file java/interest/src/main/java/com/carddemo/interest/codec`.
 
 10. **Go on with `interest-ticket-verify`:** run the fixture cases, compare, write the evidence, open the
     pull request. Do not merge it.

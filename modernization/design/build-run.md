@@ -197,9 +197,26 @@ Not failures and not states; taken from the summaries and integration results of
 | `10-data-move-kit` | The "loaded and calculated case" is made by a stand-in in package `recon` (`CalculatedRunStaging`), which the build session says should go when ticket 06 is merged; `format=host` was not run (no host extract exists). |
 
 
-## 3. Skill corrections (reported, not applied)
+## 3. Skill corrections (reported by the run; applied after it)
 
-Every entry of `skillCorrections` in the run data, as the build session returned it. None was applied: `.agents/skills/` is unchanged by this run. Ticket 04 reported in both attempts; both lists are given, the second repeats the four of the first and adds two.
+Every entry of `skillCorrections` in the run data, as the build session returned it. The run itself applied
+none. After the run the parent session of step 5b applied them to the three procedure skills, one commit each:
+`f081308` (`interest-ticket-build`), `5cac3ac` (`interest-ticket-verify`, with two lines of its
+`parity-report.sh`), `db076a5` (`interest-pitfalls`, entries P8 to P12, marked as reported and not reproduced).
+`interest-conversion-standards` was not changed; section 4 lists its proposals.
+
+Not applied, because they ask for a new function of `parity-report.sh` and not a correction of its text: a
+directory per case to compare (ticket 07) and a section for a ticket proven through the tables (ticket 06).
+The skill now says to add these by hand.
+
+### 3.0 Final combined check
+
+After the last integration and the report commit, the parent session ran the combined check once more on
+`demo/05b-integration` at `649136a`: `java/interest/evidence/integration/final-combined-check.txt`.
+`mvn clean verify` 385 unit / 119 integration, BUILD SUCCESS; `db/postgres/tests/run.sh` exit 0;
+`make parity-java` 7 of 7 PASS (job, comparator, RC1-RC5); `compare.py` on each of the seven cases exit 0;
+`make up && make build && make parity` 24 PASS, exit 0. The three skill commits came after it and change
+nothing under `java/`, `db/`, `tools/` or the `Makefile`. Ticket 04 reported in both attempts; both lists are given, the second repeats the four of the first and adds two.
 
 ### 3.1 `interest-ticket-build`
 

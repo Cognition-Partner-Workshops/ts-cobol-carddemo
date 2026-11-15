@@ -201,6 +201,17 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
   unloaded file; `recon/Reconciliation` leaves them out of RC3 and says so.
 * **Reported by:** ticket 10-data-move-kit (`ReconReportIT.runThatDoesNotExist_isNotAvailable_neverEqual`, 1 failure of 22).
 
+## P22. `compare.py` can only compare with `fixtures/<chain>/<case>/expected`
+
+* **Symptom.** There is no option for a second directory; with a legacy directory that has no `manifest.json` the
+  comparator checks no dataset and would report PASS.
+* **Cause.** `tools/parity/compare.py` builds the expected path from its `FIXTURES` root and reads the dataset list
+  from `manifest.json`.
+* **Fix.** Do not edit the comparator. `make sidebyside-java` sets `compare.FIXTURES` to a directory holding a link
+  `interest/<name>/expected` to the legacy directory and calls `compare.compare_case`, and refuses a legacy
+  directory without `manifest.json` as NOT AVAILABLE.
+* **Reported by:** ticket 10-data-move-kit (`sidebyside-report.md`, section "Error path").
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

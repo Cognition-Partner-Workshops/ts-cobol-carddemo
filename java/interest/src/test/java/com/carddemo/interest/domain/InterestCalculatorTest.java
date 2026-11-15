@@ -1,6 +1,7 @@
 package com.carddemo.interest.domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -8,7 +9,6 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -22,7 +22,9 @@ import org.junit.jupiter.api.Test;
 import com.carddemo.interest.domain.AccountBalances.BalanceRead;
 import com.carddemo.interest.policy.InterestPolicy;
 import com.carddemo.interest.policy.InterestPolicy.IdPrefix;
-import com.carddemo.interest.policy.InterestPolicy.Rounding;
+import com.carddemo.interest.policy.InterestPolicy.InactiveAccounts;
+import com.carddemo.interest.policy.InterestPolicy.NegativeBalance;
+import com.carddemo.interest.policy.InterestPolicy.ZeroInterest;
 import com.carddemo.interest.policy.InterestPolicy.TimestampSource;
 import com.carddemo.interest.port.AccountStore;
 import com.carddemo.interest.port.RunLog;
@@ -37,8 +39,8 @@ class InterestCalculatorTest {
     private static final Clock FROZEN = Clock.fixed(Instant.parse("2022-07-05T10:00:00Z"), ZoneOffset.UTC);
 
     private final Map<Long, Account> accounts = new HashMap<>(Map.of(
-            2001L, new Account(2001L, new BigDecimal("1000.00"), "GOLD"),
-            2002L, new Account(2002L, new BigDecimal("2400.00"), "STANDARD")));
+            2001L, new Account(2001L, "Y", new BigDecimal("1000.00"), "GOLD"),
+            2002L, new Account(2002L, "Y", new BigDecimal("2400.00"), "STANDARD")));
     private final Map<Long, List<String>> cards = new HashMap<>(Map.of(
             2001L, List.of("4000000000002001"),
             2002L, List.of("4000000000002002")));
@@ -118,25 +120,194 @@ class InterestCalculatorTest {
     }
 
     @Test
-    void intR03_missingGroupRateStopsUntilTicket04() {
-        accounts.put(2001L, new Account(2001L, new BigDecimal("1000.00"), "SILVER"));
+    void intR03_fallsBackToDefault() {
+        // i04-default-group-fallback data: group SILVER has no rate, DEFAULT/01/0001 is 21.00 %
+        // 1000.00 * 21.00 / 1200 = 17.50
+        accounts.put(2001L, new Account(2001L, "Y", new BigDecimal("1000.00"), "SILVER"));
+        rates.put("DEFAULT/01/1", new BigDecimal("21.00"));
+
+        AccountInterest result = calculator().calculate(account2001(false));
+
+        assertEquals(new BigDecimal("17.50"), result.transactions().get(0).amount());
+        // CBACT04C:193, 418-419: the record, then the two lines of the fallback
+        assertEquals(List.of("image of 2001/01/1", "DISCLOSURE GROUP RECORD MISSING", "TRY WITH DEFAULT GROUP CODE"),
+                runLogLines);
+    }
+
+    @Test
+    void intR03_noStaleRateAfterAFailedLookup() {
+        // standards section 4 row x: the first balance finds 12.00 %, the second has no group rate and
+        // must take DEFAULT (21.00 %), not the 12.00 % of the balance before it: 500.00 * 21.00 / 1200 = 8.75
+        rates.put("DEFAULT/01/3", new BigDecimal("21.00"));
+        AccountBalances item = new AccountBalances(2001L,
+                List.of(balance(2001L, "01", 1, "1000.00"), balance(2001L, "01", 3, "500.00")), false);
+
+        assertEquals(List.of(new BigDecimal("10.00"), new BigDecimal("8.75")),
+                calculator().calculate(item).transactions().stream().map(InterestTransaction::amount).toList());
+    }
+
+    @Test
+    void intR03_ownGroupRateWinsOverDefault() {
+        rates.put("DEFAULT/01/1", new BigDecimal("21.00"));
+
+        // GOLD has 12.00 %: 10.00, and no fallback line
+        assertEquals(new BigDecimal("10.00"), calculator().calculate(account2001(false)).transactions().get(0).amount());
+        assertEquals(List.of("image of 2001/01/1"), runLogLines);
+    }
+
+    @Test
+    void intR08_missingDefaultRateStops() {
+        accounts.put(2001L, new Account(2001L, "Y", new BigDecimal("1000.00"), "SILVER"));
 
         InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
                 () -> calculator().calculate(account2001(false)));
 
-        assertEquals(StopReason.RATE_FALLBACK_NOT_BUILT, stop.reason());
-        assertEquals("INT-R03", stop.reason().ruleId());
+        assertEquals(StopReason.DEFAULT_RATE_MISSING, stop.reason());
+        assertEquals("INT-R08", stop.reason().ruleId());
     }
 
     @Test
-    void intR04_zeroRateStopsUntilTicket04() {
+    void intR04_zeroRateWritesNoTransaction() {
+        // i03-zero-rate-skipped data: 1000.00 at 12.00 % = 10.00; -300.00 at 0.00 % gives nothing
+        accounts.put(2001L, new Account(2001L, "Y", new BigDecimal("700.00"), "GOLD"));
+        AccountBalances item = new AccountBalances(2001L,
+                List.of(balance(2001L, "01", 1, "1000.00"), balance(2001L, "02", 1, "-300.00")), false);
+
+        AccountInterest result = calculator().calculate(item);
+
+        assertEquals(List.of(new BigDecimal("10.00")),
+                result.transactions().stream().map(InterestTransaction::amount).toList());
+        // the zero-rate balance is still read and displayed, and the account still gets its update: 700.00 + 10.00
+        assertEquals(List.of("image of 2001/01/1", "image of 2001/02/1"), runLogLines);
+        assertEquals(Optional.of(new BigDecimal("710.00")), result.newBalance());
+    }
+
+    @Test
+    void intR04_accountWithOnlyZeroRatesIsStillUpdatedAtItsBreak() {
+        // CBACT04C:194-197: the break does not ask whether interest was computed; 1000.00 + 0.00 = 1000.00
         AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "02", 1, "1000.00")), false);
 
-        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
-                () -> calculator().calculate(item));
+        AccountInterest result = calculator().calculate(item);
 
-        assertEquals(StopReason.ZERO_RATE_NOT_BUILT, stop.reason());
-        assertEquals("INT-R04", stop.reason().ruleId());
+        assertEquals(List.of(), result.transactions());
+        assertEquals(Optional.of(new BigDecimal("1000.00")), result.newBalance());
+        assertEquals(0, counter.issued());
+    }
+
+    @Test
+    void intQ05_negativeBalanceGivesNegativeInterest() {
+        // i06-negative-balance data: -300.00 * 12.00 / 1200 = -3.00; balance -300.00 + -3.00 = -303.00
+        accounts.put(2001L, new Account(2001L, "Y", new BigDecimal("-300.00"), "GOLD"));
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "-300.00")), false);
+
+        AccountInterest result = calculator().calculate(item);
+
+        assertEquals(new BigDecimal("-3.00"), result.transactions().get(0).amount());
+        assertEquals(Optional.of(new BigDecimal("-303.00")), result.newBalance());
+    }
+
+    @Test
+    void intQ05_creditBalanceSkippedWhenSwitched() {
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, NegativeBalance.SKIP, null, null);
+        accounts.put(2001L, new Account(2001L, "Y", new BigDecimal("700.00"), "GOLD"));
+        AccountBalances item = new AccountBalances(2001L,
+                List.of(balance(2001L, "01", 1, "-300.00"), balance(2001L, "01", 2, "500.00")), false);
+
+        AccountInterest result = calculator(policy, FROZEN).calculate(item);
+
+        // only the debit balance is charged: 500.00 * 18.00 / 1200 = 7.50, with the first id of the run
+        assertEquals(List.of(new BigDecimal("7.50")),
+                result.transactions().stream().map(InterestTransaction::amount).toList());
+        assertEquals("2022071800000001", result.transactions().get(0).id());
+        assertEquals(Optional.of(new BigDecimal("707.50")), result.newBalance());
+    }
+
+    @Test
+    void intQ06_zeroInterestIsWritten() {
+        // no fixture: 0.50 * 12.00 / 1200 = 0.005, cut to 0.00, and the 0.00 transaction is written (CBACT04C:214-217)
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "0.50")), false);
+
+        AccountInterest result = calculator().calculate(item);
+
+        assertEquals(List.of(new BigDecimal("0.00")),
+                result.transactions().stream().map(InterestTransaction::amount).toList());
+        assertEquals("2022071800000001", result.transactions().get(0).id());
+        assertEquals(Optional.of(new BigDecimal("1000.00")), result.newBalance());
+    }
+
+    @Test
+    void intQ06_zeroBalanceAtNonZeroRateIsWritten() {
+        // 0.00 * 12.00 / 1200 = 0.00: the rate is not zero, so INT-R04 does not apply and a transaction is written
+        AccountBalances item = new AccountBalances(2001L, List.of(balance(2001L, "01", 1, "0.00")), false);
+
+        assertEquals(List.of(new BigDecimal("0.00")),
+                calculator().calculate(item).transactions().stream().map(InterestTransaction::amount).toList());
+    }
+
+    @Test
+    void intQ06_zeroInterestSkippedWhenSwitched() {
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, ZeroInterest.SKIP, null);
+        // 0.50 * 12.00 / 1200 = 0.005 -> 0.00, not written; 500.00 * 18.00 / 1200 = 7.50 gets the first id
+        AccountBalances item = new AccountBalances(2001L,
+                List.of(balance(2001L, "01", 1, "0.50"), balance(2001L, "01", 2, "500.00")), false);
+
+        AccountInterest result = calculator(policy, FROZEN).calculate(item);
+
+        assertEquals(List.of(new BigDecimal("7.50")),
+                result.transactions().stream().map(InterestTransaction::amount).toList());
+        assertEquals("2022071800000001", result.transactions().get(0).id());
+        assertEquals(Optional.of(new BigDecimal("1007.50")), result.newBalance());
+    }
+
+    @Test
+    void intH01_noFeeTransaction() {
+        // i01-baseline: one balance, one transaction, and it is the interest (category 0005), nothing else
+        AccountInterest result = calculator().calculate(account2001(false));
+
+        assertEquals(1, result.transactions().size());
+        assertEquals(new BigDecimal("10.00"), result.transactions().get(0).amount());
+        assertEquals(1, counter.issued());
+        // the hook charges nothing whatever the balance
+        assertEquals(List.of(), FeeHook.intH01FeesAfterInterestOf(
+                new CategoryBalance(2001L, "01", 1, new BigDecimal("1000.00"))));
+    }
+
+    @Test
+    void intH04_inactiveAccountIsCharged() {
+        // no fixture: the active flag is N and the account is charged like any other: 10.00 and 1010.00
+        accounts.put(2001L, new Account(2001L, "N", new BigDecimal("1000.00"), "GOLD"));
+
+        AccountInterest result = calculator().calculate(account2001(false));
+
+        assertEquals(List.of(new BigDecimal("10.00")),
+                result.transactions().stream().map(InterestTransaction::amount).toList());
+        assertEquals(Optional.of(new BigDecimal("1010.00")), result.newBalance());
+    }
+
+    @Test
+    void intH04_inactiveAccountSkippedWhenSwitched() {
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, null, InactiveAccounts.SKIP);
+        accounts.put(2001L, new Account(2001L, "N", new BigDecimal("1000.00"), "GOLD"));
+        InterestCalculator calculator = calculator(policy, FROZEN);
+
+        AccountInterest skipped = calculator.calculate(account2001(false));
+
+        // no transaction and no update for the inactive account; its balance is still read and displayed
+        assertEquals(List.of(), skipped.transactions());
+        assertEquals(Optional.empty(), skipped.newBalance());
+        assertEquals(List.of("image of 2001/01/1"), runLogLines);
+        // the active account after it is charged and gets the first id of the run: 2400.00 + 37.00
+        AccountInterest charged = calculator.calculate(account2002(false));
+        assertEquals("2022071800000001", charged.transactions().get(0).id());
+        assertEquals(Optional.of(new BigDecimal("2437.00")), charged.newBalance());
+    }
+
+    @Test
+    void intH04_activeAccountChargedWhenSwitched() {
+        InterestPolicy policy = new InterestPolicy(null, null, null, false, null, null, InactiveAccounts.SKIP);
+
+        assertEquals(Optional.of(new BigDecimal("1010.00")),
+                calculator(policy, FROZEN).calculate(account2001(false)).newBalance());
     }
 
     @Test
@@ -226,7 +397,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ04_lastAccountUpdatedWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(Rounding.TRUNCATE, IdPrefix.PARM, TimestampSource.RUN_CLOCK, true);
+        InterestPolicy policy = new InterestPolicy(null, null, null, true, null, null, null);
 
         // 2400.00 + 37.00 = 2437.00
         assertEquals(Optional.of(new BigDecimal("2437.00")),
@@ -250,7 +421,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ02_runDatePrefixWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(Rounding.TRUNCATE, IdPrefix.RUN_DATE, TimestampSource.RUN_CLOCK, false);
+        InterestPolicy policy = new InterestPolicy(null, IdPrefix.RUN_DATE, null, false, null, null, null);
 
         // date of the frozen clock, 2022-07-05, followed by 00, then the counter
         assertEquals("2022070500000001",
@@ -301,17 +472,30 @@ class InterestCalculatorTest {
     }
 
     @Test
-    void intQ03_cycleDateRefusedUntilItsParameterExists() {
-        IllegalArgumentException refused = assertThrows(IllegalArgumentException.class,
-                () -> new InterestPolicy(Rounding.TRUNCATE, IdPrefix.PARM, TimestampSource.CYCLE_DATE, false));
+    void intQ03_cycleDateWhenSwitched() {
+        InterestPolicy policy = new InterestPolicy(null, null, TimestampSource.CYCLE_DATE, false, null, null, null);
 
-        assertTrue(refused.getMessage().contains("INT-Q03"));
+        InterestTransaction transaction = calculator(policy, FROZEN).calculate(account2001(false)).transactions().get(0);
+
+        // PARM 2022071800: the cycle date 2022-07-18 at 00.00.00, on both timestamps; the id is unchanged
+        assertEquals("2022-07-18-00.00.00.000000", transaction.originTimestamp());
+        assertEquals("2022-07-18-00.00.00.000000", transaction.processedTimestamp());
+        assertEquals("2022071800000001", transaction.id());
+    }
+
+    @Test
+    void intQ03_cycleDateOfAParmThatIsNotDigitsStops() {
+        InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
+                () -> RunTimestamp.ofCycleDate("JULY 2022 "));
+
+        assertEquals(StopReason.CYCLE_DATE_UNREADABLE, stop.reason());
+        assertEquals("INT-Q03", stop.reason().ruleId());
     }
 
     @Test
     void intQ03_defaultIsRunClock() {
-        assertEquals(TimestampSource.RUN_CLOCK, new InterestPolicy(null, null, null, false).timestampSource());
-        assertEquals(LocalDateTime.of(2022, 7, 5, 10, 0),
-                InterestPolicy.legacy().intQ03TransactionMoment(LocalDateTime.of(2022, 7, 5, 10, 0)));
+        assertEquals(TimestampSource.RUN_CLOCK,
+                new InterestPolicy(null, null, null, false, null, null, null).timestampSource());
+        assertFalse(InterestPolicy.legacy().intQ03StampsTheCycleDate());
     }
 }

@@ -72,7 +72,7 @@ class RecordLayoutTest {
 
     @Test
     void cvact01y_decodesTheAccountOfI01() {
-        assertEquals(new Account(2001L, new BigDecimal("1000.00"), "GOLD"), new AccountRecord(FIXTURE).decode(accountOfI01(), SOURCE));
+        assertEquals(new Account(2001L, "Y", new BigDecimal("1000.00"), "GOLD"), new AccountRecord(FIXTURE).decode(accountOfI01(), SOURCE));
     }
 
     @Test

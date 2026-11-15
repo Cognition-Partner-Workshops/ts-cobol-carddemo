@@ -6,7 +6,7 @@ import com.carddemo.interest.domain.Account;
 
 /**
  * Layout CVACT01Y (app/cpy/CVACT01Y.cpy:4-17, RECLN 300). Data-map rows CVACT01Y/*.
- * The job reads ACCT-ID, ACCT-CURR-BAL and ACCT-GROUP-ID and writes three amounts; every other
+ * The job reads ACCT-ID, ACCT-ACTIVE-STATUS (for INT-H04 only), ACCT-CURR-BAL and ACCT-GROUP-ID and writes three amounts; every other
  * byte of the record, the 178-byte FILLER included, is carried untouched (E4).
  */
 public final class AccountRecord {
@@ -42,6 +42,7 @@ public final class AccountRecord {
         RecordValues values = codec.decode(record, source);
         return new Account(
                 values.unsigned(ACCOUNT_ID),
+                values.text(ACTIVE_STATUS),
                 values.signed(CURRENT_BALANCE),
                 values.text(GROUP_ID));
     }

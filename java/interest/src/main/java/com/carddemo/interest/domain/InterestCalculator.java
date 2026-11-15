@@ -17,8 +17,9 @@ import com.carddemo.interest.port.RunLog;
 
 /**
  * The replacement of CBACT04C's main loop for one account (CBACT04C:188-222): it depends on the
- * ports (FI-3) and the policy only. Pilot scope (ticket 01): INT-R01, R02, R05, R06, R07 and the
- * open decisions INT-Q01 to Q04, each as coded. INT-R03 and INT-R04 stop the run until ticket 04.
+ * ports (FI-3) and the policy only. It covers INT-R01 to R07 and the open decisions INT-Q01 to
+ * Q06, INT-H01 and INT-H04, each as coded behind its switch. The legacy messages of the stop
+ * conditions (INT-R08) and INT-H03, INT-H05 are ticket 08.
  */
 public final class InterestCalculator {
 
@@ -28,6 +29,8 @@ public final class InterestCalculator {
     private static final String INTEREST_SOURCE = "System";
     private static final String DESCRIPTION_PREFIX = "Int. for a/c ";
     private static final long NO_MERCHANT = 0L;
+    /** INT-R03 (CBACT04C:437): the group whose rate is used when the account's group has none. */
+    private static final String DEFAULT_GROUP = "DEFAULT";
 
     private final AccountStore accounts;
     private final CardLookup cards;
@@ -65,18 +68,32 @@ public final class InterestCalculator {
             }
             CategoryBalance balance = read.balance();
             BigDecimal yearlyRate = rateFor(account, balance);
+            if (!policy.intH04ChargesAccount(account.activeStatus())) {
+                continue;
+            }
+            // INT-R04 (CBACT04C:214): a zero rate means no interest and no transaction.
+            if (yearlyRate.signum() == 0 || !policy.intQ05ChargesBalance(balance.balance())) {
+                continue;
+            }
             BigDecimal interest = InterestFormula.monthlyInterest(
                     balance.balance(), yearlyRate, policy.intQ01InterestRoundingMode());
-            totalInterest = totalInterest.add(interest).setScale(2, RoundingMode.UNNECESSARY);
-            transactions.add(interestTransaction(account, cardNumber, interest));
+            if (policy.intQ06WritesInterest(interest)) {
+                totalInterest = totalInterest.add(interest).setScale(2, RoundingMode.UNNECESSARY);
+                transactions.add(interestTransaction(account, cardNumber, interest));
+            }
+            transactions.addAll(FeeHook.intH01FeesAfterInterestOf(balance));
         }
 
         return new AccountInterest(item.accountId(), transactions, newBalanceAtBreak(item, account, totalInterest));
     }
 
-    /** INT-R07 at the account break; INT-Q04: as coded, the account that ends the input is not updated. */
+    /**
+     * INT-R07 at the account break; INT-Q04: as coded, the account that ends the input is not updated.
+     * An account left out by INT-H04 is not touched.
+     */
     private Optional<BigDecimal> newBalanceAtBreak(AccountBalances item, Account account, BigDecimal totalInterest) {
-        if (account == null || (item.endsInput() && !policy.intQ04UpdatesAccountEndingInput())) {
+        if (account == null || !policy.intH04ChargesAccount(account.activeStatus())
+                || (item.endsInput() && !policy.intQ04UpdatesAccountEndingInput())) {
             return Optional.empty();
         }
         return Optional.of(account.currentBalance().add(totalInterest).setScale(2, RoundingMode.UNNECESSARY));
@@ -99,22 +116,28 @@ public final class InterestCalculator {
         return cardNumbers.get(0);
     }
 
-    /** INT-R02: the rate of the account's group, the balance's type and category. */
+    /**
+     * INT-R02: the rate of the account's group, the balance's type and category. INT-R03
+     * (CBACT04C:416-439): when the group has none, the run log says so and the rate of the group
+     * DEFAULT for the same type and category is used.
+     */
     private BigDecimal rateFor(Account account, CategoryBalance balance) {
-        BigDecimal yearlyRate = rates.findRate(account.groupId(), balance.typeCode(), balance.categoryCode())
-                .orElseThrow(() -> new InterestRunStoppedException(StopReason.RATE_FALLBACK_NOT_BUILT,
-                        "a group has no rate for a balance; the DEFAULT fallback is ticket 04"));
-        if (yearlyRate.signum() == 0) {
-            throw new InterestRunStoppedException(StopReason.ZERO_RATE_NOT_BUILT,
-                    "a balance has a zero rate; the no-interest rule is ticket 04");
-        }
-        return yearlyRate;
+        return rates.findRate(account.groupId(), balance.typeCode(), balance.categoryCode())
+                .orElseGet(() -> defaultRateFor(balance));
+    }
+
+    private BigDecimal defaultRateFor(CategoryBalance balance) {
+        runLog.line(RunLogLines.GROUP_RATE_MISSING);
+        runLog.line(RunLogLines.TRYING_DEFAULT_GROUP);
+        return rates.findRate(DEFAULT_GROUP, balance.typeCode(), balance.categoryCode())
+                .orElseThrow(() -> new InterestRunStoppedException(StopReason.DEFAULT_RATE_MISSING,
+                        "neither the account's group nor the group DEFAULT has a rate for a balance"));
     }
 
     /** INT-R06, with the id of INT-Q02 and the timestamps of INT-Q03; the clock is read once per transaction. */
     private InterestTransaction interestTransaction(Account account, String cardNumber, BigDecimal interest) {
         LocalDateTime now = LocalDateTime.now(clock);
-        String timestamp = RunTimestamp.format(policy.intQ03TransactionMoment(now));
+        String timestamp = policy.intQ03StampsTheCycleDate() ? RunTimestamp.ofCycleDate(parmDate) : RunTimestamp.format(now);
         return new InterestTransaction(
                 policy.intQ02IdPrefix(parmDate, now) + counter.next(),
                 INTEREST_TYPE_CODE,

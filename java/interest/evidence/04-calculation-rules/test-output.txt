@@ -1,0 +1,679 @@
+# mvn -B -f java/interest/pom.xml clean verify
+# revision 8ac4b774789598df1e6653dcae9f34e4930bce50, 2026-11-15T16:13:29Z, openjdk version "21.0.13.0.3" 2026-10-24, Docker 29.9.2
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< com.carddemo:interest >------------------------
+[INFO] Building interest 0.1.0
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.4.1:clean (default-clean) @ interest ---
+[INFO] Deleting /home/ubuntu/repos/ts-cobol-carddemo/java/interest/target
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ interest ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.14.0:compile (default-compile) @ interest ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 42 source files with javac [debug parameters release 21] to target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:testResources (default-testResources) @ interest ---
+[INFO] skip non existing resourceDirectory /home/ubuntu/repos/ts-cobol-carddemo/java/interest/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.14.0:testCompile (default-testCompile) @ interest ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 17 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:3.5.4:test (default-test) @ interest ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.carddemo.interest.batch.InterestJobParametersTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in com.carddemo.interest.batch.InterestJobParametersTest
+[INFO] Running com.carddemo.interest.batch.FixtureCasesTest
+16:13:32.554 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run ba80350f-037c-42e3-9e71-932b349b0e8f step calcInterestStep completed: accounts=0 transactions=2
+16:13:32.559 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 6f650987-8fc9-447a-8767-b21f0ae7b60f step calcInterestStep completed: accounts=0 transactions=2
+16:13:32.569 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run b0ba7531-4019-4729-be4a-cb1c289cd7fb step calcInterestStep completed: accounts=0 transactions=0
+16:13:32.590 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run bd9e0d49-5f6a-4fe0-b2e5-7bf626c774d5 step calcInterestStep completed: accounts=0 transactions=2
+16:13:32.597 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 11478521-b7ad-4009-aaf9-0871f95b35f9 step calcInterestStep completed: accounts=0 transactions=2
+16:13:32.602 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run bf037d22-8488-4150-851c-211c33500de4 step calcInterestStep completed: accounts=0 transactions=1
+16:13:32.607 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 3469d13d-1c3d-4867-9a62-9d0dd064bdb3 step calcInterestStep completed: accounts=0 transactions=1
+16:13:32.615 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 6951583a-f6ee-4bb5-82f7-ef4bc10eee1f step calcInterestStep completed: accounts=0 transactions=2
+16:13:32.619 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 8d492f75-e08e-46bc-bd7c-cd1941f32472 step calcInterestStep completed: accounts=0 transactions=1
+16:13:32.623 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 9cfe84e2-425e-46f6-9412-576a0ca2c578 step calcInterestStep completed: accounts=0 transactions=2
+16:13:32.627 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run f144289a-6692-4b56-982d-f11b514d1317 step calcInterestStep completed: accounts=0 transactions=1
+16:13:32.631 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run f86d1b6c-2966-46f1-b684-bf387773131b step calcInterestStep completed: accounts=0 transactions=1
+16:13:32.636 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 37ccd21f-3ca9-4493-8bc1-c143dbee14a7 step calcInterestStep completed: accounts=0 transactions=1
+16:13:32.640 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run db448759-7573-430d-a1aa-1947100e0525 step calcInterestStep completed: accounts=0 transactions=2
+16:13:32.644 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 00caac9f-3cd3-493e-9952-a0ce9b82c268 step calcInterestStep completed: accounts=0 transactions=2
+16:13:32.648 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run dd42b6dd-9187-4737-8302-3640a1e9e0f6 step calcInterestStep completed: accounts=0 transactions=2
+16:13:32.653 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 56abf112-b083-4c73-985b-cbf0c88019b2 step calcInterestStep completed: accounts=0 transactions=1
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.187 s -- in com.carddemo.interest.batch.FixtureCasesTest
+[INFO] Running com.carddemo.interest.batch.PolicySwitchExpectationsTest
+16:13:32.678 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run a43a839d-f628-4855-b1f6-10f3057b1ca2 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q01 option A rounding=TRUNCATE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.685 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run b58633fa-4c75-434c-9be6-9e7d82182044 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q01 option B rounding=HALF_UP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.689 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run cb16e716-2ae0-4a6f-a321-f32bf7bceb3e step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q01 option C rounding=HALF_EVEN: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.693 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run d3b0a352-5b11-4a5d-a6d3-248e617ae835 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q02 option A idPrefix=PARM: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.698 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run c1707cdf-90c3-4591-848a-51a275da4237 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q02 option B idPrefix=RUN_DATE: 35 values compared, expectation lists 2 changed, job changed 2 [balance/00000002001/01/0001/TRAN-ID, balance/00000002002/01/0001/TRAN-ID]
+16:13:32.702 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run fdd69dc4-bc22-4b90-8084-f5fad957065f step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q03 option A timestampSource=RUN_CLOCK: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.707 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run aa9f009d-8053-47ed-b55e-120e8de2dcb8 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q03 option B timestampSource=CYCLE_DATE: 35 values compared, expectation lists 4 changed, job changed 4 [balance/00000002001/01/0001/TRAN-ORIG-TS, balance/00000002001/01/0001/TRAN-PROC-TS, balance/00000002002/01/0001/TRAN-ORIG-TS, balance/00000002002/01/0001/TRAN-PROC-TS]
+16:13:32.712 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run a652f006-0aac-47dd-b384-174cf5329e82 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q04 option A updateLastAccount=false: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.717 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run efff0587-10ae-4ef2-bc29-f25613aa9d8d step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q04 option B updateLastAccount=true: 35 values compared, expectation lists 2 changed, job changed 2 [account/00000002002/ACCT-CURR-BAL, account/00000002002/ACCT-CURR-CYC-CREDIT]
+16:13:32.723 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 46e25240-a0ac-41c4-b59e-c791ddfa2ec0 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q05 option A negativeBalance=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.729 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 252c4d63-35fc-4b38-8a50-d1792a10d03d step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q05 option B negativeBalance=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.734 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 3447cd29-8195-441a-984e-8606d426f005 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q06 option A zeroInterest=WRITE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.740 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 135bb159-5273-4007-b3fa-4cef55516239 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-Q06 option B zeroInterest=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.745 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 62d72552-40c3-44b4-a17b-b97a0108c8d3 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-H04 option A inactiveAccounts=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.751 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 8bde01c4-bd34-4703-b036-312652490ed8 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i01-baseline INT-H04 option B inactiveAccounts=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.755 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run a5285720-f3a5-4b91-98ed-388fc9c57efd step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q01 option A rounding=TRUNCATE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.758 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run c1f7f7e4-1b23-47ef-8838-6023f0f8b5a9 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q01 option B rounding=HALF_UP: 35 values compared, expectation lists 3 changed, job changed 3 [balance/00000002003/01/0001/TRAN-AMT, balance/00000002004/01/0001/TRAN-AMT, account/00000002003/ACCT-CURR-BAL]
+16:13:32.762 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 1c8598a0-63ad-4842-ae87-cb4c1a25d1fe step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q01 option C rounding=HALF_EVEN: 35 values compared, expectation lists 2 changed, job changed 2 [balance/00000002003/01/0001/TRAN-AMT, account/00000002003/ACCT-CURR-BAL]
+16:13:32.765 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run a361262c-95eb-44eb-bfbc-43a6cfe9dd5b step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q02 option A idPrefix=PARM: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.769 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run b0d8a158-0df7-4978-97c3-6aa90016b271 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q02 option B idPrefix=RUN_DATE: 35 values compared, expectation lists 2 changed, job changed 2 [balance/00000002003/01/0001/TRAN-ID, balance/00000002004/01/0001/TRAN-ID]
+16:13:32.772 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run b9018c28-e8f0-449f-b47c-208309e8b3b6 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q03 option A timestampSource=RUN_CLOCK: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.776 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 4e40b875-6bb9-43ff-b751-ca0fd4daf96e step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q03 option B timestampSource=CYCLE_DATE: 35 values compared, expectation lists 4 changed, job changed 4 [balance/00000002003/01/0001/TRAN-ORIG-TS, balance/00000002003/01/0001/TRAN-PROC-TS, balance/00000002004/01/0001/TRAN-ORIG-TS, balance/00000002004/01/0001/TRAN-PROC-TS]
+16:13:32.779 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 8c1f8b8f-d26a-480a-a9d1-6b4b0abb0003 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q04 option A updateLastAccount=false: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.782 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 51f8a61c-0b6d-4cb2-844a-dc9672c4ad3f step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q04 option B updateLastAccount=true: 35 values compared, expectation lists 2 changed, job changed 2 [account/00000002004/ACCT-CURR-BAL, account/00000002004/ACCT-CURR-CYC-CREDIT]
+16:13:32.786 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 3817707f-4572-4f47-bb87-539e7a415d45 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q05 option A negativeBalance=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.789 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 2141ab0d-0f8a-4e4b-a5ed-46c4150cb8c6 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q05 option B negativeBalance=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.792 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 3aadcc88-2559-421d-9e0a-164d23a0a6bd step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q06 option A zeroInterest=WRITE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.798 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run e027b713-e697-46dc-a28e-68a67f449d1d step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-Q06 option B zeroInterest=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.801 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 13c7647a-4846-4df8-afa7-c45acc5d0682 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-H04 option A inactiveAccounts=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.804 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run b23dada1-568f-4ab0-967d-c6b3b36473ff step calcInterestStep completed: accounts=0 transactions=2
+switch-test i02-tie-half-cent INT-H04 option B inactiveAccounts=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.807 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run c5f50592-93e5-49a5-956b-a1dd79b54c99 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q01 option A rounding=TRUNCATE: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.809 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 4c9d3103-0b9b-408b-9c03-70f9317c877a step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q01 option B rounding=HALF_UP: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.812 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 79412e87-69a7-465f-b6ef-b99e3798f1a5 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q01 option C rounding=HALF_EVEN: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.814 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run b8a99eb6-3e8d-49eb-b96f-a39886a8396f step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q02 option A idPrefix=PARM: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.818 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run e27b4236-c95b-452d-be58-4269aa2651c1 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q02 option B idPrefix=RUN_DATE: 32 values compared, expectation lists 1 changed, job changed 1 [balance/00000002005/01/0001/TRAN-ID]
+16:13:32.820 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 6b438026-2154-4b5a-8f13-8506f2f217e9 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q03 option A timestampSource=RUN_CLOCK: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.823 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run aacc38f5-95c8-4ccd-9647-ec00d757df7b step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q03 option B timestampSource=CYCLE_DATE: 32 values compared, expectation lists 2 changed, job changed 2 [balance/00000002005/01/0001/TRAN-ORIG-TS, balance/00000002005/01/0001/TRAN-PROC-TS]
+16:13:32.826 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run c8fd43fd-4f8e-4bb1-8804-50a02cc436e7 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q04 option A updateLastAccount=false: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.828 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 40b8cd90-2096-4162-82a7-8b863ac54e00 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q04 option B updateLastAccount=true: 32 values compared, expectation lists 3 changed, job changed 3 [account/00000002005/ACCT-CURR-BAL, account/00000002005/ACCT-CURR-CYC-CREDIT, account/00000002005/ACCT-CURR-CYC-DEBIT]
+16:13:32.831 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 55222944-5ba2-43fa-b8dd-a29b9482f39e step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q05 option A negativeBalance=CHARGE: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.833 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 06a630de-0d94-486c-aba3-ad7a1dcb4623 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q05 option B negativeBalance=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.835 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 52d09c86-2342-4ece-a30b-876670ad3f36 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q06 option A zeroInterest=WRITE: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.838 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run f52ab9fe-86c8-4463-a827-544b2e8b7c27 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-Q06 option B zeroInterest=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.840 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 0750f9da-30b8-454e-abc9-652dec2b8b5d step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-H04 option A inactiveAccounts=CHARGE: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.843 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 87fc3df5-0b30-4747-aabb-9ee29b100f67 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i03-zero-rate-skipped INT-H04 option B inactiveAccounts=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.845 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 616fecc9-bcd9-49bb-9b41-4b509e1ab497 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q01 option A rounding=TRUNCATE: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.848 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run cb3ee331-7fc4-40b8-969f-5b2ade79783c step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q01 option B rounding=HALF_UP: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.850 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run fd8173b3-cea4-4a12-aef3-d20eaaea8cc2 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q01 option C rounding=HALF_EVEN: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.853 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 16e1e8b8-37e8-46cb-ac03-6f20959387c8 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q02 option A idPrefix=PARM: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.856 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 35dde5d0-5f8c-4a63-81e7-ed1b368154bf step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q02 option B idPrefix=RUN_DATE: 18 values compared, expectation lists 1 changed, job changed 1 [balance/00000002006/01/0001/TRAN-ID]
+16:13:32.858 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run e7afc1eb-096e-4d02-b3ca-e1d73e837c7f step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q03 option A timestampSource=RUN_CLOCK: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.861 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 9ee17e0a-00c2-43c1-9737-bf6a87596a0b step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q03 option B timestampSource=CYCLE_DATE: 18 values compared, expectation lists 2 changed, job changed 2 [balance/00000002006/01/0001/TRAN-ORIG-TS, balance/00000002006/01/0001/TRAN-PROC-TS]
+16:13:32.863 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 13a09c74-cbf8-414a-8e81-cfe5bb351197 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q04 option A updateLastAccount=false: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.866 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 6cb0ae56-6b89-4172-9f8a-86c640f8df96 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q04 option B updateLastAccount=true: 18 values compared, expectation lists 2 changed, job changed 2 [account/00000002006/ACCT-CURR-BAL, account/00000002006/ACCT-CURR-CYC-CREDIT]
+16:13:32.868 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run b768ef33-773e-436b-8191-818510cacf2a step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q05 option A negativeBalance=CHARGE: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.871 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run e0628533-2bb8-45a0-aa56-641a4e9ed21b step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q05 option B negativeBalance=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.873 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 16f36a05-dc49-4113-bdc3-ee943e30e49c step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q06 option A zeroInterest=WRITE: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.875 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run a621e80e-3853-4e34-ba18-fe2d690c1721 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-Q06 option B zeroInterest=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.878 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 0e5f0f55-9bbe-46ad-a14c-192f0e725fd7 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-H04 option A inactiveAccounts=CHARGE: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.880 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 9ba35e30-91ea-4b7c-9639-53b66608cfc3 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i04-default-group-fallback INT-H04 option B inactiveAccounts=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.884 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 59e90a98-43af-46e1-a115-bbdac4d04577 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q01 option A rounding=TRUNCATE: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.887 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 26d73378-7866-4331-b286-870e8d513cfd step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q01 option B rounding=HALF_UP: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.891 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 367efa65-8c52-4798-b67c-e3d17f36249b step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q01 option C rounding=HALF_EVEN: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.894 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run fc2d447c-039e-4507-82dc-ee49a800ef24 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q02 option A idPrefix=PARM: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.898 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 2a900268-d226-48f9-98ab-85f729206117 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q02 option B idPrefix=RUN_DATE: 32 values compared, expectation lists 2 changed, job changed 2 [balance/00000002007/01/0001/TRAN-ID, balance/00000002007/01/0002/TRAN-ID]
+16:13:32.902 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 519f4665-15f3-49e9-bfb1-35b9e0c137e3 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q03 option A timestampSource=RUN_CLOCK: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.905 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run db80b314-30bf-4950-b6c7-e8518dc07bd6 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q03 option B timestampSource=CYCLE_DATE: 32 values compared, expectation lists 4 changed, job changed 4 [balance/00000002007/01/0001/TRAN-ORIG-TS, balance/00000002007/01/0001/TRAN-PROC-TS, balance/00000002007/01/0002/TRAN-ORIG-TS, balance/00000002007/01/0002/TRAN-PROC-TS]
+16:13:32.908 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 56ef9135-a87a-4b38-af0c-7ef191d11e33 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q04 option A updateLastAccount=false: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.911 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run bfe1a2c5-fb16-4fb4-bf43-5fa06a7a127b step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q04 option B updateLastAccount=true: 32 values compared, expectation lists 2 changed, job changed 2 [account/00000002007/ACCT-CURR-BAL, account/00000002007/ACCT-CURR-CYC-CREDIT]
+16:13:32.913 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 80850903-6623-4365-978e-883d6bb53f8d step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q05 option A negativeBalance=CHARGE: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.916 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run df6e91de-a1c4-4ebb-8f3b-f1db5d1e6f6a step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q05 option B negativeBalance=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.919 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 0cd5cc52-c15d-4ab4-8d9b-85225db432cd step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q06 option A zeroInterest=WRITE: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.922 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 16fc905f-8311-4ac2-a7c0-4dc87a6f1d63 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-Q06 option B zeroInterest=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.926 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run da7f9236-1830-4271-aed3-a71aa5f88287 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-H04 option A inactiveAccounts=CHARGE: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.929 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 45d807a2-2963-4474-9ef8-06cf8630b9a9 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i05-multi-category INT-H04 option B inactiveAccounts=SKIP: 32 values compared, expectation lists 0 changed, job changed 0
+16:13:32.933 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run f7ecf486-aa1b-44c2-b58c-75c3c230008b step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q01 option A rounding=TRUNCATE: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.936 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run def23055-115b-4b0a-9fc7-9c6cbeff6ccb step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q01 option B rounding=HALF_UP: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.939 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 2d65321a-05d4-49e4-a1bd-abdb5feeda57 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q01 option C rounding=HALF_EVEN: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.942 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run cdf39cbe-11b6-4f1c-b761-fb6ab38218d5 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q02 option A idPrefix=PARM: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.944 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 2ab19e4e-3621-41a8-8e76-591be524de8e step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q02 option B idPrefix=RUN_DATE: 18 values compared, expectation lists 1 changed, job changed 1 [balance/00000002008/01/0001/TRAN-ID]
+16:13:32.947 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 4ed20448-02e0-4a8b-8777-c02f51e77b66 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q03 option A timestampSource=RUN_CLOCK: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.949 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 3f52c8c4-1125-4d53-9c29-618b513391c9 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q03 option B timestampSource=CYCLE_DATE: 18 values compared, expectation lists 2 changed, job changed 2 [balance/00000002008/01/0001/TRAN-ORIG-TS, balance/00000002008/01/0001/TRAN-PROC-TS]
+16:13:32.952 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 04ecf0e6-5819-413b-bf4d-791a7e3a5501 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q04 option A updateLastAccount=false: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.954 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run cc428d6b-b11b-4bcf-8f95-fb6efe5eff00 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q04 option B updateLastAccount=true: 18 values compared, expectation lists 2 changed, job changed 2 [account/00000002008/ACCT-CURR-BAL, account/00000002008/ACCT-CURR-CYC-DEBIT]
+16:13:32.957 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run e1d0aaaf-5770-44bf-bf67-953a4f6cc36f step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q05 option A negativeBalance=CHARGE: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.959 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run c2c5e823-6d69-4e84-b40b-c51e538b90e2 step calcInterestStep completed: accounts=0 transactions=0
+switch-test i06-negative-balance INT-Q05 option B negativeBalance=SKIP: 18 values compared, expectation lists 14 changed, job changed 14 [balance/00000002008/01/0001/interestTransactionWritten, balance/00000002008/01/0001/TRAN-ID, balance/00000002008/01/0001/TRAN-TYPE-CD, balance/00000002008/01/0001/TRAN-CAT-CD, balance/00000002008/01/0001/TRAN-SOURCE, balance/00000002008/01/0001/TRAN-DESC, balance/00000002008/01/0001/TRAN-AMT, balance/00000002008/01/0001/TRAN-MERCHANT-ID, balance/00000002008/01/0001/TRAN-MERCHANT-NAME, balance/00000002008/01/0001/TRAN-MERCHANT-CITY, balance/00000002008/01/0001/TRAN-MERCHANT-ZIP, balance/00000002008/01/0001/TRAN-CARD-NUM, balance/00000002008/01/0001/TRAN-ORIG-TS, balance/00000002008/01/0001/TRAN-PROC-TS]
+16:13:32.961 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 5fe483ac-cf40-4571-9cee-a4f31d31f2d2 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q06 option A zeroInterest=WRITE: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.964 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 7bf56717-7777-4144-91a0-f52751f8d598 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-Q06 option B zeroInterest=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.966 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run bd6e18a6-1a5e-4a9b-828f-fe8d23ff062e step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-H04 option A inactiveAccounts=CHARGE: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.969 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run b90c2a46-3bc7-488a-ab9e-25d5e4bcc8d4 step calcInterestStep completed: accounts=0 transactions=1
+switch-test i06-negative-balance INT-H04 option B inactiveAccounts=SKIP: 18 values compared, expectation lists 0 changed, job changed 0
+16:13:32.971 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 4e233e13-5c83-4c52-a763-ce2dc55ad9d9 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q01 option A rounding=TRUNCATE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.973 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run a0c158fa-a63d-4737-aae6-3701bd8b7a8a step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q01 option B rounding=HALF_UP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.976 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run c5bc9002-7c54-4220-854a-b86d878813d9 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q01 option C rounding=HALF_EVEN: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.979 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run ef3b0f96-8a81-4aad-ab47-1fb563695d0a step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q02 option A idPrefix=PARM: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.981 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 4ed96eeb-ae19-4a37-ab17-3eba703338ab step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q02 option B idPrefix=RUN_DATE: 35 values compared, expectation lists 2 changed, job changed 2 [balance/00000002009/01/0001/TRAN-ID, balance/00000002010/01/0001/TRAN-ID]
+16:13:32.984 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 00e0730f-0452-4beb-affa-b5402140c1b6 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q03 option A timestampSource=RUN_CLOCK: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.986 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 069fded6-93e9-4c3c-b873-79b55b63c246 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q03 option B timestampSource=CYCLE_DATE: 35 values compared, expectation lists 4 changed, job changed 4 [balance/00000002009/01/0001/TRAN-ORIG-TS, balance/00000002009/01/0001/TRAN-PROC-TS, balance/00000002010/01/0001/TRAN-ORIG-TS, balance/00000002010/01/0001/TRAN-PROC-TS]
+16:13:32.988 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 87501abb-a1cb-4e5f-957d-7a7a48483793 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q04 option A updateLastAccount=false: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.991 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run bb37202a-f334-4258-a06d-75f3e99537a4 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q04 option B updateLastAccount=true: 35 values compared, expectation lists 2 changed, job changed 2 [account/00000002010/ACCT-CURR-BAL, account/00000002010/ACCT-CURR-CYC-CREDIT]
+16:13:32.993 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 3a772558-103f-4d79-acf5-b39debda781c step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q05 option A negativeBalance=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.996 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 7efd9533-f679-467a-bc03-8887123fc82f step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q05 option B negativeBalance=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:32.998 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 9a8c37d0-2d33-4be5-bc5f-778f2e006e37 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q06 option A zeroInterest=WRITE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:33.000 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run 595ab180-6924-4b81-be2b-69375796d7d4 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-Q06 option B zeroInterest=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:33.003 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run ab446d50-2caa-4ba7-8e9e-16dc143bd12c step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-H04 option A inactiveAccounts=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
+16:13:33.005 [main] INFO com.carddemo.interest.batch.CalcInterestRun -- run abba2a0b-0702-430b-ab6a-4a071b922761 step calcInterestStep completed: accounts=0 transactions=2
+switch-test i07-nontie-rounding INT-H04 option B inactiveAccounts=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.351 s -- in com.carddemo.interest.batch.PolicySwitchExpectationsTest
+[INFO] Running com.carddemo.interest.file.FileRunWorkspaceTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in com.carddemo.interest.file.FileRunWorkspaceTest
+[INFO] Running com.carddemo.interest.codec.RecordLayoutTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in com.carddemo.interest.codec.RecordLayoutTest
+[INFO] Running com.carddemo.interest.codec.CopybookLayoutTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in com.carddemo.interest.codec.CopybookLayoutTest
+[INFO] Running com.carddemo.interest.codec.EncodingRulesTest
+[INFO] Tests run: 65, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.090 s -- in com.carddemo.interest.codec.EncodingRulesTest
+[INFO] Running com.carddemo.interest.codec.FixtureRoundTripTest
+ROUNDTRIP fixture CVACT01Y       2 records i01-baseline/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP fixture CVACT03Y       2 records i01-baseline/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP fixture CVTRA02Y      15 records i01-baseline/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP fixture CVTRA01Y       2 records i01-baseline/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP fixture CVTRA04Y       5 records i01-baseline/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP fixture CVTRA03Y       5 records i01-baseline/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP fixture CVACT01Y       2 records i01-baseline/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP fixture CVTRA05Y       2 records i01-baseline/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP fixture CVACT01Y       2 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP fixture CVACT03Y       2 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP fixture CVTRA02Y      15 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP fixture CVTRA01Y       2 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP fixture CVTRA04Y       5 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP fixture CVTRA03Y       5 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP fixture CVACT01Y       2 records i02-tie-half-cent/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP fixture CVTRA05Y       2 records i02-tie-half-cent/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP fixture CVACT01Y       1 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP fixture CVACT03Y       1 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP fixture CVTRA02Y      15 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP fixture CVTRA01Y       2 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP fixture CVTRA04Y       5 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP fixture CVTRA03Y       5 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP fixture CVACT01Y       1 records i03-zero-rate-skipped/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP fixture CVTRA05Y       1 records i03-zero-rate-skipped/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP fixture CVACT01Y       1 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP fixture CVACT03Y       1 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP fixture CVTRA02Y      15 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP fixture CVTRA01Y       1 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP fixture CVTRA04Y       5 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP fixture CVTRA03Y       5 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP fixture CVACT01Y       1 records i04-default-group-fallback/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP fixture CVTRA05Y       1 records i04-default-group-fallback/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP fixture CVACT01Y       1 records i05-multi-category/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP fixture CVACT03Y       1 records i05-multi-category/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP fixture CVTRA02Y      15 records i05-multi-category/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP fixture CVTRA01Y       2 records i05-multi-category/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP fixture CVTRA04Y       5 records i05-multi-category/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP fixture CVTRA03Y       5 records i05-multi-category/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP fixture CVACT01Y       1 records i05-multi-category/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP fixture CVTRA05Y       2 records i05-multi-category/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP fixture CVACT01Y       1 records i06-negative-balance/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP fixture CVACT03Y       1 records i06-negative-balance/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP fixture CVTRA02Y      15 records i06-negative-balance/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP fixture CVTRA01Y       1 records i06-negative-balance/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP fixture CVTRA04Y       5 records i06-negative-balance/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP fixture CVTRA03Y       5 records i06-negative-balance/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP fixture CVACT01Y       1 records i06-negative-balance/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP fixture CVTRA05Y       1 records i06-negative-balance/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP fixture CVACT01Y       2 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP fixture CVACT03Y       2 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP fixture CVTRA02Y      15 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP fixture CVTRA01Y       2 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP fixture CVTRA04Y       5 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP fixture CVTRA03Y       5 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP fixture CVACT01Y       2 records i07-nontie-rounding/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP fixture CVTRA05Y       2 records i07-nontie-rounding/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP fixture total 56 files, 228 records, 0 not identical
+ROUNDTRIP cp037   CVACT01Y       2 records i01-baseline/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP cp037   CVACT03Y       2 records i01-baseline/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP cp037   CVTRA02Y      15 records i01-baseline/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP cp037   CVTRA01Y       2 records i01-baseline/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP cp037   CVTRA04Y       5 records i01-baseline/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP cp037   CVTRA03Y       5 records i01-baseline/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP cp037   CVACT01Y       2 records i01-baseline/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP cp037   CVTRA05Y       2 records i01-baseline/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP cp037   CVACT01Y       2 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP cp037   CVACT03Y       2 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP cp037   CVTRA02Y      15 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP cp037   CVTRA01Y       2 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP cp037   CVTRA04Y       5 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP cp037   CVTRA03Y       5 records i02-tie-half-cent/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP cp037   CVACT01Y       2 records i02-tie-half-cent/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP cp037   CVTRA05Y       2 records i02-tie-half-cent/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP cp037   CVACT01Y       1 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP cp037   CVACT03Y       1 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP cp037   CVTRA02Y      15 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP cp037   CVTRA01Y       2 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP cp037   CVTRA04Y       5 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP cp037   CVTRA03Y       5 records i03-zero-rate-skipped/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP cp037   CVACT01Y       1 records i03-zero-rate-skipped/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP cp037   CVTRA05Y       1 records i03-zero-rate-skipped/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP cp037   CVACT01Y       1 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP cp037   CVACT03Y       1 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP cp037   CVTRA02Y      15 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP cp037   CVTRA01Y       1 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP cp037   CVTRA04Y       5 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP cp037   CVTRA03Y       5 records i04-default-group-fallback/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP cp037   CVACT01Y       1 records i04-default-group-fallback/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP cp037   CVTRA05Y       1 records i04-default-group-fallback/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP cp037   CVACT01Y       1 records i05-multi-category/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP cp037   CVACT03Y       1 records i05-multi-category/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP cp037   CVTRA02Y      15 records i05-multi-category/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP cp037   CVTRA01Y       2 records i05-multi-category/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP cp037   CVTRA04Y       5 records i05-multi-category/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP cp037   CVTRA03Y       5 records i05-multi-category/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP cp037   CVACT01Y       1 records i05-multi-category/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP cp037   CVTRA05Y       2 records i05-multi-category/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP cp037   CVACT01Y       1 records i06-negative-balance/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP cp037   CVACT03Y       1 records i06-negative-balance/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP cp037   CVTRA02Y      15 records i06-negative-balance/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP cp037   CVTRA01Y       1 records i06-negative-balance/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP cp037   CVTRA04Y       5 records i06-negative-balance/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP cp037   CVTRA03Y       5 records i06-negative-balance/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP cp037   CVACT01Y       1 records i06-negative-balance/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP cp037   CVTRA05Y       1 records i06-negative-balance/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP cp037   CVACT01Y       2 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.ACCTDATA.PS.txt
+ROUNDTRIP cp037   CVACT03Y       2 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+ROUNDTRIP cp037   CVTRA02Y      15 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+ROUNDTRIP cp037   CVTRA01Y       2 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.TCATBALF.PS.txt
+ROUNDTRIP cp037   CVTRA04Y       5 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.TRANCATG.PS.txt
+ROUNDTRIP cp037   CVTRA03Y       5 records i07-nontie-rounding/input/AWS.M2.CARDDEMO.TRANTYPE.PS.txt
+ROUNDTRIP cp037   CVACT01Y       2 records i07-nontie-rounding/expected/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+ROUNDTRIP cp037   CVTRA05Y       2 records i07-nontie-rounding/expected/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+ROUNDTRIP cp037   total 228 records, sign bytes seen [C0, C1, C2, C3, C4, C5, C7, D0]
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.064 s -- in com.carddemo.interest.codec.FixtureRoundTripTest
+[INFO] Running com.carddemo.interest.codec.RecordRejectionTest
+[INFO] Tests run: 36, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.040 s -- in com.carddemo.interest.codec.RecordRejectionTest
+[INFO] Running com.carddemo.interest.policy.InterestPolicyTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.096 s -- in com.carddemo.interest.policy.InterestPolicyTest
+[INFO] Running com.carddemo.interest.domain.InterestFormulaTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.carddemo.interest.domain.InterestFormulaTest
+[INFO] Running com.carddemo.interest.domain.InterestCalculatorTest
+[INFO] Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.carddemo.interest.domain.InterestCalculatorTest
+[INFO] Running com.carddemo.interest.domain.RunTimestampTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.carddemo.interest.domain.RunTimestampTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 313, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- maven-jar-plugin:3.4.2:jar (default-jar) @ interest ---
+[INFO] Building jar: /home/ubuntu/repos/ts-cobol-carddemo/java/interest/target/interest.jar
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:3.5.6:repackage (repackage) @ interest ---
+[INFO] Replacing main artifact /home/ubuntu/repos/ts-cobol-carddemo/java/interest/target/interest.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /home/ubuntu/repos/ts-cobol-carddemo/java/interest/target/interest.jar.original
+[INFO] 
+[INFO] --- maven-failsafe-plugin:3.5.4:integration-test (default) @ interest ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.carddemo.interest.batch.InterestCalcJobIT
+16:13:34.288 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.carddemo.interest.batch.InterestCalcJobIT]: InterestCalcJobIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:13:34.323 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+16:13:34.324 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+16:13:34.343 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.21.4
+16:13:34.426 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.UnixSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+16:13:34.579 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+16:13:34.581 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+16:13:34.592 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.9.2
+  API Version: 1.56
+  Operating System: Ubuntu 22.04.5 LTS
+  Total Memory: 32096 MB
+16:13:34.719 [main] INFO tc.testcontainers/ryuk:0.12.0 -- Creating container for image: testcontainers/ryuk:0.12.0
+16:13:34.722 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: testcontainers/ryuk:0.12.0, configFile: /home/ubuntu/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /home/ubuntu/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+16:13:34.812 [main] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 is starting: b7ef1d4ad3f8db82b2f272913a6b1877487282cac7b8adde713c162d2a9a0e69
+16:13:35.015 [main] INFO tc.testcontainers/ryuk:0.12.0 -- Container testcontainers/ryuk:0.12.0 started in PT0.29575795S
+16:13:35.018 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+16:13:35.018 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+16:13:35.019 [main] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+16:13:35.097 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.carddemo.interest.InterestApplication for test class com.carddemo.interest.batch.InterestCalcJobIT
+16:13:35.147 [main] INFO tc.postgres:15 -- Creating container for image: postgres:15
+16:13:35.203 [main] INFO tc.postgres:15 -- Container postgres:15 is starting: fa06dc7266301d25e2b15ec6ea54376a91775975533d0748d1d3f73dbcd1e94a
+16:13:36.091 [main] INFO tc.postgres:15 -- Container postgres:15 started in PT0.944141601S
+16:13:36.092 [main] INFO tc.postgres:15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:32771/carddemo?loggerLevel=OFF)
+2026-11-15T16:13:36.359Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.InterestCalcJobIT     : Starting InterestCalcJobIT using Java 21.0.13.0.3 with PID 14788 (started by ubuntu in /home/ubuntu/repos/ts-cobol-carddemo/java/interest)
+2026-11-15T16:13:36.359Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.InterestCalcJobIT     : No active profile set, falling back to 1 default profile: "default"
+2026-11-15T16:13:36.795Z  INFO 14788 --- [interest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-15T16:13:36.916Z  INFO 14788 --- [interest] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3070f3e6
+2026-11-15T16:13:36.921Z  INFO 14788 --- [interest] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-15T16:13:37.066Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.InterestCalcJobIT     : Started InterestCalcJobIT in 0.953 seconds (process running for 3.227)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/ubuntu/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.7/byte-buddy-agent-1.17.7.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-11-15T16:13:37.470Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-8494158935090462582/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=f34c6149-ce03-41e8-af46-fe8fab7c2847, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.485Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.516Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 29ms
+2026-11-15T16:13:37.518Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run f34c6149-ce03-41e8-af46-fe8fab7c2847 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.528Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-8494158935090462582/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=f34c6149-ce03-41e8-af46-fe8fab7c2847, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 49ms
+2026-11-15T16:13:37.563Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-10650125890449366456/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=72cd10dd-09f1-41ba-bcec-be5a543fc830, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.569Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.573Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 4ms
+2026-11-15T16:13:37.574Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 72cd10dd-09f1-41ba-bcec-be5a543fc830 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.579Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-10650125890449366456/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=72cd10dd-09f1-41ba-bcec-be5a543fc830, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 13ms
+2026-11-15T16:13:37.589Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-2340525590190195556/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=6a5a9fb0-aea6-484a-8c18-e23c315f6b77, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i02-tie-half-cent/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.593Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.597Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 4ms
+2026-11-15T16:13:37.598Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 6a5a9fb0-aea6-484a-8c18-e23c315f6b77 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.602Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-2340525590190195556/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=6a5a9fb0-aea6-484a-8c18-e23c315f6b77, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i02-tie-half-cent/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 11ms
+2026-11-15T16:13:37.611Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15896085272389952563/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=3414de7c-6a79-435b-9509-44eda4102d79, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i03-zero-rate-skipped/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.615Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.619Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.620Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 3414de7c-6a79-435b-9509-44eda4102d79 step calcInterestStep completed: accounts=1 transactions=1
+2026-11-15T16:13:37.624Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15896085272389952563/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=3414de7c-6a79-435b-9509-44eda4102d79, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i03-zero-rate-skipped/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 11ms
+2026-11-15T16:13:37.632Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-4099445762322506341/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=1fc77714-d698-43f5-90ff-de1960a438da, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i04-default-group-fallback/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.636Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.640Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.641Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 1fc77714-d698-43f5-90ff-de1960a438da step calcInterestStep completed: accounts=1 transactions=1
+2026-11-15T16:13:37.644Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-4099445762322506341/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=1fc77714-d698-43f5-90ff-de1960a438da, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i04-default-group-fallback/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 9ms
+2026-11-15T16:13:37.652Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-3543768572961564681/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=6bd7014f-f919-44d6-88fa-ebd0c677ce4b, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i05-multi-category/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.655Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.658Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.659Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 6bd7014f-f919-44d6-88fa-ebd0c677ce4b step calcInterestStep completed: accounts=1 transactions=2
+2026-11-15T16:13:37.662Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-3543768572961564681/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=6bd7014f-f919-44d6-88fa-ebd0c677ce4b, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i05-multi-category/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 8ms
+2026-11-15T16:13:37.670Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-7884589081553129683/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=9d720a40-aee5-4cca-a84e-4391a345d728, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i06-negative-balance/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.673Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.677Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.677Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 9d720a40-aee5-4cca-a84e-4391a345d728 step calcInterestStep completed: accounts=1 transactions=1
+2026-11-15T16:13:37.680Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-7884589081553129683/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=9d720a40-aee5-4cca-a84e-4391a345d728, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i06-negative-balance/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 9ms
+2026-11-15T16:13:37.688Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-3921879467729655390/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=e6273fa1-f7d3-4e20-afea-0243adf2bf1f, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i07-nontie-rounding/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.692Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.697Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 4ms
+2026-11-15T16:13:37.698Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run e6273fa1-f7d3-4e20-afea-0243adf2bf1f step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.700Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-3921879467729655390/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=e6273fa1-f7d3-4e20-afea-0243adf2bf1f, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i07-nontie-rounding/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 11ms
+2026-11-15T16:13:37.709Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15515289222138207549/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=99df8a32-7bac-4dd7-8aac-d324866f82ca, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i04-default-group-fallback/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.713Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.717Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.718Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 99df8a32-7bac-4dd7-8aac-d324866f82ca step calcInterestStep completed: accounts=1 transactions=1
+2026-11-15T16:13:37.721Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15515289222138207549/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=99df8a32-7bac-4dd7-8aac-d324866f82ca, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i04-default-group-fallback/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 10ms
+2026-11-15T16:13:37.730Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-18310651973139912236/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=8571eb86-0ebb-44e8-9731-b13fcce33017, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.734Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.739Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 5ms
+2026-11-15T16:13:37.740Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 8571eb86-0ebb-44e8-9731-b13fcce33017 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.745Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-18310651973139912236/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=8571eb86-0ebb-44e8-9731-b13fcce33017, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 13ms
+2026-11-15T16:13:37.755Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-10352090477118326729/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=5971045d-4888-484f-b40b-d4dc69eac83f, type=class java.lang.String, identifying=true}','inputDir':'{value=/tmp/junit-10352090477118326729/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.758Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.761Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.762Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 5971045d-4888-484f-b40b-d4dc69eac83f step calcInterestStep completed: accounts=0 transactions=0
+2026-11-15T16:13:37.765Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-10352090477118326729/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=5971045d-4888-484f-b40b-d4dc69eac83f, type=class java.lang.String, identifying=true}','inputDir':'{value=/tmp/junit-10352090477118326729/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 8ms
+2026-11-15T16:13:37.774Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14356018252126261781/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=70b0ff41-02ab-42a7-bd3d-4e4647702eb9, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.778Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.782Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.783Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 70b0ff41-02ab-42a7-bd3d-4e4647702eb9 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.786Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14356018252126261781/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=70b0ff41-02ab-42a7-bd3d-4e4647702eb9, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 10ms
+2026-11-15T16:13:37.790Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14356018252126261781/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=1757f1f4-a7fa-44ee-a059-42b18a266f36, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.793Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.797Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.797Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 1757f1f4-a7fa-44ee-a059-42b18a266f36 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.800Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14356018252126261781/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=1757f1f4-a7fa-44ee-a059-42b18a266f36, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 9ms
+2026-11-15T16:13:37.806Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14914641624390944684/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=e7a57489-fcd4-49b8-87cb-5425e60861c2, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.810Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.813Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.813Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run e7a57489-fcd4-49b8-87cb-5425e60861c2 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.816Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-14914641624390944684/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=e7a57489-fcd4-49b8-87cb-5425e60861c2, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 8ms
+2026-11-15T16:13:37.826Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-13850757865611033347/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=3078f604-217d-4e50-bd47-643f522c18fd, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.829Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.835Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 4ms
+2026-11-15T16:13:37.835Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 3078f604-217d-4e50-bd47-643f522c18fd step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.841Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-13850757865611033347/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=3078f604-217d-4e50-bd47-643f522c18fd, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 13ms
+2026-11-15T16:13:37.847Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-339596622348146603/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=02b37428-6421-42f3-85ce-afbe50a7c689, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.849Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.852Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 2ms
+2026-11-15T16:13:37.853Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 02b37428-6421-42f3-85ce-afbe50a7c689 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.870Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-339596622348146603/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=02b37428-6421-42f3-85ce-afbe50a7c689, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 20ms
+2026-11-15T16:13:37.877Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-17383259527160953994/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=b4d166ef-a81a-4ff9-a0bd-c79251c914cf, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.879Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.883Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.884Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run b4d166ef-a81a-4ff9-a0bd-c79251c914cf step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.886Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-17383259527160953994/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=b4d166ef-a81a-4ff9-a0bd-c79251c914cf, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 7ms
+2026-11-15T16:13:37.895Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-1811393462070592295/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a908a88b-bb13-4c24-96ab-665437c19559, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.897Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.907Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 10ms
+2026-11-15T16:13:37.908Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run a908a88b-bb13-4c24-96ab-665437c19559 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.912Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-1811393462070592295/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=a908a88b-bb13-4c24-96ab-665437c19559, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 15ms
+2026-11-15T16:13:37.921Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15766400304322725592/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=68cbd5eb-106f-4d14-b0e4-9477561278e5, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.924Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.928Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 3ms
+2026-11-15T16:13:37.928Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 68cbd5eb-106f-4d14-b0e4-9477561278e5 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.932Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-15766400304322725592/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=68cbd5eb-106f-4d14-b0e4-9477561278e5, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 8ms
+2026-11-15T16:13:37.944Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-6678456633941062424/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=6d87b4a0-ed09-47b8-86d4-0e108f38aa53, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.949Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.954Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 4ms
+2026-11-15T16:13:37.954Z  INFO 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 6d87b4a0-ed09-47b8-86d4-0e108f38aa53 step calcInterestStep completed: accounts=2 transactions=2
+2026-11-15T16:13:37.956Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-6678456633941062424/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=6d87b4a0-ed09-47b8-86d4-0e108f38aa53, type=class java.lang.String, identifying=true}','inputDir':'{value=../../fixtures/interest/i01-baseline/input, type=class java.lang.String, identifying=true}'}] and the following status: [COMPLETED] in 11ms
+2026-11-15T16:13:37.962Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] launched with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-1685012732794512323/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=f33c6a44-0329-4bc7-afb8-e28b973a2196, type=class java.lang.String, identifying=true}','inputDir':'{value=/tmp/junit-1685012732794512323/input, type=class java.lang.String, identifying=true}'}]
+2026-11-15T16:13:37.964Z  INFO 14788 --- [interest] [           main] o.s.batch.core.job.SimpleStepHandler     : Executing step: [calcInterestStep]
+2026-11-15T16:13:37.966Z ERROR 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+
+com.carddemo.interest.domain.InterestRunStoppedException: OPEN_INPUT (INT-R08): cannot read input file AWS.M2.CARDDEMO.DISCGRP.PS.txt
+	at com.carddemo.interest.file.FileRunWorkspace.readRecords(FileRunWorkspace.java:115) ~[classes/:na]
+	at com.carddemo.interest.file.FileRunWorkspace.<init>(FileRunWorkspace.java:98) ~[classes/:na]
+	at com.carddemo.interest.file.FileRunWorkspace.open(FileRunWorkspace.java:106) ~[classes/:na]
+	at com.carddemo.interest.batch.CalcInterestRun.beforeStep(CalcInterestRun.java:49) ~[classes/:na]
+	at org.springframework.batch.core.listener.CompositeStepExecutionListener.beforeStep(CompositeStepExecutionListener.java:80) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.step.AbstractStep.execute(AbstractStep.java:226) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleStepHandler.handleStep(SimpleStepHandler.java:153) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.handleStep(AbstractJob.java:408) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.SimpleJob.doExecute(SimpleJob.java:127) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.job.AbstractJob.execute(AbstractJob.java:307) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher$1.run(TaskExecutorJobLauncher.java:155) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at org.springframework.core.task.SyncTaskExecutor.execute(SyncTaskExecutor.java:50) ~[spring-core-6.2.11.jar:6.2.11]
+	at org.springframework.batch.core.launch.support.TaskExecutorJobLauncher.run(TaskExecutorJobLauncher.java:146) ~[spring-batch-core-5.2.3.jar:5.2.3]
+	at com.carddemo.interest.batch.InterestCalcJobIT.launch(InterestCalcJobIT.java:74) ~[test-classes/:na]
+	at com.carddemo.interest.batch.InterestCalcJobIT.intR08_missingInputFileFailsTheJobAndLeavesNoOutput(InterestCalcJobIT.java:204) ~[test-classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:775) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:479) ~[junit-platform-commons-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:161) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:152) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:91) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:112) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:94) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:93) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:87) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:216) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:212) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:137) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.12.2.jar:5.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:156) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:160) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:146) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:144) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:143) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:100) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:201) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:170) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:94) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:59) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:142) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$1(InterceptingLauncher.java:39) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:38) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.12.2.jar:1.12.2]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithoutCancellationToken(LauncherAdapter.java:60) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:52) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136) ~[surefire-junit-platform-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.4.jar:3.5.4]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.4.jar:3.5.4]
+Caused by: java.nio.file.NoSuchFileException: /tmp/junit-1685012732794512323/input/AWS.M2.CARDDEMO.DISCGRP.PS.txt
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92) ~[na:na]
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106) ~[na:na]
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111) ~[na:na]
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newFileChannel(UnixFileSystemProvider.java:224) ~[na:na]
+	at java.base/java.nio.channels.FileChannel.open(FileChannel.java:309) ~[na:na]
+	at java.base/java.nio.channels.FileChannel.open(FileChannel.java:369) ~[na:na]
+	at java.base/java.nio.file.Files.lines(Files.java:4125) ~[na:na]
+	at com.carddemo.interest.file.FileRunWorkspace.readRecords(FileRunWorkspace.java:112) ~[classes/:na]
+	... 89 common frames omitted
+
+2026-11-15T16:13:37.968Z  INFO 14788 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Step: [calcInterestStep] executed in 4ms
+2026-11-15T16:13:37.968Z ERROR 14788 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run f33c6a44-0329-4bc7-afb8-e28b973a2196 step calcInterestStep stopped before any work
+2026-11-15T16:13:37.972Z  INFO 14788 --- [interest] [           main] o.s.b.c.l.s.TaskExecutorJobLauncher      : Job: [SimpleJob: [name=interestCalcJob]] completed with the following parameters: [{'format':'{value=fixture, type=class java.lang.String, identifying=true}','outputDir':'{value=/tmp/junit-1685012732794512323/actual, type=class java.lang.String, identifying=true}','parmDate':'{value=2022071800, type=class java.lang.String, identifying=true}','runId':'{value=f33c6a44-0329-4bc7-afb8-e28b973a2196, type=class java.lang.String, identifying=true}','inputDir':'{value=/tmp/junit-1685012732794512323/input, type=class java.lang.String, identifying=true}'}] and the following status: [FAILED] in 9ms
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.964 s -- in com.carddemo.interest.batch.InterestCalcJobIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- maven-failsafe-plugin:3.5.4:verify (default) @ interest ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  8.325 s
+[INFO] Finished at: 2026-11-15T16:13:38Z
+[INFO] ------------------------------------------------------------------------
+# exit code 0

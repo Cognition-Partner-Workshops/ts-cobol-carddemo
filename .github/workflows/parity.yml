@@ -33,10 +33,51 @@ jobs:
           test $tie -ne 0 || { echo "tie case unexpectedly passed"; exit 1; }
           test $nontie -eq 0 || { echo "non-tie case unexpectedly failed"; exit 1; }
 
+      # ---- Java interest stream (java/interest), ticket INT-T09: the gate
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Java interest - unit and integration tests
+        run: mvn -B -f java/interest/pom.xml verify
+
+      - name: Java interest - seven-case parity through PostgreSQL (make parity-java)
+        run: make parity-java
+
+      - name: Java interest - negative control, HALF_EVEN fails on the tie case only
+        run: |
+          out=work/parity-java-half-even
+          mkdir -p $out
+          set +e
+          make parity-java INTEREST_ARGS="--interest.policy.rounding=HALF_EVEN" PARITY_JAVA_OUT=$out > $out/gate.log 2>&1; rc=$?
+          set -e
+          cat $out/gate.log
+          test $rc -ne 0 || { echo "the gate passed with HALF_EVEN"; exit 1; }
+          grep -q '^interest/i02-tie-half-cent \[java\]: FAIL' $out/gate.log || { echo "tie case unexpectedly passed"; exit 1; }
+          test "$(grep -c '^interest/.* \[java\]: FAIL' $out/gate.log)" -eq 1 || { echo "another case than the tie case failed"; exit 1; }
+          grep -q '^parity-java: 6 of 7 cases PASS$' $out/gate.log || { echo "expected 6 of 7 cases to pass"; exit 1; }
+
       - name: Upload parity report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: parity-report
           path: work/parity/*.md
+          if-no-files-found: ignore
+
+      - name: Upload Java interest parity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-java-report
+          path: |
+            work/parity-java/report.md
+            work/parity-java/*/recon.md
+            work/parity-java-half-even/report.md
+            work/parity-java-half-even/gate.log
+            java/interest/target/surefire-reports/*.txt
+            java/interest/target/failsafe-reports/*.txt
           if-no-files-found: ignore

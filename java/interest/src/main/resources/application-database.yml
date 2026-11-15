@@ -1,0 +1,9 @@
+# Profile "database" (ticket 09, the parity gate): interestCalcJob as the architecture describes it,
+# loadExtractsStep -> calcInterestStep -> exportDatasetsStep, all through schema carddemo.
+# Selected with --spring.profiles.active=database (make parity-java does). Without the profile the
+# job is calcInterestStep alone on the file adapters, as the pilot left it.
+interest:
+  job:
+    steps: all
+  calc:
+    store: jdbc

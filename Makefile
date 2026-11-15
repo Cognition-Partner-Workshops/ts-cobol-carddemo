@@ -79,33 +79,100 @@ parity-naive:
 	rc=$$?; echo "report: work/parity/report-naive.md"; exit $$rc
 
 # ------------------------------------------- Java interest job (java/interest)
-# Parity entry point of the converted interest stream (FI-6).  Needs JDK 21 and
-# Maven on the host for the build, Docker for the run, python3 (3.10+) for the
-# comparison.  The job runs in a JRE container that shares the network of the
-# `db` service, where it keeps the Spring Batch job repository (schema batch).
+# Parity entry point of the converted interest stream (FI-6) and its gate (INT-T09).  Needs JDK 21
+# and Maven on the host for the build, Docker for the run, python3 (3.10+) for the comparison.
+# The job runs in a JRE container that shares the network of the `db` service, with the profile
+# `database`: loadExtractsStep -> calcInterestStep -> exportDatasetsStep through schema carddemo
+# (db/postgres/02-interest.sql; applied here when the volume of the db service is older than it).
+# Per case: the job, then the database assertions RC1, RC2 and RC5 on the run's row of interest_run
+# (the reconciliation report of the data move kit, <out>/<case>/recon.md), then the comparator.
+# A case fails when the job does not end with exit code 0, when a reconciliation figure is
+# DIFFERENT, when a line of RC1, RC2 or RC5 is not EQUAL (NOT AVAILABLE is not equal) or when the
+# comparator finds a difference; it is never skipped.
 # Output: work/parity-java/<case>/actual, report: work/parity-java/report.md.
+#   INTEREST_ARGS="--interest.policy.rounding=HALF_EVEN" PARITY_JAVA_OUT=work/parity-java-half-even
+#       the negative control: another policy value, written somewhere else.  Must fail on
+#       i02-tie-half-cent only, as `make parity-naive` does.
 INTEREST_JAR     = java/interest/target/interest.jar
 INTEREST_JRE    ?= eclipse-temurin:21-jre
 # PARM of INTCALC.STEP15 (app/jcl/INTCALC.jcl:22) and the clock the harness freezes (tools/runjcl/chains.json)
 INTEREST_PARM   ?= 2022071800
 INTEREST_CLOCK  ?= 2022-07-05 10:00:00.00
+INTEREST_ARGS   ?=
+PARITY_JAVA_OUT ?= work/parity-java
 
 parity-java:
 	$(COMPOSE) up -d --wait db
+	@$(COMPOSE) exec -T db psql -U carddemo -d carddemo -Atc "select to_regclass('carddemo.interest_run')" | grep -q interest_run \
+	  || $(COMPOSE) exec -T db psql -q -v ON_ERROR_STOP=1 -U carddemo -d carddemo -f /docker-entrypoint-initdb.d/02-interest.sql
 	mvn -q -f java/interest/pom.xml -DskipTests package
-	@rm -f work/parity-java/report.md; mkdir -p work/parity-java; fail=0; \
+	@out=$(PARITY_JAVA_OUT); rm -f $$out/report.md; mkdir -p $$out; fail=0; total=0; passed=0; \
 	db=$$($(COMPOSE) ps -q db); \
+	jre="docker run --rm --network container:$$db --user $(UID):$(GID) -v $(CURDIR):/estate -w /estate $(INTEREST_JRE)"; \
 	cases="$(if $(CASE),$(CASE),$$(ls fixtures/interest))"; \
 	for case in $$cases; do \
-	  rm -rf work/parity-java/$$case; \
-	  docker run --rm --network container:$$db --user $(UID):$(GID) -v "$(CURDIR)":/estate -w /estate $(INTEREST_JRE) \
-	    java -jar $(INTEREST_JAR) --interest.clock.frozen="$(INTEREST_CLOCK)" --logging.level.root=WARN \
+	  total=$$((total + 1)); ok=1; rm -rf $$out/$$case $$out/$$case.load-rejects.txt; \
+	  $$jre java -jar $(INTEREST_JAR) --spring.profiles.active=database \
+	      --interest.clock.frozen="$(INTEREST_CLOCK)" --logging.level.root=WARN $(INTEREST_ARGS) \
 	      parmDate=$(INTEREST_PARM) runId=$$(date +%s)-$$$$-$$case format=fixture \
-	      inputDir=fixtures/interest/$$case/input outputDir=work/parity-java/$$case/actual \
-	    || { echo "interest/$$case: java job ended with exit code $$?"; fail=1; }; \
-	  $(PY) tools/parity/compare.py interest $$case --actual work/parity-java/$$case/actual --label java --report work/parity-java/report.md || fail=1; \
+	      inputDir=fixtures/interest/$$case/input outputDir=$$out/$$case/actual \
+	    || { echo "interest/$$case: java job ended with exit code $$?"; ok=0; }; \
+	  if [ $$ok = 1 ]; then \
+	    $$jre java -cp $(INTEREST_JAR) $(RECON_MAIN) recon title=$$case inputDir=fixtures/interest/$$case/input \
+	        outputDir=$$out/$$case/actual format=fixture report=$$out/$$case/recon.md \
+	      && for rc in RC1 RC2 RC5; do \
+	           grep -q "^| $$rc .*| \*\*EQUAL\*\* |" $$out/$$case/recon.md && ! grep "^| $$rc " $$out/$$case/recon.md | grep -qv "| \*\*EQUAL\*\* |" || exit 1; \
+	         done \
+	      || { echo "interest/$$case: database assertions RC1, RC2, RC5 do not hold, see $$out/$$case/recon.md"; ok=0; }; \
+	  fi; \
+	  $(PY) tools/parity/compare.py interest $$case --actual $$out/$$case/actual --label java --report $$out/report.md || ok=0; \
+	  if [ $$ok = 1 ]; then passed=$$((passed + 1)); else fail=1; fi; \
 	done; \
-	echo "report: work/parity-java/report.md"; exit $$fail
+	echo "parity-java: $$passed of $$total cases PASS"; echo "report: $$out/report.md"; exit $$fail
+
+# ------------------------------------------- Data move kit of the interest stream (INT-T10)
+#   make recon-java CASE=<case> [LOAD=1] [RUN=<interest_run.run_id>] [OUT=<output dir>] [FORMAT=fixture|host]
+#       reconciliation report RC1-RC6 with the profile of TL4 -> work/recon-java/<case>.md
+#       Reads the unloaded files of fixtures/interest/<case>/input, interest_run and the tables (read-only)
+#       and the exported files of OUT (default work/parity-java/<case>/actual).  LOAD=1 first loads the
+#       four tables from the case's input (trial load, TL3); RUN names another run than the newest.
+#       Exit 1 when a figure is DIFFERENT.  NOT AVAILABLE is never counted as equal.
+#   make sidebyside-java CASE=<case> [LEGACY=<dir>] [TARGET=<dir>] [TS=format|exact]
+#       two output directories field by field via tools/parity/compare.py, every difference with its
+#       class (defect, decision id, gap id) -> work/sidebyside-java/<case>/report.md
+#       LEGACY defaults to fixtures/interest/<case>/expected, TARGET to work/parity-java/<case>/actual;
+#       with both given, CASE is only the name of the comparison.  TS is the timestamp rule of SS3.
+#       Exit 1 when a difference is a defect.
+.PHONY: recon-java sidebyside-java
+RECON_MAIN  = -Dloader.main=com.carddemo.interest.recon.DataMoveKit org.springframework.boot.loader.launch.PropertiesLauncher
+RECON_JAVA  = docker run --rm --user $(UID):$(GID) -v "$(CURDIR)":/estate -w /estate
+
+recon-java:
+	@test -n "$(CASE)" || { echo "usage: make recon-java CASE=<case> [LOAD=1] [RUN=<run_id>] [OUT=<dir>] [FORMAT=fixture|host]"; exit 2; }
+	$(COMPOSE) up -d --wait db
+	mvn -q -f java/interest/pom.xml -DskipTests package
+	@db=$$($(COMPOSE) ps -q db); \
+	if [ -n "$(LOAD)" ]; then \
+	  $(RECON_JAVA) --network container:$$db $(INTEREST_JRE) java -cp $(INTEREST_JAR) $(RECON_MAIN) trial-load \
+	    inputDir=fixtures/interest/$(CASE)/input rejects=work/recon-java/$(CASE).load-rejects.txt \
+	    format=$(or $(FORMAT),fixture) parmDate=$(INTEREST_PARM) || exit 1; \
+	fi; \
+	$(RECON_JAVA) --network container:$$db $(INTEREST_JRE) java -cp $(INTEREST_JAR) $(RECON_MAIN) recon \
+	  title=$(CASE) inputDir=fixtures/interest/$(CASE)/input outputDir=$(or $(OUT),work/parity-java/$(CASE)/actual) \
+	  format=$(or $(FORMAT),fixture) $(if $(RUN),run=$(RUN)) report=work/recon-java/$(CASE).md
+
+sidebyside-java:
+	@test -n "$(CASE)" || { echo "usage: make sidebyside-java CASE=<case> [LEGACY=<dir>] [TARGET=<dir>] [TS=format|exact]"; exit 2; }
+	mvn -q -f java/interest/pom.xml -DskipTests package
+	@work=work/sidebyside-java/$(CASE); legacy=$(or $(LEGACY),fixtures/interest/$(CASE)/expected); \
+	target=$(or $(TARGET),work/parity-java/$(CASE)/actual); ts=$(or $(TS),format); \
+	$(RECON_JAVA) $(INTEREST_JRE) java -cp $(INTEREST_JAR) $(RECON_MAIN) sidebyside-prepare \
+	  legacy=$$legacy target=$$target work=$$work name=$(CASE) timestamps=$$ts || exit 2; \
+	PYTHONDONTWRITEBYTECODE=1 $(PY) -c "import pathlib, sys; sys.path.insert(0, '.'); from tools.parity import compare; compare.FIXTURES = pathlib.Path(sys.argv[1]); del sys.argv[1]; sys.exit(compare.main())" \
+	  $$work/legacy interest $(CASE) --actual $$work/target --label "side by side, timestamps $$ts" --report $$work/compare.md; \
+	$(RECON_JAVA) $(INTEREST_JRE) java -cp $(INTEREST_JAR) $(RECON_MAIN) sidebyside-report \
+	  compare=$$work/compare.md prepared=$$work/prepared.txt report=$$work/report.md name=$(CASE) \
+	  legacy=$$legacy target=$$target timestamps=$$ts
 
 # ------------------------------------------- Data move kit of the interest stream (INT-T10)
 #   make recon-java CASE=<case> [LOAD=1] [RUN=<interest_run.run_id>] [OUT=<output dir>] [FORMAT=fixture|host]

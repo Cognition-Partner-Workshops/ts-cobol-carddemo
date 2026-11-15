@@ -23,6 +23,8 @@ import com.carddemo.interest.codec.DisclosureGroupRecord;
 import com.carddemo.interest.codec.DisclosureGroupRecord.Rate;
 import com.carddemo.interest.codec.FixtureCodePage;
 import com.carddemo.interest.codec.RecordImage;
+import com.carddemo.interest.codec.RecordLayout;
+import com.carddemo.interest.codec.RecordSource;
 import com.carddemo.interest.codec.TransactionRecord;
 import com.carddemo.interest.domain.Account;
 import com.carddemo.interest.domain.AccountBalances;
@@ -43,6 +45,7 @@ import com.carddemo.interest.port.TransactionSink;
  * The four input files of a case are read when the run opens; the outputs are staged next to the
  * output directory and moved into place only by {@link #commit}, so a failed run leaves no output
  * (INTCALC.jcl:37 DISP=(NEW,CATLG,DELETE); standards S6.4). No business table is used (ticket 01).
+ * Every record goes through the record codec (ticket 03) with its file name and record number.
  */
 public final class FileRunWorkspace {
 
@@ -58,10 +61,10 @@ public final class FileRunWorkspace {
     private final Path outputDir;
     private final Path stagingDir;
     /** Balance record images in key order: the one place the key order of the file adapter is fixed (S3.7, E6). */
-    private final List<String> balanceImages;
+    private final List<SourcedImage> balanceImages;
     private int nextBalance;
     /** Account record images by ACCT-ID text, in key order (the KSDS image). */
-    private final TreeMap<String, String> accountImages = new TreeMap<>();
+    private final TreeMap<String, SourcedImage> accountImages = new TreeMap<>();
     private final Map<Long, List<String>> cardNumbersByAccount = new HashMap<>();
     private final Map<Rate, BigDecimal> ratesByKey = new HashMap<>();
     private final List<String> transactionImages = new ArrayList<>();
@@ -70,20 +73,20 @@ public final class FileRunWorkspace {
     private FileRunWorkspace(Path inputDir, Path outputDir, String runId) {
         this.outputDir = outputDir;
         this.stagingDir = outputDir.resolveSibling(outputDir.getFileName() + ".staging-" + runId);
-        this.balanceImages = readRecords(inputDir.resolve(BALANCES_FILE), CategoryBalanceRecord.LENGTH).stream()
-                .sorted(Comparator.comparing(CategoryBalanceRecord::key))
+        this.balanceImages = readRecords(inputDir.resolve(BALANCES_FILE), CategoryBalanceRecord.LAYOUT).stream()
+                .sorted(Comparator.comparing(record -> CategoryBalanceRecord.key(record.image())))
                 .toList();
-        for (String image : readRecords(inputDir.resolve(ACCOUNTS_FILE), AccountRecord.LENGTH)) {
-            AccountRecord.decode(image);
-            accountImages.put(AccountRecord.key(image), image);
+        for (SourcedImage record : readRecords(inputDir.resolve(ACCOUNTS_FILE), AccountRecord.LAYOUT)) {
+            AccountRecord.decode(record.image(), record.source());
+            accountImages.put(AccountRecord.key(record.image()), record);
         }
-        for (String image : readRecords(inputDir.resolve(CARDS_FILE), CardXrefRecord.LENGTH)) {
-            CardOfAccount card = CardXrefRecord.decode(image);
+        for (SourcedImage record : readRecords(inputDir.resolve(CARDS_FILE), CardXrefRecord.LAYOUT)) {
+            CardOfAccount card = CardXrefRecord.decode(record.image(), record.source());
             cardNumbersByAccount.computeIfAbsent(card.accountId(), id -> new ArrayList<>()).add(card.cardNumber());
         }
         cardNumbersByAccount.values().forEach(numbers -> numbers.sort(Comparator.naturalOrder()));
-        for (String image : readRecords(inputDir.resolve(RATES_FILE), DisclosureGroupRecord.LENGTH)) {
-            Rate rate = DisclosureGroupRecord.decode(image);
+        for (SourcedImage record : readRecords(inputDir.resolve(RATES_FILE), DisclosureGroupRecord.LAYOUT)) {
+            Rate rate = DisclosureGroupRecord.decode(record.image(), record.source());
             ratesByKey.put(new Rate(rate.groupId(), rate.typeCode(), rate.categoryCode(), null), rate.yearlyRate());
         }
     }
@@ -93,13 +96,24 @@ public final class FileRunWorkspace {
         return new FileRunWorkspace(inputDir, outputDir, runId);
     }
 
-    private static List<String> readRecords(Path file, int recordLength) {
-        try (Stream<String> lines = Files.lines(file, FixtureCodePage.CHARSET)) {
-            return lines.map(line -> RecordImage.fromLine(line, recordLength)).toList();
+    /** A full-length record of the fixture format and where it was read. */
+    private record SourcedImage(String image, RecordSource source) {
+    }
+
+    private static List<SourcedImage> readRecords(Path file, RecordLayout layout) {
+        List<String> lines;
+        try {
+            lines = Files.readAllLines(file, FixtureCodePage.CHARSET);
         } catch (IOException | UncheckedIOException e) {
             throw new InterestRunStoppedException(StopReason.OPEN_INPUT,
                     "cannot read input file " + file.getFileName(), e);
         }
+        List<SourcedImage> records = new ArrayList<>(lines.size());
+        for (String line : lines) {
+            RecordSource source = new RecordSource(file.getFileName().toString(), records.size() + 1L);
+            records.add(new SourcedImage(RecordImage.fromLine(line, layout, source), source));
+        }
+        return records;
     }
 
     public BalanceSource balanceSource() {
@@ -108,31 +122,37 @@ public final class FileRunWorkspace {
                 return Optional.empty();
             }
             List<BalanceRead> balances = new ArrayList<>();
-            CategoryBalance first = CategoryBalanceRecord.decode(balanceImages.get(nextBalance));
+            CategoryBalance first = decodeBalance(balanceImages.get(nextBalance));
             while (nextBalance < balanceImages.size()) {
-                String image = balanceImages.get(nextBalance);
-                CategoryBalance balance = CategoryBalanceRecord.decode(image);
+                SourcedImage record = balanceImages.get(nextBalance);
+                CategoryBalance balance = decodeBalance(record);
                 if (balance.accountId() != first.accountId()) {
                     break;
                 }
-                balances.add(new BalanceRead(balance, image));
+                balances.add(new BalanceRead(balance, record.image()));
                 nextBalance++;
             }
             return Optional.of(new AccountBalances(first.accountId(), balances, nextBalance >= balanceImages.size()));
         };
     }
 
+    private static CategoryBalance decodeBalance(SourcedImage record) {
+        return CategoryBalanceRecord.decode(record.image(), record.source());
+    }
+
     public AccountStore accountStore() {
         return new AccountStore() {
             @Override
             public Optional<Account> find(long accountId) {
-                return Optional.ofNullable(accountImages.get(accountKey(accountId))).map(AccountRecord::decode);
+                return Optional.ofNullable(accountImages.get(accountKey(accountId)))
+                        .map(record -> AccountRecord.decode(record.image(), record.source()));
             }
 
             @Override
             public void postInterest(long accountId, BigDecimal newBalance) {
                 accountImages.computeIfPresent(accountKey(accountId),
-                        (key, image) -> AccountRecord.withInterestPosted(image, newBalance));
+                        (key, record) -> new SourcedImage(
+                                AccountRecord.withInterestPosted(record.image(), newBalance, record.source()), record.source()));
             }
         };
     }
@@ -181,7 +201,7 @@ public final class FileRunWorkspace {
             writeLines(stagingDir.resolve(TRANSACTIONS_DATASET),
                     transactionImages.stream().map(RecordImage::toLine).toList());
             writeLines(stagingDir.resolve(ACCOUNTS_DATASET),
-                    accountImages.values().stream().map(RecordImage::toLine).toList());
+                    accountImages.values().stream().map(record -> RecordImage.toLine(record.image())).toList());
             writeLines(stagingDir.resolve(RUN_LOG_FILE), runLogLines);
             Files.writeString(stagingDir.resolve(RETURN_CODES_FILE),
                     RecordedReturnCodes.json(stepReturnCode), FixtureCodePage.CHARSET);

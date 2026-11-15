@@ -31,6 +31,9 @@ interest:
     multiCard: STOP             # INT-H03
     overflow: STOP              # INT-H05
   calc:
+    store: file                 # file: the file adapters; jdbc: the tables of schema carddemo
     commitInterval: 100         # accounts per chunk (architecture.md section 5, G11)
+  job:
+    steps: calc                 # calc: calcInterestStep alone; load-calc-export: the three steps (profile tables)
   clock:
     frozen: ""                  # "yyyy-MM-dd HH:mm:ss.SS" freezes the run clock (tests and parity runs)

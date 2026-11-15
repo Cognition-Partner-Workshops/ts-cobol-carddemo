@@ -1,0 +1,10 @@
+# Profile "tables": the whole job of architecture.md section 4 on PostgreSQL. One launch runs
+# loadExtractsStep (inputDir -> the four replica tables and the interest_run row), calcInterestStep
+# on the tables and exportDatasetsStep (the run -> outputDir in the recorded format, FI-2).
+# make parity-java runs with this profile (FI-6). Without it the job is calcInterestStep on the
+# file adapters, as in the pilot.
+interest:
+  calc:
+    store: jdbc
+  job:
+    steps: load-calc-export

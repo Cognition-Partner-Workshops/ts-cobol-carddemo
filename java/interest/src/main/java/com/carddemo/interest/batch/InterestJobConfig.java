@@ -25,10 +25,12 @@ import com.carddemo.interest.domain.HoleDecisions;
 import com.carddemo.interest.policy.InterestPolicy;
 
 /**
- * interestCalcJob replaces INTCALC.STEP15 (architecture.md section 4). It has one step,
- * calcInterestStep. interest.calc.store chooses the adapters of its ports: file (the default, as
+ * interestCalcJob replaces INTCALC.STEP15 (architecture.md section 4). interest.job.steps chooses
+ * its steps: calcInterestStep alone (the default) or loadExtractsStep, calcInterestStep and
+ * exportDatasetsStep. interest.calc.store chooses the adapters of its ports: file (the default, as
  * in the pilot: PostgreSQL holds the job repository only) or jdbc (the tables of schema carddemo,
- * with the commit and restart boundaries of architecture.md sections 5 and 6).
+ * with the commit and restart boundaries of architecture.md sections 5 and 6); the three steps
+ * need jdbc.
  */
 @Configuration
 @EnableConfigurationProperties(InterestPolicy.class)
@@ -95,11 +97,31 @@ public class InterestJobConfig {
         };
     }
 
+    /**
+     * interest.job.steps chooses what one launch runs: calc (the default) is calcInterestStep alone,
+     * load-calc-export is the whole job of architecture.md section 4 on the tables, where
+     * loadExtractsStep opens the interest_run row, calcInterestStep continues it and
+     * exportDatasetsStep writes the datasets of that run.
+     */
     @Bean
-    Job interestCalcJob(JobRepository jobRepository, Step calcInterestStep) {
-        return new JobBuilder(JOB_NAME, jobRepository)
-                .validator(new InterestJobParameters())
-                .start(calcInterestStep)
-                .build();
+    Job interestCalcJob(JobRepository jobRepository, Step loadExtractsStep, Step calcInterestStep,
+            Step exportDatasetsStep,
+            @Value("${interest.calc.store:file}") CalcStore store,
+            @Value("${interest.job.steps:calc}") JobSteps steps) {
+        JobBuilder job = new JobBuilder(JOB_NAME, jobRepository).validator(new InterestJobParameters());
+        return switch (steps) {
+            case CALC -> job.start(calcInterestStep).build();
+            case LOAD_CALC_EXPORT -> {
+                if (store != CalcStore.JDBC) {
+                    throw new IllegalStateException(
+                            "interest.job.steps=load-calc-export needs interest.calc.store=jdbc: the load fills"
+                                    + " and the export reads the tables");
+                }
+                yield job.start(loadExtractsStep)
+                        .next(calcInterestStep)
+                        .next(new InterestRunHandover(exportDatasetsStep))
+                        .build();
+            }
+        };
     }
 }

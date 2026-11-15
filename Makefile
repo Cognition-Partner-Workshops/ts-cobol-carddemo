@@ -79,33 +79,134 @@ parity-naive:
 	rc=$$?; echo "report: work/parity/report-naive.md"; exit $$rc
 
 # ------------------------------------------- Java interest job (java/interest)
-# Parity entry point of the converted interest stream (FI-6).  Needs JDK 21 and
-# Maven on the host for the build, Docker for the run, python3 (3.10+) for the
-# comparison.  The job runs in a JRE container that shares the network of the
-# `db` service, where it keeps the Spring Batch job repository (schema batch).
+# Parity entry point of the converted interest stream (FI-6) and its gate (ticket 09).
+# Needs JDK 21 and Maven on the host for the build, Docker for the run, python3 (3.10+)
+# for the comparison.  The job runs in a JRE container that shares the network of the
+# `db` service.  With the profile `tables` (the default) one launch per case runs
+# loadExtractsStep, calcInterestStep and exportDatasetsStep through PostgreSQL; after
+# each case the gate checks RC1, RC2 and RC5 (modernization/design/strategy-interest.md)
+# in carddemo.interest_run against the input files and the exported files.
 # Output: work/parity-java/<case>/actual, report: work/parity-java/report.md.
+#   INTEREST_PROFILE=default   calcInterestStep alone on the file adapters (no database assertions)
+#   INTEREST_OPTS=--interest.policy.rounding=HALF_EVEN INTEREST_OUT=work/parity-java-half-even
+#                              the negative control: fails on i02-tie-half-cent only
 INTEREST_JAR     = java/interest/target/interest.jar
 INTEREST_JRE    ?= eclipse-temurin:21-jre
 # PARM of INTCALC.STEP15 (app/jcl/INTCALC.jcl:22) and the clock the harness freezes (tools/runjcl/chains.json)
 INTEREST_PARM   ?= 2022071800
 INTEREST_CLOCK  ?= 2022-07-05 10:00:00.00
+INTEREST_PROFILE ?= tables
+INTEREST_OPTS   ?=
+INTEREST_OUT    ?= work/parity-java
+INTEREST_PSQL    = $(COMPOSE) exec -T db psql -U carddemo -d carddemo -v ON_ERROR_STOP=1
+
+# The file side of RC1, RC2 and RC5, decoded with the estate's copybook decoder
+# (tools/parity/copybook.py), printed as psql variables.  argv: input directory, actual directory.
+define INTEREST_RC_FILES
+import sys
+from decimal import Decimal
+from pathlib import Path
+sys.path.insert(0, "tools/parity")
+from copybook import decode_record
+inputs, actual = Path(sys.argv[1]), Path(sys.argv[2])
+def records(path, layout, lrecl):
+    if not path.exists():
+        return []
+    lines = path.read_text(encoding="latin-1").splitlines()
+    return [decode_record(layout, line.ljust(lrecl).encode("latin-1")) for line in lines]
+def total(rows, field):
+    return sum((Decimal(row[field]) for row in rows), Decimal(0))
+accounts = records(inputs / "AWS.M2.CARDDEMO.ACCTDATA.PS.txt", "CVACT01Y", 300)
+cards = records(inputs / "AWS.M2.CARDDEMO.CARDXREF.PS.txt", "CVACT03Y", 50)
+balances = records(inputs / "AWS.M2.CARDDEMO.TCATBALF.PS.txt", "CVTRA01Y", 50)
+rates = records(inputs / "AWS.M2.CARDDEMO.DISCGRP.PS.txt", "CVTRA02Y", 50)
+written = records(actual / "datasets" / "AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt", "CVTRA05Y", 350)
+after = records(actual / "datasets" / "AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt", "CVACT01Y", 300)
+last = max((int(row["TRANCAT-ACCT-ID"]) for row in balances), default=None)
+lastCards = {str(row["XREF-CARD-NUM"]) for row in cards if int(row["XREF-ACCT-ID"]) == last}
+figures = {
+    "n_acct": len(accounts), "n_xref": len(cards), "n_bal": len(balances), "n_rate": len(rates),
+    "s_bal": total(accounts, "ACCT-CURR-BAL"), "s_limit": total(accounts, "ACCT-CREDIT-LIMIT"),
+    "s_cash": total(accounts, "ACCT-CASH-CREDIT-LIMIT"), "s_credit": total(accounts, "ACCT-CURR-CYC-CREDIT"),
+    "s_debit": total(accounts, "ACCT-CURR-CYC-DEBIT"), "s_tcat": total(balances, "TRAN-CAT-BAL"),
+    "s_rate": total(rates, "DIS-INT-RATE"), "h_acct": total(accounts, "ACCT-ID"),
+    "h_xref": total(cards, "XREF-ACCT-ID"), "h_tcat": total(balances, "TRANCAT-ACCT-ID"),
+    "x_tran": len(written), "x_amt": total(written, "TRAN-AMT"), "x_bal": total(after, "ACCT-CURR-BAL"),
+    "x_last": total([row for row in written if str(row["TRAN-CARD-NUM"]) in lastCards], "TRAN-AMT"),
+}
+for name, value in figures.items():
+    print(f"\\set {name} {value}")
+endef
+
+# RC1, RC2 and RC5 for the interest_run row the launch created (run_id above :before).
+# One line per assertion: name|t or name|f.
+define INTEREST_RC_SQL
+WITH r AS (SELECT * FROM carddemo.interest_run WHERE run_id > :before)
+SELECT 'one interest_run row of this launch, status EXPORTED',
+       coalesce((SELECT count(*) = 1 AND bool_and(status = 'EXPORTED') FROM r), false)
+UNION ALL SELECT c.name, coalesce(c.holds, false) FROM r CROSS JOIN LATERAL (VALUES
+  ('RC1 loaded_account_count = records of ACCTDATA.PS (' || :n_acct || ')', r.loaded_account_count = :n_acct),
+  ('RC1 loaded_card_xref_count = records of CARDXREF.PS (' || :n_xref || ')', r.loaded_card_xref_count = :n_xref),
+  ('RC1 loaded_tran_cat_balance_count = records of TCATBALF.PS (' || :n_bal || ')', r.loaded_tran_cat_balance_count = :n_bal),
+  ('RC1 loaded_disclosure_group_count = records of DISCGRP.PS (' || :n_rate || ')', r.loaded_disclosure_group_count = :n_rate),
+  ('RC1 rows of account, card_xref, tran_cat_balance, disclosure_group = the four loaded counts',
+     (SELECT count(*) FROM carddemo.account) = r.loaded_account_count
+     AND (SELECT count(*) FROM carddemo.card_xref) = r.loaded_card_xref_count
+     AND (SELECT count(*) FROM carddemo.tran_cat_balance) = r.loaded_tran_cat_balance_count
+     AND (SELECT count(*) FROM carddemo.disclosure_group) = r.loaded_disclosure_group_count),
+  ('RC2 loaded_acct_curr_bal_sum = sum of ACCT-CURR-BAL in the file (' || :s_bal || ')', r.loaded_acct_curr_bal_sum = :s_bal),
+  ('RC2 loaded_acct_credit_limit_sum = sum of ACCT-CREDIT-LIMIT in the file (' || :s_limit || ')', r.loaded_acct_credit_limit_sum = :s_limit),
+  ('RC2 loaded_acct_cash_credit_limit_sum = sum of ACCT-CASH-CREDIT-LIMIT in the file (' || :s_cash || ')', r.loaded_acct_cash_credit_limit_sum = :s_cash),
+  ('RC2 loaded_acct_curr_cyc_credit_sum = sum of ACCT-CURR-CYC-CREDIT in the file (' || :s_credit || ')', r.loaded_acct_curr_cyc_credit_sum = :s_credit),
+  ('RC2 loaded_acct_curr_cyc_debit_sum = sum of ACCT-CURR-CYC-DEBIT in the file (' || :s_debit || ')', r.loaded_acct_curr_cyc_debit_sum = :s_debit),
+  ('RC2 loaded_tran_cat_bal_sum = sum of TRAN-CAT-BAL in the file (' || :s_tcat || ')', r.loaded_tran_cat_bal_sum = :s_tcat),
+  ('RC2 loaded_dis_int_rate_sum = sum of DIS-INT-RATE in the file (' || :s_rate || ')', r.loaded_dis_int_rate_sum = :s_rate),
+  ('RC2 loaded_acct_id_sum = hash total of ACCT-ID (' || :h_acct || ')', r.loaded_acct_id_sum = :h_acct),
+  ('RC2 loaded_xref_acct_id_sum = hash total of XREF-ACCT-ID (' || :h_xref || ')', r.loaded_xref_acct_id_sum = :h_xref),
+  ('RC2 loaded_trancat_acct_id_sum = hash total of TRANCAT-ACCT-ID (' || :h_tcat || ')', r.loaded_trancat_acct_id_sum = :h_tcat),
+  ('RC5 written_transaction_count = rows of interest_transaction = records of the exported SYSTRAN (' || :x_tran || ')',
+     r.written_transaction_count = :x_tran
+     AND (SELECT count(*) FROM carddemo.interest_transaction t WHERE t.run_id = r.run_id) = :x_tran),
+  ('RC5 written_tran_amt_sum = sum of TRAN-AMT in the exported SYSTRAN (' || :x_amt || ')', r.written_tran_amt_sum = :x_amt),
+  ('RC5 written_acct_curr_bal_sum = sum of ACCT-CURR-BAL in the exported ACCTDATA (' || :x_bal || ')', r.written_acct_curr_bal_sum = :x_bal),
+  ('RC5 sum of TRAN-AMT = change of the sum of ACCT-CURR-BAL (' || :x_bal - :s_bal || ') + interest of the last account, not added: INT-Q04 (' || :x_last || ')',
+     r.written_tran_amt_sum = (r.written_acct_curr_bal_sum - r.loaded_acct_curr_bal_sum) + :x_last)
+  ) AS c(name, holds);
+endef
+export INTEREST_RC_FILES INTEREST_RC_SQL
 
 parity-java:
 	$(COMPOSE) up -d --wait db
 	mvn -q -f java/interest/pom.xml -DskipTests package
-	@rm -f work/parity-java/report.md; mkdir -p work/parity-java; fail=0; \
+	@$(INTEREST_PSQL) -Atc "select to_regclass('carddemo.interest_run') is not null" | grep -qx t \
+	  || { echo "db volume has no interest tables: applying db/postgres/02-interest.sql"; $(INTEREST_PSQL) -q < db/postgres/02-interest.sql; }
+	@out=$(INTEREST_OUT); rm -f $$out/report.md; mkdir -p $$out; fail=0; \
 	db=$$($(COMPOSE) ps -q db); \
+	summary="| Case | Java job exit code | Comparator | interest_run (RC1, RC2, RC5) |\n|---|---|---|---|\n"; \
 	cases="$(if $(CASE),$(CASE),$$(ls fixtures/interest))"; \
 	for case in $$cases; do \
-	  rm -rf work/parity-java/$$case; \
+	  rm -rf $$out/$$case; \
+	  before=0; if [ "$(INTEREST_PROFILE)" = tables ]; then before=$$($(INTEREST_PSQL) -Atc "select coalesce(max(run_id), 0) from carddemo.interest_run"); fi; \
 	  docker run --rm --network container:$$db --user $(UID):$(GID) -v "$(CURDIR)":/estate -w /estate $(INTEREST_JRE) \
-	    java -jar $(INTEREST_JAR) --interest.clock.frozen="$(INTEREST_CLOCK)" --logging.level.root=WARN \
+	    java -jar $(INTEREST_JAR) --spring.profiles.active=$(INTEREST_PROFILE) --interest.clock.frozen="$(INTEREST_CLOCK)" --logging.level.root=WARN $(INTEREST_OPTS) \
 	      parmDate=$(INTEREST_PARM) runId=$$(date +%s)-$$$$-$$case format=fixture \
-	      inputDir=fixtures/interest/$$case/input outputDir=work/parity-java/$$case/actual \
-	    || { echo "interest/$$case: java job ended with exit code $$?"; fail=1; }; \
-	  $(PY) tools/parity/compare.py interest $$case --actual work/parity-java/$$case/actual --label java --report work/parity-java/report.md || fail=1; \
+	      inputDir=fixtures/interest/$$case/input outputDir=$$out/$$case/actual; \
+	  jobrc=$$?; \
+	  if [ $$jobrc -ne 0 ]; then echo "interest/$$case: java job ended with exit code $$jobrc"; fail=1; fi; \
+	  cmp=PASS; $(PY) tools/parity/compare.py interest $$case --actual $$out/$$case/actual --label java --report $$out/report.md || { cmp=FAIL; fail=1; }; \
+	  rc="not checked (profile $(INTEREST_PROFILE))"; \
+	  if [ "$(INTEREST_PROFILE)" = tables ]; then \
+	    checks=$$({ echo "\\set before $$before"; $(PY) -c "$$INTEREST_RC_FILES" fixtures/interest/$$case/input $$out/$$case/actual; echo "$$INTEREST_RC_SQL"; } | $(INTEREST_PSQL) -At 2>&1); \
+	    if [ $$? -eq 0 ] && [ -n "$$checks" ] && ! echo "$$checks" | grep -qv '|t$$'; then rc=PASS; else rc=FAIL; fail=1; fi; \
+	    echo "interest/$$case [java] interest_run: $$rc ($$(echo "$$checks" | grep -c '|t$$') of $$(echo "$$checks" | grep -c .) assertions of RC1, RC2, RC5 hold)"; \
+	    { echo; echo "### interest/$$case [java] interest_run: $$rc"; echo; echo '```'; echo "$$checks"; echo '```'; } >> $$out/report.md; \
+	  fi; \
+	  summary="$$summary| $$case | $$jobrc | $$cmp | $$rc |\n"; \
 	done; \
-	echo "report: work/parity-java/report.md"; exit $$fail
+	{ echo; echo "## Gate: $$( [ $$fail -eq 0 ] && echo PASS || echo FAIL )"; echo; \
+	  echo "profile \`$(INTEREST_PROFILE)\`, options \`$(INTEREST_OPTS)\`, PARM $(INTEREST_PARM), clock $(INTEREST_CLOCK). A case whose job did not end with exit code 0 is a failed case."; \
+	  echo; printf "$$summary"; } >> $$out/report.md; \
+	echo "report: $$out/report.md"; exit $$fail
 
 # ------------------------------------------------------------ discovery graph
 chain-graph:

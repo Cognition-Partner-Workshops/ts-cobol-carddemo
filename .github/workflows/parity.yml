@@ -33,6 +33,45 @@ jobs:
           test $tie -ne 0 || { echo "tie case unexpectedly passed"; exit 1; }
           test $nontie -eq 0 || { echo "non-tie case unexpectedly failed"; exit 1; }
 
+      - name: Set up JDK 21 (Java interest job)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: java/interest/pom.xml
+
+      - name: Java interest job - Maven suite (unit tests, integration tests on PostgreSQL 15)
+        run: mvn -B -f java/interest/pom.xml verify
+
+      - name: Java interest job - parity gate, seven cases through PostgreSQL (load, calculation, export; RC1, RC2, RC5)
+        run: make parity-java
+
+      - name: Java interest job - negative control, HALF_EVEN fails only on the tie case
+        run: |
+          log=work/parity-java-half-even.log
+          set +e
+          make parity-java INTEREST_OUT=work/parity-java-half-even INTEREST_OPTS=--interest.policy.rounding=HALF_EVEN > $log 2>&1; gate=$?
+          set -e
+          cat $log
+          test $gate -ne 0 || { echo "the gate unexpectedly passed with HALF_EVEN"; exit 1; }
+          failed=$(grep -E '^interest/[^ ]+ \[java\]: FAIL' $log | cut -d' ' -f1)
+          test "$failed" = "interest/i02-tie-half-cent" || { echo "expected only i02-tie-half-cent to fail, got: $failed"; exit 1; }
+          test "$(grep -cE '^interest/[^ ]+ \[java\]: PASS' $log)" -eq 6 || { echo "expected the six other cases to pass"; exit 1; }
+          if grep -q 'java job ended with exit code' $log; then echo "a job run failed: that is not the rounding difference"; exit 1; fi
+          if grep -q 'interest_run: FAIL' $log; then echo "RC1, RC2 or RC5 does not hold"; exit 1; fi
+
+      - name: Upload Java interest parity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-java-report
+          path: |
+            work/parity-java/report.md
+            work/parity-java-half-even/report.md
+            work/parity-java-half-even.log
+          if-no-files-found: warn
+
       - name: Upload parity report
         if: always()
         uses: actions/upload-artifact@v4

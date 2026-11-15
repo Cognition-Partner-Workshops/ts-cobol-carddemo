@@ -212,16 +212,15 @@ class InterestCalcJobIT {
     }
 
     @Test
-    void intR03_caseOutsideThePilotFailsWithoutOutput() throws Exception {
-        // i04-default-group-fallback needs INT-R03 (ticket 04): the pilot stops instead of writing wrong output
+    void intR03_fallbackCaseCompletesWithTheRecordedRunLog() throws Exception {
+        // i04-default-group-fallback (ticket 04): the DEFAULT rate applies and the run log holds the two fallback lines
         Path output = temp.resolve("actual");
 
         JobExecution execution = launch(Fixtures.input("i04-default-group-fallback"), output, UUID.randomUUID().toString());
 
-        assertEquals(BatchStatus.FAILED, execution.getStatus());
-        assertFalse(Files.exists(output));
-        assertTrue(execution.getAllFailureExceptions().stream()
-                .anyMatch(failure -> failure.getMessage().contains("INT-R03")));
+        assertEquals(BatchStatus.COMPLETED, execution.getStatus());
+        assertEquals(Fixtures.text(Fixtures.expected("i04-default-group-fallback").resolve(RUN_LOG)),
+                Fixtures.text(output.resolve(RUN_LOG)));
     }
 
     @Test

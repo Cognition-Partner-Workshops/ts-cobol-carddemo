@@ -53,7 +53,7 @@ class RecordLayoutTest {
         String image = RecordImage.fromLine(
                 Fixtures.lines(Fixtures.input(CASE).resolve(ACCOUNTS_FILE)).get(0), AccountRecord.LAYOUT, FIRST);
 
-        assertEquals(new Account(2001L, new BigDecimal("1000.00"), "GOLD"), AccountRecord.decode(image, FIRST));
+        assertEquals(new Account(2001L, new BigDecimal("1000.00"), "GOLD", "Y"), AccountRecord.decode(image, FIRST));
     }
 
     @Test

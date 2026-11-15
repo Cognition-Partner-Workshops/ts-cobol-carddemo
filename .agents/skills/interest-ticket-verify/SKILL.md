@@ -205,6 +205,10 @@ first. Run every command from the repository root.
    complete them by hand. A ticket name with no file under `modernization/design/tickets`, or a case
    with no directory under `fixtures/interest`, ends the script with exit code 2
    (`no ticket file modernization/design/tickets/99-nothing.md`). `REPORT=<file>` writes somewhere else.
+   A ticket whose Verification says "Fixture cases: none" passes one case that passed on the base branch
+   (`i01-baseline`), because the script needs at least one case, and then, in the result table, replaces
+   `**yes - acceptance case of the ticket**` with `no - N/A, the ticket names no fixture case` and renames
+   the section "Acceptance run" to "Run of one case".
 
 9. **Write the ticket's report** as `java/interest/evidence/<ticket file name>/report.md`, with the
    seven sections of the pilot's `java/interest/evidence/PILOT-REPORT.md`, in this order:

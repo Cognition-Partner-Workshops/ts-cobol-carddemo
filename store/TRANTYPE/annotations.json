@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "module": "TRANTYPE",
+    "skill": "dynamic-call-resolution",
+    "updated_at": "2026-11-15T06:30:00Z"
+  },
+  "dynamic_calls": [
+    {
+      "site": "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:62",
+      "program": "CBTRNDYN",
+      "construct": "CALL",
+      "variable": "WS-PGM-NAME",
+      "status": "open",
+      "targets": [],
+      "traversal": [
+        "CBTRNDYN.cbl:62 CALL WS-PGM-NAME",
+        "CBTRNDYN.cbl:46 01 WS-PGM-NAME PIC X(08) VALUE SPACES",
+        "CBTRNDYN.cbl:60 MOVE PARM-VALUE(1:PARM-LENGTH) TO WS-PGM-NAME - the only writer",
+        "CBTRNDYN.cbl:53-55 PARM-AREA / PARM-VALUE in LINKAGE",
+        "MNTTRDYN.jcl:23 STEP1 EXEC PGM=IKJEFT01 - no PARM= on the EXEC",
+        "MNTTRDYN.jcl:33 RUN PROGRAM(CBTRNDYN) PLAN(CARDDEMO) PARMS('COBTUPDT') - observed, not used as a target: the tracer's parm-missing end is an evidence request and reasoning cannot close it"
+      ],
+      "open_ends": [
+        {
+          "kind": "parm-missing",
+          "class": "EVR",
+          "request": "Confirm what job MNTTRDYN step STEP1 passes to CBTRNDYN: is the PARMS('COBTUPDT') value of the DSN RUN command at app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:33 delivered unchanged as PARM-VALUE, and is MNTTRDYN the only job that runs CBTRNDYN?"
+        }
+      ]
+    },
+    {
+      "site": "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:457",
+      "program": "COTRTUPC",
+      "construct": "CICS-XCTL",
+      "variable": "CDEMO-TO-PROGRAM",
+      "status": "partial",
+      "targets": [],
+      "traversal": [
+        "COTRTUPC.cbl:457 XCTL PROGRAM(CDEMO-TO-PROGRAM)",
+        "COTRTUPC.cbl:209 LIT-ADMINPGM VALUE 'COADM01C' and COTRTUPC.cbl:201 LIT-THISPGM VALUE 'COTRTUPC' - the tracer's two candidates, left as the tracer recorded them in dyncalls.json",
+        "COTRTUPC.cbl:440 MOVE LIT-ADMINPGM TO CDEMO-TO-PROGRAM",
+        "COTRTUPC.cbl:442 MOVE CDEMO-FROM-PROGRAM TO CDEMO-TO-PROGRAM",
+        "COTRTUPC.cbl:376 MOVE DFHCOMMAREA(1:LENGTH OF CARDDEMO-COMMAREA) TO CARDDEMO-COMMAREA - CDEMO-FROM-PROGRAM arrives from whichever program transferred control",
+        "COTRTUPC.cbl:340 DFHCOMMAREA is an unstructured area"
+      ],
+      "open_ends": [
+        {
+          "kind": "layout-mismatch",
+          "class": "GEN",
+          "request": "CDEMO-FROM-PROGRAM is supplied in the commarea by the program that transferred control to COTRTUPC; the set of such programs outside this module is not in the store, so the value moved at app/app-transaction-type-db2/cbl/COTRTUPC.cbl:442 is not bounded. Provide the callers of COTRTUPC/CTTU outside TRANTYPE."
+        }
+      ]
+    }
+  ]
+}

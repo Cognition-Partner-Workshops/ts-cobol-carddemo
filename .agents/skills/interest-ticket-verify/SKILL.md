@@ -260,7 +260,13 @@ first. Run every command from the repository root.
    <step>; the cases prove that nothing else changed.` Prove the ticket's own cases with an integration test
    that writes `java/interest/target/<name>/<case>/actual`, run after `mvn clean verify`
    `python3 tools/parity/compare.py interest <case> --actual java/interest/target/<name>/<case>/actual --label java-<name>; echo "exit $?"`
-   and add the output by hand as its own section of `parity-report.md`. A ticket name with no file under `modernization/design/tickets`, or a case
+   and add the output by hand as its own section of `parity-report.md`.
+   Since ticket 09 `make parity-java` runs the three steps through PostgreSQL, so the paragraph above applies
+   only to code the gate still does not run; a ticket that changes only the file adapters runs
+   `make parity-java INTEREST_PROFILE=default` as well and adds its output as its own section. Ticket 09's
+   `switch-test-output.txt` is the gate with
+   `INTEREST_OPTS=--interest.policy.rounding=HALF_EVEN INTEREST_OUT=work/parity-java-half-even`, followed by
+   the summary table of its report. A ticket name with no file under `modernization/design/tickets`, or a case
    with no directory under `fixtures/interest`, ends the script with exit code 2
    (`no ticket file modernization/design/tickets/99-nothing.md`). `REPORT=<file>` writes somewhere else.
    A ticket whose Verification says "Fixture cases: none" passes one case that passed on the base branch

@@ -1,0 +1,2029 @@
+{
+  "meta": {
+    "module": "AUTH",
+    "generated_at": "2026-11-15T06:08:42Z",
+    "tool": "mftb 0.2.1",
+    "inputs": {
+      "selectors": [
+        "DBPAUTP0",
+        "LOADPADB",
+        "UNLDGSAM",
+        "UNLDPADB"
+      ]
+    }
+  },
+  "chains": [
+    {
+      "table": "CARDDEMO",
+      "requested_as": "CBPAUP0J",
+      "selection_basis": "CBPAUP0J is scheduled in table CARDDEMO (app/scheduler/CardDemo.ca7:43)",
+      "generated_at": "2026-11-15T06:08:41Z",
+      "jobs": [
+        {
+          "job": "CLOSEFIL",
+          "memname": "CLOSEFIL",
+          "level": 86,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:18",
+          "steps": []
+        },
+        {
+          "job": "CBPAUP0J",
+          "memname": "CBPAUP0J",
+          "level": 87,
+          "variants": 1,
+          "scanned": true,
+          "setvars": [],
+          "path": "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl",
+          "source": "app/scheduler/CardDemo.ca7:43",
+          "steps": [
+            {
+              "step": "STEP01",
+              "proc_step": null,
+              "kind": "launcher",
+              "pgm": "DFSRRC00",
+              "program": "CBPAUP0C",
+              "reached": [],
+              "reads": [
+                {
+                  "dd": "DFSRESLB",
+                  "dsn": "IMS.SDFSRESL",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:28"
+                },
+                {
+                  "dd": "PROCLIB",
+                  "dsn": "IMS.PROCLIB",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:29"
+                },
+                {
+                  "dd": "DFSSEL",
+                  "dsn": "IMS.SDFSRESL",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:31"
+                },
+                {
+                  "dd": "IMS",
+                  "dsn": "IMS.PSBLIB",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:33"
+                }
+              ],
+              "writes": [],
+              "db2": [],
+              "ims": [
+                {
+                  "interfaces": [],
+                  "psbs": [
+                    "PSBPAUTB"
+                  ],
+                  "calls": 5,
+                  "source": "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:223",
+                  "program": "CBPAUP0C",
+                  "basis": "DL/I calls in the program"
+                }
+              ],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:24",
+              "parm": "'BMP,CBPAUP0C,PSBPAUTB'"
+            }
+          ]
+        },
+        {
+          "job": "CREASTMT",
+          "memname": "CREASTMT",
+          "level": 87,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:468",
+          "steps": []
+        },
+        {
+          "job": "PRTCATBL",
+          "memname": "PRTCATBL",
+          "level": 87,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:537",
+          "steps": []
+        },
+        {
+          "job": "READACCT",
+          "memname": "READACCT",
+          "level": 87,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:340",
+          "steps": []
+        },
+        {
+          "job": "TRANTYPE",
+          "memname": "TRANTYPE",
+          "level": 87,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:162",
+          "steps": []
+        },
+        {
+          "job": "POSTTRAN",
+          "memname": "POSTTRAN",
+          "level": 88,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:70",
+          "steps": []
+        },
+        {
+          "job": "READCARD",
+          "memname": "READCARD",
+          "level": 88,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:367",
+          "steps": []
+        },
+        {
+          "job": "TXT2PDF1",
+          "memname": "TXT2PDF1",
+          "level": 88,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:495",
+          "steps": []
+        },
+        {
+          "job": "READCUST",
+          "memname": "READCUST",
+          "level": 89,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:394",
+          "steps": []
+        },
+        {
+          "job": "WAITSTEP",
+          "memname": "WAITSTEP",
+          "level": 89,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:97",
+          "steps": []
+        },
+        {
+          "job": "CLOSEFIL1",
+          "memname": "CLOSEFIL",
+          "level": 90,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:216",
+          "steps": []
+        },
+        {
+          "job": "CLOSEFIL2",
+          "memname": "CLOSEFIL",
+          "level": 90,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:217",
+          "steps": []
+        },
+        {
+          "job": "OPENFIL",
+          "memname": "OPENFIL",
+          "level": 90,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:124",
+          "steps": []
+        },
+        {
+          "job": "READXREF",
+          "memname": "READXREF",
+          "level": 90,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:421",
+          "steps": []
+        },
+        {
+          "job": "TCATBALF",
+          "memname": "TCATBALF",
+          "level": 91,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:271",
+          "steps": []
+        },
+        {
+          "job": "TRANCATG",
+          "memname": "TRANCATG",
+          "level": 91,
+          "variants": 1,
+          "scanned": false,
+          "setvars": [],
+          "path": null,
+          "source": "app/scheduler/CardDemo.ca7:244",
+          "steps": []
+        }
+      ],
+      "infrastructure": [
+        {
+          "dsn": "IMS.SDFSRESL",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "CBPAUP0J"
+          ]
+        }
+      ],
+      "lineage": [],
+      "shared_state": [],
+      "inputs": [
+        {
+          "kind": "dataset",
+          "name": "IMS.PROCLIB",
+          "consumers": [
+            "CBPAUP0J.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:29"
+          ],
+          "basis": null,
+          "other_chain": null
+        },
+        {
+          "kind": "dataset",
+          "name": "IMS.PSBLIB",
+          "consumers": [
+            "CBPAUP0J.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:33"
+          ],
+          "basis": null,
+          "other_chain": null
+        },
+        {
+          "kind": "dataset",
+          "name": "IMS.SDFSRESL",
+          "consumers": [
+            "CBPAUP0J.STEP01",
+            "CBPAUP0J.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:28",
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:31"
+          ],
+          "basis": null,
+          "other_chain": null
+        }
+      ],
+      "outputs": [],
+      "paths": [],
+      "unreached": {
+        "programs": [
+          "DBUNLDGS",
+          "PAUDBLOD",
+          "PAUDBUNL"
+        ],
+        "note": "batch (non-CICS) programs of the module no CARDDEMO step runs or reaches statically"
+      },
+      "notes": [
+        {
+          "text": "Of the 17 jobs the CA 7 listing orders in table CARDDEMO, only CBPAUP0J is an AUTH JCL member; the other 16 have no JCL under this module's roots (the estate map places app/jcl in module CARDDEMO), so their chain-step-opaque asks stay open until that module is scanned.",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:18",
+            "app/scheduler/CardDemo.ca7:43",
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:1"
+          ]
+        },
+        {
+          "text": "CBPAUP0J is triggered by CLOSEFIL (TRIGGERED JOBS of CLOSEFIL names JOB=CBPAUP0J SCHID=030) and itself triggers POSTTRAN (JOB=POSTTRAN SCHID=030).",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:42-43",
+            "app/scheduler/CardDemo.ca7:69-70"
+          ]
+        },
+        {
+          "text": "CBPAUP0J.STEP01 runs CBPAUP0C as an IMS BMP under PSB PSBPAUTB (PARM='BMP,CBPAUP0C,PSBPAUTB'). CBPAUP0C has an empty FILE-CONTROL, so none of the DSN-bearing DDs of the step (STEPLIB, DFSRESLB, PROCLIB, DFSSEL, IMS) is opened by the program; the pass lists them as disp-only reads, and whether IMS.SDFSRESL / IMS.PROCLIB / IMS.PSBLIB count as chain inputs is left open for the IMS system owner.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:24-34",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:29-31"
+          ]
+        },
+        {
+          "text": "The job's only business data is the IMS database: CBPAUP0C walks PAUTSUM0 roots (GN) and their PAUTDTL1 children (GNP) and deletes them (DLET) through PCB PAUT-PCB-NUM; PSBPAUTB gives it PROCOPT=AP on DBD DBPAUTP0. No DD in the JCL allocates the database datasets (BMP region).",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:223",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:255",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:310",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:335",
+            "app/app-authorization-ims-db2-mq/ims/PSBPAUTB.psb:17-20"
+          ]
+        },
+        {
+          "text": "Run parameters come from in-stream SYSIN '00,00001,00001,Y', accepted into PRM-INFO; a non-numeric expiry-days value defaults to 5.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:36-37",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:189",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:196-200"
+          ]
+        }
+      ],
+      "asks": [
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "CLOSEFIL",
+          "message": "CLOSEFIL is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:18"
+          ],
+          "request": "Provide the JCL member CLOSEFIL",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "CREASTMT",
+          "message": "CREASTMT is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:468"
+          ],
+          "request": "Provide the JCL member CREASTMT",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "PRTCATBL",
+          "message": "PRTCATBL is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:537"
+          ],
+          "request": "Provide the JCL member PRTCATBL",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "READACCT",
+          "message": "READACCT is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:340"
+          ],
+          "request": "Provide the JCL member READACCT",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "TRANTYPE",
+          "message": "TRANTYPE is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:162"
+          ],
+          "request": "Provide the JCL member TRANTYPE",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "POSTTRAN",
+          "message": "POSTTRAN is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:70"
+          ],
+          "request": "Provide the JCL member POSTTRAN",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "READCARD",
+          "message": "READCARD is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:367"
+          ],
+          "request": "Provide the JCL member READCARD",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "TXT2PDF1",
+          "message": "TXT2PDF1 is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:495"
+          ],
+          "request": "Provide the JCL member TXT2PDF1",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "READCUST",
+          "message": "READCUST is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:394"
+          ],
+          "request": "Provide the JCL member READCUST",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "WAITSTEP",
+          "message": "WAITSTEP is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:97"
+          ],
+          "request": "Provide the JCL member WAITSTEP",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "CLOSEFIL1",
+          "message": "CLOSEFIL1 is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:216"
+          ],
+          "request": "Provide the JCL member CLOSEFIL",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "CLOSEFIL2",
+          "message": "CLOSEFIL2 is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:217"
+          ],
+          "request": "Provide the JCL member CLOSEFIL",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "OPENFIL",
+          "message": "OPENFIL is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:124"
+          ],
+          "request": "Provide the JCL member OPENFIL",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "READXREF",
+          "message": "READXREF is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:421"
+          ],
+          "request": "Provide the JCL member READXREF",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "TCATBALF",
+          "message": "TCATBALF is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:271"
+          ],
+          "request": "Provide the JCL member TCATBALF",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "TRANCATG",
+          "message": "TRANCATG is scheduled in CARDDEMO but no JCL member was scanned for it",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:244"
+          ],
+          "request": "Provide the JCL member TRANCATG",
+          "status": "open"
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "CBPAUP0J",
+          "message": "IMS.PROCLIB is read by CBPAUP0J.STEP01 and written by no job of any scanned table",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:29"
+          ],
+          "request": "Identify the producer of IMS.PROCLIB (online region, another application, external feed?)",
+          "status": "open"
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "CBPAUP0J",
+          "message": "IMS.PSBLIB is read by CBPAUP0J.STEP01 and written by no job of any scanned table",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:33"
+          ],
+          "request": "Identify the producer of IMS.PSBLIB (online region, another application, external feed?)",
+          "status": "open"
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "CBPAUP0J",
+          "message": "IMS.SDFSRESL is read by CBPAUP0J.STEP01, CBPAUP0J.STEP01 and written by no job of any scanned table",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:28",
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:31"
+          ],
+          "request": "Identify the producer of IMS.SDFSRESL (online region, another application, external feed?)",
+          "status": "open"
+        },
+        {
+          "kind": "restart-semantics-unproven",
+          "severity": "medium",
+          "job": "CBPAUP0J",
+          "message": "CBPAUP0C takes IMS checkpoints (EXEC DLI CHKP ID(WK-CHKPT-ID)) every P-CHKP-FREQ summaries, but the JCL sets IEFRDER and IMSLOGR to DUMMY and nothing in the program reads a restart checkpoint on entry (no XRST); how the job is rerun after a failure is not stated by the JCL or the CA 7 listing",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:160-164",
+            "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:352-355",
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:43-44",
+            "app/scheduler/CardDemo.ca7:45-68"
+          ],
+          "request": "Confirm the rerun procedure for CBPAUP0J after an abend (rerun from the start - deletions already committed at the last checkpoint are simply not found again - or a restart from a checkpoint id?)",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "table": "DBPAUTP0",
+      "requested_as": "DBPAUTP0",
+      "selection_basis": "DBPAUTP0 is the scanned JCL member app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl; no parsed scheduler table schedules it, so the chain is rooted in that JCL and carries no scheduler order",
+      "generated_at": "2026-11-15T06:08:42Z",
+      "jobs": [
+        {
+          "job": "DBPAUTP0",
+          "memname": "DBPAUTP0",
+          "level": 1,
+          "variants": 1,
+          "scanned": true,
+          "setvars": [],
+          "path": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl",
+          "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:1",
+          "steps": [
+            {
+              "step": "STEPDEL",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IEFBR14",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [
+                {
+                  "dd": "SYSUT1",
+                  "dsn": "AWS.M2.CARDDEMO.IMSDATA.DBPAUTP0",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(MOD,DELETE)",
+                  "basis": "IEFBR14 allocation/deletion DISP=(MOD,DELETE)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:9"
+                }
+              ],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:7"
+            },
+            {
+              "step": "UNLOAD",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "DFSRRC00",
+              "program": null,
+              "reached": [],
+              "reads": [
+                {
+                  "dd": "DFSRESLB",
+                  "dsn": "OEMA.IMS.IMSP.SDFSRESL",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:20"
+                },
+                {
+                  "dd": "IMS",
+                  "dsn": "OEM.IMS.IMSP.PSBLIB",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:21"
+                },
+                {
+                  "dd": "DFSURGU1",
+                  "dsn": "AWS.M2.CARDDEMO.IMSDATA.DBPAUTP0",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(,CATLG,DELETE)",
+                  "basis": "disp-only (,CATLG,DELETE) (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:25"
+                },
+                {
+                  "dd": "DDPAUTP0",
+                  "dsn": "OEM.IMS.IMSP.PAUTHDB",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:31"
+                },
+                {
+                  "dd": "DDPAUTX0",
+                  "dsn": "OEM.IMS.IMSP.PAUTHDBX",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:32"
+                },
+                {
+                  "dd": "DFSVSAMP",
+                  "dsn": "OEMPP.IMS.V15R01MB.PROCLIB",
+                  "generation": null,
+                  "member": "DFSVSMDB",
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:33"
+                },
+                {
+                  "dd": "RECON1",
+                  "dsn": "OEM.IMS.IMSP.RECON1",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:40"
+                },
+                {
+                  "dd": "RECON2",
+                  "dsn": "OEM.IMS.IMSP.RECON2",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:41"
+                },
+                {
+                  "dd": "RECON3",
+                  "dsn": "OEM.IMS.IMSP.RECON3",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:42"
+                }
+              ],
+              "writes": [],
+              "db2": [],
+              "ims": [
+                {
+                  "program": null,
+                  "psbs": [
+                    "DBPAUTP0"
+                  ],
+                  "interfaces": [],
+                  "calls": 0,
+                  "basis": "IMS region PARM",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:15"
+                }
+              ],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:15",
+              "parm": "(ULU,DFSURGU0,DBPAUTP0)"
+            }
+          ]
+        }
+      ],
+      "infrastructure": [
+        {
+          "dsn": "OEMA.IMS.IMSP.SDFSRESL",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "DBPAUTP0"
+          ]
+        }
+      ],
+      "lineage": [
+        {
+          "dsn": "AWS.M2.CARDDEMO.IMSDATA.DBPAUTP0",
+          "from": {
+            "job": "DBPAUTP0",
+            "step": "STEPDEL",
+            "proc_step": null,
+            "generation": null
+          },
+          "to": {
+            "job": "DBPAUTP0",
+            "step": "UNLOAD",
+            "proc_step": null,
+            "generation": null
+          },
+          "basis": "same-job step order",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:9",
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:25"
+          ]
+        }
+      ],
+      "shared_state": [],
+      "inputs": [
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PAUTHDB",
+          "consumers": [
+            "DBPAUTP0.UNLOAD"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:31"
+          ],
+          "basis": null,
+          "other_chain": "UNLDGSAM, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PAUTHDBX",
+          "consumers": [
+            "DBPAUTP0.UNLOAD"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:32"
+          ],
+          "basis": null,
+          "other_chain": "UNLDGSAM, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PSBLIB",
+          "consumers": [
+            "DBPAUTP0.UNLOAD"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:21"
+          ],
+          "basis": null,
+          "other_chain": "LOADPADB, UNLDGSAM, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.RECON1",
+          "consumers": [
+            "DBPAUTP0.UNLOAD"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:40"
+          ],
+          "basis": null,
+          "other_chain": null
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.RECON2",
+          "consumers": [
+            "DBPAUTP0.UNLOAD"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:41"
+          ],
+          "basis": null,
+          "other_chain": null
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.RECON3",
+          "consumers": [
+            "DBPAUTP0.UNLOAD"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:42"
+          ],
+          "basis": null,
+          "other_chain": null
+        },
+        {
+          "kind": "dataset",
+          "name": "OEMA.IMS.IMSP.SDFSRESL",
+          "consumers": [
+            "DBPAUTP0.UNLOAD"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:20"
+          ],
+          "basis": null,
+          "other_chain": "LOADPADB, UNLDGSAM, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEMPP.IMS.V15R01MB.PROCLIB",
+          "consumers": [
+            "DBPAUTP0.UNLOAD"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:33"
+          ],
+          "basis": null,
+          "other_chain": "LOADPADB, UNLDGSAM, UNLDPADB"
+        }
+      ],
+      "outputs": [],
+      "paths": [],
+      "unreached": {
+        "programs": [
+          "CBPAUP0C",
+          "DBUNLDGS",
+          "PAUDBLOD",
+          "PAUDBUNL"
+        ],
+        "note": "batch (non-CICS) programs of the module no DBPAUTP0 step runs or reaches statically"
+      },
+      "notes": [
+        {
+          "text": "DBPAUTP0 runs no application program: STEPDEL (IEFBR14) deletes AWS.M2.CARDDEMO.IMSDATA.DBPAUTP0 and UNLOAD runs DFSRRC00 with PARM=(ULU,DFSURGU0,DBPAUTP0) over DDPAUTP0/DDPAUTX0 (OEM.IMS.IMSP.PAUTHDB / PAUTHDBX), the DD names DBD DBPAUTP0 and DBPAUTX0 declare. The toolbox does not parse this PARM form (chain-step-opaque: ims-parm), so the step's program is not catalogued.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:7-10",
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:15-16",
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:31-32",
+            "app/app-authorization-ims-db2-mq/ims/DBPAUTP0.dbd:24",
+            "app/app-authorization-ims-db2-mq/ims/DBPAUTX0.dbd:23"
+          ]
+        },
+        {
+          "text": "DFSURGU1 (AWS.M2.CARDDEMO.IMSDATA.DBPAUTP0) is the step's output, not an input: DFSURGU1 is allocated new (DISP=(,CATLG,DELETE)) in the DFSRRC00 step whose PARM is (ULU,DFSURGU0,DBPAUTP0) and whose comment reads 'DOWNLOAD DBD DBPAUTP0'; STEPDEL deletes the same DSN first. The pass lists the DD as a disp-only read; mftb 0.2.1 applies a directions[] entry only to DDs bound to a program file, so the direction is recorded here as a note.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:13-16",
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:25-29",
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:5-10"
+          ]
+        }
+      ],
+      "asks": [
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "DBPAUTP0",
+          "message": "DBPAUTP0 UNLOAD (utility DFSRRC00) cannot be traversed: ims-parm",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:15"
+          ],
+          "request": "Provide the PROC/program so the step's data flow can be read",
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "DBPAUTP0",
+          "message": "DBPAUTP0 reads OEM.IMS.IMSP.PAUTHDB which table(s) UNLDGSAM, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:31"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "DBPAUTP0",
+          "message": "DBPAUTP0 reads OEM.IMS.IMSP.PAUTHDBX which table(s) UNLDGSAM, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:32"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "DBPAUTP0",
+          "message": "DBPAUTP0 reads OEM.IMS.IMSP.PSBLIB which table(s) LOADPADB, UNLDGSAM, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:21"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "DBPAUTP0",
+          "message": "OEM.IMS.IMSP.RECON1 is read by DBPAUTP0.UNLOAD and written by no job of any scanned table",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:40"
+          ],
+          "request": "Identify the producer of OEM.IMS.IMSP.RECON1 (online region, another application, external feed?)",
+          "status": "open"
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "DBPAUTP0",
+          "message": "OEM.IMS.IMSP.RECON2 is read by DBPAUTP0.UNLOAD and written by no job of any scanned table",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:41"
+          ],
+          "request": "Identify the producer of OEM.IMS.IMSP.RECON2 (online region, another application, external feed?)",
+          "status": "open"
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "DBPAUTP0",
+          "message": "OEM.IMS.IMSP.RECON3 is read by DBPAUTP0.UNLOAD and written by no job of any scanned table",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:42"
+          ],
+          "request": "Identify the producer of OEM.IMS.IMSP.RECON3 (online region, another application, external feed?)",
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "DBPAUTP0",
+          "message": "DBPAUTP0 reads OEMA.IMS.IMSP.SDFSRESL which table(s) LOADPADB, UNLDGSAM, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:20"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "DBPAUTP0",
+          "message": "DBPAUTP0 reads OEMPP.IMS.V15R01MB.PROCLIB which table(s) LOADPADB, UNLDGSAM, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:33"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-not-scheduled",
+          "severity": "high",
+          "job": "DBPAUTP0",
+          "message": "DBPAUTP0 was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl"
+          ],
+          "request": "supply the scheduler export that runs DBPAUTP0 - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "table": "LOADPADB",
+      "requested_as": "LOADPADB",
+      "selection_basis": "LOADPADB is the scanned JCL member app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL; no parsed scheduler table schedules it, so the chain is rooted in that JCL and carries no scheduler order",
+      "generated_at": "2026-11-15T06:08:42Z",
+      "jobs": [
+        {
+          "job": "LOADPADB",
+          "memname": "LOADPADB",
+          "level": 1,
+          "variants": 1,
+          "scanned": true,
+          "setvars": [],
+          "path": "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL",
+          "source": "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:1",
+          "steps": [
+            {
+              "step": "STEP01",
+              "proc_step": null,
+              "kind": "launcher",
+              "pgm": "DFSRRC00",
+              "program": "PAUDBLOD",
+              "reached": [],
+              "reads": [
+                {
+                  "dd": "INFILE1",
+                  "dsn": "AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "open-mode INPUT (PAUDBLOD INFILE1)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:36"
+                },
+                {
+                  "dd": "INFILE2",
+                  "dsn": "AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "open-mode INPUT (PAUDBLOD INFILE2)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:38"
+                },
+                {
+                  "dd": "DFSRESLB",
+                  "dsn": "OEMA.IMS.IMSP.SDFSRESL",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:31"
+                },
+                {
+                  "dd": "IMS",
+                  "dsn": "OEM.IMS.IMSP.PSBLIB",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:33"
+                },
+                {
+                  "dd": "DFSVSAMP",
+                  "dsn": "OEMPP.IMS.V15R01MB.PROCLIB",
+                  "generation": null,
+                  "member": "DFSVSMDB",
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:44"
+                }
+              ],
+              "writes": [],
+              "db2": [],
+              "ims": [
+                {
+                  "interfaces": [
+                    "CBLTDLI"
+                  ],
+                  "psbs": [
+                    "PSBPAUTB"
+                  ],
+                  "calls": 3,
+                  "source": "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:244",
+                  "program": "PAUDBLOD",
+                  "basis": "DL/I calls in the program"
+                }
+              ],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:26",
+              "parm": "'BMP,PAUDBLOD,PSBPAUTB'"
+            }
+          ]
+        }
+      ],
+      "infrastructure": [
+        {
+          "dsn": "OEMA.IMS.IMSP.SDFSRESL",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "LOADPADB"
+          ]
+        }
+      ],
+      "lineage": [],
+      "shared_state": [],
+      "inputs": [
+        {
+          "kind": "dataset",
+          "name": "AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO",
+          "consumers": [
+            "LOADPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:38"
+          ],
+          "basis": null,
+          "other_chain": "UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO",
+          "consumers": [
+            "LOADPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:36"
+          ],
+          "basis": null,
+          "other_chain": "UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PSBLIB",
+          "consumers": [
+            "LOADPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:33"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, UNLDGSAM, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEMA.IMS.IMSP.SDFSRESL",
+          "consumers": [
+            "LOADPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:31"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, UNLDGSAM, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEMPP.IMS.V15R01MB.PROCLIB",
+          "consumers": [
+            "LOADPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:44"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, UNLDGSAM, UNLDPADB"
+        }
+      ],
+      "outputs": [],
+      "paths": [],
+      "unreached": {
+        "programs": [
+          "CBPAUP0C",
+          "DBUNLDGS",
+          "PAUDBUNL"
+        ],
+        "note": "batch (non-CICS) programs of the module no LOADPADB step runs or reaches statically"
+      },
+      "notes": [
+        {
+          "text": "LOADPADB.STEP01 runs PAUDBLOD as a BMP under PSB PSBPAUTB (PARM='BMP,PAUDBLOD,PSBPAUTB'); the DDPAUTP0/DDPAUTX0 database DDs are commented out in the JCL. It inserts root segments from INFILE1 and child segments from INFILE2 with CBLTDLI ISRT.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:26-27",
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:36-41",
+            "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:244-246",
+            "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:321"
+          ]
+        }
+      ],
+      "asks": [
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "LOADPADB",
+          "message": "LOADPADB reads AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO which table(s) UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:38"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "LOADPADB",
+          "message": "LOADPADB reads AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO which table(s) UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:36"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "LOADPADB",
+          "message": "LOADPADB reads OEM.IMS.IMSP.PSBLIB which table(s) DBPAUTP0, UNLDGSAM, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:33"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "LOADPADB",
+          "message": "LOADPADB reads OEMA.IMS.IMSP.SDFSRESL which table(s) DBPAUTP0, UNLDGSAM, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:31"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "LOADPADB",
+          "message": "LOADPADB reads OEMPP.IMS.V15R01MB.PROCLIB which table(s) DBPAUTP0, UNLDGSAM, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:44"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-not-scheduled",
+          "severity": "high",
+          "job": "LOADPADB",
+          "message": "LOADPADB was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL"
+          ],
+          "request": "supply the scheduler export that runs LOADPADB - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "table": "UNLDGSAM",
+      "requested_as": "UNLDGSAM",
+      "selection_basis": "UNLDGSAM is the scanned JCL member app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL; no parsed scheduler table schedules it, so the chain is rooted in that JCL and carries no scheduler order",
+      "generated_at": "2026-11-15T06:08:42Z",
+      "jobs": [
+        {
+          "job": "UNLDGSAM",
+          "memname": "UNLDGSAM",
+          "level": 1,
+          "variants": 1,
+          "scanned": true,
+          "setvars": [],
+          "path": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL",
+          "source": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:1",
+          "steps": [
+            {
+              "step": "STEP01",
+              "proc_step": null,
+              "kind": "launcher",
+              "pgm": "DFSRRC00",
+              "program": "DBUNLDGS",
+              "reached": [],
+              "reads": [
+                {
+                  "dd": "DFSRESLB",
+                  "dsn": "OEMA.IMS.IMSP.SDFSRESL",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:31"
+                },
+                {
+                  "dd": "IMS",
+                  "dsn": "OEM.IMS.IMSP.PSBLIB",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:33"
+                },
+                {
+                  "dd": "PASFILOP",
+                  "dsn": "AWS.M2.CARDDEMO.PAUTDB.ROOT.GSAM",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(OLD,KEEP,KEEP)",
+                  "basis": "disp-only (OLD,KEEP,KEEP) (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36"
+                },
+                {
+                  "dd": "PADFILOP",
+                  "dsn": "AWS.M2.CARDDEMO.PAUTDB.CHILD.GSAM",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(OLD,KEEP,KEEP)",
+                  "basis": "disp-only (OLD,KEEP,KEEP) (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:39"
+                },
+                {
+                  "dd": "DDPAUTP0",
+                  "dsn": "OEM.IMS.IMSP.PAUTHDB",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:42"
+                },
+                {
+                  "dd": "DDPAUTX0",
+                  "dsn": "OEM.IMS.IMSP.PAUTHDBX",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:43"
+                },
+                {
+                  "dd": "DFSVSAMP",
+                  "dsn": "OEMPP.IMS.V15R01MB.PROCLIB",
+                  "generation": null,
+                  "member": "DFSVSMDB",
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:46"
+                }
+              ],
+              "writes": [],
+              "db2": [],
+              "ims": [
+                {
+                  "interfaces": [
+                    "CBLTDLI"
+                  ],
+                  "psbs": [
+                    "DLIGSAMP"
+                  ],
+                  "calls": 4,
+                  "source": "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:222",
+                  "program": "DBUNLDGS",
+                  "basis": "DL/I calls in the program"
+                }
+              ],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:26",
+              "parm": "'DLI,DBUNLDGS,DLIGSAMP,,,,,,,,,,,N'"
+            }
+          ]
+        }
+      ],
+      "infrastructure": [
+        {
+          "dsn": "OEMA.IMS.IMSP.SDFSRESL",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "UNLDGSAM"
+          ]
+        }
+      ],
+      "lineage": [],
+      "shared_state": [],
+      "inputs": [
+        {
+          "kind": "dataset",
+          "name": "AWS.M2.CARDDEMO.PAUTDB.CHILD.GSAM",
+          "consumers": [
+            "UNLDGSAM.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:39"
+          ],
+          "basis": null,
+          "other_chain": null
+        },
+        {
+          "kind": "dataset",
+          "name": "AWS.M2.CARDDEMO.PAUTDB.ROOT.GSAM",
+          "consumers": [
+            "UNLDGSAM.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36"
+          ],
+          "basis": null,
+          "other_chain": null
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PAUTHDB",
+          "consumers": [
+            "UNLDGSAM.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:42"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PAUTHDBX",
+          "consumers": [
+            "UNLDGSAM.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:43"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PSBLIB",
+          "consumers": [
+            "UNLDGSAM.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:33"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, LOADPADB, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEMA.IMS.IMSP.SDFSRESL",
+          "consumers": [
+            "UNLDGSAM.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:31"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, LOADPADB, UNLDPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEMPP.IMS.V15R01MB.PROCLIB",
+          "consumers": [
+            "UNLDGSAM.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:46"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, LOADPADB, UNLDPADB"
+        }
+      ],
+      "outputs": [],
+      "paths": [],
+      "unreached": {
+        "programs": [
+          "CBPAUP0C",
+          "PAUDBLOD",
+          "PAUDBUNL"
+        ],
+        "note": "batch (non-CICS) programs of the module no UNLDGSAM step runs or reaches statically"
+      },
+      "notes": [
+        {
+          "text": "The GSAM output datasets are allocated DISP=(OLD,KEEP,KEEP): the job expects AWS.M2.CARDDEMO.PAUTDB.ROOT.GSAM and .CHILD.GSAM to exist already, and no scanned job creates them.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36-40"
+          ]
+        },
+        {
+          "text": "DD PASFILOP is written, not read: DBUNLDGS inserts (CBLTDLI ISRT) each summary segment through PCB PASFLPCB; PSB DLIGSAMP's second PCB is GSAM DBD PASFLDBD with PROCOPT=LS, and that DBD names DD2=PASFILOP as its output DD; the program's own OPEN OUTPUT statements are commented out. The pass lists the DD as a disp-only read; mftb 0.2.1 applies a directions[] entry only to DDs bound to a program file, so the direction is recorded here as a note.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:300-304",
+            "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB:21",
+            "app/app-authorization-ims-db2-mq/ims/PASFLDBD.DBD:27",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:27",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36-37"
+          ]
+        },
+        {
+          "text": "DD PADFILOP is written, not read: DBUNLDGS inserts (CBLTDLI ISRT) each detail segment through PCB PADFLPCB; PSB DLIGSAMP's third PCB is GSAM DBD PADFLDBD with PROCOPT=LS, and that DBD names DD2=PADFILOP as its output DD. The pass lists the DD as a disp-only read; mftb 0.2.1 applies a directions[] entry only to DDs bound to a program file, so the direction is recorded here as a note.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:319-323",
+            "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB:22",
+            "app/app-authorization-ims-db2-mq/ims/PADFLDBD.DBD:27",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:39-40"
+          ]
+        }
+      ],
+      "asks": [
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "UNLDGSAM",
+          "message": "AWS.M2.CARDDEMO.PAUTDB.CHILD.GSAM is read by UNLDGSAM.STEP01 and written by no job of any scanned table",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:39"
+          ],
+          "request": "Identify the producer of AWS.M2.CARDDEMO.PAUTDB.CHILD.GSAM (online region, another application, external feed?)",
+          "status": "closed",
+          "closure": {
+            "by": "skill",
+            "how": "the dataset is this step's output, not an input: DBUNLDGS inserts (CBLTDLI ISRT) each detail segment through PCB PADFLPCB; PSB DLIGSAMP's third PCB is GSAM DBD PADFLDBD with PROCOPT=LS, and that DBD names DD2=PADFILOP as its output DD. Who first allocates it (the JCL uses DISP=(OLD,KEEP,KEEP)) is stated in the chain note",
+            "evidence": [
+              "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:319-323",
+              "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB:22",
+              "app/app-authorization-ims-db2-mq/ims/PADFLDBD.DBD:27",
+              "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:39-40"
+            ]
+          }
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "UNLDGSAM",
+          "message": "AWS.M2.CARDDEMO.PAUTDB.ROOT.GSAM is read by UNLDGSAM.STEP01 and written by no job of any scanned table",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36"
+          ],
+          "request": "Identify the producer of AWS.M2.CARDDEMO.PAUTDB.ROOT.GSAM (online region, another application, external feed?)",
+          "status": "closed",
+          "closure": {
+            "by": "skill",
+            "how": "the dataset is this step's output, not an input: DBUNLDGS inserts (CBLTDLI ISRT) each summary segment through PCB PASFLPCB; PSB DLIGSAMP's second PCB is GSAM DBD PASFLDBD with PROCOPT=LS, and that DBD names DD2=PASFILOP as its output DD; the program's own OPEN OUTPUT statements are commented out. Who first allocates it (the JCL uses DISP=(OLD,KEEP,KEEP)) is stated in the chain note",
+            "evidence": [
+              "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:300-304",
+              "app/app-authorization-ims-db2-mq/ims/DLIGSAMP.PSB:21",
+              "app/app-authorization-ims-db2-mq/ims/PASFLDBD.DBD:27",
+              "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:27",
+              "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36-37"
+            ]
+          }
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDGSAM",
+          "message": "UNLDGSAM reads OEM.IMS.IMSP.PAUTHDB which table(s) DBPAUTP0, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:42"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDGSAM",
+          "message": "UNLDGSAM reads OEM.IMS.IMSP.PAUTHDBX which table(s) DBPAUTP0, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:43"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDGSAM",
+          "message": "UNLDGSAM reads OEM.IMS.IMSP.PSBLIB which table(s) DBPAUTP0, LOADPADB, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:33"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDGSAM",
+          "message": "UNLDGSAM reads OEMA.IMS.IMSP.SDFSRESL which table(s) DBPAUTP0, LOADPADB, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:31"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDGSAM",
+          "message": "UNLDGSAM reads OEMPP.IMS.V15R01MB.PROCLIB which table(s) DBPAUTP0, LOADPADB, UNLDPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:46"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-not-scheduled",
+          "severity": "high",
+          "job": "UNLDGSAM",
+          "message": "UNLDGSAM was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL"
+          ],
+          "request": "supply the scheduler export that runs UNLDGSAM - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "table": "UNLDPADB",
+      "requested_as": "UNLDPADB",
+      "selection_basis": "UNLDPADB is the scanned JCL member app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL; no parsed scheduler table schedules it, so the chain is rooted in that JCL and carries no scheduler order",
+      "generated_at": "2026-11-15T06:08:42Z",
+      "jobs": [
+        {
+          "job": "UNLDPADB",
+          "memname": "UNLDPADB",
+          "level": 1,
+          "variants": 1,
+          "scanned": true,
+          "setvars": [],
+          "path": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL",
+          "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:1",
+          "steps": [
+            {
+              "step": "STEP0",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IEFBR14",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [
+                {
+                  "dd": "DD1",
+                  "dsn": "AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(OLD,DELETE,DELETE)",
+                  "basis": "IEFBR14 allocation/deletion DISP=(OLD,DELETE,DELETE)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:33"
+                },
+                {
+                  "dd": "DD2",
+                  "dsn": "AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(OLD,DELETE,DELETE)",
+                  "basis": "IEFBR14 allocation/deletion DISP=(OLD,DELETE,DELETE)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:35"
+                }
+              ],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:25"
+            },
+            {
+              "step": "STEP01",
+              "proc_step": null,
+              "kind": "launcher",
+              "pgm": "DFSRRC00",
+              "program": "PAUDBUNL",
+              "reached": [],
+              "reads": [
+                {
+                  "dd": "DFSRESLB",
+                  "dsn": "OEMA.IMS.IMSP.SDFSRESL",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:43"
+                },
+                {
+                  "dd": "IMS",
+                  "dsn": "OEM.IMS.IMSP.PSBLIB",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:45"
+                },
+                {
+                  "dd": "DDPAUTP0",
+                  "dsn": "OEM.IMS.IMSP.PAUTHDB",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:58"
+                },
+                {
+                  "dd": "DDPAUTX0",
+                  "dsn": "OEM.IMS.IMSP.PAUTHDBX",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:59"
+                },
+                {
+                  "dd": "DFSVSAMP",
+                  "dsn": "OEMPP.IMS.V15R01MB.PROCLIB",
+                  "generation": null,
+                  "member": "DFSVSMDB",
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:62"
+                }
+              ],
+              "writes": [
+                {
+                  "dd": "OUTFIL1",
+                  "dsn": "AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(NEW,CATLG,DELETE)",
+                  "basis": "open-mode OUTPUT (PAUDBUNL OPFILE1)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:48"
+                },
+                {
+                  "dd": "OUTFIL2",
+                  "dsn": "AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(NEW,CATLG,DELETE)",
+                  "basis": "open-mode OUTPUT (PAUDBUNL OPFILE2)",
+                  "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:53"
+                }
+              ],
+              "db2": [],
+              "ims": [
+                {
+                  "interfaces": [
+                    "CBLTDLI"
+                  ],
+                  "psbs": [
+                    "PAUTBUNL"
+                  ],
+                  "calls": 2,
+                  "source": "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL:213",
+                  "program": "PAUDBUNL",
+                  "basis": "DL/I calls in the program"
+                }
+              ],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:38",
+              "parm": "'DLI,PAUDBUNL,PAUTBUNL,,,,,,,,,,,N'"
+            }
+          ]
+        }
+      ],
+      "infrastructure": [
+        {
+          "dsn": "OEMA.IMS.IMSP.SDFSRESL",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "UNLDPADB"
+          ]
+        }
+      ],
+      "lineage": [],
+      "shared_state": [],
+      "inputs": [
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PAUTHDB",
+          "consumers": [
+            "UNLDPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:58"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, UNLDGSAM"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PAUTHDBX",
+          "consumers": [
+            "UNLDPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:59"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, UNLDGSAM"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEM.IMS.IMSP.PSBLIB",
+          "consumers": [
+            "UNLDPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:45"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, LOADPADB, UNLDGSAM"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEMA.IMS.IMSP.SDFSRESL",
+          "consumers": [
+            "UNLDPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:43"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, LOADPADB, UNLDGSAM"
+        },
+        {
+          "kind": "dataset",
+          "name": "OEMPP.IMS.V15R01MB.PROCLIB",
+          "consumers": [
+            "UNLDPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:62"
+          ],
+          "basis": null,
+          "other_chain": "DBPAUTP0, LOADPADB, UNLDGSAM"
+        }
+      ],
+      "outputs": [
+        {
+          "kind": "dataset",
+          "name": "AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO",
+          "producers": [
+            "UNLDPADB.STEP0",
+            "UNLDPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:35",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:53"
+          ],
+          "basis": null,
+          "other_chain": "LOADPADB"
+        },
+        {
+          "kind": "dataset",
+          "name": "AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO",
+          "producers": [
+            "UNLDPADB.STEP0",
+            "UNLDPADB.STEP01"
+          ],
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:33",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:48"
+          ],
+          "basis": null,
+          "other_chain": "LOADPADB"
+        }
+      ],
+      "paths": [],
+      "unreached": {
+        "programs": [
+          "CBPAUP0C",
+          "DBUNLDGS",
+          "PAUDBLOD"
+        ],
+        "note": "batch (non-CICS) programs of the module no UNLDPADB step runs or reaches statically"
+      },
+      "notes": [
+        {
+          "text": "UNLDPADB.STEP01 (PAUDBUNL under PSB PAUTBUNL, PROCOPT=GOTP) writes the root and child flat files AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO / .CHILD.FILEO that LOADPADB.STEP01 (PAUDBLOD) reads as INFILE1 / INFILE2; no scheduler table orders the two jobs, so the hand-off is a dataset fact, not a proven run order.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:38-39",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:48-56",
+            "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:36-38",
+            "app/app-authorization-ims-db2-mq/ims/PAUTBUNL.PSB:18-21"
+          ]
+        },
+        {
+          "text": "STEP0 (IEFBR14) deletes both output files with DISP=(OLD,DELETE,DELETE) before STEP01 recreates them NEW, so the job needs the files to exist from a previous run.",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:25",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:33-36",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:48-49"
+          ]
+        }
+      ],
+      "asks": [
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDPADB",
+          "message": "UNLDPADB reads OEM.IMS.IMSP.PAUTHDB which table(s) DBPAUTP0, UNLDGSAM also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:58"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDPADB",
+          "message": "UNLDPADB reads OEM.IMS.IMSP.PAUTHDBX which table(s) DBPAUTP0, UNLDGSAM also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:59"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDPADB",
+          "message": "UNLDPADB reads OEM.IMS.IMSP.PSBLIB which table(s) DBPAUTP0, LOADPADB, UNLDGSAM also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:45"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDPADB",
+          "message": "UNLDPADB reads OEMA.IMS.IMSP.SDFSRESL which table(s) DBPAUTP0, LOADPADB, UNLDGSAM also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:43"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDPADB",
+          "message": "UNLDPADB reads OEMPP.IMS.V15R01MB.PROCLIB which table(s) DBPAUTP0, LOADPADB, UNLDGSAM also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:62"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDPADB",
+          "message": "UNLDPADB writes AWS.M2.CARDDEMO.PAUTDB.CHILD.FILEO which table(s) LOADPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:35",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:53"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "UNLDPADB",
+          "message": "UNLDPADB writes AWS.M2.CARDDEMO.PAUTDB.ROOT.FILEO which table(s) LOADPADB also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:33",
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:48"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-not-scheduled",
+          "severity": "high",
+          "job": "UNLDPADB",
+          "message": "UNLDPADB was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL"
+          ],
+          "request": "supply the scheduler export that runs UNLDPADB - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+          "status": "open"
+        }
+      ]
+    }
+  ]
+}

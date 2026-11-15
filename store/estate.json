@@ -1,0 +1,1938 @@
+{
+  "meta": {
+    "estate": [
+      "app"
+    ],
+    "generated_at": "2026-11-15T05:59:55Z",
+    "tool": "mftb 0.2.1",
+    "exclude": [],
+    "view": "estate"
+  },
+  "summary": {
+    "estate": "Cognition-Partner-Workshops/ts-cobol-carddemo (root: app)",
+    "files": 245,
+    "catalogued": 245,
+    "excluded": 0,
+    "placeable": 208,
+    "modules": 4,
+    "scanned_modules": 4,
+    "shared": 10,
+    "unplaced": 0,
+    "unclassified": 8,
+    "unsupported": 1,
+    "asks": 53
+  },
+  "site": [
+    {
+      "field": "database_managers",
+      "answers": {
+        "AUTH": {
+          "value": "IBM Db2 for z/OS, IBM IMS DL/I",
+          "source": "detected",
+          "confidence": "derived",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl:1",
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:28",
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:29",
+            "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:33"
+          ]
+        },
+        "CARDDEMO": {
+          "value": "IBM Db2 for z/OS 12",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": "IBM Db2 for z/OS",
+          "source": "detected",
+          "confidence": "derived",
+          "evidence": [
+            "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:1",
+            "app/app-transaction-type-db2/cbl/COBTUPDT.cbl:1",
+            "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:1",
+            "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:1"
+          ]
+        },
+        "VSAMMQ": {
+          "value": "IBM Db2 for z/OS 12",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": false,
+      "value": null,
+      "assumed": false,
+      "source": "mixed"
+    },
+    {
+      "field": "environment_topology",
+      "answers": {
+        "AUTH": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "None",
+      "assumed": false,
+      "source": null
+    },
+    {
+      "field": "file_transfer",
+      "answers": {
+        "AUTH": {
+          "value": "IBM Connect:Direct",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": "TCP/IP FTP",
+          "source": "detected",
+          "confidence": "proven",
+          "evidence": [
+            "app/jcl/FTPJCL.JCL:30"
+          ]
+        },
+        "TRANTYPE": {
+          "value": "IBM Connect:Direct",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": "IBM Connect:Direct",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": false,
+      "value": null,
+      "assumed": false,
+      "source": "mixed"
+    },
+    {
+      "field": "library_manager",
+      "answers": {
+        "AUTH": {
+          "value": "Broadcom Endevor",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": "Broadcom Endevor",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": "Broadcom Endevor",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": "Broadcom Endevor",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "Broadcom Endevor",
+      "assumed": true,
+      "source": "default"
+    },
+    {
+      "field": "masking_policy",
+      "answers": {
+        "AUTH": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "None",
+      "assumed": false,
+      "source": null
+    },
+    {
+      "field": "online_monitors",
+      "answers": {
+        "AUTH": {
+          "value": "IBM CICS Transaction Server, IBM IMS TM",
+          "source": "detected",
+          "confidence": "derived",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:1",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:1",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:322",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:674"
+          ]
+        },
+        "CARDDEMO": {
+          "value": "IBM CICS Transaction Server",
+          "source": "detected",
+          "confidence": "derived",
+          "evidence": [
+            "app/cbl/COACTUPC.cbl:1",
+            "app/cbl/COACTUPC.cbl:956",
+            "app/cbl/COACTVWC.cbl:1",
+            "app/cbl/COACTVWC.cbl:349"
+          ]
+        },
+        "TRANTYPE": {
+          "value": "IBM CICS Transaction Server",
+          "source": "detected",
+          "confidence": "derived",
+          "evidence": [
+            "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:1",
+            "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:620",
+            "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:648",
+            "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:1"
+          ]
+        },
+        "VSAMMQ": {
+          "value": "IBM CICS Transaction Server",
+          "source": "detected",
+          "confidence": "derived",
+          "evidence": [
+            "app/app-vsam-mq/cbl/COACCT01.cbl:1",
+            "app/app-vsam-mq/cbl/CODATE01.cbl:1"
+          ]
+        }
+      },
+      "agreed": false,
+      "value": null,
+      "assumed": false,
+      "source": "detected"
+    },
+    {
+      "field": "output_manager",
+      "answers": {
+        "AUTH": {
+          "value": "Broadcom CA View",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": "Broadcom CA View",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": "Broadcom CA View",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": "Broadcom CA View",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "Broadcom CA View",
+      "assumed": true,
+      "source": "default"
+    },
+    {
+      "field": "scheduler_product",
+      "answers": {
+        "AUTH": {
+          "value": "BMC Control-M, Broadcom CA 7",
+          "source": "detected",
+          "confidence": "proven",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:1",
+            "app/scheduler/CardDemo.controlm:1"
+          ]
+        },
+        "CARDDEMO": {
+          "value": "BMC Control-M, Broadcom CA 7",
+          "source": "detected",
+          "confidence": "proven",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:1",
+            "app/scheduler/CardDemo.controlm:1"
+          ]
+        },
+        "TRANTYPE": {
+          "value": "BMC Control-M, Broadcom CA 7",
+          "source": "detected",
+          "confidence": "proven",
+          "evidence": [
+            "app/scheduler/CardDemo.ca7:1",
+            "app/scheduler/CardDemo.controlm:1"
+          ]
+        },
+        "VSAMMQ": {
+          "value": "BMC Control-M",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": false,
+      "value": null,
+      "assumed": false,
+      "source": "mixed"
+    },
+    {
+      "field": "security_manager",
+      "answers": {
+        "AUTH": {
+          "value": "IBM RACF",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": "IBM RACF",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": "IBM RACF",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": "IBM RACF",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "IBM RACF",
+      "assumed": true,
+      "source": "default"
+    },
+    {
+      "field": "sort_product",
+      "answers": {
+        "AUTH": {
+          "value": "IBM DFSORT",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": "IBM DFSORT",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": "IBM DFSORT",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": "IBM DFSORT",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "IBM DFSORT",
+      "assumed": true,
+      "source": "default"
+    },
+    {
+      "field": "standard_compiler",
+      "answers": {
+        "AUTH": {
+          "value": "IBM Enterprise COBOL for z/OS 6.3",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": "IBM Enterprise COBOL for z/OS 6.3",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": "IBM Enterprise COBOL for z/OS 6.3",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": "IBM Enterprise COBOL for z/OS 6.3",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "IBM Enterprise COBOL for z/OS 6.3",
+      "assumed": true,
+      "source": "default"
+    },
+    {
+      "field": "standard_compiler_options",
+      "answers": {
+        "AUTH": {
+          "value": "RENT,NUMPROC(NOPFD),TRUNC(STD),ARCH(8),SSRANGE(NO)",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": "RENT,NUMPROC(NOPFD),TRUNC(STD),ARCH(8),SSRANGE(NO)",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": "RENT,NUMPROC(NOPFD),TRUNC(STD),ARCH(8),SSRANGE(NO)",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": "RENT,NUMPROC(NOPFD),TRUNC(STD),ARCH(8),SSRANGE(NO)",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "RENT,NUMPROC(NOPFD),TRUNC(STD),ARCH(8),SSRANGE(NO)",
+      "assumed": true,
+      "source": "default"
+    },
+    {
+      "field": "tape_manager",
+      "answers": {
+        "AUTH": {
+          "value": "Broadcom CA 1",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": "Broadcom CA 1",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": "Broadcom CA 1",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": "Broadcom CA 1",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "Broadcom CA 1",
+      "assumed": true,
+      "source": "default"
+    },
+    {
+      "field": "test_lpar",
+      "answers": {
+        "AUTH": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": null,
+          "source": null,
+          "confidence": "unknown",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "None",
+      "assumed": false,
+      "source": null
+    },
+    {
+      "field": "zos_version",
+      "answers": {
+        "AUTH": {
+          "value": "IBM z/OS 2.5",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "CARDDEMO": {
+          "value": "IBM z/OS 2.5",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "TRANTYPE": {
+          "value": "IBM z/OS 2.5",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        },
+        "VSAMMQ": {
+          "value": "IBM z/OS 2.5",
+          "source": "default",
+          "confidence": "assumed",
+          "evidence": []
+        }
+      },
+      "agreed": true,
+      "value": "IBM z/OS 2.5",
+      "assumed": true,
+      "source": "default"
+    }
+  ],
+  "modules": [
+    {
+      "id": "CARDDEMO",
+      "name": "CardDemo base application",
+      "what_it_does": "credit-card account, card, customer, transaction, bill-payment and user administration online (CICS/BMS over VSAM), plus the batch that loads the VSAM files, posts daily transactions, calculates interest and prints statements and reports",
+      "naming": "proposed",
+      "confidence": "derived",
+      "confirmed": null,
+      "evidence": [
+        "app/csd/CARDDEMO.CSD:1",
+        "app/scheduler/CardDemo.controlm:4",
+        "app/scheduler/CardDemo.ca7:18",
+        "app/cbl/",
+        "app/jcl/"
+      ],
+      "files": 132,
+      "kinds": {
+        "assembler-dsect": 1,
+        "assembler-macro": 1,
+        "assembler-program": 2,
+        "bms-mapset": 17,
+        "cics-csd": 1,
+        "cobol-copybook": 34,
+        "cobol-program": 32,
+        "control-cards": 1,
+        "jcl-job": 39,
+        "jcl-proc": 2,
+        "sql-script": 1,
+        "unsupported-source": 1
+      },
+      "scanned": true,
+      "programs": 80,
+      "jobs": 39,
+      "tables": 6,
+      "db2_tables": 0,
+      "datasets": 69,
+      "cics_commands": 174,
+      "boundary": {
+        "unknown": 27,
+        "must-establish": 98,
+        "satisfied-in-drop": 24
+      },
+      "counterparts": [],
+      "findings": {
+        "open": 236,
+        "high": 4
+      }
+    },
+    {
+      "id": "AUTH",
+      "name": "Credit card authorizations (IMS, Db2, MQ)",
+      "what_it_does": "takes card authorization requests from MQ, decides and stores them in an IMS HIDAM database, lets operators view pending authorizations and mark fraud in Db2, and purges expired authorizations in batch",
+      "naming": "proposed",
+      "confidence": "derived",
+      "confirmed": null,
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/",
+        "app/app-authorization-ims-db2-mq/csd/CRDDEMO2.csd:11",
+        "app/app-authorization-ims-db2-mq/README.md:1",
+        "app/app-authorization-ims-db2-mq/README.md:92"
+      ],
+      "files": 37,
+      "kinds": {
+        "bms-mapset": 2,
+        "cics-csd": 1,
+        "cobol-copybook": 12,
+        "cobol-program": 8,
+        "ims-dbd": 4,
+        "ims-psb": 4,
+        "jcl-job": 5,
+        "sql-ddl": 1
+      },
+      "scanned": true,
+      "programs": 50,
+      "jobs": 5,
+      "tables": 6,
+      "db2_tables": 1,
+      "datasets": 21,
+      "cics_commands": 33,
+      "boundary": {
+        "must-establish": 37,
+        "satisfied-in-drop": 2,
+        "unknown": 9
+      },
+      "counterparts": [],
+      "findings": {
+        "open": 135,
+        "high": 8
+      }
+    },
+    {
+      "id": "TRANTYPE",
+      "name": "Transaction type management (Db2)",
+      "what_it_does": "lets administrators list and maintain transaction type reference data in Db2 online, and maintains and extracts the same tables in batch",
+      "naming": "proposed",
+      "confidence": "derived",
+      "confirmed": null,
+      "evidence": [
+        "app/app-transaction-type-db2/",
+        "app/app-transaction-type-db2/csd/CRDDEMOD.csd:11",
+        "app/app-transaction-type-db2/README.md:1"
+      ],
+      "files": 26,
+      "kinds": {
+        "bms-mapset": 2,
+        "cics-csd": 1,
+        "cobol-copybook": 5,
+        "cobol-program": 4,
+        "control-cards": 4,
+        "jcl-job": 4,
+        "sql-ddl": 3,
+        "sql-script": 1,
+        "sql-seed": 2
+      },
+      "scanned": true,
+      "programs": 40,
+      "jobs": 4,
+      "tables": 6,
+      "db2_tables": 3,
+      "datasets": 13,
+      "cics_commands": 24,
+      "boundary": {
+        "satisfied-in-drop": 2,
+        "must-establish": 24,
+        "unknown": 6
+      },
+      "counterparts": [],
+      "findings": {
+        "open": 65,
+        "high": 7
+      }
+    },
+    {
+      "id": "VSAMMQ",
+      "name": "Account and date inquiry over MQ (VSAM, MQ)",
+      "what_it_does": "answers account-detail and system-date inquiries that arrive as MQ request messages, reading the base account VSAM file",
+      "naming": "proposed",
+      "confidence": "derived",
+      "confirmed": null,
+      "evidence": [
+        "app/app-vsam-mq/",
+        "app/app-vsam-mq/csd/CRDDEMOM.csd:1",
+        "app/app-vsam-mq/README.md:1"
+      ],
+      "files": 3,
+      "kinds": {
+        "cics-csd": 1,
+        "cobol-program": 2
+      },
+      "scanned": true,
+      "programs": 32,
+      "jobs": 0,
+      "tables": 0,
+      "db2_tables": 0,
+      "datasets": 0,
+      "cics_commands": 9,
+      "boundary": {
+        "must-establish": 3,
+        "unknown": 18
+      },
+      "counterparts": [],
+      "findings": {
+        "open": 34,
+        "high": 4
+      }
+    }
+  ],
+  "shared": [
+    {
+      "name": "COCOM01Y",
+      "artifact": "copybook",
+      "path": "app/cpy/COCOM01Y.cpy",
+      "used_by": [
+        "AUTH",
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:116",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:375",
+        "app/cbl/COACTUPC.cbl:650"
+      ],
+      "why": "record layout or common area copied by programs of more than one module"
+    },
+    {
+      "name": "CSDAT01Y",
+      "artifact": "copybook",
+      "path": "app/cpy/CSDAT01Y.cpy",
+      "used_by": [
+        "AUTH",
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:135",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:480",
+        "app/cbl/COACTUPC.cbl:626"
+      ],
+      "why": "record layout or common area copied by programs of more than one module"
+    },
+    {
+      "name": "CSUSR01Y",
+      "artifact": "copybook",
+      "path": "app/cpy/CSUSR01Y.cpy",
+      "used_by": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "evidence": [
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:485",
+        "app/cbl/COACTUPC.cbl:635"
+      ],
+      "why": "record layout or common area copied by programs of more than one module"
+    },
+    {
+      "name": "CVACT01Y",
+      "artifact": "copybook",
+      "path": "app/cpy/CVACT01Y.cpy",
+      "used_by": [
+        "AUTH",
+        "CARDDEMO",
+        "VSAMMQ"
+      ],
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:206",
+        "app/app-vsam-mq/cbl/COACCT01.cbl:171",
+        "app/cbl/CBACT01C.cbl:89"
+      ],
+      "why": "record layout or common area copied by programs of more than one module"
+    },
+    {
+      "name": "CVACT02Y",
+      "artifact": "copybook",
+      "path": "app/cpy/CVACT02Y.cpy",
+      "used_by": [
+        "AUTH",
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:147",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:490",
+        "app/cbl/CBACT02C.cbl:45"
+      ],
+      "why": "record layout or common area copied by programs of more than one module"
+    },
+    {
+      "name": "CVACT03Y",
+      "artifact": "copybook",
+      "path": "app/cpy/CVACT03Y.cpy",
+      "used_by": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:203",
+        "app/cbl/CBACT03C.cbl:45"
+      ],
+      "why": "record layout or common area copied by programs of more than one module"
+    },
+    {
+      "name": "CVCRD01Y",
+      "artifact": "copybook",
+      "path": "app/cpy/CVCRD01Y.cpy",
+      "used_by": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "evidence": [
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:327",
+        "app/cbl/COACTUPC.cbl:597"
+      ],
+      "why": "record layout or common area copied by programs of more than one module"
+    },
+    {
+      "name": "CVCUS01Y",
+      "artifact": "copybook",
+      "path": "app/cpy/CVCUS01Y.cpy",
+      "used_by": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:209",
+        "app/cbl/CBCUS01C.cbl:45"
+      ],
+      "why": "record layout or common area copied by programs of more than one module"
+    },
+    {
+      "name": "CARDDEMO",
+      "artifact": "scheduler-table",
+      "path": "app/scheduler/CardDemo.ca7",
+      "used_by": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "evidence": [
+        "app/scheduler/CardDemo.ca7:18",
+        "app/scheduler/CardDemo.ca7:43"
+      ],
+      "why": "scheduler export naming jobs of more than one module"
+    },
+    {
+      "name": "CARDDEMO",
+      "artifact": "scheduler-table",
+      "path": "app/scheduler/CardDemo.controlm",
+      "used_by": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "evidence": [
+        "app/scheduler/CardDemo.controlm:27",
+        "app/scheduler/CardDemo.controlm:4"
+      ],
+      "why": "scheduler export naming jobs of more than one module"
+    }
+  ],
+  "unplaced": [],
+  "inventory": [
+    {
+      "kind": "assembler-dsect",
+      "files": 1,
+      "by_module": {
+        "CARDDEMO": 1
+      },
+      "placeable": true
+    },
+    {
+      "kind": "assembler-macro",
+      "files": 1,
+      "by_module": {
+        "CARDDEMO": 1
+      },
+      "placeable": true
+    },
+    {
+      "kind": "assembler-program",
+      "files": 2,
+      "by_module": {
+        "CARDDEMO": 2
+      },
+      "placeable": true
+    },
+    {
+      "kind": "binary",
+      "files": 14,
+      "by_module": {
+        "not-an-artifact": 14
+      },
+      "placeable": false
+    },
+    {
+      "kind": "bms-mapset",
+      "files": 21,
+      "by_module": {
+        "AUTH": 2,
+        "TRANTYPE": 2,
+        "CARDDEMO": 17
+      },
+      "placeable": true
+    },
+    {
+      "kind": "cics-csd",
+      "files": 4,
+      "by_module": {
+        "AUTH": 1,
+        "TRANTYPE": 1,
+        "VSAMMQ": 1,
+        "CARDDEMO": 1
+      },
+      "placeable": true
+    },
+    {
+      "kind": "cobol-copybook",
+      "files": 59,
+      "by_module": {
+        "AUTH": 12,
+        "TRANTYPE": 5,
+        "CARDDEMO": 34,
+        "shared": 8
+      },
+      "placeable": true
+    },
+    {
+      "kind": "cobol-program",
+      "files": 46,
+      "by_module": {
+        "AUTH": 8,
+        "TRANTYPE": 4,
+        "VSAMMQ": 2,
+        "CARDDEMO": 32
+      },
+      "placeable": true
+    },
+    {
+      "kind": "control-cards",
+      "files": 5,
+      "by_module": {
+        "TRANTYPE": 4,
+        "CARDDEMO": 1
+      },
+      "placeable": true
+    },
+    {
+      "kind": "document",
+      "files": 12,
+      "by_module": {
+        "not-an-artifact": 12
+      },
+      "placeable": false
+    },
+    {
+      "kind": "empty",
+      "files": 3,
+      "by_module": {
+        "not-an-artifact": 3
+      },
+      "placeable": false
+    },
+    {
+      "kind": "ims-dbd",
+      "files": 4,
+      "by_module": {
+        "AUTH": 4
+      },
+      "placeable": true
+    },
+    {
+      "kind": "ims-psb",
+      "files": 4,
+      "by_module": {
+        "AUTH": 4
+      },
+      "placeable": true
+    },
+    {
+      "kind": "jcl-job",
+      "files": 48,
+      "by_module": {
+        "AUTH": 5,
+        "TRANTYPE": 4,
+        "CARDDEMO": 39
+      },
+      "placeable": true
+    },
+    {
+      "kind": "jcl-proc",
+      "files": 2,
+      "by_module": {
+        "CARDDEMO": 2
+      },
+      "placeable": true
+    },
+    {
+      "kind": "scheduler-table",
+      "files": 2,
+      "by_module": {
+        "shared": 2
+      },
+      "placeable": true
+    },
+    {
+      "kind": "sql-ddl",
+      "files": 4,
+      "by_module": {
+        "AUTH": 1,
+        "TRANTYPE": 3
+      },
+      "placeable": true
+    },
+    {
+      "kind": "sql-script",
+      "files": 2,
+      "by_module": {
+        "TRANTYPE": 1,
+        "CARDDEMO": 1
+      },
+      "placeable": true
+    },
+    {
+      "kind": "sql-seed",
+      "files": 2,
+      "by_module": {
+        "TRANTYPE": 2
+      },
+      "placeable": true
+    },
+    {
+      "kind": "unclassified",
+      "files": 8,
+      "by_module": {
+        "not-an-artifact": 8
+      },
+      "placeable": false
+    },
+    {
+      "kind": "unsupported-source",
+      "files": 1,
+      "by_module": {
+        "CARDDEMO": 1
+      },
+      "placeable": true
+    }
+  ],
+  "connections": [
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "both copy CARDDEMO",
+      "certainty": "proven",
+      "evidence": [
+        "app/scheduler/CardDemo.ca7"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "both copy COCOM01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/COCOM01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "both copy CSDAT01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CSDAT01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "both copy CVACT01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CVACT01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "both copy CVACT02Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CVACT02Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "both copy CVACT03Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CVACT03Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "both copy CVCUS01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CVCUS01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "calls COPAUS0C, which AUTH declares",
+      "certainty": "proven",
+      "evidence": [
+        "app/cbl/COMEN01C.cbl:156"
+      ],
+      "seen_by": [
+        "CARDDEMO"
+      ]
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "may call COMEN01C, which CARDDEMO declares",
+      "certainty": "candidate",
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:674"
+      ],
+      "seen_by": [
+        "AUTH"
+      ]
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "may call COSGN00C, which CARDDEMO declares",
+      "certainty": "candidate",
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:674"
+      ],
+      "seen_by": [
+        "AUTH"
+      ]
+    },
+    {
+      "kind": "data",
+      "between": [
+        "AUTH",
+        "CARDDEMO"
+      ],
+      "detail": "both use dataset AWS.M2.CARDDEMO.LOADLIB",
+      "certainty": "proven",
+      "evidence": [],
+      "seen_by": [
+        "AUTH",
+        "CARDDEMO"
+      ]
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "TRANTYPE"
+      ],
+      "detail": "both copy COCOM01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/COCOM01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "TRANTYPE"
+      ],
+      "detail": "both copy CSDAT01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CSDAT01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "TRANTYPE"
+      ],
+      "detail": "both copy CVACT02Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CVACT02Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "data",
+      "between": [
+        "AUTH",
+        "TRANTYPE"
+      ],
+      "detail": "both use dataset AWS.M2.CARDDEMO.LOADLIB",
+      "certainty": "proven",
+      "evidence": [],
+      "seen_by": [
+        "AUTH",
+        "TRANTYPE"
+      ]
+    },
+    {
+      "kind": "code",
+      "between": [
+        "AUTH",
+        "VSAMMQ"
+      ],
+      "detail": "both copy CVACT01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CVACT01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "detail": "both copy CARDDEMO",
+      "certainty": "proven",
+      "evidence": [
+        "app/scheduler/CardDemo.controlm"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "detail": "both copy COCOM01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/COCOM01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "detail": "both copy CSDAT01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CSDAT01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "detail": "both copy CSUSR01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CSUSR01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "detail": "both copy CVACT02Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CVACT02Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "detail": "both copy CVCRD01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CVCRD01Y.cpy"
+      ],
+      "seen_by": []
+    },
+    {
+      "kind": "code",
+      "between": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "detail": "calls COTRTLIC, which TRANTYPE declares",
+      "certainty": "proven",
+      "evidence": [
+        "app/cbl/COADM01C.cbl:145"
+      ],
+      "seen_by": [
+        "CARDDEMO"
+      ]
+    },
+    {
+      "kind": "code",
+      "between": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "detail": "may call COADM01C, which CARDDEMO declares",
+      "certainty": "candidate",
+      "evidence": [
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:620",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:457"
+      ],
+      "seen_by": [
+        "TRANTYPE"
+      ]
+    },
+    {
+      "kind": "data",
+      "between": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ],
+      "detail": "both use dataset AWS.M2.CARDDEMO.LOADLIB",
+      "certainty": "proven",
+      "evidence": [],
+      "seen_by": [
+        "CARDDEMO",
+        "TRANTYPE"
+      ]
+    },
+    {
+      "kind": "code",
+      "between": [
+        "CARDDEMO",
+        "VSAMMQ"
+      ],
+      "detail": "both copy CVACT01Y",
+      "certainty": "proven",
+      "evidence": [
+        "app/cpy/CVACT01Y.cpy"
+      ],
+      "seen_by": []
+    }
+  ],
+  "asks": [
+    {
+      "scope": "estate",
+      "kind": "catalog-unclassified",
+      "severity": "high",
+      "message": "app/app-authorization-ims-db2-mq/ddl/XAUTHFRD.ddl matches no artifact signature: the sweep cannot say what it is",
+      "request": "What is this member (language / artifact type), or may it be excluded from the estate?",
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/ddl/XAUTHFRD.ddl"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-no-program-id",
+      "severity": "medium",
+      "message": "app/app-transaction-type-db2/cbl/COTRTLIC.cbl has an IDENTIFICATION DIVISION but no readable PROGRAM-ID",
+      "request": "Is the member complete? The sweep catalogues it under its file name.",
+      "evidence": [
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:24"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-unclassified",
+      "severity": "high",
+      "message": "app/app-transaction-type-db2/ddl/XTRNTYCAT.ddl matches no artifact signature: the sweep cannot say what it is",
+      "request": "What is this member (language / artifact type), or may it be excluded from the estate?",
+      "evidence": [
+        "app/app-transaction-type-db2/ddl/XTRNTYCAT.ddl"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-unclassified",
+      "severity": "high",
+      "message": "app/app-transaction-type-db2/ddl/XTRNTYPE.ddl matches no artifact signature: the sweep cannot say what it is",
+      "request": "What is this member (language / artifact type), or may it be excluded from the estate?",
+      "evidence": [
+        "app/app-transaction-type-db2/ddl/XTRNTYPE.ddl"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-assembler",
+      "severity": "medium",
+      "message": "app/asm/COBDATFT.asm is HLASM: the sweep has its sections, its entry points and the names it reaches, but mftb has no assembler analyser, so its logic is not inventoried",
+      "request": "Is this member in scope for the migration, and who can read it? Its behaviour (and any transfer the sweep listed as unresolved) needs a human.",
+      "evidence": [
+        "app/asm/COBDATFT.asm:17"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-assembler",
+      "severity": "medium",
+      "message": "app/asm/MVSWAIT.asm is HLASM: the sweep has its sections, its entry points and the names it reaches, but mftb has no assembler analyser, so its logic is not inventoried",
+      "request": "Is this member in scope for the migration, and who can read it? Its behaviour (and any transfer the sweep listed as unresolved) needs a human.",
+      "evidence": [
+        "app/asm/MVSWAIT.asm:17"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-no-program-id",
+      "severity": "medium",
+      "message": "app/cbl/COACTUPC.cbl has an IDENTIFICATION DIVISION but no readable PROGRAM-ID",
+      "request": "Is the member complete? The sweep catalogues it under its file name.",
+      "evidence": [
+        "app/cbl/COACTUPC.cbl:21"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-no-program-id",
+      "severity": "medium",
+      "message": "app/cbl/COACTVWC.cbl has an IDENTIFICATION DIVISION but no readable PROGRAM-ID",
+      "request": "Is the member complete? The sweep catalogues it under its file name.",
+      "evidence": [
+        "app/cbl/COACTVWC.cbl:21"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-no-program-id",
+      "severity": "medium",
+      "message": "app/cbl/COCRDLIC.cbl has an IDENTIFICATION DIVISION but no readable PROGRAM-ID",
+      "request": "Is the member complete? The sweep catalogues it under its file name.",
+      "evidence": [
+        "app/cbl/COCRDLIC.cbl:25"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-no-program-id",
+      "severity": "medium",
+      "message": "app/cbl/COCRDSLC.cbl has an IDENTIFICATION DIVISION but no readable PROGRAM-ID",
+      "request": "Is the member complete? The sweep catalogues it under its file name.",
+      "evidence": [
+        "app/cbl/COCRDSLC.cbl:22"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-no-program-id",
+      "severity": "medium",
+      "message": "app/cbl/COCRDUPC.cbl has an IDENTIFICATION DIVISION but no readable PROGRAM-ID",
+      "request": "Is the member complete? The sweep catalogues it under its file name.",
+      "evidence": [
+        "app/cbl/COCRDUPC.cbl:22"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-unclassified",
+      "severity": "high",
+      "message": "app/cpy/COTTL01Y.cpy matches no artifact signature: the sweep cannot say what it is",
+      "request": "What is this member (language / artifact type), or may it be excluded from the estate?",
+      "evidence": [
+        "app/cpy/COTTL01Y.cpy"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-unclassified",
+      "severity": "high",
+      "message": "app/cpy/CSLKPCDY.cpy matches no artifact signature: the sweep cannot say what it is",
+      "request": "What is this member (language / artifact type), or may it be excluded from the estate?",
+      "evidence": [
+        "app/cpy/CSLKPCDY.cpy"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-unclassified",
+      "severity": "high",
+      "message": "app/cpy/CSMSG01Y.cpy matches no artifact signature: the sweep cannot say what it is",
+      "request": "What is this member (language / artifact type), or may it be excluded from the estate?",
+      "evidence": [
+        "app/cpy/CSMSG01Y.cpy"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-unclassified",
+      "severity": "high",
+      "message": "app/cpy/CSMSG02Y.cpy matches no artifact signature: the sweep cannot say what it is",
+      "request": "What is this member (language / artifact type), or may it be excluded from the estate?",
+      "evidence": [
+        "app/cpy/CSMSG02Y.cpy"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-unclassified",
+      "severity": "high",
+      "message": "app/cpy/CSSETATY.cpy matches no artifact signature: the sweep cannot say what it is",
+      "request": "What is this member (language / artifact type), or may it be excluded from the estate?",
+      "evidence": [
+        "app/cpy/CSSETATY.cpy"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.ACCDATA.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.ACCDATA.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.ACCTDATA.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.ACCTDATA.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.CARDDATA.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.CARDDATA.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.CARDXREF.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.CARDXREF.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.CUSTDATA.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.CUSTDATA.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.DALYTRAN.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.DALYTRAN.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.DISCGRP.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.DISCGRP.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.TCATBALF.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.TCATBALF.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.TRANCATG.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.TRANCATG.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.TRANTYPE.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.TRANTYPE.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-untranslated",
+      "severity": "medium",
+      "message": "app/data/EBCDIC/AWS.M2.CARDDEMO.USRSEC.PS does not decode as UTF-8: EBCDIC data or a binary carried in the estate",
+      "request": "Is this data in scope? If so, supply it translated (or its record layout) \u2014 the sweep lists it but cannot read it.",
+      "evidence": [
+        "app/data/EBCDIC/AWS.M2.CARDDEMO.USRSEC.PS"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-assembler",
+      "severity": "medium",
+      "message": "app/maclib/ASMWAIT.mac is HLASM: the sweep has its sections, its entry points and the names it reaches, but mftb has no assembler analyser, so its logic is not inventoried",
+      "request": "Is this member in scope for the migration, and who can read it? Its behaviour (and any transfer the sweep listed as unresolved) needs a human.",
+      "evidence": [
+        "app/maclib/ASMWAIT.mac:17"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-assembler",
+      "severity": "medium",
+      "message": "app/maclib/COCDATFT.mac is HLASM: the sweep has its sections, its entry points and the names it reaches, but mftb has no assembler analyser, so its logic is not inventoried",
+      "request": "Is this member in scope for the migration, and who can read it? Its behaviour (and any transfer the sweep listed as unresolved) needs a human.",
+      "evidence": [
+        "app/maclib/COCDATFT.mac:17"
+      ]
+    },
+    {
+      "scope": "estate",
+      "kind": "catalog-unsupported-language",
+      "severity": "medium",
+      "message": "app/pli/CBFEECAL.pli is IBM Enterprise PL/I source, which mftb does not parse: it is catalogued, not analysed",
+      "request": "Is this member in scope for the migration? If so its analysis needs a parser mftb does not have, or a human reading.",
+      "evidence": [
+        "app/pli/CBFEECAL.pli:21"
+      ]
+    },
+    {
+      "scope": "AUTH",
+      "kind": "chain-not-scheduled",
+      "severity": "high",
+      "message": "DBPAUTP0 was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+      "request": "supply the scheduler export that runs DBPAUTP0 - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl"
+      ]
+    },
+    {
+      "scope": "AUTH",
+      "kind": "chain-not-scheduled",
+      "severity": "high",
+      "message": "LOADPADB was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+      "request": "supply the scheduler export that runs LOADPADB - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL"
+      ]
+    },
+    {
+      "scope": "AUTH",
+      "kind": "chain-not-scheduled",
+      "severity": "high",
+      "message": "UNLDGSAM was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+      "request": "supply the scheduler export that runs UNLDGSAM - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL"
+      ]
+    },
+    {
+      "scope": "AUTH",
+      "kind": "chain-not-scheduled",
+      "severity": "high",
+      "message": "UNLDPADB was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+      "request": "supply the scheduler export that runs UNLDPADB - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL"
+      ]
+    },
+    {
+      "scope": "AUTH",
+      "kind": "profile-environment-topology",
+      "severity": "high",
+      "message": "AUTH profile: environment_topology is not in the store \u2014 which LPARs and environments (production / test / DR) the estate has \u2014 the scanned JCL allocates datasets under the high-level qualifier(s) AWS, IMS, OEM, OEMA, OEMPP, XXXXXXXX: a naming observation, which is not proof of which LPAR or environment runs them",
+      "request": "State the LPARs and environments, how a dataset or job name says which one it belongs to, and which sysplex they sit in: the scan can only list the qualifiers it saw",
+      "evidence": [
+        "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:26",
+        "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:27",
+        "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:28",
+        "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:29"
+      ]
+    },
+    {
+      "scope": "AUTH",
+      "kind": "profile-masking-policy",
+      "severity": "high",
+      "message": "AUTH profile: masking_policy is not in the store \u2014 what may leave the estate, and in what shape",
+      "request": "State the data-masking policy for extracted test data (which fields must be masked, whether production data may leave the estate at all)",
+      "evidence": []
+    },
+    {
+      "scope": "AUTH",
+      "kind": "profile-shared-code-boundary",
+      "severity": "high",
+      "message": "AUTH profile: shared_code_boundary is not in the store \u2014 which code the module uses but does not own",
+      "request": "Confirm which copybooks and called modules are shared estate code rather than the module's own, and which library owns them",
+      "evidence": []
+    },
+    {
+      "scope": "AUTH",
+      "kind": "profile-test-lpar",
+      "severity": "high",
+      "message": "AUTH profile: test_lpar is not in the store \u2014 whether a test LPAR is available to run the migrated code against",
+      "request": "Confirm whether a test LPAR (or a sandbox subsystem) is available for parallel runs, and who can grant access",
+      "evidence": []
+    },
+    {
+      "scope": "CARDDEMO",
+      "kind": "file-dd-missing",
+      "severity": "high",
+      "message": "job CBIMPORT step STEP01 runs CBIMPORT, which opens file CARD-OUTPUT through DD CARDOUT, but the step allocates no DD CARDOUT",
+      "request": "Provide the DD CARDOUT allocation for job CBIMPORT step STEP01 (or the PROC/override that supplies it)",
+      "evidence": [
+        "app/cbl/CBIMPORT.cbl:63",
+        "app/jcl/CBIMPORT.jcl:22"
+      ]
+    },
+    {
+      "scope": "CARDDEMO",
+      "kind": "profile-environment-topology",
+      "severity": "high",
+      "message": "CARDDEMO profile: environment_topology is not in the store \u2014 which LPARs and environments (production / test / DR) the estate has \u2014 the scanned JCL allocates datasets under the high-level qualifier(s) AWS, CEE, OEM: a naming observation, which is not proof of which LPAR or environment runs them",
+      "request": "State the LPARs and environments, how a dataset or job name says which one it belongs to, and which sysplex they sit in: the scan can only list the qualifiers it saw",
+      "evidence": [
+        "app/jcl/ACCTFILE.jcl:56",
+        "app/jcl/ACCTFILE.jcl:58",
+        "app/jcl/CARDFILE.jcl:70",
+        "app/jcl/CARDFILE.jcl:72"
+      ]
+    },
+    {
+      "scope": "CARDDEMO",
+      "kind": "profile-masking-policy",
+      "severity": "high",
+      "message": "CARDDEMO profile: masking_policy is not in the store \u2014 what may leave the estate, and in what shape",
+      "request": "State the data-masking policy for extracted test data (which fields must be masked, whether production data may leave the estate at all)",
+      "evidence": []
+    },
+    {
+      "scope": "CARDDEMO",
+      "kind": "profile-test-lpar",
+      "severity": "high",
+      "message": "CARDDEMO profile: test_lpar is not in the store \u2014 whether a test LPAR is available to run the migrated code against",
+      "request": "Confirm whether a test LPAR (or a sandbox subsystem) is available for parallel runs, and who can grant access",
+      "evidence": []
+    },
+    {
+      "scope": "TRANTYPE",
+      "kind": "chain-not-scheduled",
+      "severity": "high",
+      "message": "CREADB2 was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+      "request": "supply the scheduler export that runs CREADB2 - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+      "evidence": [
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl"
+      ]
+    },
+    {
+      "scope": "TRANTYPE",
+      "kind": "chain-not-scheduled",
+      "severity": "high",
+      "message": "MNTTRDYN was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+      "request": "supply the scheduler export that runs MNTTRDYN - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+      "evidence": [
+        "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl"
+      ]
+    },
+    {
+      "scope": "TRANTYPE",
+      "kind": "dynamic-call-evidence",
+      "severity": "high",
+      "message": "CBTRNDYN CALL WS-PGM-NAME (app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:62): job MNTTRDYN step STEP1 runs CBTRNDYN without PARM= \u2014 PARM-VALUE gets no value from JCL",
+      "request": "Confirm what job MNTTRDYN step STEP1 passes to CBTRNDYN (PARM absent)",
+      "evidence": [
+        "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:62",
+        "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:23"
+      ]
+    },
+    {
+      "scope": "TRANTYPE",
+      "kind": "profile-environment-topology",
+      "severity": "high",
+      "message": "TRANTYPE profile: environment_topology is not in the store \u2014 which LPARs and environments (production / test / DR) the estate has \u2014 the scanned JCL allocates datasets under the high-level qualifier(s) AWS, DYNSQL, INPFILE, OEM, OEMA: a naming observation, which is not proof of which LPAR or environment runs them",
+      "request": "State the LPARs and environments, how a dataset or job name says which one it belongs to, and which sysplex they sit in: the scan can only list the qualifiers it saw",
+      "evidence": [
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl:41",
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl:53",
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl:66",
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl:78"
+      ]
+    },
+    {
+      "scope": "TRANTYPE",
+      "kind": "profile-masking-policy",
+      "severity": "high",
+      "message": "TRANTYPE profile: masking_policy is not in the store \u2014 what may leave the estate, and in what shape",
+      "request": "State the data-masking policy for extracted test data (which fields must be masked, whether production data may leave the estate at all)",
+      "evidence": []
+    },
+    {
+      "scope": "TRANTYPE",
+      "kind": "profile-shared-code-boundary",
+      "severity": "high",
+      "message": "TRANTYPE profile: shared_code_boundary is not in the store \u2014 which code the module uses but does not own",
+      "request": "Confirm which copybooks and called modules are shared estate code rather than the module's own, and which library owns them",
+      "evidence": []
+    },
+    {
+      "scope": "TRANTYPE",
+      "kind": "profile-test-lpar",
+      "severity": "high",
+      "message": "TRANTYPE profile: test_lpar is not in the store \u2014 whether a test LPAR is available to run the migrated code against",
+      "request": "Confirm whether a test LPAR (or a sandbox subsystem) is available for parallel runs, and who can grant access",
+      "evidence": []
+    },
+    {
+      "scope": "VSAMMQ",
+      "kind": "profile-environment-topology",
+      "severity": "high",
+      "message": "VSAMMQ profile: environment_topology is not in the store \u2014 which LPARs and environments (production / test / DR) the estate has",
+      "request": "State the LPARs and environments, how a dataset or job name says which one it belongs to, and which sysplex they sit in: the scan can only list the qualifiers it saw",
+      "evidence": []
+    },
+    {
+      "scope": "VSAMMQ",
+      "kind": "profile-masking-policy",
+      "severity": "high",
+      "message": "VSAMMQ profile: masking_policy is not in the store \u2014 what may leave the estate, and in what shape",
+      "request": "State the data-masking policy for extracted test data (which fields must be masked, whether production data may leave the estate at all)",
+      "evidence": []
+    },
+    {
+      "scope": "VSAMMQ",
+      "kind": "profile-shared-code-boundary",
+      "severity": "high",
+      "message": "VSAMMQ profile: shared_code_boundary is not in the store \u2014 which code the module uses but does not own",
+      "request": "Confirm which copybooks and called modules are shared estate code rather than the module's own, and which library owns them",
+      "evidence": []
+    },
+    {
+      "scope": "VSAMMQ",
+      "kind": "profile-test-lpar",
+      "severity": "high",
+      "message": "VSAMMQ profile: test_lpar is not in the store \u2014 whether a test LPAR is available to run the migrated code against",
+      "request": "Confirm whether a test LPAR (or a sandbox subsystem) is available for parallel runs, and who can grant access",
+      "evidence": []
+    }
+  ]
+}

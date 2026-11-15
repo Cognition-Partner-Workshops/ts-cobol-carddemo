@@ -1,0 +1,308 @@
+# Gate output, ticket 09-parity-gate. Code revision 615975a9a1163aa185973fe96c558aef4daff856, 2026-11-15T17:19:48Z
+
+## make up && make build (exit code 0) - last lines
+esql_prep: app/app-transaction-type-db2/cbl/CBTRNDYN.cbl: columns 73-80 only
+esql_prep: app/app-transaction-type-db2/cbl/COBTUPDT.cbl: joined multi-line INCLUDE SQLCA
+CBTRNDYN: precompiled (ocesql) and compiled
+COBTUPDT: precompiled (ocesql) and compiled
+DSNEXIT: precompiled (ocesql) and compiled
+DSNRUN: precompiled (ocesql) and compiled
+
+## make parity (legacy, exit code 0)
+posting/p01-baseline-mixed [legacy rerun]: PASS (23 records, 92 fields, 0 differences)
+posting/p02-invalid-card [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p03-account-missing [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p04-overlimit-reject [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p05-expired-account [legacy rerun]: PASS (14 records, 60 fields, 0 differences)
+posting/p06-credits-new-category [legacy rerun]: PASS (18 records, 67 fields, 0 differences)
+posting/p07-empty-day [legacy rerun]: PASS (2 records, 16 fields, 0 differences)
+interest/i01-baseline [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i03-zero-rate-skipped [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i05-multi-category [legacy rerun]: PASS (3 records, 38 fields, 0 differences)
+interest/i06-negative-balance [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i07-nontie-rounding [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+trantype-update/t01-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t02-update [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t03-delete [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t04-comments [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t05-delete-missing [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t06-duplicate-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t07-mixed-batch [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d01-update-then-apply [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d02-delete-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d03-bad-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+report: work/parity/report.md
+
+## make parity-java (exit code 0)
+docker compose up -d --wait db
+ Container ts-cobol-carddemo-db-1 Running 
+ Container ts-cobol-carddemo-db-1 Waiting 
+ Container ts-cobol-carddemo-db-1 Healthy 
+mvn -q -f java/interest/pom.xml -DskipTests package
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+| i01-baseline | PASS | PASS | PASS | PASS |
+| i02-tie-half-cent | PASS | PASS | PASS | PASS |
+| i03-zero-rate-skipped | PASS | PASS | PASS | PASS |
+| i04-default-group-fallback | PASS | PASS | PASS | PASS |
+| i05-multi-category | PASS | PASS | PASS | PASS |
+| i06-negative-balance | PASS | PASS | PASS | PASS |
+| i07-nontie-rounding | PASS | PASS | PASS | PASS |
+report: work/parity-java/report.md
+
+## work/parity-java/report.md - the gate table at its end
+# Gate: make parity-java
+
+| Case | Job (load, calculation, export) | Comparator | RC1-RC5 in interest_run | Result |
+|---|---|---|---|---|
+| i01-baseline | PASS | PASS | PASS | PASS |
+| i02-tie-half-cent | PASS | PASS | PASS | PASS |
+| i03-zero-rate-skipped | PASS | PASS | PASS | PASS |
+| i04-default-group-fallback | PASS | PASS | PASS | PASS |
+| i05-multi-category | PASS | PASS | PASS | PASS |
+| i06-negative-balance | PASS | PASS | PASS | PASS |
+| i07-nontie-rounding | PASS | PASS | PASS | PASS |
+
+## Negative control: make parity-java ROUNDING=HALF_EVEN PARITY_JAVA_OUT=work/parity-java-half-even (exit code 2)
+docker compose up -d --wait db
+ Container ts-cobol-carddemo-db-1 Running 
+ Container ts-cobol-carddemo-db-1 Waiting 
+ Container ts-cobol-carddemo-db-1 Healthy 
+mvn -q -f java/interest/pom.xml -DskipTests package
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [java]: FAIL (4 records, 50 fields, 2 differences)
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+| i01-baseline | PASS | PASS | PASS | PASS |
+| i02-tie-half-cent | PASS | FAIL | PASS | FAIL |
+| i03-zero-rate-skipped | PASS | PASS | PASS | PASS |
+| i04-default-group-fallback | PASS | PASS | PASS | PASS |
+| i05-multi-category | PASS | PASS | PASS | PASS |
+| i06-negative-balance | PASS | PASS | PASS | PASS |
+| i07-nontie-rounding | PASS | PASS | PASS | PASS |
+report: work/parity-java-half-even/report.md
+make: *** [Makefile:108: parity-java] Error 1
+
+## work/parity-java-half-even/report.md - the case that fails
+## interest / i02-tie-half-cent — java: **FAIL (2 differences)**
+
+Checked 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, 0 table snapshots, return codes.
+
+| Where | Field | Expected (legacy) | Actual (candidate) |
+|---|---|---|---|
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 1 (ACCT-ID=2003) | `ACCT-CURR-BAL` | 1247.85 | 1247.86 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-AMT` | 12.35 | 12.36 |
+
+Fields differing: `ACCT-CURR-BAL`, `TRAN-AMT`
+| i02-tie-half-cent | PASS | FAIL | PASS | FAIL |
+| i03-zero-rate-skipped | PASS | PASS | PASS | PASS |
+| i04-default-group-fallback | PASS | PASS | PASS | PASS |
+| i05-multi-category | PASS | PASS | PASS | PASS |
+| i06-negative-balance | PASS | PASS | PASS | PASS |
+| i07-nontie-rounding | PASS | PASS | PASS | PASS |
+
+## make parity-naive CASE=i02-tie-half-cent (exit code 2)
+interest/i02-tie-half-cent: naive half-even reference wrote 2 interest transactions to work/parity/interest/i02-tie-half-cent/naive
+interest/i02-tie-half-cent [naive half-even reference]: FAIL (4 records, 50 fields, 2 differences)
+report: work/parity/report-naive.md
+make: *** [Makefile:76: parity-naive] Error 1
+## interest / i02-tie-half-cent — naive half-even reference: **FAIL (2 differences)**
+
+Checked 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, 0 table snapshots, return codes.
+
+| Where | Field | Expected (legacy) | Actual (candidate) |
+|---|---|---|---|
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 1 (ACCT-ID=2003) | `ACCT-CURR-BAL` | 1247.85 | 1247.86 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-AMT` | 12.35 | 12.36 |
+
+Fields differing: `ACCT-CURR-BAL`, `TRAN-AMT`
+
+## A case whose run fails: make parity-java CASE=i01-baseline INTEREST_PARM=2022 PARITY_JAVA_OUT=work/parity-java-failed-run (exit code 2)
+docker compose up -d --wait db
+ Container ts-cobol-carddemo-db-1 Running 
+ Container ts-cobol-carddemo-db-1 Waiting 
+ Container ts-cobol-carddemo-db-1 Healthy 
+mvn -q -f java/interest/pom.xml -DskipTests package
+2026-11-15T17:19:11.252Z ERROR 1 --- [interest] [           main] o.s.boot.SpringApplication               : Application run failed
+
+java.lang.IllegalStateException: Failed to execute ApplicationRunner
+Caused by: org.springframework.batch.core.JobParametersInvalidException: INT-Q02: parmDate must be exactly 10 characters
+
+interest/i01-baseline: java job ended with exit code 12
+interest/i01-baseline [java]: FAIL (4 records, 50 fields, 4 differences)
+| i01-baseline | FAIL (exit code 12) | FAIL | FAIL (no finished run to check) | FAIL |
+report: work/parity-java-failed-run/report.md
+make: *** [Makefile:108: parity-java] Error 1
+
+## Database assertions: result line and RC1, RC2, RC5 lines of work/parity-java/<case>/recon.md after each case
+
+### i01-baseline
+- interest_run: 36, status EXPORTED
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC1 | account: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | card_xref: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | tran_cat_balance: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | disclosure_group: records and rows | 15 | unloaded file | 15 | table | EQUAL |
+| RC2 | sum of ACCT-CURR-BAL | 3400.00 | unloaded file | 3400.00 | interest_run.loaded_acct_curr_bal_sum | EQUAL |
+| RC2 | sum of ACCT-CREDIT-LIMIT | 11000.00 | unloaded file | 11000.00 | interest_run.loaded_acct_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CASH-CREDIT-LIMIT | 5500.00 | unloaded file | 5500.00 | interest_run.loaded_acct_cash_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-CREDIT | 3400.00 | unloaded file | 3400.00 | interest_run.loaded_acct_curr_cyc_credit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-DEBIT | 0.00 | unloaded file | 0.00 | interest_run.loaded_acct_curr_cyc_debit_sum | EQUAL |
+| RC2 | sum of ACCT-ID | 4003 | unloaded file | 4003.00 | interest_run.loaded_acct_id_sum | EQUAL |
+| RC2 | sum of XREF-ACCT-ID | 4003 | unloaded file | 4003.00 | interest_run.loaded_xref_acct_id_sum | EQUAL |
+| RC2 | sum of TRAN-CAT-BAL | 3400.00 | unloaded file | 3400.00 | interest_run.loaded_tran_cat_bal_sum | EQUAL |
+| RC2 | sum of TRANCAT-ACCT-ID | 4003 | unloaded file | 4003.00 | interest_run.loaded_trancat_acct_id_sum | EQUAL |
+| RC2 | sum of DIS-INT-RATE | 120.50 | unloaded file | 120.50 | interest_run.loaded_dis_int_rate_sum | EQUAL |
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 2 | table | 2 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 2 | table | 2 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 47.00 | table | 47.00 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+
+### i02-tie-half-cent
+- interest_run: 37, status EXPORTED
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC1 | account: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | card_xref: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | tran_cat_balance: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | disclosure_group: records and rows | 15 | unloaded file | 15 | table | EQUAL |
+| RC2 | sum of ACCT-CURR-BAL | 2470.00 | unloaded file | 2470.00 | interest_run.loaded_acct_curr_bal_sum | EQUAL |
+| RC2 | sum of ACCT-CREDIT-LIMIT | 10000.00 | unloaded file | 10000.00 | interest_run.loaded_acct_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CASH-CREDIT-LIMIT | 5000.00 | unloaded file | 5000.00 | interest_run.loaded_acct_cash_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-CREDIT | 2470.00 | unloaded file | 2470.00 | interest_run.loaded_acct_curr_cyc_credit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-DEBIT | 0.00 | unloaded file | 0.00 | interest_run.loaded_acct_curr_cyc_debit_sum | EQUAL |
+| RC2 | sum of ACCT-ID | 4007 | unloaded file | 4007.00 | interest_run.loaded_acct_id_sum | EQUAL |
+| RC2 | sum of XREF-ACCT-ID | 4007 | unloaded file | 4007.00 | interest_run.loaded_xref_acct_id_sum | EQUAL |
+| RC2 | sum of TRAN-CAT-BAL | 2470.00 | unloaded file | 2470.00 | interest_run.loaded_tran_cat_bal_sum | EQUAL |
+| RC2 | sum of TRANCAT-ACCT-ID | 4007 | unloaded file | 4007.00 | interest_run.loaded_trancat_acct_id_sum | EQUAL |
+| RC2 | sum of DIS-INT-RATE | 120.50 | unloaded file | 120.50 | interest_run.loaded_dis_int_rate_sum | EQUAL |
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 2 | table | 2 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 2 | table | 2 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 24.69 | table | 24.69 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+
+### i03-zero-rate-skipped
+- interest_run: 38, status EXPORTED
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC1 | account: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | card_xref: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | tran_cat_balance: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | disclosure_group: records and rows | 15 | unloaded file | 15 | table | EQUAL |
+| RC2 | sum of ACCT-CURR-BAL | 700.00 | unloaded file | 700.00 | interest_run.loaded_acct_curr_bal_sum | EQUAL |
+| RC2 | sum of ACCT-CREDIT-LIMIT | 5000.00 | unloaded file | 5000.00 | interest_run.loaded_acct_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CASH-CREDIT-LIMIT | 2500.00 | unloaded file | 2500.00 | interest_run.loaded_acct_cash_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-CREDIT | 1000.00 | unloaded file | 1000.00 | interest_run.loaded_acct_curr_cyc_credit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-DEBIT | 300.00 | unloaded file | 300.00 | interest_run.loaded_acct_curr_cyc_debit_sum | EQUAL |
+| RC2 | sum of ACCT-ID | 2005 | unloaded file | 2005.00 | interest_run.loaded_acct_id_sum | EQUAL |
+| RC2 | sum of XREF-ACCT-ID | 2005 | unloaded file | 2005.00 | interest_run.loaded_xref_acct_id_sum | EQUAL |
+| RC2 | sum of TRAN-CAT-BAL | 700.00 | unloaded file | 700.00 | interest_run.loaded_tran_cat_bal_sum | EQUAL |
+| RC2 | sum of TRANCAT-ACCT-ID | 4010 | unloaded file | 4010.00 | interest_run.loaded_trancat_acct_id_sum | EQUAL |
+| RC2 | sum of DIS-INT-RATE | 120.50 | unloaded file | 120.50 | interest_run.loaded_dis_int_rate_sum | EQUAL |
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 1 | table | 1 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 1 | table | 1 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 10.00 | table | 10.00 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+
+### i04-default-group-fallback
+- interest_run: 39, status EXPORTED
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC1 | account: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | card_xref: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | tran_cat_balance: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | disclosure_group: records and rows | 15 | unloaded file | 15 | table | EQUAL |
+| RC2 | sum of ACCT-CURR-BAL | 1000.00 | unloaded file | 1000.00 | interest_run.loaded_acct_curr_bal_sum | EQUAL |
+| RC2 | sum of ACCT-CREDIT-LIMIT | 5000.00 | unloaded file | 5000.00 | interest_run.loaded_acct_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CASH-CREDIT-LIMIT | 2500.00 | unloaded file | 2500.00 | interest_run.loaded_acct_cash_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-CREDIT | 1000.00 | unloaded file | 1000.00 | interest_run.loaded_acct_curr_cyc_credit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-DEBIT | 0.00 | unloaded file | 0.00 | interest_run.loaded_acct_curr_cyc_debit_sum | EQUAL |
+| RC2 | sum of ACCT-ID | 2006 | unloaded file | 2006.00 | interest_run.loaded_acct_id_sum | EQUAL |
+| RC2 | sum of XREF-ACCT-ID | 2006 | unloaded file | 2006.00 | interest_run.loaded_xref_acct_id_sum | EQUAL |
+| RC2 | sum of TRAN-CAT-BAL | 1000.00 | unloaded file | 1000.00 | interest_run.loaded_tran_cat_bal_sum | EQUAL |
+| RC2 | sum of TRANCAT-ACCT-ID | 2006 | unloaded file | 2006.00 | interest_run.loaded_trancat_acct_id_sum | EQUAL |
+| RC2 | sum of DIS-INT-RATE | 120.50 | unloaded file | 120.50 | interest_run.loaded_dis_int_rate_sum | EQUAL |
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 1 | table | 1 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 1 | table | 1 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 17.50 | table | 17.50 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+
+### i05-multi-category
+- interest_run: 40, status EXPORTED
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC1 | account: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | card_xref: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | tran_cat_balance: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | disclosure_group: records and rows | 15 | unloaded file | 15 | table | EQUAL |
+| RC2 | sum of ACCT-CURR-BAL | 1500.00 | unloaded file | 1500.00 | interest_run.loaded_acct_curr_bal_sum | EQUAL |
+| RC2 | sum of ACCT-CREDIT-LIMIT | 5000.00 | unloaded file | 5000.00 | interest_run.loaded_acct_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CASH-CREDIT-LIMIT | 2500.00 | unloaded file | 2500.00 | interest_run.loaded_acct_cash_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-CREDIT | 1500.00 | unloaded file | 1500.00 | interest_run.loaded_acct_curr_cyc_credit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-DEBIT | 0.00 | unloaded file | 0.00 | interest_run.loaded_acct_curr_cyc_debit_sum | EQUAL |
+| RC2 | sum of ACCT-ID | 2007 | unloaded file | 2007.00 | interest_run.loaded_acct_id_sum | EQUAL |
+| RC2 | sum of XREF-ACCT-ID | 2007 | unloaded file | 2007.00 | interest_run.loaded_xref_acct_id_sum | EQUAL |
+| RC2 | sum of TRAN-CAT-BAL | 1500.00 | unloaded file | 1500.00 | interest_run.loaded_tran_cat_bal_sum | EQUAL |
+| RC2 | sum of TRANCAT-ACCT-ID | 4014 | unloaded file | 4014.00 | interest_run.loaded_trancat_acct_id_sum | EQUAL |
+| RC2 | sum of DIS-INT-RATE | 120.50 | unloaded file | 120.50 | interest_run.loaded_dis_int_rate_sum | EQUAL |
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 2 | table | 2 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 2 | table | 2 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 17.50 | table | 17.50 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+
+### i06-negative-balance
+- interest_run: 41, status EXPORTED
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC1 | account: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | card_xref: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | tran_cat_balance: records and rows | 1 | unloaded file | 1 | table | EQUAL |
+| RC1 | disclosure_group: records and rows | 15 | unloaded file | 15 | table | EQUAL |
+| RC2 | sum of ACCT-CURR-BAL | -300.00 | unloaded file | -300.00 | interest_run.loaded_acct_curr_bal_sum | EQUAL |
+| RC2 | sum of ACCT-CREDIT-LIMIT | 5000.00 | unloaded file | 5000.00 | interest_run.loaded_acct_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CASH-CREDIT-LIMIT | 2500.00 | unloaded file | 2500.00 | interest_run.loaded_acct_cash_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-CREDIT | 0.00 | unloaded file | 0.00 | interest_run.loaded_acct_curr_cyc_credit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-DEBIT | 300.00 | unloaded file | 300.00 | interest_run.loaded_acct_curr_cyc_debit_sum | EQUAL |
+| RC2 | sum of ACCT-ID | 2008 | unloaded file | 2008.00 | interest_run.loaded_acct_id_sum | EQUAL |
+| RC2 | sum of XREF-ACCT-ID | 2008 | unloaded file | 2008.00 | interest_run.loaded_xref_acct_id_sum | EQUAL |
+| RC2 | sum of TRAN-CAT-BAL | -300.00 | unloaded file | -300.00 | interest_run.loaded_tran_cat_bal_sum | EQUAL |
+| RC2 | sum of TRANCAT-ACCT-ID | 2008 | unloaded file | 2008.00 | interest_run.loaded_trancat_acct_id_sum | EQUAL |
+| RC2 | sum of DIS-INT-RATE | 120.50 | unloaded file | 120.50 | interest_run.loaded_dis_int_rate_sum | EQUAL |
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 1 | table | 1 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 1 | table | 1 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | -3.00 | table | -3.00 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+
+### i07-nontie-rounding
+- interest_run: 42, status EXPORTED
+- result RC1-RC5: **RECONCILED** - 35 EQUAL, 0 DIFFERENT, 0 NOT AVAILABLE
+| RC1 | account: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | card_xref: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | tran_cat_balance: records and rows | 2 | unloaded file | 2 | table | EQUAL |
+| RC1 | disclosure_group: records and rows | 15 | unloaded file | 15 | table | EQUAL |
+| RC2 | sum of ACCT-CURR-BAL | 1778.10 | unloaded file | 1778.10 | interest_run.loaded_acct_curr_bal_sum | EQUAL |
+| RC2 | sum of ACCT-CREDIT-LIMIT | 10000.00 | unloaded file | 10000.00 | interest_run.loaded_acct_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CASH-CREDIT-LIMIT | 5000.00 | unloaded file | 5000.00 | interest_run.loaded_acct_cash_credit_limit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-CREDIT | 1778.10 | unloaded file | 1778.10 | interest_run.loaded_acct_curr_cyc_credit_sum | EQUAL |
+| RC2 | sum of ACCT-CURR-CYC-DEBIT | 0.00 | unloaded file | 0.00 | interest_run.loaded_acct_curr_cyc_debit_sum | EQUAL |
+| RC2 | sum of ACCT-ID | 4019 | unloaded file | 4019.00 | interest_run.loaded_acct_id_sum | EQUAL |
+| RC2 | sum of XREF-ACCT-ID | 4019 | unloaded file | 4019.00 | interest_run.loaded_xref_acct_id_sum | EQUAL |
+| RC2 | sum of TRAN-CAT-BAL | 1778.10 | unloaded file | 1778.10 | interest_run.loaded_tran_cat_bal_sum | EQUAL |
+| RC2 | sum of TRANCAT-ACCT-ID | 4019 | unloaded file | 4019.00 | interest_run.loaded_trancat_acct_id_sum | EQUAL |
+| RC2 | sum of DIS-INT-RATE | 120.50 | unloaded file | 120.50 | interest_run.loaded_dis_int_rate_sum | EQUAL |
+| RC5 | rows written to interest_transaction and records of the exported SYSTRAN generation | 2 | table | 2 | interest_run.written_systran_count | EQUAL |
+| RC5 | rows written to interest_transaction and the count of the calculation step | 2 | table | 2 | interest_run.written_transaction_count | EQUAL |
+| RC5 | sum of TRAN-AMT and the change of the sum of ACCT-CURR-BAL plus the interest of the last account (INT-Q04) | 29.03 | table | 29.03 | balance change + interest_run.written_interest_not_added_sum | EQUAL |
+
+## interest_run after the last case (psql in the db service)
+ run_id |  status  | a | x | b | d  | t | s |  amt  | samt  |  na   
+--------+----------+---+---+---+----+---+---+-------+-------+-------
+     42 | EXPORTED | 2 | 2 | 2 | 15 | 2 | 2 | 29.03 | 29.03 | 13.61
+     41 | EXPORTED | 1 | 1 | 1 | 15 | 1 | 1 | -3.00 | -3.00 | -3.00
+     40 | EXPORTED | 1 | 1 | 2 | 15 | 2 | 2 | 17.50 | 17.50 | 17.50
+     39 | EXPORTED | 1 | 1 | 1 | 15 | 1 | 1 | 17.50 | 17.50 | 17.50
+     38 | EXPORTED | 1 | 1 | 2 | 15 | 1 | 1 | 10.00 | 10.00 | 10.00
+     37 | EXPORTED | 2 | 2 | 2 | 15 | 2 | 2 | 24.69 | 24.69 | 12.34
+     36 | EXPORTED | 2 | 2 | 2 | 15 | 2 | 2 | 47.00 | 47.00 | 37.00
+     35 | EXPORTED | 2 | 2 | 2 | 15 | 2 | 2 | 29.03 | 29.03 | 13.61
+(8 rows)
+

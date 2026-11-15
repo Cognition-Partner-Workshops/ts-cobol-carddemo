@@ -86,7 +86,7 @@ class PolicySwitchExpectationsTest {
             boolean updateLastAccount, NegativeBalance negativeBalance, ZeroInterest zeroInterest,
             InactiveAccounts inactiveAccounts) {
         return new InterestPolicy(rounding, idPrefix, timestampSource, updateLastAccount, negativeBalance, zeroInterest,
-                inactiveAccounts);
+                inactiveAccounts, null, null);
     }
 
     static Stream<Arguments> everySwitchValueOnEveryCase() {

@@ -10,8 +10,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * The switches of the open decisions (architecture.md section 8, FI-5). The default of each is the
  * legacy behaviour. This is the only class that reads interest.policy.*. It carries the decisions
- * of the calculation: INT-Q01 to INT-Q06 and INT-H04. INT-H01 has no switch (an empty fee hook in
- * the domain); INT-H02, INT-H03 and INT-H05 belong to tickets 07 and 08.
+ * of the calculation: INT-Q01 to INT-Q06, INT-H03, INT-H04 and INT-H05. INT-H01 has no switch (an
+ * empty fee hook in the domain); INT-H02 belongs to ticket 07.
  */
 @ConfigurationProperties("interest.policy")
 public record InterestPolicy(
@@ -21,7 +21,9 @@ public record InterestPolicy(
         boolean updateLastAccount,
         NegativeBalance negativeBalance,
         ZeroInterest zeroInterest,
-        InactiveAccounts inactiveAccounts) {
+        InactiveAccounts inactiveAccounts,
+        MultiCard multiCard,
+        Overflow overflow) {
 
     /** INT-Q01. */
     public enum Rounding { TRUNCATE, HALF_UP, HALF_EVEN }
@@ -41,6 +43,12 @@ public record InterestPolicy(
     /** INT-H04. */
     public enum InactiveAccounts { CHARGE, SKIP }
 
+    /** INT-H03: the source does not determine it; STOP is the proposed default. */
+    public enum MultiCard { STOP, FIRST_BY_CARD_NUM }
+
+    /** INT-H05: the source does not determine it; STOP is the proposed default. */
+    public enum Overflow { STOP, WIDEN }
+
     /** INT-H04, option SKIP: the value of the active flag of an account that is charged. */
     private static final String ACTIVE = "Y";
 
@@ -53,12 +61,14 @@ public record InterestPolicy(
         negativeBalance = negativeBalance == null ? NegativeBalance.CHARGE : negativeBalance;
         zeroInterest = zeroInterest == null ? ZeroInterest.WRITE : zeroInterest;
         inactiveAccounts = inactiveAccounts == null ? InactiveAccounts.CHARGE : inactiveAccounts;
+        multiCard = multiCard == null ? MultiCard.STOP : multiCard;
+        overflow = overflow == null ? Overflow.STOP : overflow;
     }
 
-    /** The legacy behaviour of every switch. */
+    /** The legacy behaviour of every switch; for INT-H03 and INT-H05, which have none, the proposed STOP. */
     public static InterestPolicy legacy() {
         return new InterestPolicy(Rounding.TRUNCATE, IdPrefix.PARM, TimestampSource.RUN_CLOCK, false,
-                NegativeBalance.CHARGE, ZeroInterest.WRITE, InactiveAccounts.CHARGE);
+                NegativeBalance.CHARGE, ZeroInterest.WRITE, InactiveAccounts.CHARGE, MultiCard.STOP, Overflow.STOP);
     }
 
     /**
@@ -123,5 +133,21 @@ public record InterestPolicy(
      */
     public boolean intH04ChargesAccount(String activeStatus) {
         return inactiveAccounts == InactiveAccounts.CHARGE || ACTIVE.equals(activeStatus);
+    }
+
+    /**
+     * INT-H03 (CBACT04C:393-404, G08): which card an account with several cards gets is not
+     * determined by the source. STOP stops the run; FIRST_BY_CARD_NUM takes the lowest card number.
+     */
+    public boolean intH03TakesTheLowestCardNumber() {
+        return multiCard == MultiCard.FIRST_BY_CARD_NUM;
+    }
+
+    /**
+     * INT-H05 (CBACT04C:464-467, 474): what happens to a value larger than its field is not
+     * determined by the source. STOP stops the run; WIDEN hands the value on with every digit.
+     */
+    public boolean intH05StopsWhenAValueDoesNotFit() {
+        return overflow == Overflow.STOP;
     }
 }

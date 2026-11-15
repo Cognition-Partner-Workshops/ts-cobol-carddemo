@@ -1,0 +1,8 @@
+# Profile tables: the whole job through PostgreSQL (architecture.md section 4) -
+# loadExtractsStep -> calcInterestStep on the tables of schema carddemo -> exportDatasetsStep.
+# make parity-java runs with it (FI-6, ticket 09). The policy defaults stay those of application.yml.
+interest:
+  calc:
+    adapters: jdbc
+  job:
+    steps: load-calc-export

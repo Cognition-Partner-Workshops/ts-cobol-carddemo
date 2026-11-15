@@ -1,0 +1,85 @@
+# Negative control and error runs of the gate (ticket 09-parity-gate)
+# revision 93d0eeec2b7487aacd46fc0d9e10ce417a71fc65, 2026-11-15T12:30:54Z
+
+$ make parity-java INTEREST_OUT=work/parity-java-half-even INTEREST_OPTS=--interest.policy.rounding=HALF_EVEN
+docker compose up -d --wait db
+mvn -q -f java/interest/pom.xml -DskipTests package
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i01-baseline [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i02-tie-half-cent [java]: FAIL (4 records, 50 fields, 2 differences)
+interest/i02-tie-half-cent [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i03-zero-rate-skipped [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+interest/i05-multi-category [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i06-negative-balance [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i07-nontie-rounding [java] interest_run: PASS (20 of 20 assertions of RC1, RC2, RC5 hold)
+report: work/parity-java-half-even/report.md
+make: *** [Makefile:182: parity-java] Error 1
+exit code 2
+
+Comparator rows of work/parity-java-half-even/report.md for i02-tie-half-cent:
+| Where | Field | Expected (legacy) | Actual (candidate) |
+|---|---|---|---|
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 1 (ACCT-ID=2003) | `ACCT-CURR-BAL` | 1247.85 | 1247.86 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-AMT` | 12.35 | 12.36 |
+
+## Gate: FAIL
+
+profile `tables`, options `--interest.policy.rounding=HALF_EVEN`, PARM 2022071800, clock 2022-07-05 10:00:00.00. A case whose job did not end with exit code 0 is a failed case.
+
+| Case | Java job exit code | Comparator | interest_run (RC1, RC2, RC5) |
+|---|---|---|---|
+| i01-baseline | 0 | PASS | PASS |
+| i02-tie-half-cent | 0 | FAIL | PASS |
+| i03-zero-rate-skipped | 0 | PASS | PASS |
+| i04-default-group-fallback | 0 | PASS | PASS |
+| i05-multi-category | 0 | PASS | PASS |
+| i06-negative-balance | 0 | PASS | PASS |
+| i07-nontie-rounding | 0 | PASS | PASS |
+
+$ make parity-java CASE=i01-baseline INTEREST_OUT=work/parity-java-err INTEREST_PARM=20220718     # a job that stops: PARM of 8 characters (INT-Q02)
+docker compose up -d --wait db
+mvn -q -f java/interest/pom.xml -DskipTests package
+2026-11-15T12:31:13.908Z ERROR 1 --- [interest] [           main] o.s.boot.SpringApplication               : Application run failed
+java.lang.IllegalStateException: Failed to execute ApplicationRunner
+Caused by: org.springframework.batch.core.JobParametersInvalidException: INT-Q02: parmDate must be exactly 10 characters
+interest/i01-baseline: java job ended with exit code 12
+interest/i01-baseline [java]: FAIL (4 records, 50 fields, 4 differences)
+interest/i01-baseline [java] interest_run: FAIL (0 of 1 assertions of RC1, RC2, RC5 hold)
+report: work/parity-java-err/report.md
+make: *** [Makefile:182: parity-java] Error 1
+exit code 2
+
+### interest/i01-baseline [java] interest_run: FAIL
+
+```
+one interest_run row of this launch, status EXPORTED|f
+```
+
+## Gate: FAIL
+
+profile `tables`, options ``, PARM 20220718, clock 2022-07-05 10:00:00.00. A case whose job did not end with exit code 0 is a failed case.
+
+| Case | Java job exit code | Comparator | interest_run (RC1, RC2, RC5) |
+|---|---|---|---|
+| i01-baseline | 12 | FAIL | FAIL |
+
+$ make parity-java CASE=i01-baseline INTEREST_OUT=work/parity-java-err INTEREST_PROFILE=default     # calcInterestStep alone on the file adapters
+docker compose up -d --wait db
+mvn -q -f java/interest/pom.xml -DskipTests package
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+report: work/parity-java-err/report.md
+exit code 0
+
+## Gate: PASS
+
+profile `default`, options ``, PARM 2022071800, clock 2022-07-05 10:00:00.00. A case whose job did not end with exit code 0 is a failed case.
+
+| Case | Java job exit code | Comparator | interest_run (RC1, RC2, RC5) |
+|---|---|---|---|
+| i01-baseline | 0 | PASS | not checked (profile default) |

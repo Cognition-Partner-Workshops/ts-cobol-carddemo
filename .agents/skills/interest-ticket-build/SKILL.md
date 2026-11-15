@@ -130,6 +130,9 @@ Run every command from the repository root.
    ```
    The `git diff --stat` line must print nothing for a ticket whose Allowed files are `java/interest/**`
    and the `Makefile`; take out of that list only a path your ticket's Scope allows (pitfall P6).
+   A ticket whose Allowed files are under `db/` (ticket 02) checks instead that
+   `git diff --stat origin/<base-branch> -- app fixtures tools modernization .agents docker-compose.yml Makefile java/interest/pom.xml java/interest/src db/postgres/01-transaction-type.sql`
+   prints nothing.
 
 10. **Go on with `interest-ticket-verify`:** run the fixture cases, compare, write the evidence, open the
     pull request. Do not merge it.

@@ -74,8 +74,11 @@ Run every command from the repository root.
    | `Makefile`, target `parity-java` | FI-6, the parity entry point |
    | `docker-compose.yml`, service `db` | `postgres:15`, database, user and password `carddemo`, init scripts from `db/postgres/` |
 
-   Packages `jdbc`, `load`, `export` and `recon` are named in `architecture.md` section 2 and do not
-   exist yet. No table exists in schema `carddemo` beyond `db/postgres/01-transaction-type.sql`.
+   Package `recon` is named in `architecture.md` section 2 and exists only once its ticket is combined;
+   `load` and `jdbc/load` (ticket 05), `jdbc/calc` (ticket 06, the JDBC adapters of the ports) and `export`
+   and `jdbc/export` (ticket 07) exist since wave 2. The tables of the stream are in
+   `db/postgres/02-interest.sql` (ticket 02); every connection of the job has `search_path = batch`
+   (`application.yml`), so SQL names `carddemo.<table>`.
 
 6. **Start PostgreSQL 15.** Only the `db` service is needed; the `estate` image is not.
 

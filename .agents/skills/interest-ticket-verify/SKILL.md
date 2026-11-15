@@ -49,7 +49,9 @@ first. Run every command from the repository root.
      2 work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
      2 work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
    ```
-   A run that stops leaves no `actual` directory at all. `work/` is ignored by git.
+   A run that stops leaves no `datasets` directory and no `rc.json`. On the file adapters it leaves no `actual`
+   directory at all; with the tables a stop in calcInterestStep leaves `actual/sysout/INTCALC.STEP15.txt` with
+   the legacy lines of the stop. `work/` is ignored by git.
 
 3. **Compare each case with the comparator.** One case:
 

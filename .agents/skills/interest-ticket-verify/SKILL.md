@@ -142,6 +142,11 @@ first. Run every command from the repository root.
    Ticket 09 (the gate): `make parity-java CASE=i01-baseline INTEREST_OUT=work/parity-java-err INTEREST_PARM=20220718`
    must print `interest/i01-baseline: java job ended with exit code 12`, a comparator FAIL and
    `interest_run: FAIL (0 of 1 assertions ...)`, and exit non-zero.
+   Ticket 10 (the kit): `make recon-java CASE=i01-baseline RECON_LOAD=no RECON_ACTUAL=work/nothing RECON_OUT=work/recon-java-err`
+   after another case ran must print `interest/i01-baseline [recon]: DIFFERENT (...; RC5 NOT AVAILABLE; ...)` and
+   exit non-zero; `make sidebyside-java LEGACY=work/nothing TARGET=<dir> NAME=nothing` must print
+   `NOT AVAILABLE (the legacy directory has no manifest.json: it is not a run in the recorded format (FI-2))` and
+   exit non-zero.
    Missing input file (ticket 01):
 
    ```sh

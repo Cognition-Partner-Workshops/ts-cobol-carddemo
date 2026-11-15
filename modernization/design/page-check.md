@@ -22,7 +22,7 @@ Result on the final revision: every check passes. Screenshot: `evidence/page-che
 
 ## Found and fixed before the final revision
 
-* Ticket diagram: five dependency arrows ran across boxes they do not connect (03, 04 and 08). The boxes were re-placed and the arrow from the schema to ticket 06 routed around the second column.
+* Ticket diagram: several dependency arrows ran across boxes they do not connect (03, 04 and 08). The boxes were re-placed and the arrow from the schema to ticket 06 routed around the second column.
 * Run diagram: the label "truncate + load" sat on top of the lane title "PostgreSQL 15 - schema carddemo". Moved below it.
 * Both were seen by eye in the first screenshots; the first version of the script passed them. The script now also fails on an arrow drawn across a box and on overlapping labels, and it did fail on the first revision once those checks were added.
 * Cutover item CO5 pointed at release decision REL-07, which is about a different question. Added REL-13 and pointed CO5 at it.

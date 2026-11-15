@@ -137,6 +137,14 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Reported by:** tickets 05-extract-loader and 06-calc-step-jdbc. Neither reproduced the failure; both wrote
   their tests with the fix from the start.
 
+## P14. Opening the pull request fails with a GitHub secondary rate limit
+
+* **Symptom.** `You have exceeded a secondary rate limit and have been temporarily blocked from content creation.`
+* **Cause.** Several ticket sessions of one wave open pull requests at the same moment. The push is not affected.
+* **Fix.** Wait (90 seconds was enough once, 300 seconds once) and create the pull request again; do not open a
+  second branch and do not retry at once.
+* **Reported by:** tickets 05-extract-loader (PR 181) and 06-calc-step-jdbc (PR 180).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

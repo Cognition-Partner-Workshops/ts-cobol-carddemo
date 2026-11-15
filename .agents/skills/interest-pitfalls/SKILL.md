@@ -118,6 +118,14 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Fix.** Run once without `-o`.
 * **Reported by:** ticket 04-calculation-rules.
 
+## P12. `TransactionRecord.decode` takes a `RecordOrigin`
+
+* **Symptom.** `method decode in class com.carddemo.interest.codec.TransactionRecord cannot be applied to given types`
+  when a test decodes a transaction line.
+* **Cause.** Since ticket 03 the method has a second parameter.
+* **Fix.** `TransactionRecord.decode(image, RecordOrigin.IN_MEMORY)`.
+* **Reported by:** ticket 04-calculation-rules (second session, after merging the wave 1 combination).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

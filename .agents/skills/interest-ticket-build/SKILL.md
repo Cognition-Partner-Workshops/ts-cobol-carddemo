@@ -48,7 +48,8 @@ Run every command from the repository root.
    gh pr list --state open --json number,title,headRefName,baseRefName
    git checkout -b <your-branch> origin/<base-branch>
    ```
-   Stop and report if a branch or an open PR already covers the ticket.
+   Stop and report if a branch or an open PR already covers the ticket, unless your prompt names that branch
+   and pull request as the ones to continue; then check out the branch and reuse the pull request.
 
 4. **Read, in this order** (standard S1.1): the ticket file, the rules it names in
    `modernization/rules/interest/rules.yaml`, `modernization/design/architecture.md`,

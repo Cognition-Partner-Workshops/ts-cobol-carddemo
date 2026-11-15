@@ -161,6 +161,14 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
 * **Fix.** Correct the test, not the code; count 11 + 2 + 4 + 11 + 22 = 50 characters. See also P15.
 * **Reported by:** ticket 08-error-paths (`ErrorPathsIT.intH05_interestAboveFieldStops`, first run 1 failure of 90).
 
+## P17. A test of an earlier ticket fails on extra run log lines ending in `ABENDING PROGRAM`
+
+* **Symptom.** A test that asserts the run log of a stopped run fails with two to four extra lines.
+* **Cause.** Since ticket 08 every stop writes the legacy lines of `CBACT04C:628-648` to the run log.
+* **Fix.** Add the lines of the stop to the expectation, taken from the COBOL lines, not from the output.
+* **Reported by:** ticket 08-error-paths (`CalcInterestRestartIT.rel11_restartEndsWithTheRowsOfAnUninterruptedRun`,
+  `InterestCalculatorTest.intR03_missingDefaultRateStops`, `intR08_missingAccountStops`).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

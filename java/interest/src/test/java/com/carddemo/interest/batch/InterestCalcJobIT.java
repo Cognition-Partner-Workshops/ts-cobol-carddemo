@@ -13,6 +13,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -33,7 +35,7 @@ import com.carddemo.interest.Fixtures;
 /**
  * interestCalcJob end to end on PostgreSQL 15 in a container (standards S7.3): the same image and
  * init script as the db service of docker-compose.yml. Outputs are compared with the recorded
- * legacy run of i01-baseline, byte for byte (standards S7.4).
+ * legacy runs of the seven cases, byte for byte (standards S7.4).
  */
 @SpringBootTest(properties = {
         "spring.batch.job.enabled=false",
@@ -211,17 +213,54 @@ class InterestCalcJobIT {
         assertEquals(InterestExitCode.STOPPED, exitCodes.getExitCode());
     }
 
-    @Test
-    void intR03_caseOutsideThePilotFailsWithoutOutput() throws Exception {
-        // i04-default-group-fallback needs INT-R03 (ticket 04): the pilot stops instead of writing wrong output
+    @ParameterizedTest
+    @ValueSource(strings = {"i01-baseline", "i02-tie-half-cent", "i03-zero-rate-skipped", "i04-default-group-fallback",
+            "i05-multi-category", "i06-negative-balance", "i07-nontie-rounding"})
+    void intT02_everyCaseMatchesTheRecordedRun(String caseName) throws Exception {
         Path output = temp.resolve("actual");
 
-        JobExecution execution = launch(Fixtures.input("i04-default-group-fallback"), output, UUID.randomUUID().toString());
+        JobExecution execution = launch(Fixtures.input(caseName), output, UUID.randomUUID().toString());
 
-        assertEquals(BatchStatus.FAILED, execution.getStatus());
-        assertFalse(Files.exists(output));
-        assertTrue(execution.getAllFailureExceptions().stream()
-                .anyMatch(failure -> failure.getMessage().contains("INT-R03")));
+        assertEquals(BatchStatus.COMPLETED, execution.getStatus());
+        for (String file : List.of(TRANSACTIONS, ACCOUNTS, RUN_LOG, "rc.json")) {
+            assertEquals(Fixtures.text(Fixtures.expected(caseName).resolve(file)), Fixtures.text(output.resolve(file)),
+                    caseName + " " + file);
+        }
+    }
+
+    @Test
+    void intR03_fallbackLinesAreInTheRunLog() throws Exception {
+        Path output = temp.resolve("actual");
+
+        launch(Fixtures.input("i04-default-group-fallback"), output, UUID.randomUUID().toString());
+
+        // recorded SYSOUT of i04: start line, the balance record, the two fallback lines, end line
+        assertEquals(List.of("DISCLOSURE GROUP RECORD MISSING", "TRY WITH DEFAULT GROUP CODE"),
+                Fixtures.lines(output.resolve(RUN_LOG)).subList(2, 4));
+    }
+
+    @Test
+    void intT09_emptyInputWritesNothing() throws Exception {
+        // no fixture: the i01-baseline input with an empty balance file
+        Path input = temp.resolve("input");
+        Files.createDirectories(input);
+        try (var files = Files.list(Fixtures.input(CASE))) {
+            for (Path file : files.toList()) {
+                Files.copy(file, input.resolve(file.getFileName()));
+            }
+        }
+        Files.writeString(input.resolve("AWS.M2.CARDDEMO.TCATBALF.PS.txt"), "");
+        Path output = temp.resolve("actual");
+
+        JobExecution execution = launch(input, output, UUID.randomUUID().toString());
+
+        assertEquals(BatchStatus.COMPLETED, execution.getStatus());
+        assertEquals("", Fixtures.text(output.resolve(TRANSACTIONS)));
+        // no account is touched: the account image is the input, record for record
+        assertEquals(Fixtures.lines(input.resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt")).stream().map(String::stripTrailing).toList(),
+                Fixtures.lines(output.resolve(ACCOUNTS)).stream().map(String::stripTrailing).toList());
+        assertEquals(List.of("START OF EXECUTION OF PROGRAM CBACT04C", "END OF EXECUTION OF PROGRAM CBACT04C"),
+                Fixtures.lines(output.resolve(RUN_LOG)));
     }
 
     @Test

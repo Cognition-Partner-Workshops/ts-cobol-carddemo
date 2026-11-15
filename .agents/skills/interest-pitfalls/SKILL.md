@@ -153,6 +153,14 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
   `strategy-interest.md` (i01 47.00 and 3410.00; i06 -3.00 and -300.00).
 * **Reported by:** ticket 07-dataset-export (`DatasetExportTest.i06NegativeBalance_rows_giveTheRecordedFiles`).
 
+## P16. Hand-written balance record image a digit too long
+
+* **Symptom.** `expected <... 00000002007010001099999999999I ...> but was <... 000000020070100019999999999I ...>`.
+* **Cause.** TRAN-CAT-BAL is S9(09)V99: eleven digits, the last one carrying the overpunch. 999999999.99 is ten
+  `9` and `I`.
+* **Fix.** Correct the test, not the code; count 11 + 2 + 4 + 11 + 22 = 50 characters. See also P15.
+* **Reported by:** ticket 08-error-paths (`ErrorPathsIT.intH05_interestAboveFieldStops`, first run 1 failure of 90).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

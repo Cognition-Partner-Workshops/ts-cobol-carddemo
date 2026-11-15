@@ -98,7 +98,7 @@ fence='```'
   echo "$fence"
   docker compose exec -T db psql -U carddemo -d carddemo \
     -c "show server_version" \
-    -c "select i.job_name, e.status, (select string_agg(s.step_name || ':' || s.status || ' read=' || s.read_count || ' write=' || s.write_count, ', ') from batch.batch_step_execution s where s.job_execution_id = e.job_execution_id) as steps, p.parameter_value as run_id from batch.batch_job_execution e join batch.batch_job_instance i using (job_instance_id) join batch.batch_job_execution_params p on p.job_execution_id = e.job_execution_id and p.parameter_name = 'runId' order by e.job_execution_id desc limit $(( $(ls fixtures/interest | wc -l) + $# ))" \
+    -c "select i.job_name, e.status, (select string_agg(s.step_name || ':' || s.status || ' read=' || s.read_count || ' write=' || s.write_count, ', ' order by s.step_execution_id) from batch.batch_step_execution s where s.job_execution_id = e.job_execution_id) as steps, p.parameter_value as run_id from batch.batch_job_execution e join batch.batch_job_instance i using (job_instance_id) join batch.batch_job_execution_params p on p.job_execution_id = e.job_execution_id and p.parameter_name = 'runId' order by e.job_execution_id desc limit $(( $(ls fixtures/interest | wc -l) + $# ))" \
     -c "select table_schema, table_name from information_schema.tables where table_schema in ('carddemo', 'public') order by 1, 2"
   echo "$fence"
 } > "$report"

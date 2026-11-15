@@ -149,6 +149,10 @@ first. Run every command from the repository root.
 
 7. **Check the database assertions of the ticket** in the `db` service. Skip this step when the ticket's
    Acceptance says "Database assertions: none"; say so in section 6 of `report.md`.
+   Where the run under test exists only in the Testcontainers database (the ticket's step is not in the job,
+   or nothing loads the tables of the `db` service yet), make the database assertions in the ticket's `*IT`
+   class on `postgres:15` started with both init scripts (`db/postgres/01-transaction-type.sql` and
+   `02-interest.sql`) and name the test in `report.md`; the query of this step then shows the job repository only.
 
    ```sh
    docker compose exec -T db psql -U carddemo -d carddemo \

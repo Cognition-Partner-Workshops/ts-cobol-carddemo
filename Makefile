@@ -107,6 +107,50 @@ parity-java:
 	done; \
 	echo "report: work/parity-java/report.md"; exit $$fail
 
+# ------------------------------------------- Data move kit of the interest stream (INT-T10)
+#   make recon-java CASE=<case> [LOAD=1] [RUN=<interest_run.run_id>] [OUT=<output dir>] [FORMAT=fixture|host]
+#       reconciliation report RC1-RC6 with the profile of TL4 -> work/recon-java/<case>.md
+#       Reads the unloaded files of fixtures/interest/<case>/input, interest_run and the tables (read-only)
+#       and the exported files of OUT (default work/parity-java/<case>/actual).  LOAD=1 first loads the
+#       four tables from the case's input (trial load, TL3); RUN names another run than the newest.
+#       Exit 1 when a figure is DIFFERENT.  NOT AVAILABLE is never counted as equal.
+#   make sidebyside-java CASE=<case> [LEGACY=<dir>] [TARGET=<dir>] [TS=format|exact]
+#       two output directories field by field via tools/parity/compare.py, every difference with its
+#       class (defect, decision id, gap id) -> work/sidebyside-java/<case>/report.md
+#       LEGACY defaults to fixtures/interest/<case>/expected, TARGET to work/parity-java/<case>/actual;
+#       with both given, CASE is only the name of the comparison.  TS is the timestamp rule of SS3.
+#       Exit 1 when a difference is a defect.
+.PHONY: recon-java sidebyside-java
+RECON_MAIN  = -Dloader.main=com.carddemo.interest.recon.DataMoveKit org.springframework.boot.loader.launch.PropertiesLauncher
+RECON_JAVA  = docker run --rm --user $(UID):$(GID) -v "$(CURDIR)":/estate -w /estate
+
+recon-java:
+	@test -n "$(CASE)" || { echo "usage: make recon-java CASE=<case> [LOAD=1] [RUN=<run_id>] [OUT=<dir>] [FORMAT=fixture|host]"; exit 2; }
+	$(COMPOSE) up -d --wait db
+	mvn -q -f java/interest/pom.xml -DskipTests package
+	@db=$$($(COMPOSE) ps -q db); \
+	if [ -n "$(LOAD)" ]; then \
+	  $(RECON_JAVA) --network container:$$db $(INTEREST_JRE) java -cp $(INTEREST_JAR) $(RECON_MAIN) trial-load \
+	    inputDir=fixtures/interest/$(CASE)/input rejects=work/recon-java/$(CASE).load-rejects.txt \
+	    format=$(or $(FORMAT),fixture) parmDate=$(INTEREST_PARM) || exit 1; \
+	fi; \
+	$(RECON_JAVA) --network container:$$db $(INTEREST_JRE) java -cp $(INTEREST_JAR) $(RECON_MAIN) recon \
+	  title=$(CASE) inputDir=fixtures/interest/$(CASE)/input outputDir=$(or $(OUT),work/parity-java/$(CASE)/actual) \
+	  format=$(or $(FORMAT),fixture) $(if $(RUN),run=$(RUN)) report=work/recon-java/$(CASE).md
+
+sidebyside-java:
+	@test -n "$(CASE)" || { echo "usage: make sidebyside-java CASE=<case> [LEGACY=<dir>] [TARGET=<dir>] [TS=format|exact]"; exit 2; }
+	mvn -q -f java/interest/pom.xml -DskipTests package
+	@work=work/sidebyside-java/$(CASE); legacy=$(or $(LEGACY),fixtures/interest/$(CASE)/expected); \
+	target=$(or $(TARGET),work/parity-java/$(CASE)/actual); ts=$(or $(TS),format); \
+	$(RECON_JAVA) $(INTEREST_JRE) java -cp $(INTEREST_JAR) $(RECON_MAIN) sidebyside-prepare \
+	  legacy=$$legacy target=$$target work=$$work name=$(CASE) timestamps=$$ts || exit 2; \
+	PYTHONDONTWRITEBYTECODE=1 $(PY) -c "import pathlib, sys; sys.path.insert(0, '.'); from tools.parity import compare; compare.FIXTURES = pathlib.Path(sys.argv[1]); del sys.argv[1]; sys.exit(compare.main())" \
+	  $$work/legacy interest $(CASE) --actual $$work/target --label "side by side, timestamps $$ts" --report $$work/compare.md; \
+	$(RECON_JAVA) $(INTEREST_JRE) java -cp $(INTEREST_JAR) $(RECON_MAIN) sidebyside-report \
+	  compare=$$work/compare.md prepared=$$work/prepared.txt report=$$work/report.md name=$(CASE) \
+	  legacy=$$legacy target=$$target timestamps=$$ts
+
 # ------------------------------------------------------------ discovery graph
 chain-graph:
 	$(PY) tools/chaingraph/gen_chain_graph.py --out docs/chain-graph.md

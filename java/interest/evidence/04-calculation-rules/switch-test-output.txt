@@ -1,0 +1,74 @@
+# Switch tests through the job (interest-ticket-verify step 4), revision 01b9e94c6aeab281075d93f1a754b851d7326c7f, 2026-11-15T10:59:47Z
+# jar java/interest/target/interest.jar built from that revision; comparator tools/parity/compare.py unchanged
+
+## i02-tie-half-cent with --interest.policy.rounding=HALF_EVEN
+job exit=0
+interest/i02-tie-half-cent [java-halfeven]: FAIL (4 records, 50 fields, 2 differences)
+comparator exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 1 (ACCT-ID=2003) | `ACCT-CURR-BAL` | 1247.85 | 1247.86 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-AMT` | 12.35 | 12.36 |
+
+## i07-nontie-rounding with --interest.policy.rounding=HALF_EVEN
+job exit=0
+interest/i07-nontie-rounding [java-halfeven]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+
+## i02-tie-half-cent with the default of every switch
+job exit=0
+interest/i02-tie-half-cent [java-default]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+
+## i07-nontie-rounding with the default of every switch
+job exit=0
+interest/i07-nontie-rounding [java-default]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+
+## i01-baseline with --interest.policy.updateLastAccount=true
+job exit=0
+interest/i01-baseline [java-updatelast]: FAIL (4 records, 50 fields, 2 differences)
+comparator exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-CURR-BAL` | 2400.00 | 2437.00 |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS rec 2 (ACCT-ID=2002) | `ACCT-CURR-CYC-CREDIT` | 2400.00 | 0.00 |
+
+## i01-baseline with --interest.policy.idPrefix=RUN_DATE
+job exit=0
+interest/i01-baseline [java-rundate]: FAIL (4 records, 50 fields, 2 differences)
+comparator exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-ID` | 2022071800000001 | 2022070500000001 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-ID` | 2022071800000002 | 2022070500000002 |
+
+## i01-baseline with --interest.policy.timestampSource=CYCLE_DATE
+job exit=0
+interest/i01-baseline [java-cycledate]: FAIL (4 records, 50 fields, 4 differences)
+comparator exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-ORIG-TS` | 2022-07-05-10.00.00.000000 | 2022-07-18-00.00.00.000000 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 1 (TRAN-ID=2022071800000001) | `TRAN-PROC-TS` | 2022-07-05-10.00.00.000000 | 2022-07-18-00.00.00.000000 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-ORIG-TS` | 2022-07-05-10.00.00.000000 | 2022-07-18-00.00.00.000000 |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 rec 2 (TRAN-ID=2022071800000002) | `TRAN-PROC-TS` | 2022-07-05-10.00.00.000000 | 2022-07-18-00.00.00.000000 |
+
+## i06-negative-balance with --interest.policy.negativeBalance=SKIP
+job exit=0
+interest/i06-negative-balance [java-negskip]: FAIL (2 records, 25 fields, 1 differences)
+comparator exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 | `(record count)` | 1 | 0 |
+
+## i01-baseline with --interest.policy.zeroInterest=SKIP
+job exit=0
+interest/i01-baseline [java-zeroskip]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+
+## i01-baseline with --interest.policy.inactiveAccounts=SKIP
+com.carddemo.interest.domain.InterestRunStoppedException: ACTIVE_FLAG_NOT_SUPPLIED (INT-H04): inactiveAccounts=SKIP needs the active flag of the account
+job exit=12
+interest/i01-baseline [java-inactiveskip]: FAIL (4 records, 50 fields, 4 differences)
+comparator exit=1
+| Where | Field | Expected (legacy) | Actual (candidate) |
+| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS | `(file)` | 2 records | missing |
+| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 | `(file)` | 2 records | missing |
+| SYSOUT INTCALC.STEP15 | `(text)` |  | @@ -1,4 +0,0 @@<br>-START OF EXECUTION OF PROGRAM CBACT04C<br>-000000020010100010000010000{                      <br>-000000020020100010000024000{                      <br>-END OF 
+| rc.json | `(text)` |  | @@ -1,13 +0,0 @@<br>-{<br>- "INTCALC": {<br>-  "maxrc": 0,<br>-  "steps": {<br>-   "STEP05": 0,<br>-   "STEP10": 0,<br>-   "STEP15": 0,<br>-   "STEP20": 0,<br>-   "STEP25": 0,<br>-   "STEP30": 0

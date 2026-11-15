@@ -5,10 +5,12 @@ description: Conversion standards for the interest stream (INTCALC -> CBACT04C) 
 
 # Interest stream conversion standards
 
-> **PROPOSED - not confirmed. Nothing here has been run.** These standards were written by an agent from the
-> rulebook, the design, the data map, `CBACT04C.cbl`, its copybooks, `INTCALC.jcl` and `tools/build.sh`. No Java
-> exists yet and no standard has been applied to code. **The pilot ticket
-> (`modernization/design/tickets/01-pilot-thin-slice.md`) is the first test.**
+> **PROPOSED - not confirmed. Applied once, by the pilot ticket.** These standards were written by an agent from
+> the rulebook, the design, the data map, `CBACT04C.cbl`, its copybooks, `INTCALC.jcl` and `tools/build.sh`. The
+> pilot ticket (`modernization/design/tickets/01-pilot-thin-slice.md`) applied them to the code in `java/interest`;
+> its filled-in checklist is section 4 of `java/interest/evidence/PILOT-REPORT.md`. No other ticket has applied
+> them. Corrections approved after the pilot are in the text; the ones still proposed are in section 4 of
+> `modernization/design/skills.md`.
 > **Owner who must confirm: the target architect.**
 
 This file is the only place the standards are written. Ticket sessions follow it and **do not edit it**: a standard
@@ -38,7 +40,7 @@ Sources, all read-only: rules `modernization/rules/interest/rules.yaml` (INT-R, 
 |---|---|---|---|---|
 | S2.1 | Design from the rules. One unit of code per rule or decision, named for what it decides. No method per paragraph, no emulated `GO TO` or `PERFORM THRU` (the program has none: behaviour n). | INT-R02, INT-R03; `CBACT04C:415-460` | `RateLookup.findRate(group, type, category)` returning `Optional<BigDecimal>`, and one `rateFor(...)` that applies the DEFAULT fallback. | `p1200GetInterestRate()` and `p1200AGetDefaultIntRate()`. |
 | S2.2 | Each copybook layout becomes one immutable `record` named for its business meaning; a copybook field name appears once, in the codec/row mapping that cites the data-map row. No class mirrors WORKING-STORAGE and no byte overlay stands in for a REDEFINES. | `CVTRA01Y/TRAN-CAT-BAL`, `CVACT01Y/ACCT-CURR-BAL`; `CBACT04C:166-173` | `record CategoryBalance(long accountId, String typeCode, int categoryCode, BigDecimal balance)`; `"TRAN-CAT-BAL"` appears only in the mapping. | `class WsMiscVars { String wsLastAcctNum; BigDecimal wsMonthlyInt; char wsFirstTime; }` or `getTranCatBal()` in the domain. |
-| S2.3 | Reading, processing and writing follow `architecture.md` sections 2, 5 and 6: `calcInterestStep` reads one item = one account with all its balances in key order, the processor returns the result, the writer inserts the transactions and updates three account columns, a chunk is whole accounts, and the restart state (last account, transaction counter, `seq_no`, run-log length) is saved with the commit. The calculation uses only the ports of FI-3. | INT-R01, INT-R07; `CBACT04C:188-222`; `CVTRA01Y/TRAN-CAT-KEY` | `ItemReader<AccountBalances>` -> `ItemProcessor<AccountBalances, AccountInterest>` -> `ItemWriter<AccountInterest>`; total interest is a local sum. | A tasklet with `while (!endOfFile)` that keeps `lastAccountId` and `totalInterest` in fields and writes as it goes. |
+| S2.3 | Reading, processing and writing follow `architecture.md` sections 2, 5 and 6: `calcInterestStep` reads one item = one account with all its balances in key order, the processor returns the result, the writer inserts the transactions and updates three account columns, a chunk is whole accounts, and the restart state (last account, transaction counter, `seq_no`, run-log length) is saved with the commit. The calculation uses only the ports of FI-3. **With file adapters (no table, as in ticket 01):** the same reader, processor and writer shape and the same ports; there is no restart state to save. | INT-R01, INT-R07; `CBACT04C:188-222`; `CVTRA01Y/TRAN-CAT-KEY` | `ItemReader<AccountBalances>` -> `ItemProcessor<AccountBalances, AccountInterest>` -> `ItemWriter<AccountInterest>`; total interest is a local sum. | A tasklet with `while (!endOfFile)` that keeps `lastAccountId` and `totalInterest` in fields and writes as it goes. |
 | S2.4 | A type or a return value replaces every flag, switch and result code (`END-OF-FILE`, `WS-FIRST-TIME`, `APPL-RESULT` and its level-88 names). | `CBACT04C:133-135, 170, 188-198, 328-347` | End of input is the reader returning `null`; a missing rate is `Optional.empty()`; a failure is an exception (S6.2). | `int applResult = 16; if (applResult == APPL_EOF) endOfFile = 'Y';` |
 | S2.5 | Constructor injection only; no mutable static state. The transaction counter, the clock and the policy are injected or held in step scope. | INT-Q02; `CBACT04C:173, 474` | `InterestCalculator(RateLookup rates, InterestPolicy policy, Clock clock)`; the counter comes from the step's restart state. | `private static int tranIdSuffix;` or `@Autowired` on a field. |
 
@@ -51,8 +53,8 @@ Sources, all read-only: rules `modernization/rules/interest/rules.yaml` (INT-R, 
 | S3.3 | Every other arithmetic step also names its mode. The account total and the new balance are sums of scale-2 values, so the mode is `RoundingMode.UNNECESSARY` and the result is asserted to be scale 2. | INT-R07; `CBACT04C:352, 467` | `total.add(interest).setScale(2, RoundingMode.UNNECESSARY)` | `setScale(2)` or a silent `HALF_UP` "to be safe". |
 | S3.4 | Before a value is stored, check it against the PIC of its row. A value that does not fit goes to `interest.policy.overflow` (default STOP, naming INT-H05). Never cut high-order digits to imitate COBOL: the source does not determine that behaviour. | INT-H05; `CVTRA05Y/TRAN-AMT`, `CVTRA05Y/TRAN-ID`; `CBACT04C:464-467, 474` | `policy.checkFits(interest, 9, 2)` and the same for the counter above 999999. | `interest.remainder(new BigDecimal("1000000000"))`, or letting PostgreSQL raise "numeric field overflow". |
 | S3.5 | EBCDIC, zoned overpunch, packed and binary are handled only in `record-codec`, by rules E1-E5. Business code sees `BigDecimal`, `long`, `int` and trimmed `String`. A byte that breaks E1/E2 rejects the record at the boundary; no zero is substituted. | E1, E2, E5; `CVTRA01Y/TRAN-CAT-BAL`; `CBACT04C:326, 373` | `codec.decode(layout, bytes)` in `load`; `codec.encode(...)` in `export`. | `if (last == '}' ...)` or `new String(bytes, "Cp037")` in `domain`, `policy` or `port`. |
-| S3.6 | Width, padding and FILLER belong to the codec and the schema. FILLER is raw bytes (E4) written back unchanged; a new transaction's FILLER and the `TRAN-DESC` tail are spaces (G05). The calculation updates only the three account columns. | E3, E4; `CVACT01Y/FILLER`, `CVTRA05Y/TRAN-DESC`; INT-T04; `CBACT04C:356, 485-489` | `"Int. for a/c " + elevenDigits(accountId)` in the domain; padding to 100 in the codec. | `String.format("%-100s", desc)` in the domain; rewriting the whole account row from a decoded object. |
-| S3.7 | Code page and key order are fixed in one place each: the codec option (`fixture` ISO-8859-1 or `host`, G01) and the reader's `ORDER BY trancat_acct_id, trancat_type_cd COLLATE "C", trancat_cd`. | E3, E6; `CVTRA01Y/TRAN-CAT-KEY`; INT-R01; `CBACT04C:28-32` | One ordered query in the `BalanceSource` adapter. | `balances.sort(...)` in Java, or an `ORDER BY` without the collation. |
+| S3.6 | Width, padding and FILLER belong to the codec and the schema. FILLER is raw bytes (E4) written back unchanged; a new transaction's FILLER and the `TRAN-DESC` tail are spaces (G05). The calculation updates only the three account columns. The digits of an id inside a text are a domain matter: the domain formats the 11-digit account id of the description and of a lookup key and the 6-digit counter of the transaction id; the width of the field that holds the text stays in the codec. | E3, E4; `CVACT01Y/FILLER`, `CVTRA05Y/TRAN-DESC`; INT-T04; `CBACT04C:356, 485-489` | `"Int. for a/c " + elevenDigits(accountId)` and the six-digit counter in the domain; padding to 100 in the codec. | `String.format("%-100s", desc)` in the domain; rewriting the whole account row from a decoded object. |
+| S3.7 | Code page and key order are fixed in one place each: the codec option (`fixture` ISO-8859-1 or `host`, G01) and the reader's `ORDER BY trancat_acct_id, trancat_type_cd COLLATE "C", trancat_cd`. **With file adapters:** there is no query, so the key order is fixed once in the `BalanceSource` adapter, by ordering the records on the 17 bytes of `TRAN-CAT-KEY`, and nowhere else. | E3, E6; `CVTRA01Y/TRAN-CAT-KEY`; INT-R01; `CBACT04C:28-32` | One ordered query in the `BalanceSource` adapter. | `balances.sort(...)` in Java where a table is read, a sort anywhere outside the `BalanceSource` adapter, or an `ORDER BY` without the collation. |
 | S3.8 | Time and the run's date parameters are injected. Timestamps come from an injected `java.time.Clock`, read once per written transaction, hundredths cut (not rounded) and followed by `0000`. `parmDate` is a job parameter of exactly 10 characters, used as text for the id prefix and never parsed as a date; another length is refused. Any frozen business date (switch `timestampSource=CYCLE_DATE`) is a job parameter too. | INT-Q02, INT-Q03, INT-T05; `CBACT04C:176-178, 476-480, 613-624`; `CVTRA05Y/TRAN-ID` | `clock.instant()` in one `TimestampFormatter`; tests use `Clock.fixed(...)` at the frozen fixture time 2022-07-05 10:00:00.00. | `LocalDateTime.now()`, `System.currentTimeMillis()`, `LocalDate.parse(parmDate)`. |
 
 ## 4. COBOL behaviours with no Java equivalent
@@ -67,7 +69,8 @@ for this table; the fixture cases named are recorded legacy runs.
 
 Line numbers are `app/cbl/CBACT04C.cbl` unless a file is named. "Search" means
 `grep -nE` over CBACT04C.cbl and the five copybooks returned nothing. Test names are the names ticket
-sessions must use; none exists yet.
+sessions must use; those of the behaviours ticket 01 touched exist in `java/interest/src/test`, the others do not
+yet.
 
 | | Behaviour | In this stream | Evidence | What the legacy does | Java standard | Test (fixture case) | Off-host run cannot settle |
 |---|---|---|---|---|---|---|---|
@@ -78,7 +81,7 @@ sessions must use; none exists yet.
 | e | Packed and binary fields; binary truncation by compile option | Packed ABSENT; binary PRESENT in storage only, on no dataset | Search `COMP-3` and `PACKED`: nothing. Binary: 125, 133, 138-139, 177; data-map rule E5 | Binary items hold 0, 8, 12, 16, 999 and one status byte; `PARM-LENGTH` is never read | S3.5: the codec refuses a field whose USAGE is not DISPLAY. No binary type in the domain; the result codes become return values (o) | `e5_codecRefusesNonDisplayUsage` (no fixture) | TRUNC option and byte order affect only the `9x` branch of the status line (636-642): **confirm on the mainframe** - mainframe application owner |
 | f | Non-numeric data in a numeric field | PRESENT | 636 (`IO-STATUS NOT NUMERIC`); 373/394/416 `READ INTO` move bytes unchecked into 9 and S9 fields; 483 | A bad digit in `TRAN-CAT-BAL` or `DIS-INT-RATE` reaches the COMPUTE unchecked | S3.5: rules E1/E2 reject the record at the boundary; the run stops before any calculation. No substitution of zero | `e1_nonDigitRejectsRecord` (no fixture) | S0C7 or a computed value on the host (NUMPROC, ZONEDATA): **confirm on the mainframe** - mainframe application owner |
 | g | Fixed width: padding, truncation on MOVE, comparison with padding, STRING, reference modification | PRESENT, except right truncation on MOVE: ABSENT (every sending item fits its receiver) | 437, 484 (literal padded); 476-480, 485-489 (STRING); 638, 645 (reference modification); 194, 422 (comparisons) | `TRAN-ID` is filled exactly (10 + 6). `TRAN-DESC` gets 24 of 100 bytes; STRING does not pad (INT-T04, G05). `'DEFAULT'` is padded to 10 for the key | S3.6: the domain holds trimmed values; width and padding come from the data-map row in the codec. The fallback group is the constant `DEFAULT` compared as CHAR(10). `TRAN-DESC` tail and FILLER are written as spaces | `intR06_transactionFieldsFixedWidth` (i01-baseline), `intR03_defaultGroupKeyPadded` (i04-default-group-fallback) | Bytes of `TRAN-DESC` 25-100 and the FILLER on the host (G05): **confirm on the mainframe** - mainframe application owner |
-| h | EBCDIC against ASCII: code page and collating order | PRESENT | Data-map rules E3, E6; gaps G01, G06; `tools/parity/record.py:51` (fixtures are ISO-8859-1); key 28-32 | TCATBALF is read in EBCDIC key order; `TRANCAT-TYPE-CD` is X(02), so letters sort before digits on the host | S3.7: code page only in the codec (`format=fixture` or `host`). Read `ORDER BY trancat_acct_id, trancat_type_cd COLLATE "C", trancat_cd` and nowhere else | `intR01_readsInKeyOrder` (i05-multi-category) | Host CCSID (G01) and the order of mixed letter/digit type codes (G06); the fixtures hold digits only: **confirm on the mainframe** - mainframe data owner |
+| h | EBCDIC against ASCII: code page and collating order | PRESENT | Data-map rules E3, E6; gaps G01, G06; `tools/parity/record.py:51` (fixtures are ISO-8859-1); key 28-32 | TCATBALF is read in EBCDIC key order; `TRANCAT-TYPE-CD` is X(02), so letters sort before digits on the host | S3.7: code page only in the codec (`format=fixture` or `host`). Read `ORDER BY trancat_acct_id, trancat_type_cd COLLATE "C", trancat_cd` and nowhere else; with file adapters the order is fixed once in the `BalanceSource` adapter (S3.7) | `intR01_readsInKeyOrder` (i05-multi-category) | Host CCSID (G01) and the order of mixed letter/digit type codes (G06); the fixtures hold digits only: **confirm on the mainframe** - mainframe data owner |
 | i | REDEFINES | PRESENT in the program, ABSENT in the copybooks | 126, 151; search `REDEFINES` in the five copybooks: nothing | A 2-byte binary is read as two characters to print a status; the 26-byte timestamp is filled through a redefinition | S2.2: no byte overlay. The timestamp is one formatter (u), the status line one function (q) | `intT05_timestampFormat`, `intT08_statusLineFormat` | - |
 | j | FILLER and fixed record length across a round trip | PRESENT | CVTRA01Y:10, CVACT03Y:8, CVTRA02Y:10, CVACT01Y:17, CVTRA05Y:18; 356, 373; `app/jcl/INTCALC.jcl:39` (LRECL=350) | The 178-byte account FILLER is read and rewritten untouched; the transaction FILLER is never set | S3.6: rule E4 - FILLER is `BYTEA`, written back byte for byte; the calculation updates three columns only; every output record has its full length | `e4_accountFillerRoundTrip` (i01-baseline: ACCTDATA compared field by field) | See g (G05) |
 | k | Tables: OCCURS, subscripts from 1, OCCURS DEPENDING ON | ABSENT | Search `OCCURS` in CBACT04C.cbl and the five copybooks: nothing | - | - | - | - |
@@ -136,7 +139,7 @@ code value is REL-10 (OPEN, mainframe operations owner).
 | DEFAULT rate missing or unreadable | 444-459 | abend 999 | `InterestRunStoppedException(DEFAULT_RATE_MISSING)` | `FAILED`, exit `STOPPED` | `ERROR READING DEFAULT DISCLOSURE GROUP`, `FILE STATUS IS: NNNN0023`, `ABENDING PROGRAM` |
 | ACCTFILE rewrite fails | 356-369 | abend 999 | `InterestRunStoppedException(UPDATE_ACCOUNT)` | `FAILED`, exit `STOPPED` | `ERROR RE-WRITING ACCOUNT FILE`, status line, `ABENDING PROGRAM` |
 | TRANSACT write fails | 500-514 | abend 999 | `InterestRunStoppedException(WRITE_TRANSACTION)` | `FAILED`, exit `STOPPED` | `ERROR WRITING TRANSACTION RECORD`, status line, `ABENDING PROGRAM` |
-| Open fails (five files) | 234-323 | abend 999 before any work | `InterestRunStoppedException(OPEN_<file>)`: the table or output location of that file cannot be reached | `FAILED`, exit `STOPPED` | the legacy text of that file, including `ERROR OPENING DALY REJECTS FILE` for the rates (INT-T10), then `ABENDING PROGRAM` |
+| Open fails (five files) | 234-323 | abend 999 before any work | `InterestRunStoppedException(OPEN_INPUT)`, one reason for every file, carrying the file as data: the table or location of that file cannot be reached | `FAILED`, exit `STOPPED` | the legacy text chosen from the file the exception carries, including `ERROR OPENING DALY REJECTS FILE` for the rates (INT-T10), then `ABENDING PROGRAM` |
 | Close fails (five files) | 522-611 | abend 999 after all work | `InterestRunStoppedException(CLOSE_<file>)` from the export step | `FAILED`, exit `STOPPED` | `ERROR CLOSING ...` of that file, `ABENDING PROGRAM` |
 | Amount or counter does not fit | 464-467, 474; INT-H05 | not determined by the source | `InterestRunStoppedException(OVERFLOW)` when `overflow=STOP` | `FAILED`, exit `STOPPED` | a line naming INT-H05 (no legacy text exists) |
 | `CALL 'CEE3ABD'`, code 999 | 628-632 | U0999 on the host; off-host stub RC 12 | the exception above ends the step | exit `STOPPED` (value: REL-10) | nothing after `ABENDING PROGRAM`; the stub's line is not reproduced |
@@ -145,8 +148,8 @@ code value is REL-10 (OPEN, mainframe operations owner).
 |---|---|---|---|---|
 | S6.1 | Every row above is implemented as written; a file status is never a field passed around. The status line keeps the legacy format `FILE STATUS IS: NNNN` + four digits and is written only where the condition determines the legacy status (a missing record is 23). A database or file-system failure writes the legacy message of the operation it replaces to the run log and its own cause to the application log. | INT-R08, INT-T08; `CBACT04C:635-648` | `runLog.line("FILE STATUS IS: NNNN0023")` for a missing account. | Invent a status such as `0099` for a `SQLException`, or copy the 9x binary-byte branch. |
 | S6.2 | One exception type stops the run; it carries the reason and the rule id. It is never caught to continue: no skip, no retry (`architecture.md` section 6). The exit code is one constant. | INT-R08, INT-T03; `CBACT04C:628-632` | `throw new InterestRunStoppedException(StopReason.ACCOUNT_MISSING)`; the step ends `FAILED`. | `catch (Exception e) { log.warn(...); continue; }`, `.faultTolerant().skip(...)`, `System.exit(12)` in several places. |
-| S6.3 | Restart follows `architecture.md` section 6 (REL-11, proposed): `loadExtractsStep` and `exportDatasetsStep` repeat; `calcInterestStep` continues after the last committed account with the saved counter and the run log cut back. A second run with the same PARM is not a restart and is not blocked while `rerunGuard=OFF` (INT-H02). | INT-H02; `CBACT04C:352-356, 474` | Restart test: stop after a chunk, restart, compare with an uninterrupted run. | Restart from the first account; reset the counter to 000001 on restart. |
-| S6.4 | A normal run writes the outputs in the recorded format (FI-2): `datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt` (350-byte records), the ACCTDATA image, `rc.json`. A failed run leaves no SYSTRAN generation in place (legacy `DISP=(NEW,CATLG,DELETE)`) but keeps committed account updates. | INT-T09; `app/jcl/INTCALC.jcl:22, 37-41`; `CVTRA05Y/TRAN-ID` | Export to a temporary directory, move on success. | Write SYSTRAN while calculating, or delete committed rows on failure. |
+| S6.3 | Restart follows `architecture.md` section 6 (REL-11, proposed): `loadExtractsStep` and `exportDatasetsStep` repeat; `calcInterestStep` continues after the last committed account with the saved counter and the run log cut back. A second run with the same PARM is not a restart and is not blocked while `rerunGuard=OFF` (INT-H02). **With file adapters:** there is no restart state and no restart; a stopped run is launched again from the start with a new `runId`. | INT-H02; `CBACT04C:352-356, 474` | Restart test: stop after a chunk, restart, compare with an uninterrupted run. | Restart from the first account; reset the counter to 000001 on restart. |
+| S6.4 | A normal run writes the outputs in the recorded format (FI-2): `datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt` (350-byte records), the ACCTDATA image, `rc.json`. A failed run leaves no SYSTRAN generation in place (legacy `DISP=(NEW,CATLG,DELETE)`) but keeps committed account updates. **With file adapters:** nothing is committed, so a stopped run keeps nothing - no output directory and no account update. | INT-T09; `app/jcl/INTCALC.jcl:22, 37-41`; `CVTRA05Y/TRAN-ID` | Export to a temporary directory, move on success. | Write SYSTRAN while calculating, or delete committed rows on failure. |
 | S6.5 | Two logs, kept apart. The **run log** (`RunLog` port) is the legacy SYSOUT, byte for byte, and is a parity output; it contains what the legacy printed, including the balance record echo and `ACCOUNT NOT FOUND: <id>`. The **application log** (SLF4J) carries run id, step, rule id, counts, sums, exit status and stop reason - never an account id, card number, balance, amount or record image. | INT-T02; `CBACT04C:181, 193, 230, 375, 418-419`; `CVTRA01Y/FILLER` | `log.info("run {} step {} accounts={} transactions={}", ...)`; `runLog.echo(recordImage)`. | `log.info("account {} interest {}", accountId, amount)`; formatting the echo as `12.35` instead of the record image. |
 
 ## 7. Tests
@@ -175,62 +178,62 @@ The ticket session copies this list into its pull request and marks each line `P
 
 Standards:
 
-- [ ] S1.1 Sources used in order; recorded output decides - PASS / FAIL
-- [ ] S1.2 Rule/code disagreements reproduced as coded and reported - PASS / FAIL
-- [ ] S2.1 Designed from rules; no method per paragraph - PASS / FAIL
-- [ ] S2.2 Immutable business records; copybook names only at the mapping - PASS / FAIL
-- [ ] S2.3 Spring Batch shape, transaction and restart boundaries of the architecture - PASS / FAIL
-- [ ] S2.4 Types and return values, no flags or result codes - PASS / FAIL
-- [ ] S2.5 Constructor injection; no mutable static state - PASS / FAIL
-- [ ] S3.1 `BigDecimal` with data-map precision and scale; no `double`/`float` - PASS / FAIL
-- [ ] S3.2 Formula: exact product, one division, mode from the policy - PASS / FAIL
-- [ ] S3.3 Rounding mode named on every other arithmetic step - PASS / FAIL
-- [ ] S3.4 Range check before store; overflow goes to the policy - PASS / FAIL
-- [ ] S3.5 Encodings only in `record-codec` - PASS / FAIL
-- [ ] S3.6 Width, padding and FILLER only in codec and schema - PASS / FAIL
-- [ ] S3.7 Code page and key order each in one place - PASS / FAIL
-- [ ] S3.8 Clock and run parameters injected; `parmDate` is text - PASS / FAIL
-- [ ] S4.1 Every PRESENT behaviour touched has its test; new ones reported - PASS / FAIL
-- [ ] S5.1 Each quirk/open decision in one named place behind its switch, rule id in names - PASS / FAIL
-- [ ] S5.2 Nothing fixed, tidied or added without a rule id - PASS / FAIL
-- [ ] S6.1 Status and message mapping as in section 6 - PASS / FAIL
-- [ ] S6.2 One stop exception, one exit-code constant, no skip or retry - PASS / FAIL
-- [ ] S6.3 Restart as in the architecture - PASS / FAIL
-- [ ] S6.4 Outputs in the recorded format; failed run leaves no SYSTRAN - PASS / FAIL
-- [ ] S6.5 Run log byte for byte; no account data in the application log - PASS / FAIL
-- [ ] S7.1 A test per rule id, named for it - PASS / FAIL
-- [ ] S7.2 Fixture and edge cases of each rule covered - PASS / FAIL
-- [ ] S7.3 Integration tests on PostgreSQL 15 in a container - PASS / FAIL
-- [ ] S7.4 No assertion against the code's own output - PASS / FAIL
-- [ ] S8.1 No edit under `app/`, `fixtures/`, `tools/parity` - PASS / FAIL
-- [ ] S8.2 No golden file re-recorded - PASS / FAIL
-- [ ] S8.3 Every new dependency explained in the pull request - PASS / FAIL
-- [ ] S8.4 Frozen shared interfaces unchanged - PASS / FAIL
-- [ ] S8.5 Synthetic data only - PASS / FAIL
+- [ ] S1.1 Sources used in order; recorded output decides - PASS / FAIL / N/A
+- [ ] S1.2 Rule/code disagreements reproduced as coded and reported - PASS / FAIL / N/A
+- [ ] S2.1 Designed from rules; no method per paragraph - PASS / FAIL / N/A
+- [ ] S2.2 Immutable business records; copybook names only at the mapping - PASS / FAIL / N/A
+- [ ] S2.3 Spring Batch shape, transaction and restart boundaries of the architecture - PASS / FAIL / N/A
+- [ ] S2.4 Types and return values, no flags or result codes - PASS / FAIL / N/A
+- [ ] S2.5 Constructor injection; no mutable static state - PASS / FAIL / N/A
+- [ ] S3.1 `BigDecimal` with data-map precision and scale; no `double`/`float` - PASS / FAIL / N/A
+- [ ] S3.2 Formula: exact product, one division, mode from the policy - PASS / FAIL / N/A
+- [ ] S3.3 Rounding mode named on every other arithmetic step - PASS / FAIL / N/A
+- [ ] S3.4 Range check before store; overflow goes to the policy - PASS / FAIL / N/A
+- [ ] S3.5 Encodings only in `record-codec` - PASS / FAIL / N/A
+- [ ] S3.6 Width, padding and FILLER only in codec and schema - PASS / FAIL / N/A
+- [ ] S3.7 Code page and key order each in one place - PASS / FAIL / N/A
+- [ ] S3.8 Clock and run parameters injected; `parmDate` is text - PASS / FAIL / N/A
+- [ ] S4.1 Every PRESENT behaviour touched has its test; new ones reported - PASS / FAIL / N/A
+- [ ] S5.1 Each quirk/open decision in one named place behind its switch, rule id in names - PASS / FAIL / N/A
+- [ ] S5.2 Nothing fixed, tidied or added without a rule id - PASS / FAIL / N/A
+- [ ] S6.1 Status and message mapping as in section 6 - PASS / FAIL / N/A
+- [ ] S6.2 One stop exception, one exit-code constant, no skip or retry - PASS / FAIL / N/A
+- [ ] S6.3 Restart as in the architecture - PASS / FAIL / N/A
+- [ ] S6.4 Outputs in the recorded format; failed run leaves no SYSTRAN - PASS / FAIL / N/A
+- [ ] S6.5 Run log byte for byte; no account data in the application log - PASS / FAIL / N/A
+- [ ] S7.1 A test per rule id, named for it - PASS / FAIL / N/A
+- [ ] S7.2 Fixture and edge cases of each rule covered - PASS / FAIL / N/A
+- [ ] S7.3 Integration tests on PostgreSQL 15 in a container - PASS / FAIL / N/A
+- [ ] S7.4 No assertion against the code's own output - PASS / FAIL / N/A
+- [ ] S8.1 No edit under `app/`, `fixtures/`, `tools/parity` - PASS / FAIL / N/A
+- [ ] S8.2 No golden file re-recorded - PASS / FAIL / N/A
+- [ ] S8.3 Every new dependency explained in the pull request - PASS / FAIL / N/A
+- [ ] S8.4 Frozen shared interfaces unchanged - PASS / FAIL / N/A
+- [ ] S8.5 Synthetic data only - PASS / FAIL / N/A
 
 Behaviours PRESENT in section 4 (k, n and v are ABSENT and have no line):
 
-- [ ] a Truncation without ROUNDED - PASS / FAIL
-- [ ] b High-order digit loss (range check, STOP) - PASS / FAIL
-- [ ] c Intermediate precision of the COMPUTE - PASS / FAIL
-- [ ] d Zoned overpunch signs - PASS / FAIL
-- [ ] e Binary items stay out of data and domain - PASS / FAIL
-- [ ] f Non-numeric data rejected at the boundary - PASS / FAIL
-- [ ] g Fixed width, padding, STRING - PASS / FAIL
-- [ ] h Code page and collating order - PASS / FAIL
-- [ ] i REDEFINES replaced by formatter and function - PASS / FAIL
-- [ ] j FILLER and record length round trip - PASS / FAIL
-- [ ] l No state carried between accounts except the counter - PASS / FAIL
-- [ ] m Control break and end of file (INT-Q04, INT-T09) - PASS / FAIL
-- [ ] o Level-88 result codes replaced by types - PASS / FAIL
-- [ ] p Indexed access through the ports; several cards to the policy - PASS / FAIL
-- [ ] q File statuses and abend - PASS / FAIL
-- [ ] r PARM, generation, disposition, return code - PASS / FAIL
-- [ ] s DISPLAY output in the run log - PASS / FAIL
-- [ ] t PARM text against the clock - PASS / FAIL
-- [ ] u Timestamp format and hundredths - PASS / FAIL
-- [ ] w PARM length checked - PASS / FAIL
-- [ ] x No stale rate after a failed lookup - PASS / FAIL
-- [ ] y Typed fields where COBOL mixed text and numbers - PASS / FAIL
-- [ ] z Abend ends the step; stub output not reproduced - PASS / FAIL
-- [ ] aa Dead and empty code not ported - PASS / FAIL
+- [ ] a Truncation without ROUNDED - PASS / FAIL / N/A
+- [ ] b High-order digit loss (range check, STOP) - PASS / FAIL / N/A
+- [ ] c Intermediate precision of the COMPUTE - PASS / FAIL / N/A
+- [ ] d Zoned overpunch signs - PASS / FAIL / N/A
+- [ ] e Binary items stay out of data and domain - PASS / FAIL / N/A
+- [ ] f Non-numeric data rejected at the boundary - PASS / FAIL / N/A
+- [ ] g Fixed width, padding, STRING - PASS / FAIL / N/A
+- [ ] h Code page and collating order - PASS / FAIL / N/A
+- [ ] i REDEFINES replaced by formatter and function - PASS / FAIL / N/A
+- [ ] j FILLER and record length round trip - PASS / FAIL / N/A
+- [ ] l No state carried between accounts except the counter - PASS / FAIL / N/A
+- [ ] m Control break and end of file (INT-Q04, INT-T09) - PASS / FAIL / N/A
+- [ ] o Level-88 result codes replaced by types - PASS / FAIL / N/A
+- [ ] p Indexed access through the ports; several cards to the policy - PASS / FAIL / N/A
+- [ ] q File statuses and abend - PASS / FAIL / N/A
+- [ ] r PARM, generation, disposition, return code - PASS / FAIL / N/A
+- [ ] s DISPLAY output in the run log - PASS / FAIL / N/A
+- [ ] t PARM text against the clock - PASS / FAIL / N/A
+- [ ] u Timestamp format and hundredths - PASS / FAIL / N/A
+- [ ] w PARM length checked - PASS / FAIL / N/A
+- [ ] x No stale rate after a failed lookup - PASS / FAIL / N/A
+- [ ] y Typed fields where COBOL mixed text and numbers - PASS / FAIL / N/A
+- [ ] z Abend ends the step; stub output not reproduced - PASS / FAIL / N/A
+- [ ] aa Dead and empty code not ported - PASS / FAIL / N/A

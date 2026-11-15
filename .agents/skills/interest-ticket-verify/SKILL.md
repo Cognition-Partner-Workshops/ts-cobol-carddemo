@@ -235,6 +235,9 @@ first. Run every command from the repository root.
    it for the "Why" of a case outside the ticket that already failed there.
    For a case outside the ticket that passes, replace `_fill in_` with `no - not named by the ticket; run to
    show no regression`.
+   For a ticket whose Acceptance names no fixture case (08: "the seven still pass"), change the scope column by
+   hand from `**yes - acceptance case of the ticket**` to `yes - regression case`, the headings `Acceptance run` to
+   `Run of one case`, and say under the table what the cases do and do not prove.
    When the parity run does not execute the ticket's code (its step is not in `interestCalcJob`, or
    `make parity-java` still runs the file adapters), say so under the table: `The parity run does not execute
    <step>; the cases prove that nothing else changed.` Prove the ticket's own cases with an integration test

@@ -15,10 +15,7 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -27,31 +24,21 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import com.carddemo.interest.Fixtures;
 import com.carddemo.interest.codec.CardXrefRecord;
 import com.carddemo.interest.codec.RecordValues;
-import com.carddemo.interest.domain.HoleDecisions;
 import com.carddemo.interest.jdbc.calc.ReplicaTables;
 
 /**
  * INT-H03 with multiCard=FIRST_BY_CARD_NUM on the tables, PostgreSQL 15: the lower card number of
- * an account with two cards goes on its interest transaction. The decision is given to the step
- * as the HoleDecisions bean: interest.policy.multiCard is not read from the configuration yet
- * (InterestPolicy does not hold the switch).
+ * an account with two cards goes on its interest transaction. The switch is set as the property
+ * interest.policy.multiCard and reaches the step through InterestPolicy. The default STOP through
+ * the job is ErrorPathsIT.intH03_twoCardsStops, which sets no property.
  */
 @SpringBootTest(properties = {
         "spring.batch.job.enabled=false",
         "interest.calc.store=jdbc",
+        "interest.policy.multiCard=FIRST_BY_CARD_NUM",
         "interest.clock.frozen=" + Fixtures.FROZEN_CLOCK})
 @Testcontainers
 class MultiCardFirstByCardNumIT {
-
-    @TestConfiguration
-    static class FirstByCardNum {
-
-        @Bean
-        @Primary
-        HoleDecisions firstByCardNum() {
-            return new HoleDecisions(HoleDecisions.MultiCard.FIRST_BY_CARD_NUM, HoleDecisions.Overflow.STOP);
-        }
-    }
 
     @Container
     @ServiceConnection

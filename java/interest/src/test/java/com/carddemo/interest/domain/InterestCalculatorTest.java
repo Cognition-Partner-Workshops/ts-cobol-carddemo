@@ -23,7 +23,9 @@ import com.carddemo.interest.domain.AccountBalances.BalanceRead;
 import com.carddemo.interest.policy.InterestPolicy;
 import com.carddemo.interest.policy.InterestPolicy.IdPrefix;
 import com.carddemo.interest.policy.InterestPolicy.InactiveAccounts;
+import com.carddemo.interest.policy.InterestPolicy.MultiCard;
 import com.carddemo.interest.policy.InterestPolicy.NegativeBalance;
+import com.carddemo.interest.policy.InterestPolicy.Overflow;
 import com.carddemo.interest.policy.InterestPolicy.Rounding;
 import com.carddemo.interest.policy.InterestPolicy.TimestampSource;
 import com.carddemo.interest.policy.InterestPolicy.ZeroInterest;
@@ -431,7 +433,7 @@ class InterestCalculatorTest {
     @Test
     void intH03_lowerCardNumberWhenSwitched() {
         // multiCard=FIRST_BY_CARD_NUM: the port returns the cards in card-number order; the first is used
-        holes = new HoleDecisions(HoleDecisions.MultiCard.FIRST_BY_CARD_NUM, HoleDecisions.Overflow.STOP);
+        holes = new HoleDecisions(MultiCard.FIRST_BY_CARD_NUM, Overflow.STOP);
         cards.put(2001L, List.of("4000000000002001", "4000000000009001"));
 
         AccountInterest result = calculator().calculate(account2001(false));
@@ -442,14 +444,14 @@ class InterestCalculatorTest {
 
     @Test
     void intH03_defaultIsStop() {
-        assertEquals(HoleDecisions.MultiCard.STOP, HoleDecisions.stop().multiCard());
-        assertEquals(HoleDecisions.MultiCard.STOP, new HoleDecisions(null, null).multiCard());
+        assertEquals(MultiCard.STOP, HoleDecisions.stop().multiCard());
+        assertEquals(MultiCard.STOP, new HoleDecisions(null, null).multiCard());
     }
 
     @Test
     void intH03_missingCardStillStopsWhenSwitched() {
         // FIRST_BY_CARD_NUM decides between several cards only; no card is INT-R08 as before
-        holes = new HoleDecisions(HoleDecisions.MultiCard.FIRST_BY_CARD_NUM, HoleDecisions.Overflow.STOP);
+        holes = new HoleDecisions(MultiCard.FIRST_BY_CARD_NUM, Overflow.STOP);
         cards.remove(2001L);
 
         InterestRunStoppedException stop = assertThrows(InterestRunStoppedException.class,
@@ -548,8 +550,8 @@ class InterestCalculatorTest {
 
     @Test
     void intH05_defaultIsStop() {
-        assertEquals(HoleDecisions.Overflow.STOP, HoleDecisions.stop().overflow());
-        assertEquals(HoleDecisions.Overflow.STOP, new HoleDecisions(null, null).overflow());
+        assertEquals(Overflow.STOP, HoleDecisions.stop().overflow());
+        assertEquals(Overflow.STOP, new HoleDecisions(null, null).overflow());
     }
 
     @Test

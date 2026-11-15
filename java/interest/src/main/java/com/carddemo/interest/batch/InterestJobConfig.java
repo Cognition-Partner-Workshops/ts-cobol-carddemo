@@ -56,13 +56,12 @@ public class InterestJobConfig {
     }
 
     /**
-     * INT-H03 and INT-H05: both stop the run, the proposed default of interest.policy.multiCard and
-     * interest.policy.overflow (architecture.md section 8). The two switches are not read from the
-     * configuration yet: InterestPolicy is the only reader of interest.policy.* and does not hold them.
+     * INT-H03 and INT-H05 as interest.policy.multiCard and interest.policy.overflow set them
+     * (architecture.md section 8); the proposed default of both is STOP.
      */
     @Bean
-    HoleDecisions holeDecisions() {
-        return HoleDecisions.stop();
+    HoleDecisions holeDecisions(InterestPolicy policy) {
+        return HoleDecisions.of(policy);
     }
 
     @Bean

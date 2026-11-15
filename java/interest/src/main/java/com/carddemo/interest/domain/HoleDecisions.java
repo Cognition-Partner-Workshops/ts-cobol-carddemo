@@ -4,22 +4,18 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import com.carddemo.interest.policy.InterestPolicy;
+import com.carddemo.interest.policy.InterestPolicy.MultiCard;
+import com.carddemo.interest.policy.InterestPolicy.Overflow;
+
 /**
  * The two holes the source does not determine, each in one place (standards S5.1): INT-H03, an
  * account with several cards (switch multiCard), and INT-H05, a value that does not fit its field
- * (switch overflow). The proposed default of both is STOP; both decisions are OPEN, and what
+ * (switch overflow). The switches are interest.policy.multiCard and interest.policy.overflow, read
+ * through InterestPolicy. The proposed default of both is STOP; both decisions are OPEN, and what
  * CBACT04C does on the host in either case is unknown.
  */
 public record HoleDecisions(MultiCard multiCard, Overflow overflow) {
-
-    /** INT-H03. */
-    public enum MultiCard { STOP, FIRST_BY_CARD_NUM }
-
-    /**
-     * INT-H05. WIDEN (architecture.md section 8) needs wider columns and record layouts (FI-1,
-     * FI-4) and is not built.
-     */
-    public enum Overflow { STOP }
 
     /** TRAN-ID holds six digits of the counter (CVTRA05Y/TRAN-ID, CBACT04C:173, 474). */
     private static final int LAST_TRANSACTION_OF_A_RUN = 999_999;
@@ -32,6 +28,11 @@ public record HoleDecisions(MultiCard multiCard, Overflow overflow) {
     /** The proposed default of both switches. */
     public static HoleDecisions stop() {
         return new HoleDecisions(MultiCard.STOP, Overflow.STOP);
+    }
+
+    /** The decisions as interest.policy.multiCard and interest.policy.overflow set them. */
+    public static HoleDecisions of(InterestPolicy policy) {
+        return new HoleDecisions(policy.multiCard(), policy.overflow());
     }
 
     /**

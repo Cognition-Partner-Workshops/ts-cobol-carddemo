@@ -1,26 +1,44 @@
 package com.carddemo.interest.codec;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
- * Fixed record length in the recorded fixture format (FI-2): a line of an input file has lost its
- * trailing spaces and gets them back; an output record loses them again (tools/parity/record.py:193, 246).
+ * How fixed-length records lie in a file.
+ * Recorded fixture format (FI-2): one record per line, trailing spaces lost; a line gets them back
+ * and an output record loses them again (tools/parity/record.py:51, 104). Host format: the records
+ * follow each other with no separator. Nothing is cut here: a line or a last block of the wrong
+ * length is handed on as it is and {@link RecordCodec} rejects it, naming file and record.
  */
 public final class RecordImage {
 
     private RecordImage() {
     }
 
-    public static String fromLine(String line, int recordLength) {
-        if (line.length() >= recordLength) {
-            return line.substring(0, recordLength);
+    public static byte[] fromLine(String line, int recordLength, CodePage codePage) {
+        byte[] bytes = line.getBytes(codePage.charset());
+        if (bytes.length >= recordLength) {
+            return bytes;
         }
-        return line + " ".repeat(recordLength - line.length());
+        byte[] record = Arrays.copyOf(bytes, recordLength);
+        Arrays.fill(record, bytes.length, recordLength, codePage.space());
+        return record;
     }
 
-    public static String toLine(String image) {
-        int end = image.length();
-        while (end > 0 && image.charAt(end - 1) == ' ') {
+    public static String toLine(byte[] record, CodePage codePage) {
+        int end = record.length;
+        while (end > 0 && record[end - 1] == codePage.space()) {
             end--;
         }
-        return image.substring(0, end);
+        return new String(record, 0, end, codePage.charset());
+    }
+
+    public static List<byte[]> fromBlock(byte[] content, int recordLength) {
+        List<byte[]> records = new ArrayList<>();
+        for (int start = 0; start < content.length; start += recordLength) {
+            records.add(Arrays.copyOfRange(content, start, Math.min(start + recordLength, content.length)));
+        }
+        return records;
     }
 }

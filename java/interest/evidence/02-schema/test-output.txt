@@ -1,0 +1,98 @@
+# db/postgres/tests/run.sh   (ticket INT-T02; no Java in this ticket, so this file holds the psql output its Verification names)
+# revision b0e47a4f26d0c33852b4b2ec11879e124ee30c15, 2026-11-15T15:54:13Z, Docker 29.9.2, db service image postgres:15
+## server
+PostgreSQL 15.20 (Debian 15.20-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+NOTICE:  database "interest_schema_test" does not exist, skipping
+## 1. psql -v ON_ERROR_STOP=1 -f db/postgres/01-transaction-type.sql (empty database interest_schema_test)
+CREATE SCHEMA
+CREATE TABLE
+CREATE TABLE
+exit code 0
+## 2. psql -v ON_ERROR_STOP=1 -f db/postgres/02-interest.sql
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+COMMIT
+exit code 0 (expected 0)
+## 3. the same a second time: fails cleanly
+BEGIN
+psql:<stdin>:40: ERROR:  relation "account" already exists
+exit code 3 (expected 3)
+objects of schema carddemo unchanged by the second run: 19 (tables, indexes, sequence)
+## 4. psql -v ON_ERROR_STOP=1 -q -At -f db/postgres/tests/02-interest-assert.sql
+PASS tables: schema carddemo holds the two tables of 01-transaction-type.sql and the six of the data map
+PASS columns: account equals the data map row for row (13 columns)
+PASS columns: card_xref equals the data map row for row (4 columns)
+PASS columns: tran_cat_balance equals the data map row for row (5 columns)
+PASS columns: disclosure_group equals the data map row for row (5 columns)
+PASS columns: interest_transaction equals the data map row for row (16 columns)
+PASS columns: interest_run equals the data map row for row (36 columns)
+PASS columns: interest_run.run_id is GENERATED ALWAYS AS IDENTITY
+PASS keys: the six primary keys of the data map
+PASS keys: interest_transaction (run_id, tran_id) is unique, and no other unique constraint exists
+PASS keys: one foreign key, interest_transaction.run_id -> interest_run; none between the replica tables or to transaction_type (G09)
+PASS checks: the 13 CHECKs of the data map and no other
+PASS index: card_xref_acct_ix exists ON card_xref (xref_acct_id, xref_card_num) and is not unique
+PASS index: the six tables have no index beyond the primary keys, the unique constraint and card_xref_acct_ix
+PASS accepts: account with acct_id = 99999999999, acct_curr_bal = 9999999999.99 and a 178-byte acct_filler - accepted
+PASS accepts: account with acct_id = 0 and acct_curr_bal = -9999999999.99 - accepted
+PASS accepts: dis_int_rate = 9999.99 - accepted
+PASS accepts: interest_run row with only parm_date and status - accepted
+PASS accepts: tran_amt = 999999999.99 - accepted
+PASS accepts: two cards for one account (card_xref_acct_ix is not unique) - accepted
+PASS errors: acct_curr_bal = 10000000000.00 - rejected, SQLSTATE 22003: numeric field overflow
+PASS errors: tran_amt = 1000000000.00 - rejected, SQLSTATE 22003: numeric field overflow
+PASS errors: dis_int_rate = 10000.00 - rejected, SQLSTATE 22003: numeric field overflow
+PASS errors: negative acct_id - rejected, SQLSTATE 23514: new row for relation "account" violates check constraint "account_acct_id_check"
+PASS errors: 177-byte acct_filler - rejected, SQLSTATE 23514: new row for relation "account" violates check constraint "account_acct_filler_check"
+PASS errors: 179-byte acct_filler - rejected, SQLSTATE 23514: new row for relation "account" violates check constraint "account_acct_filler_check"
+PASS errors: acct_id of 12 digits - rejected, SQLSTATE 22003: numeric field overflow
+PASS errors: acct_curr_bal NULL - rejected, SQLSTATE 23502: null value in column "acct_curr_bal" of relation "account" violates not-null constraint
+PASS errors: duplicate acct_id - rejected, SQLSTATE 23505: duplicate key value violates unique constraint "account_pkey"
+PASS errors: tran_amt = -1000000000.00 - rejected, SQLSTATE 22003: numeric field overflow
+PASS errors: second row with the same (run_id, tran_id) - rejected, SQLSTATE 23505: duplicate key value violates unique constraint "interest_transaction_run_id_tran_id_key"
+PASS errors: second row with the same (run_id, seq_no) - rejected, SQLSTATE 23505: duplicate key value violates unique constraint "interest_transaction_pkey"
+PASS errors: interest_transaction for a run_id that is not in interest_run - rejected, SQLSTATE 23503: insert or update on table "interest_transaction" violates foreign key constraint "interest_transaction_run_id_fkey"
+PASS errors: interest_run.run_id supplied by the caller (GENERATED ALWAYS) - rejected, SQLSTATE 428C9: cannot insert a non-DEFAULT value into column "run_id"
+PASS errors: interest_run.status of 13 characters - rejected, SQLSTATE 22001: value too long for type character varying(12)
+PASS errors: parm_date of 11 characters - rejected, SQLSTATE 22001: value too long for type character(10)
+PASS errors: negative xref_cust_id - rejected, SQLSTATE 23514: new row for relation "card_xref" violates check constraint "card_xref_xref_cust_id_check"
+PASS errors: negative xref_acct_id - rejected, SQLSTATE 23514: new row for relation "card_xref" violates check constraint "card_xref_xref_acct_id_check"
+PASS errors: 13-byte xref_filler - rejected, SQLSTATE 23514: new row for relation "card_xref" violates check constraint "card_xref_xref_filler_check"
+PASS errors: xref_card_num of 17 characters - rejected, SQLSTATE 22001: value too long for type character(16)
+PASS errors: tran_cat_bal = 1000000000.00 - rejected, SQLSTATE 22003: numeric field overflow
+PASS errors: negative trancat_cd - rejected, SQLSTATE 23514: new row for relation "tran_cat_balance" violates check constraint "tran_cat_balance_trancat_cd_check"
+PASS errors: trancat_cd of 5 digits - rejected, SQLSTATE 22003: numeric field overflow
+PASS errors: 21-byte trancat_filler - rejected, SQLSTATE 23514: new row for relation "tran_cat_balance" violates check constraint "tran_cat_balance_trancat_filler_check"
+PASS errors: negative dis_tran_cat_cd - rejected, SQLSTATE 23514: new row for relation "disclosure_group" violates check constraint "disclosure_group_dis_tran_cat_cd_check"
+PASS errors: 27-byte dis_filler - rejected, SQLSTATE 23514: new row for relation "disclosure_group" violates check constraint "disclosure_group_dis_filler_check"
+PASS accepts: balances with type codes 1A, A1 and 01 for one account - accepted
+PASS collation: tran_cat_balance key order is byte order (01, 1A, A1, a1)
+02-interest-assert.sql: all assertions passed
+exit code 0 (expected 0)
+rows left in the six tables by the assertions: 0 (expected 0)
+## result: PASS
+# exit code 0
+
+# fresh postgres:15 with ./db/postgres mounted as /docker-entrypoint-initdb.d, as the db service of docker-compose.yml mounts it (throwaway container, no volume)
+/usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/01-transaction-type.sql
+/usr/local/bin/docker-entrypoint.sh: running /docker-entrypoint-initdb.d/02-interest.sql
+/usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/tests
+PostgreSQL init process complete; ready for start up.
+# tables of schema carddemo after the init
+account
+card_xref
+disclosure_group
+interest_run
+interest_transaction
+tran_cat_balance
+transaction_type
+transaction_type_categor
+# db/postgres/tests/02-interest-assert.sql on that database
+02-interest-assert.sql: all assertions passed
+# exit code 0

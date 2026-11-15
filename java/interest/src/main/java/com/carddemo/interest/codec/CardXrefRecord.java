@@ -1,20 +1,30 @@
 package com.carddemo.interest.codec;
 
-/** Layout CVACT03Y (app/cpy/CVACT03Y.cpy:4-8, RECLN 50). Data-map rows CVACT03Y/XREF-CARD-NUM, XREF-ACCT-ID. */
+/** Layout CVACT03Y (app/cpy/CVACT03Y.cpy:4-8, RECLN 50). Data-map rows CVACT03Y/*. */
 public final class CardXrefRecord {
 
-    public static final int LENGTH = 50;
+    private static final RecordLayout.Builder COPYBOOK = RecordLayout.builder("CVACT03Y");
+    private static final FieldSpec CARD_NUMBER = COPYBOOK.field("XREF-CARD-NUM", "X(16)");
+    private static final FieldSpec CUSTOMER_ID = COPYBOOK.field("XREF-CUST-ID", "9(09)");
+    private static final FieldSpec ACCOUNT_ID = COPYBOOK.field("XREF-ACCT-ID", "9(11)");
+    private static final FieldSpec FILLER = COPYBOOK.filler("X(14)");
+    public static final RecordLayout LAYOUT = COPYBOOK.build();
 
-    private static final Field CARD_NUMBER = new Field("XREF-CARD-NUM", 0, 16);
-    private static final Field ACCOUNT_ID = new Field("XREF-ACCT-ID", 25, 11);
+    private final RecordCodec codec;
 
-    private CardXrefRecord() {
+    public CardXrefRecord(CodePage codePage) {
+        this.codec = new RecordCodec(LAYOUT, codePage);
+    }
+
+    public RecordCodec codec() {
+        return codec;
     }
 
     public record CardOfAccount(long accountId, String cardNumber) {
     }
 
-    public static CardOfAccount decode(String image) {
-        return new CardOfAccount(ACCOUNT_ID.unsigned(image), CARD_NUMBER.text(image));
+    public CardOfAccount decode(byte[] record, RecordSource source) {
+        RecordValues values = codec.decode(record, source);
+        return new CardOfAccount(values.unsigned(ACCOUNT_ID), values.text(CARD_NUMBER));
     }
 }

@@ -3,6 +3,7 @@ package com.carddemo.interest.batch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -20,8 +21,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.batch.core.ExitStatus;
 
 import com.carddemo.interest.Fixtures;
-import com.carddemo.interest.codec.Field;
-import com.carddemo.interest.codec.RecordImage;
 import com.carddemo.interest.policy.InterestPolicy;
 import com.carddemo.interest.policy.InterestPolicy.IdPrefix;
 import com.carddemo.interest.policy.InterestPolicy.InactiveAccounts;
@@ -163,14 +162,14 @@ class PolicySwitchExpectationsTest {
         return asCoded;
     }
 
-    /** The same paths read from the files the job wrote, decoded by the layouts of CVTRA05Y and CVACT01Y. */
+    /** The same paths read from the files the job wrote, read by the offsets of CVTRA05Y and CVACT01Y. */
     private static Map<String, String> actualValues(JSONObject expectation, Path output) throws JSONException {
         Map<String, String> values = new LinkedHashMap<>();
         values.put("run/sysout", String.join("\n", Fixtures.lines(output.resolve("sysout/INTCALC.STEP15.txt")).stream()
                 .map(String::stripTrailing).toList()));
 
         List<String> transactions = Fixtures.lines(output.resolve("datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt")).stream()
-                .map(line -> RecordImage.fromLine(line, 350)).toList();
+                .map(line -> padded(line, 350)).toList();
         int next = 0;
         JSONArray balances = expectation.getJSONArray("balances");
         for (int i = 0; i < balances.length(); i++) {
@@ -188,7 +187,7 @@ class PolicySwitchExpectationsTest {
             values.put(path + "TRAN-CAT-CD", text(image, 18, 4));
             values.put(path + "TRAN-SOURCE", text(image, 22, 10));
             values.put(path + "TRAN-DESC", text(image, 32, 100));
-            values.put(path + "TRAN-AMT", image == null ? "null" : new Field("TRAN-AMT", 132, 11).signed(image, 2).toPlainString());
+            values.put(path + "TRAN-AMT", image == null ? "null" : amount(image, 132, 11));
             values.put(path + "TRAN-MERCHANT-ID", text(image, 143, 9));
             values.put(path + "TRAN-MERCHANT-NAME", text(image, 152, 50));
             values.put(path + "TRAN-MERCHANT-CITY", text(image, 202, 50));
@@ -201,7 +200,7 @@ class PolicySwitchExpectationsTest {
 
         Map<String, String> accountImages = new LinkedHashMap<>();
         for (String line : Fixtures.lines(output.resolve("datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt"))) {
-            String image = RecordImage.fromLine(line, 300);
+            String image = padded(line, 300);
             accountImages.put(image.substring(0, 11), image);
         }
         JSONArray accounts = expectation.getJSONArray("accounts");
@@ -209,16 +208,33 @@ class PolicySwitchExpectationsTest {
             String accountId = accounts.getJSONObject(i).getString("ACCT-ID");
             String image = accountImages.get(accountId);
             // app/cpy/CVACT01Y.cpy:7, 13, 14
-            values.put("account/" + accountId + "/ACCT-CURR-BAL", new Field("ACCT-CURR-BAL", 12, 12).signed(image, 2).toPlainString());
-            values.put("account/" + accountId + "/ACCT-CURR-CYC-CREDIT",
-                    new Field("ACCT-CURR-CYC-CREDIT", 78, 12).signed(image, 2).toPlainString());
-            values.put("account/" + accountId + "/ACCT-CURR-CYC-DEBIT",
-                    new Field("ACCT-CURR-CYC-DEBIT", 90, 12).signed(image, 2).toPlainString());
+            values.put("account/" + accountId + "/ACCT-CURR-BAL", amount(image, 12, 12));
+            values.put("account/" + accountId + "/ACCT-CURR-CYC-CREDIT", amount(image, 78, 12));
+            values.put("account/" + accountId + "/ACCT-CURR-CYC-DEBIT", amount(image, 90, 12));
         }
         return values;
     }
 
     private static String text(String image, int offset, int length) {
         return image == null ? "null" : image.substring(offset, offset + length).stripTrailing();
+    }
+
+    /** A fixture line with the trailing spaces of its record put back (tools/parity/record.py:51). */
+    private static String padded(String line, int recordLength) {
+        return line + " ".repeat(Math.max(0, recordLength - line.length()));
+    }
+
+    /**
+     * A zoned amount with two decimals, read by hand and not with the codec under test: the last
+     * character carries digit and sign, "{ABCDEFGHI" plus 0-9 and "}JKLMNOPQR" minus 0-9 (data-map rule E2).
+     */
+    private static String amount(String image, int offset, int length) {
+        String zoned = image.substring(offset, offset + length);
+        char last = zoned.charAt(length - 1);
+        int plus = "{ABCDEFGHI".indexOf(last);
+        int minus = "}JKLMNOPQR".indexOf(last);
+        assertTrue(plus >= 0 || minus >= 0, "overpunch sign of " + zoned);
+        BigDecimal value = new BigDecimal(zoned.substring(0, length - 1) + Math.max(plus, minus)).movePointLeft(2);
+        return (minus >= 0 ? value.negate() : value).toPlainString();
     }
 }

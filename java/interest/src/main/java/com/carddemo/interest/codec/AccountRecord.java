@@ -6,7 +6,8 @@ import com.carddemo.interest.domain.Account;
 
 /**
  * Layout CVACT01Y (app/cpy/CVACT01Y.cpy:4-17, RECLN 300) mapped to the business record Account.
- * Data-map rows CVACT01Y/ACCT-ID, ACCT-CURR-BAL, ACCT-CURR-CYC-CREDIT, ACCT-CURR-CYC-DEBIT, ACCT-GROUP-ID.
+ * Data-map rows CVACT01Y/ACCT-ID, ACCT-CURR-BAL, ACCT-CURR-CYC-CREDIT, ACCT-CURR-CYC-DEBIT, ACCT-GROUP-ID,
+ * ACCT-ACTIVE-STATUS.
  * Images are records of the fixture format ({@link RecordImage}).
  */
 public final class AccountRecord {
@@ -19,6 +20,7 @@ public final class AccountRecord {
     private static final String CYCLE_CREDIT = "ACCT-CURR-CYC-CREDIT";
     private static final String CYCLE_DEBIT = "ACCT-CURR-CYC-DEBIT";
     private static final String GROUP_ID = "ACCT-GROUP-ID";
+    private static final String ACTIVE_STATUS = "ACCT-ACTIVE-STATUS";
 
     private AccountRecord() {
     }
@@ -28,7 +30,8 @@ public final class AccountRecord {
         return new Account(
                 fields.number(ACCOUNT_ID).longValueExact(),
                 fields.number(CURRENT_BALANCE),
-                fields.text(GROUP_ID));
+                fields.text(GROUP_ID),
+                fields.text(ACTIVE_STATUS));
     }
 
     public static String key(String image) {

@@ -15,7 +15,7 @@ import com.carddemo.interest.policy.InterestPolicy.TimestampSource;
 class InterestFormulaTest {
 
     private static InterestPolicy rounding(Rounding rounding) {
-        return new InterestPolicy(rounding, IdPrefix.PARM, TimestampSource.RUN_CLOCK, false);
+        return new InterestPolicy(rounding, IdPrefix.PARM, TimestampSource.RUN_CLOCK, false, null, null, null, null, null);
     }
 
     private static BigDecimal interest(String balance, String rate, Rounding rounding) {
@@ -80,7 +80,7 @@ class InterestFormulaTest {
 
     @Test
     void intQ01_defaultIsTruncate() {
-        assertEquals(Rounding.TRUNCATE, new InterestPolicy(null, null, null, false).rounding());
+        assertEquals(Rounding.TRUNCATE, new InterestPolicy(null, null, null, false, null, null, null, null, null).rounding());
         assertEquals(Rounding.TRUNCATE, InterestPolicy.legacy().rounding());
     }
 }

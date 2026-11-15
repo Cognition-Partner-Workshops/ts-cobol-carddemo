@@ -1,0 +1,343 @@
+{
+  "meta": {
+    "module": "AUTH",
+    "generated_at": "2026-11-15T06:08:42Z",
+    "tool": "mftb 0.2.1",
+    "inputs": [
+      "programs.json",
+      "jobs.json",
+      "schedule.json"
+    ]
+  },
+  "author": "agent",
+  "summary": {
+    "subjects": 13,
+    "written": 13,
+    "unknown": 0,
+    "by_kind": {
+      "program": 8,
+      "jcl": 5,
+      "proc": 0
+    },
+    "with_key_points": 8,
+    "overviews": 7,
+    "overviews_written": 7
+  },
+  "overviews": [
+    {
+      "kind": "module",
+      "name": "AUTH",
+      "key_points": [
+        "Authorizes card transactions: COPAUA0C takes each request from an MQ queue, approves or declines it against the account's available credit, replies over MQ and keeps the decision as a pending authorization in an IMS database.",
+        "Lets operators review pending authorizations per account (summary and detail screens) and mark one as fraud, which is recorded in Db2 table CARDDEMO.AUTHFRDS and on the IMS detail segment.",
+        "In batch, purges pending authorizations older than a configurable number of days and unloads or reloads the IMS database through flat and GSAM files."
+      ],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:2-5",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:657-696",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:2-5",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:230-262",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl:141-142",
+        "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:2-5",
+        "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:277-298",
+        "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:38-39",
+        "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:26-27",
+        "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:26-27"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "CARDDEMO",
+      "key_points": [
+        "The CA 7 listing orders 17 jobs; the only one that belongs to this module is CBPAUP0J, which deletes expired pending authorizations from the IMS database after CLOSEFIL triggers it and before it triggers POSTTRAN.",
+        "The other 16 jobs have no JCL in this module's roots, so what the rest of the chain does is not described here; the listing states no frequency, window or deadline for any of them."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.ca7:18-70",
+        "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:21-25",
+        "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:2-5"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "DAILY-TransactionBackup",
+      "key_points": [
+        "Control-M folder that runs CLOSEFIL, TRANBKP, WAITSTEP and OPENFIL in sequence (descriptions 'DAILY ...'); none of these jobs is an AUTH JCL member, so their content is outside this module's scan."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:3-25"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "WEEKLY-TransactionTypesDBRefresh",
+      "key_points": [
+        "Control-M folder holding the single job MNTTRDB2 (description 'WEEKLY MNTTRDB2'), whose completion condition the two refresh folders wait on; MNTTRDB2 is not an AUTH JCL member, so its content is outside this module's scan."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:26-31",
+        "app/scheduler/CardDemo.controlm:34",
+        "app/scheduler/CardDemo.controlm:59"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "DisclosureGroupsRefresh",
+      "key_points": [
+        "Control-M smart folder that, after MNTTRDB2's condition, runs CLOSEFIL, DISCGRP, WAITSTEP and OPENFIL in sequence (descriptions 'WEEKLY DisclosureGroupsRefresh ...'); none is an AUTH JCL member, so their content is outside this module's scan."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:32-56"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "TransactionTypesDBRefresh",
+      "key_points": [
+        "Control-M smart folder holding the single job TRANEXTR, run after MNTTRDB2's condition (description 'WEEKLY TransactionTypesDBRefresh TRANEXTR'); TRANEXTR is not an AUTH JCL member, so its content is outside this module's scan."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:57-63"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "MONTHLY-InterestCalculation",
+      "key_points": [
+        "Control-M folder that runs CLOSEFIL, INTCALC, COMBTRAN, WAITSTEP and OPENFIL in sequence (descriptions 'MONTHLY ...'); none of these jobs is an AUTH JCL member, so their content is outside this module's scan."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:64-92"
+      ],
+      "written_by": "agent"
+    }
+  ],
+  "descriptions": [
+    {
+      "kind": "program",
+      "name": "CBPAUP0C",
+      "path": "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl",
+      "description": "Batch IMS program that deletes expired pending-authorization detail segments and, when none remain, the account's summary segment.",
+      "key_points": [
+        "Reads each summary root (GN) and its details (GNP); a detail is expired when the day difference from today reaches the expiry-days parameter (SYSIN, default 5).",
+        "For each expired detail it subtracts the count and amount from the summary's approved or declined totals, then deletes the detail segment.",
+        "Takes an IMS checkpoint every P-CHKP-FREQ summaries and at the end, and displays read/deleted counts."
+      ],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:2-5",
+        "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:136-180",
+        "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:186-209",
+        "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:277-298",
+        "app/app-authorization-ims-db2-mq/cbl/CBPAUP0C.cbl:303-355"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "COPAUA0C",
+      "path": "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl",
+      "description": "CICS program that reads card authorization requests from an MQ queue, approves or declines each, replies over MQ and stores the result in IMS.",
+      "key_points": [
+        "Retrieves the MQ trigger message for the request queue name, opens the queue and processes messages in a loop up to a per-task limit.",
+        "Declines when the amount exceeds credit limit minus balance (IMS summary if present, else the account record) or when the account is not found; otherwise approves the full amount.",
+        "Replies with MQPUT1 to the request's reply-to queue and inserts/replaces the pending-authorization summary and inserts a detail segment when the card was found."
+      ],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:2-5",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:220-246",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:326-344",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:443-465",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:657-696",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:741-760",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:825-830",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUA0C.cbl:913"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "COPAUS0C",
+      "path": "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl",
+      "description": "CICS screen program that lists the pending authorizations of an account, five per page, with account and customer details.",
+      "key_points": [
+        "Reads the account's authorization summary and details from IMS (GU / GNP) and the card cross-reference, account and customer CICS files.",
+        "ENTER with 'S' on a row transfers to the detail program COPAUS1C; PF7/PF8 page backward and forward; PF3 transfers to the menu program named in WS-PGM-MENU."
+      ],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:2-5",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:190-257",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:313-325",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:461",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:973",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:704-705",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:812-920"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "COPAUS1C",
+      "path": "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl",
+      "description": "CICS screen program that shows one pending authorization in detail and lets the operator mark it as fraud or remove the mark.",
+      "key_points": [
+        "Reads the selected authorization from IMS (GU summary, GNP detail); PF8 moves to the next authorization, PF3 returns to the summary program COPAUS0C.",
+        "PF5 toggles the fraud flag, LINKs to COPAUS2C to record it in Db2, then replaces the IMS detail segment and syncpoints, or rolls back if the Db2 step failed."
+      ],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:2-5",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:165-198",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:230-262",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:439",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:465",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:525",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:558-567"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "COPAUS2C",
+      "path": "app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl",
+      "description": "CICS Db2 program, linked from COPAUS1C, that records an authorization's fraud status in table CARDDEMO.AUTHFRDS.",
+      "key_points": [
+        "Inserts the authorization with its fraud flag and the current date; on duplicate key (SQLCODE -803) it updates AUTH_FRAUD and FRAUD_RPT_DATE of the existing row instead.",
+        "Returns success or a Db2 error message to the caller in the COMMAREA."
+      ],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl:2-5",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl:141-168",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl:199-216",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS2C.cbl:221-243"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "DBUNLDGS",
+      "path": "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL",
+      "description": "Batch IMS (DLI) program that unloads the pending-authorization database to two GSAM files: summary roots and detail children.",
+      "key_points": [
+        "Reads every summary segment (GN) and its details (GNP) through CBLTDLI and inserts each into the GSAM PCBs PASFLPCB (roots) and PADFLPCB (children).",
+        "The sequential-file SELECT/OPEN/WRITE statements are commented out; output goes only through GSAM. Abends with return code 16 on a failed call."
+      ],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:18",
+        "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:164-179",
+        "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:195-209",
+        "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:222",
+        "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:232-246",
+        "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:267",
+        "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:300-323",
+        "app/app-authorization-ims-db2-mq/cbl/DBUNLDGS.CBL:362"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "PAUDBLOD",
+      "path": "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL",
+      "description": "Batch IMS program that loads the pending-authorization database from two sequential files: summary roots, then detail children.",
+      "key_points": [
+        "Inserts every INFILE1 record as a summary root segment (CBLTDLI ISRT).",
+        "For every INFILE2 record with a numeric root key it positions on the parent summary (GU with a qualified SSA) and inserts the detail segment under it."
+      ],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:18",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:26-32",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:169-183",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:226-246",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:272-299",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBLOD.CBL:321"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "PAUDBUNL",
+      "path": "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL",
+      "description": "Batch IMS (DLI) program that unloads the pending-authorization database to two sequential files: summary roots and detail children.",
+      "key_points": [
+        "Reads every summary segment (GN) and writes it to OPFILE1 when its account id is numeric, then writes each of its detail segments (GNP), prefixed with the root key, to OPFILE2."
+      ],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL:18",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL:26-32",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL:157-170",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL:186-194",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL:213",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL:223-240",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL:257",
+        "app/app-authorization-ims-db2-mq/cbl/PAUDBUNL.CBL:266-275"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "jcl",
+      "name": "CBPAUP0J",
+      "path": "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl",
+      "description": "Runs CBPAUP0C as an IMS BMP under PSB PSBPAUTB to delete expired pending authorizations; parameters come from in-stream SYSIN.",
+      "key_points": [],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:21-25",
+        "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:36-37"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "jcl",
+      "name": "DBPAUTP0",
+      "path": "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl",
+      "description": "Deletes the previous unload dataset, then runs the IMS unload utility (DFSRRC00 PARM ULU,DFSURGU0) for database DBPAUTP0 into a new sequential dataset.",
+      "key_points": [],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:5-10",
+        "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:13-16",
+        "app/app-authorization-ims-db2-mq/jcl/DBPAUTP0.jcl:25-32"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "jcl",
+      "name": "LOADPADB",
+      "path": "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL",
+      "description": "Runs PAUDBLOD as an IMS BMP under PSB PSBPAUTB to load the pending-authorization database from the root and child flat files.",
+      "key_points": [],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:26-27",
+        "app/app-authorization-ims-db2-mq/jcl/LOADPADB.JCL:36-38"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "jcl",
+      "name": "UNLDGSAM",
+      "path": "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL",
+      "description": "Runs DBUNLDGS in a DLI region under PSB DLIGSAMP to unload the pending-authorization database to the root and child GSAM datasets.",
+      "key_points": [],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:26-27",
+        "app/app-authorization-ims-db2-mq/jcl/UNLDGSAM.JCL:36-43"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "jcl",
+      "name": "UNLDPADB",
+      "path": "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL",
+      "description": "Deletes the previous root and child flat files, then runs PAUDBUNL in a DLI region under PSB PAUTBUNL to unload the pending-authorization database into them.",
+      "key_points": [],
+      "basis": [
+        "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:25-36",
+        "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:38-39",
+        "app/app-authorization-ims-db2-mq/jcl/UNLDPADB.JCL:48-59"
+      ],
+      "written_by": "agent"
+    }
+  ]
+}

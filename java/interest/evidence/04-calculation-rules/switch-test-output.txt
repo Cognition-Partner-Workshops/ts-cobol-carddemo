@@ -1,5 +1,7 @@
-# Switch tests through the job (interest-ticket-verify step 4), revision 01b9e94c6aeab281075d93f1a754b851d7326c7f, 2026-11-15T10:59:47Z
+# Switch tests through the job (interest-ticket-verify step 4), revision 94f76675c4cd27386793b80a65c017b81f57a464, 2026-11-15T11:13:37Z
 # jar java/interest/target/interest.jar built from that revision; comparator tools/parity/compare.py unchanged
+# each run: docker run --rm --network container:$db --user $(id -u):$(id -g) -v "$PWD":/estate -w /estate eclipse-temurin:21-jre java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN <option> parmDate=2022071800 runId=manual-<new> format=fixture inputDir=fixtures/interest/<case>/input outputDir=work/manual/<label>/actual
+# then: python3 tools/parity/compare.py interest <case> --actual work/manual/<label>/actual --label <label> --report work/manual/diff.md
 
 ## i02-tie-half-cent with --interest.policy.rounding=HALF_EVEN
 job exit=0
@@ -63,12 +65,37 @@ interest/i01-baseline [java-zeroskip]: PASS (4 records, 50 fields, 0 differences
 comparator exit=0
 
 ## i01-baseline with --interest.policy.inactiveAccounts=SKIP
-com.carddemo.interest.domain.InterestRunStoppedException: ACTIVE_FLAG_NOT_SUPPLIED (INT-H04): inactiveAccounts=SKIP needs the active flag of the account
-job exit=12
-interest/i01-baseline [java-inactiveskip]: FAIL (4 records, 50 fields, 4 differences)
-comparator exit=1
-| Where | Field | Expected (legacy) | Actual (candidate) |
-| AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS | `(file)` | 2 records | missing |
-| AWS.M2.CARDDEMO.SYSTRAN.G0001V00 | `(file)` | 2 records | missing |
-| SYSOUT INTCALC.STEP15 | `(text)` |  | @@ -1,4 +0,0 @@<br>-START OF EXECUTION OF PROGRAM CBACT04C<br>-000000020010100010000010000{                      <br>-000000020020100010000024000{                      <br>-END OF 
-| rc.json | `(text)` |  | @@ -1,13 +0,0 @@<br>-{<br>- "INTCALC": {<br>-  "maxrc": 0,<br>-  "steps": {<br>-   "STEP05": 0,<br>-   "STEP10": 0,<br>-   "STEP15": 0,<br>-   "STEP20": 0,<br>-   "STEP25": 0,<br>-   "STEP30": 0
+job exit=0
+interest/i01-baseline [java-inactiveskip]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+
+## i02-tie-half-cent with --interest.policy.inactiveAccounts=SKIP
+job exit=0
+interest/i02-tie-half-cent [java-inactiveskip]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+
+## i03-zero-rate-skipped with --interest.policy.inactiveAccounts=SKIP
+job exit=0
+interest/i03-zero-rate-skipped [java-inactiveskip]: PASS (2 records, 25 fields, 0 differences)
+comparator exit=0
+
+## i04-default-group-fallback with --interest.policy.inactiveAccounts=SKIP
+job exit=0
+interest/i04-default-group-fallback [java-inactiveskip]: PASS (2 records, 25 fields, 0 differences)
+comparator exit=0
+
+## i05-multi-category with --interest.policy.inactiveAccounts=SKIP
+job exit=0
+interest/i05-multi-category [java-inactiveskip]: PASS (3 records, 38 fields, 0 differences)
+comparator exit=0
+
+## i06-negative-balance with --interest.policy.inactiveAccounts=SKIP
+job exit=0
+interest/i06-negative-balance [java-inactiveskip]: PASS (2 records, 25 fields, 0 differences)
+comparator exit=0
+
+## i07-nontie-rounding with --interest.policy.inactiveAccounts=SKIP
+job exit=0
+interest/i07-nontie-rounding [java-inactiveskip]: PASS (4 records, 50 fields, 0 differences)
+comparator exit=0
+

@@ -1,7 +1,7 @@
 # Parity report - ticket 04-calculation-rules (java/interest)
 
-Revision of the code: `01b9e94c6aeab281075d93f1a754b851d7326c7f` (branch `demo/05-04-calculation-rules`).
-Produced 2026-11-15T10:59:35Z, comparator `tools/parity/compare.py` unchanged.
+Revision of the code: `94f76675c4cd27386793b80a65c017b81f57a464` (branch `demo/05-04-calculation-rules`, with uncommitted changes).
+Produced 2026-11-15T11:13:37Z, comparator `tools/parity/compare.py` unchanged.
 
 ## Result per case
 
@@ -565,26 +565,32 @@ Checked 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, 0 table snapsh
 
     job_name     |  status   |                   steps                   |                   run_id                    
 -----------------+-----------+-------------------------------------------+---------------------------------------------
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794740373-14227-i07-nontie-rounding
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794740372-14227-i06-negative-balance
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794740370-14227-i05-multi-category
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794740369-14227-i04-default-group-fallback
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794740367-14227-i03-zero-rate-skipped
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794740366-14227-i02-tie-half-cent
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794740364-14227-i01-baseline
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794740361-13954-i07-nontie-rounding
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794740357-13681-i06-negative-balance
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794740354-13375-i05-multi-category
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794740350-13103-i04-default-group-fallback
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794740347-12829-i03-zero-rate-skipped
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794740343-12510-i02-tie-half-cent
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794740340-12193-i01-baseline
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794741215-15131-i07-nontie-rounding
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794741214-15131-i06-negative-balance
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794741212-15131-i05-multi-category
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794741211-15131-i04-default-group-fallback
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794741209-15131-i03-zero-rate-skipped
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794741208-15131-i02-tie-half-cent
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794741206-15131-i01-baseline
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794741203-14856-i07-nontie-rounding
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794741199-14582-i06-negative-balance
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794741196-14254-i05-multi-category
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794741192-13982-i04-default-group-fallback
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794741188-13712-i03-zero-rate-skipped
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794741185-13402-i02-tie-half-cent
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794741181-13129-i01-baseline
 (14 rows)
 
  table_schema |        table_name        
 --------------+--------------------------
+ carddemo     | account
+ carddemo     | card_xref
+ carddemo     | disclosure_group
+ carddemo     | interest_run
+ carddemo     | interest_transaction
+ carddemo     | tran_cat_balance
  carddemo     | transaction_type
  carddemo     | transaction_type_categor
-(2 rows)
+(8 rows)
 
 ```

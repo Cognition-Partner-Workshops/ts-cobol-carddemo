@@ -20,19 +20,26 @@ dependency graph:
 * 05, 06 and 07 allow `java/interest/src/main/java/**/jdbc/**`; 06 and 08 allow `**/batch/**`; 04 and 08 allow `**/domain/**`;
 * 09 and 10 allow the `Makefile` and `java/interest/README.md`.
 
-So only 02 and 03 can share a wave. Order after that follows the longest dependency chain (04 -> 06 -> 08) first.
+Taken literally that gives eight near-serial waves (02+03, 04, 06, 08, 05, 07, 09, 10). That plan was chosen first and
+wave 1 was started with 02 and 03 (`wave-1.py`). Ten minutes later the reviewer changed the choice to **narrowed
+scopes**: for the length of its wave a ticket's Allowed files are cut down to a subset that no other ticket of the
+wave may touch (nothing is widened). 04 was then added to the running wave 1 with its own script (`wave-1b.py`);
+02 and 03 were not disturbed. The plan in force:
 
-| Wave | Ticket | Branch | Depends on | Allowed files (from the ticket; plus `java/interest/evidence/<ticket>/**`) | Why it is in this wave |
+| Wave | Ticket | Branch | Depends on | Allowed files in this wave (plus `java/interest/evidence/<ticket>/**`) | Narrowed from the ticket file |
 |---|---|---|---|---|---|
-| 1 | 02-schema | `demo/05-02-schema` | - | `db/postgres/02-interest.sql`, `db/postgres/tests/**`, `docker-compose.yml` (mount only) | no dependency |
-| 1 | 03-record-codec | `demo/05-03-record-codec` | 01 | `java/interest/src/main/java/**/codec/**`, `src/test/**/codec/**`, `src/main/java/**/file/**` | no file in common with 02 |
-| 2 | 04-calculation-rules | `demo/05-04-calculation-rules` | 01 | `src/main/java/**/domain/**`, `**/policy/**`, `src/test/**` | moved out of wave 1: `src/test/**` contains 03's `src/test/**/codec/**` |
-| 3 | 06-calc-step-jdbc | `demo/05-06-calc-step-jdbc` | 02, 04 | `src/main/java/**/jdbc/**`, `**/batch/**`, `src/test/**` | waits on the schema and 04; overlaps 05 and 07 (`jdbc/**`, tests) |
-| 4 | 08-error-paths | `demo/05-08-error-paths` | 06 | `src/main/java/**/domain/**`, `**/batch/**`, `src/test/**` | waits on 06; overlaps 05 and 07 (tests) |
-| 5 | 05-extract-loader | `demo/05-05-extract-loader` | 02, 03 | `src/main/java/**/load/**`, `**/jdbc/**` (replica writes), `src/test/**/load/**` | ready after wave 1, held back by the overlaps with 04, 06, 08; overlaps 07 (`jdbc/**`) |
-| 6 | 07-dataset-export | `demo/05-07-dataset-export` | 02, 03 | `src/main/java/**/export/**`, `**/jdbc/**` (reads), `src/test/**/export/**` | as 05 |
-| 7 | 09-parity-gate | `demo/05-09-parity-gate` | 05, 06, 07, 08 | `Makefile` (parity-java), `.github/workflows/*.yml` (new steps), `java/interest/README.md`, `src/main/resources/**` | final gate, alone |
-| 8 | 10-data-move-kit | `demo/05-10-data-move-kit` | 05, 07 | `src/main/java/**/recon/**`, `src/test/**/recon/**`, `java/interest/README.md`, `Makefile` (recon-java, sidebyside-java) | final gate, alone (shares `Makefile` and README with 09) |
+| 1 | 02-schema | `demo/05-02-schema` | - | `db/postgres/02-interest.sql`, `db/postgres/tests/**`, `docker-compose.yml` (mount only) | - |
+| 1 | 03-record-codec | `demo/05-03-record-codec` | 01 | `java/interest/src/main/java/**/codec/**`, `src/test/**/codec/**`, `src/main/java/**/file/**` | - |
+| 1 | 04-calculation-rules | `demo/05-04-calculation-rules` | 01 | `src/main/java/**/domain/**`, `**/policy/**`, `src/test/**` except `src/test/**/codec/**` | tests: minus 03's codec tests |
+| 2 | 05-extract-loader | `demo/05-05-extract-loader` | 02, 03 | `src/main/java/**/load/**`, `**/jdbc/load/**`, `src/test/**/load/**` | `jdbc/**` -> `jdbc/load/**` |
+| 2 | 06-calc-step-jdbc | `demo/05-06-calc-step-jdbc` | 02, 04 | `src/main/java/**/jdbc/**` except `jdbc/load/**`, `jdbc/export/**`; `**/batch/**`; `src/test/**` except `**/load/**`, `**/export/**`, `**/codec/**` | `jdbc/**` and tests minus 05's and 07's parts |
+| 2 | 07-dataset-export | `demo/05-07-dataset-export` | 02, 03 | `src/main/java/**/export/**`, `**/jdbc/export/**`, `src/test/**/export/**` | `jdbc/**` -> `jdbc/export/**` |
+| 3 | 08-error-paths | `demo/05-08-error-paths` | 06 | `src/main/java/**/domain/**`, `**/batch/**`, `src/test/**` | - (alone) |
+| 4 | 09-parity-gate | `demo/05-09-parity-gate` | 05, 06, 07, 08 | `Makefile` (parity-java), `.github/workflows/*.yml` (new steps), `java/interest/README.md`, `src/main/resources/**` | - (final gate, alone) |
+| 5 | 10-data-move-kit | `demo/05-10-data-move-kit` | 05, 07 | `src/main/java/**/recon/**`, `src/test/**/recon/**`, `java/interest/README.md`, `Makefile` (recon-java, sidebyside-java) | - (final gate, alone; shares `Makefile` and README with 09) |
+
+Wave 2 starts only after the schema ticket (02) has passed the wave 1 combined check. A consequence of the narrowing:
+inside wave 2, 05 and 07 cannot use 06's JDBC classes; a child that needs one stops and reports.
 
 Frozen for every child, for the whole wave: `app/**`, `fixtures/**`, `tools/**` (comparator), `.agents/skills/**`,
 `modernization/**`, `java/interest/pom.xml` (build file), `java/interest/src/main/java/**/port/**` (FI-3), the

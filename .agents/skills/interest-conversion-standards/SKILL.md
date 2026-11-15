@@ -175,62 +175,62 @@ The ticket session copies this list into its pull request and marks each line `P
 
 Standards:
 
-- [ ] S1.1 Sources used in order; recorded output decides - PASS / FAIL
-- [ ] S1.2 Rule/code disagreements reproduced as coded and reported - PASS / FAIL
-- [ ] S2.1 Designed from rules; no method per paragraph - PASS / FAIL
-- [ ] S2.2 Immutable business records; copybook names only at the mapping - PASS / FAIL
-- [ ] S2.3 Spring Batch shape, transaction and restart boundaries of the architecture - PASS / FAIL
-- [ ] S2.4 Types and return values, no flags or result codes - PASS / FAIL
-- [ ] S2.5 Constructor injection; no mutable static state - PASS / FAIL
-- [ ] S3.1 `BigDecimal` with data-map precision and scale; no `double`/`float` - PASS / FAIL
-- [ ] S3.2 Formula: exact product, one division, mode from the policy - PASS / FAIL
-- [ ] S3.3 Rounding mode named on every other arithmetic step - PASS / FAIL
-- [ ] S3.4 Range check before store; overflow goes to the policy - PASS / FAIL
-- [ ] S3.5 Encodings only in `record-codec` - PASS / FAIL
-- [ ] S3.6 Width, padding and FILLER only in codec and schema - PASS / FAIL
-- [ ] S3.7 Code page and key order each in one place - PASS / FAIL
-- [ ] S3.8 Clock and run parameters injected; `parmDate` is text - PASS / FAIL
-- [ ] S4.1 Every PRESENT behaviour touched has its test; new ones reported - PASS / FAIL
-- [ ] S5.1 Each quirk/open decision in one named place behind its switch, rule id in names - PASS / FAIL
-- [ ] S5.2 Nothing fixed, tidied or added without a rule id - PASS / FAIL
-- [ ] S6.1 Status and message mapping as in section 6 - PASS / FAIL
-- [ ] S6.2 One stop exception, one exit-code constant, no skip or retry - PASS / FAIL
-- [ ] S6.3 Restart as in the architecture - PASS / FAIL
-- [ ] S6.4 Outputs in the recorded format; failed run leaves no SYSTRAN - PASS / FAIL
-- [ ] S6.5 Run log byte for byte; no account data in the application log - PASS / FAIL
-- [ ] S7.1 A test per rule id, named for it - PASS / FAIL
-- [ ] S7.2 Fixture and edge cases of each rule covered - PASS / FAIL
-- [ ] S7.3 Integration tests on PostgreSQL 15 in a container - PASS / FAIL
-- [ ] S7.4 No assertion against the code's own output - PASS / FAIL
-- [ ] S8.1 No edit under `app/`, `fixtures/`, `tools/parity` - PASS / FAIL
-- [ ] S8.2 No golden file re-recorded - PASS / FAIL
-- [ ] S8.3 Every new dependency explained in the pull request - PASS / FAIL
-- [ ] S8.4 Frozen shared interfaces unchanged - PASS / FAIL
-- [ ] S8.5 Synthetic data only - PASS / FAIL
+- [ ] S1.1 Sources used in order; recorded output decides - PASS / FAIL / N/A
+- [ ] S1.2 Rule/code disagreements reproduced as coded and reported - PASS / FAIL / N/A
+- [ ] S2.1 Designed from rules; no method per paragraph - PASS / FAIL / N/A
+- [ ] S2.2 Immutable business records; copybook names only at the mapping - PASS / FAIL / N/A
+- [ ] S2.3 Spring Batch shape, transaction and restart boundaries of the architecture - PASS / FAIL / N/A
+- [ ] S2.4 Types and return values, no flags or result codes - PASS / FAIL / N/A
+- [ ] S2.5 Constructor injection; no mutable static state - PASS / FAIL / N/A
+- [ ] S3.1 `BigDecimal` with data-map precision and scale; no `double`/`float` - PASS / FAIL / N/A
+- [ ] S3.2 Formula: exact product, one division, mode from the policy - PASS / FAIL / N/A
+- [ ] S3.3 Rounding mode named on every other arithmetic step - PASS / FAIL / N/A
+- [ ] S3.4 Range check before store; overflow goes to the policy - PASS / FAIL / N/A
+- [ ] S3.5 Encodings only in `record-codec` - PASS / FAIL / N/A
+- [ ] S3.6 Width, padding and FILLER only in codec and schema - PASS / FAIL / N/A
+- [ ] S3.7 Code page and key order each in one place - PASS / FAIL / N/A
+- [ ] S3.8 Clock and run parameters injected; `parmDate` is text - PASS / FAIL / N/A
+- [ ] S4.1 Every PRESENT behaviour touched has its test; new ones reported - PASS / FAIL / N/A
+- [ ] S5.1 Each quirk/open decision in one named place behind its switch, rule id in names - PASS / FAIL / N/A
+- [ ] S5.2 Nothing fixed, tidied or added without a rule id - PASS / FAIL / N/A
+- [ ] S6.1 Status and message mapping as in section 6 - PASS / FAIL / N/A
+- [ ] S6.2 One stop exception, one exit-code constant, no skip or retry - PASS / FAIL / N/A
+- [ ] S6.3 Restart as in the architecture - PASS / FAIL / N/A
+- [ ] S6.4 Outputs in the recorded format; failed run leaves no SYSTRAN - PASS / FAIL / N/A
+- [ ] S6.5 Run log byte for byte; no account data in the application log - PASS / FAIL / N/A
+- [ ] S7.1 A test per rule id, named for it - PASS / FAIL / N/A
+- [ ] S7.2 Fixture and edge cases of each rule covered - PASS / FAIL / N/A
+- [ ] S7.3 Integration tests on PostgreSQL 15 in a container - PASS / FAIL / N/A
+- [ ] S7.4 No assertion against the code's own output - PASS / FAIL / N/A
+- [ ] S8.1 No edit under `app/`, `fixtures/`, `tools/parity` - PASS / FAIL / N/A
+- [ ] S8.2 No golden file re-recorded - PASS / FAIL / N/A
+- [ ] S8.3 Every new dependency explained in the pull request - PASS / FAIL / N/A
+- [ ] S8.4 Frozen shared interfaces unchanged - PASS / FAIL / N/A
+- [ ] S8.5 Synthetic data only - PASS / FAIL / N/A
 
 Behaviours PRESENT in section 4 (k, n and v are ABSENT and have no line):
 
-- [ ] a Truncation without ROUNDED - PASS / FAIL
-- [ ] b High-order digit loss (range check, STOP) - PASS / FAIL
-- [ ] c Intermediate precision of the COMPUTE - PASS / FAIL
-- [ ] d Zoned overpunch signs - PASS / FAIL
-- [ ] e Binary items stay out of data and domain - PASS / FAIL
-- [ ] f Non-numeric data rejected at the boundary - PASS / FAIL
-- [ ] g Fixed width, padding, STRING - PASS / FAIL
-- [ ] h Code page and collating order - PASS / FAIL
-- [ ] i REDEFINES replaced by formatter and function - PASS / FAIL
-- [ ] j FILLER and record length round trip - PASS / FAIL
-- [ ] l No state carried between accounts except the counter - PASS / FAIL
-- [ ] m Control break and end of file (INT-Q04, INT-T09) - PASS / FAIL
-- [ ] o Level-88 result codes replaced by types - PASS / FAIL
-- [ ] p Indexed access through the ports; several cards to the policy - PASS / FAIL
-- [ ] q File statuses and abend - PASS / FAIL
-- [ ] r PARM, generation, disposition, return code - PASS / FAIL
-- [ ] s DISPLAY output in the run log - PASS / FAIL
-- [ ] t PARM text against the clock - PASS / FAIL
-- [ ] u Timestamp format and hundredths - PASS / FAIL
-- [ ] w PARM length checked - PASS / FAIL
-- [ ] x No stale rate after a failed lookup - PASS / FAIL
-- [ ] y Typed fields where COBOL mixed text and numbers - PASS / FAIL
-- [ ] z Abend ends the step; stub output not reproduced - PASS / FAIL
-- [ ] aa Dead and empty code not ported - PASS / FAIL
+- [ ] a Truncation without ROUNDED - PASS / FAIL / N/A
+- [ ] b High-order digit loss (range check, STOP) - PASS / FAIL / N/A
+- [ ] c Intermediate precision of the COMPUTE - PASS / FAIL / N/A
+- [ ] d Zoned overpunch signs - PASS / FAIL / N/A
+- [ ] e Binary items stay out of data and domain - PASS / FAIL / N/A
+- [ ] f Non-numeric data rejected at the boundary - PASS / FAIL / N/A
+- [ ] g Fixed width, padding, STRING - PASS / FAIL / N/A
+- [ ] h Code page and collating order - PASS / FAIL / N/A
+- [ ] i REDEFINES replaced by formatter and function - PASS / FAIL / N/A
+- [ ] j FILLER and record length round trip - PASS / FAIL / N/A
+- [ ] l No state carried between accounts except the counter - PASS / FAIL / N/A
+- [ ] m Control break and end of file (INT-Q04, INT-T09) - PASS / FAIL / N/A
+- [ ] o Level-88 result codes replaced by types - PASS / FAIL / N/A
+- [ ] p Indexed access through the ports; several cards to the policy - PASS / FAIL / N/A
+- [ ] q File statuses and abend - PASS / FAIL / N/A
+- [ ] r PARM, generation, disposition, return code - PASS / FAIL / N/A
+- [ ] s DISPLAY output in the run log - PASS / FAIL / N/A
+- [ ] t PARM text against the clock - PASS / FAIL / N/A
+- [ ] u Timestamp format and hundredths - PASS / FAIL / N/A
+- [ ] w PARM length checked - PASS / FAIL / N/A
+- [ ] x No stale rate after a failed lookup - PASS / FAIL / N/A
+- [ ] y Typed fields where COBOL mixed text and numbers - PASS / FAIL / N/A
+- [ ] z Abend ends the step; stub output not reproduced - PASS / FAIL / N/A
+- [ ] aa Dead and empty code not ported - PASS / FAIL / N/A

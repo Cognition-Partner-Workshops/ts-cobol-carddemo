@@ -102,6 +102,15 @@ section of `.agents/skills/interest-conversion-standards/SKILL.md` and stops the
   `spring-boot-starter-test`, no new dependency.
 * **Reported by:** ticket 04-calculation-rules (`PolicySwitchFixtureTest`; 63 of 63 pass with JsonPath).
 
+## P10. The expectation files give the SYSOUT record echo without trailing spaces
+
+* **Symptom.** `run log ==> expected "000000020010100010000010000{" but was "000000020010100010000010000{                      "`.
+* **Cause.** `run.sysout.value` in `modernization/rules/interest/expected/<case>.json` is trimmed; the recorded
+  SYSOUT has the 50-byte record.
+* **Fix.** Compare with the expectation file after `stripTrailing`; compare byte for byte only with
+  `fixtures/interest/<case>/expected/sysout`.
+* **Reported by:** ticket 04-calculation-rules (`PolicySwitchFixtureTest`).
+
 ## Reported by the pilot, not reproduced
 
 None. All seven failures in section 6 of `java/interest/evidence/PILOT-REPORT.md` are above.

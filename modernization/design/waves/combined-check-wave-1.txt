@@ -1,0 +1,109 @@
+# Combined check, wave 1, branch demo/05b-integration at 57561c6c553ed072d80a9a6cd0ce6c73172be88f
+# 2026-11-15T11:06:15Z, openjdk version "21.0.13.0.3" 2026-10-24, Docker 29.9.2
+# cases expected to pass: i01-baseline i02-tie-half-cent i03-zero-rate-skipped i04-default-group-fallback i05-multi-category i06-negative-balance i07-nontie-rounding 
+
+## make reset && make up && make build
+ Network ts-cobol-carddemo_default Removing 
+ Volume ts-cobol-carddemo_carddemo-db Removed 
+ Network ts-cobol-carddemo_default Removed 
+ Container ts-cobol-carddemo-estate-1 Waiting 
+ Container ts-cobol-carddemo-estate-1 Healthy 
+ Container ts-cobol-carddemo-db-1 Healthy 
+COBTUPDT: precompiled (ocesql) and compiled
+DSNEXIT: precompiled (ocesql) and compiled
+DSNRUN: precompiled (ocesql) and compiled
+# exit code 0
+
+## mvn -B -f java/interest/pom.xml clean verify
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 s -- in com.carddemo.interest.batch.InterestJobParametersTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.074 s -- in com.carddemo.interest.file.FileRunWorkspaceTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in com.carddemo.interest.codec.RecordLayoutTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 s -- in com.carddemo.interest.codec.RecordCodecTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.carddemo.interest.codec.CopybookTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in com.carddemo.interest.codec.FileAdapterCodecTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.carddemo.interest.codec.RecordFormatTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.035 s -- in com.carddemo.interest.codec.FixtureRoundTripTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.094 s -- in com.carddemo.interest.policy.InterestPolicyBindingTest
+[INFO] Tests run: 63, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.222 s -- in com.carddemo.interest.policy.PolicySwitchFixtureTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.carddemo.interest.domain.InterestFormulaTest
+[INFO] Tests run: 38, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in com.carddemo.interest.domain.InterestCalculatorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.carddemo.interest.domain.RunTimestampTest
+[INFO] Tests run: 163, Failures: 0, Errors: 0, Skipped: 0
+2026-11-15T11:06:42.787Z ERROR 68472 --- [interest] [           main] o.s.batch.core.step.AbstractStep         : Encountered an error executing step calcInterestStep in job interestCalcJob
+2026-11-15T11:06:42.790Z ERROR 68472 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run 2c28e90b-0e24-481f-bc9a-eec6948ec230 step calcInterestStep stopped before any work
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.770 s -- in com.carddemo.interest.batch.InterestCalcJobIT
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+# exit code 0
+
+## db/postgres/tests (schema assertions, db service)
+PASS  rejects: a negative xref_acct_id
+PASS  rejects: tran_cat_bal = 1000000000.00
+PASS  rejects: trancat_cd = 10000 (five digits)
+PASS  order: ORDER BY trancat_acct_id, trancat_type_cd, trancat_cd gives 01, 1A, A1, B0, a1 (COLLATE "C", E6)
+43 assertions, 0 failed
+# db/postgres/tests/02-interest-assertions.sql exit code 0
+
+## make parity-java (every case under fixtures/interest, tools/parity/compare.py)
+docker compose up -d --wait db
+ Container ts-cobol-carddemo-db-1 Running 
+ Container ts-cobol-carddemo-db-1 Waiting 
+ Container ts-cobol-carddemo-db-1 Healthy 
+mvn -q -f java/interest/pom.xml -DskipTests package
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+report: work/parity-java/report.md
+# exit code 0
+
+## per case: python3 tools/parity/compare.py interest <case> --actual work/parity-java/<case>/actual --label java
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+  exit 0
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+
+## make parity (legacy lane)
+posting/p01-baseline-mixed [legacy rerun]: PASS (23 records, 92 fields, 0 differences)
+posting/p02-invalid-card [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p03-account-missing [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p04-overlimit-reject [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p05-expired-account [legacy rerun]: PASS (14 records, 60 fields, 0 differences)
+posting/p06-credits-new-category [legacy rerun]: PASS (18 records, 67 fields, 0 differences)
+posting/p07-empty-day [legacy rerun]: PASS (2 records, 16 fields, 0 differences)
+interest/i01-baseline [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i03-zero-rate-skipped [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i05-multi-category [legacy rerun]: PASS (3 records, 38 fields, 0 differences)
+interest/i06-negative-balance [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i07-nontie-rounding [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+trantype-update/t01-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t02-update [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t03-delete [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t04-comments [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t05-delete-missing [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t06-duplicate-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t07-mixed-batch [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d01-update-then-apply [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d02-delete-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d03-bad-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+report: work/parity/report.md
+# exit code 0
+
+## git status --short (must be empty apart from this file)
+
+# COMBINED CHECK: PASS

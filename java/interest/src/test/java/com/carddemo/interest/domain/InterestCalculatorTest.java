@@ -214,7 +214,9 @@ class InterestCalculatorTest {
 
         assertEquals(StopReason.ACCOUNT_MISSING, stop.reason());
         // CBACT04C:193 comes before 202-203: the balance is displayed before the account is looked up
-        assertEquals(List.of("image of 2001/01/1"), runLogLines);
+        // ... and the legacy lines of the stop follow it (CBACT04C:375, 386, 643-646, 629; ticket 08)
+        assertEquals(List.of("image of 2001/01/1", "ACCOUNT NOT FOUND: 00000002001", "ERROR READING ACCOUNT FILE",
+                "FILE STATUS IS: NNNN0023", "ABENDING PROGRAM"), runLogLines);
         assertTrue(!stop.getMessage().contains("2001"), "no account id in a message for the application log");
     }
 
@@ -269,7 +271,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ04_lastAccountUpdatedWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(Rounding.TRUNCATE, IdPrefix.PARM, TimestampSource.RUN_CLOCK, true, null, null, null);
+        InterestPolicy policy = new InterestPolicy(Rounding.TRUNCATE, IdPrefix.PARM, TimestampSource.RUN_CLOCK, true, null, null, null, null, null);
 
         // 2400.00 + 37.00 = 2437.00
         assertEquals(Optional.of(new BigDecimal("2437.00")),
@@ -293,7 +295,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ02_runDatePrefixWhenSwitched() {
-        InterestPolicy policy = new InterestPolicy(Rounding.TRUNCATE, IdPrefix.RUN_DATE, TimestampSource.RUN_CLOCK, false, null, null, null);
+        InterestPolicy policy = new InterestPolicy(Rounding.TRUNCATE, IdPrefix.RUN_DATE, TimestampSource.RUN_CLOCK, false, null, null, null, null, null);
 
         // date of the frozen clock, 2022-07-05, followed by 00, then the counter
         assertEquals("2022070500000001",
@@ -345,7 +347,7 @@ class InterestCalculatorTest {
 
     @Test
     void intQ03_defaultIsRunClock() {
-        assertEquals(TimestampSource.RUN_CLOCK, new InterestPolicy(null, null, null, false, null, null, null).timestampSource());
+        assertEquals(TimestampSource.RUN_CLOCK, new InterestPolicy(null, null, null, false, null, null, null, null, null).timestampSource());
         assertEquals(false, InterestPolicy.legacy().intQ03StampsCycleDate());
     }
 }

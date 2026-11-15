@@ -1,7 +1,9 @@
 package com.carddemo.interest.batch;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
@@ -15,20 +17,29 @@ import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStream;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.carddemo.interest.domain.Account;
 import com.carddemo.interest.domain.AccountBalances;
 import com.carddemo.interest.domain.AccountInterest;
 import com.carddemo.interest.domain.InterestCalculator;
+import com.carddemo.interest.domain.LegacyFile;
 import com.carddemo.interest.domain.RunLogLines;
+import com.carddemo.interest.domain.RunStop;
+import com.carddemo.interest.domain.StopReason;
 import com.carddemo.interest.domain.TransactionCounter;
 import com.carddemo.interest.jdbc.InterestRunTable;
+import com.carddemo.interest.jdbc.JdbcAccessFailure;
 import com.carddemo.interest.jdbc.JdbcAccountStore;
 import com.carddemo.interest.jdbc.JdbcBalanceSource;
 import com.carddemo.interest.jdbc.JdbcCardLookup;
 import com.carddemo.interest.jdbc.JdbcRateLookup;
 import com.carddemo.interest.jdbc.JdbcTransactionSink;
 import com.carddemo.interest.policy.InterestPolicy;
+import com.carddemo.interest.port.AccountStore;
+import com.carddemo.interest.port.CardLookup;
+import com.carddemo.interest.port.RateLookup;
 
 /**
  * The state of one execution of calcInterestStep on PostgreSQL (ticket 06): the JDBC adapters of
@@ -68,6 +79,7 @@ public class JdbcCalcInterestRun implements StepExecutionListener, ItemStream {
     private long interestRunId;
     private JdbcBalanceSource balances;
     private JdbcAccountStore accounts;
+    private AccountStore accountUpdates;
     private JdbcTransactionSink transactions;
     private RunLogFile runLog;
     private TransactionCounter counter;
@@ -101,8 +113,9 @@ public class JdbcCalcInterestRun implements StepExecutionListener, ItemStream {
     public void open(ExecutionContext restartState) {
         boolean restart = restartState.containsKey(RUN_LOG_LENGTH);
         lastAccountId = restartState.getLong(LAST_ACCOUNT, BEFORE_THE_FIRST_ACCOUNT);
-        counter = counterAt(restartState.getInt(COUNTER, 0));
+        counter = new TransactionCounter(restartState.getInt(COUNTER, 0));
         accounts = new JdbcAccountStore(jdbc, restartState.getInt(ACCOUNTS_UPDATED, 0));
+        accountUpdates = stoppingOnFailure(accounts);
         transactions = new JdbcTransactionSink(jdbc, interestRunId, restartState.getInt(SEQ_NO, 0));
         if (restart) {
             runLog = RunLogFile.cutBackTo(outputDir, restartState.getLong(RUN_LOG_LENGTH));
@@ -110,26 +123,68 @@ public class JdbcCalcInterestRun implements StepExecutionListener, ItemStream {
             runLog = RunLogFile.create(outputDir);
             runLog.line(RunLogLines.START);
         }
-        balances = JdbcBalanceSource.openAfter(dataSource, lastAccountId);
-        calculator = new InterestCalculator(accounts, new JdbcCardLookup(jdbc), new JdbcRateLookup(jdbc), runLog,
-                policy, clock, counter, parmDate);
+        try {
+            balances = JdbcBalanceSource.openAfter(dataSource, lastAccountId);
+        } catch (JdbcAccessFailure e) {
+            throw RunStop.openFailed(runLog, LegacyFile.BALANCES, "the balances cannot be reached", e);
+        }
+        calculator = new InterestCalculator(accountUpdates, stoppingOnFailure(new JdbcCardLookup(jdbc)),
+                stoppingOnFailure(new JdbcRateLookup(jdbc)), runLog, policy, clock, counter, parmDate);
     }
 
     /**
-     * INT-Q02: the counter continues where the last commit left it. TransactionCounter (domain,
-     * not changed by ticket 06) starts at zero and has no other way in, so it is advanced here.
+     * INT-R08 (standards S6.1): a database failure of a lookup stops the run with the legacy message
+     * of the read it replaces; its own cause goes to the application log with the exception.
      */
-    private static TransactionCounter counterAt(int issued) {
-        TransactionCounter counter = new TransactionCounter();
-        while (counter.issued() < issued) {
-            counter.next();
-        }
-        return counter;
+    private AccountStore stoppingOnFailure(AccountStore store) {
+        return new AccountStore() {
+            @Override
+            public Optional<Account> find(long accountId) {
+                try {
+                    return store.find(accountId);
+                } catch (DataAccessException e) {
+                    throw RunStop.of(runLog, StopReason.READ_ACCOUNT, "the accounts cannot be read", e);
+                }
+            }
+
+            @Override
+            public void postInterest(long accountId, BigDecimal newBalance) {
+                try {
+                    store.postInterest(accountId, newBalance);
+                } catch (DataAccessException e) {
+                    throw RunStop.of(runLog, StopReason.UPDATE_ACCOUNT, "an account cannot be updated", e);
+                }
+            }
+        };
+    }
+
+    private CardLookup stoppingOnFailure(CardLookup cards) {
+        return accountId -> {
+            try {
+                return cards.cardNumbersOf(accountId);
+            } catch (DataAccessException e) {
+                throw RunStop.of(runLog, StopReason.READ_CARD, "the card cross-reference cannot be read", e);
+            }
+        };
+    }
+
+    private RateLookup stoppingOnFailure(RateLookup rates) {
+        return (groupId, typeCode, categoryCode) -> {
+            try {
+                return rates.findRate(groupId, typeCode, categoryCode);
+            } catch (DataAccessException e) {
+                throw RunStop.of(runLog, StopReason.READ_RATE, "the rates cannot be read", e);
+            }
+        };
     }
 
     /** Reader: one item is one account with all its balances; null ends the input. */
     public AccountBalances read() {
-        return balances.nextAccount().orElse(null);
+        try {
+            return balances.nextAccount().orElse(null);
+        } catch (JdbcAccessFailure e) {
+            throw RunStop.of(runLog, StopReason.READ_BALANCES, "the balances cannot be read", e);
+        }
     }
 
     public AccountInterest process(AccountBalances item) {
@@ -141,8 +196,12 @@ public class JdbcCalcInterestRun implements StepExecutionListener, ItemStream {
     public void write(Chunk<? extends AccountInterest> chunk) {
         for (AccountInterest result : chunk) {
             accountInWork = result.accountId();
-            result.transactions().forEach(transactions::write);
-            result.newBalance().ifPresent(balance -> accounts.postInterest(result.accountId(), balance));
+            try {
+                result.transactions().forEach(transactions::write);
+            } catch (DataAccessException e) {
+                throw RunStop.of(runLog, StopReason.WRITE_TRANSACTION, "a transaction cannot be written", e);
+            }
+            result.newBalance().ifPresent(balance -> accountUpdates.postInterest(result.accountId(), balance));
             lastAccountId = result.accountId();
         }
         accountInWork = null;

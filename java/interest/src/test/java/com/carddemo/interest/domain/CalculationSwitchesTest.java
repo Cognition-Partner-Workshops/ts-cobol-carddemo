@@ -113,7 +113,7 @@ class CalculationSwitchesTest {
 
     @Test
     void intQ05_defaultIsCharge() {
-        assertEquals(NegativeBalance.CHARGE, new InterestPolicy(null, null, null, false, null, null, null).negativeBalance());
+        assertEquals(NegativeBalance.CHARGE, new InterestPolicy(null, null, null, false, null, null, null, null, null).negativeBalance());
         assertTrue(InterestPolicy.legacy().intQ05ChargesCreditBalance());
     }
 
@@ -140,7 +140,7 @@ class CalculationSwitchesTest {
 
     @Test
     void intQ06_defaultIsWrite() {
-        assertEquals(ZeroInterest.WRITE, new InterestPolicy(null, null, null, false, null, null, null).zeroInterest());
+        assertEquals(ZeroInterest.WRITE, new InterestPolicy(null, null, null, false, null, null, null, null, null).zeroInterest());
         assertTrue(InterestPolicy.legacy().intQ06WritesZeroInterest());
     }
 
@@ -173,7 +173,7 @@ class CalculationSwitchesTest {
 
     @Test
     void intH04_defaultIsCharge() {
-        assertEquals(InactiveAccounts.CHARGE, new InterestPolicy(null, null, null, false, null, null, null).inactiveAccounts());
+        assertEquals(InactiveAccounts.CHARGE, new InterestPolicy(null, null, null, false, null, null, null, null, null).inactiveAccounts());
         assertTrue(InterestPolicy.legacy().intH04ChargesInactiveAccounts());
         assertTrue(new Account(1L, BigDecimal.ZERO, "GOLD", "Y").isActive());
         assertFalse(new Account(1L, BigDecimal.ZERO, "GOLD", "N").isActive());

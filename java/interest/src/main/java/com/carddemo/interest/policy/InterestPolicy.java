@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * The switches of the open decisions (architecture.md section 8, FI-5). The default of each is the
  * legacy behaviour. This is the only class that reads interest.policy.*. It carries the decisions
- * of the calculation: INT-Q01 to INT-Q06 and INT-H04 (tickets 01 and 04).
+ * of the calculation: INT-Q01 to INT-Q06, INT-H03, INT-H04 and INT-H05 (tickets 01, 04 and 08).
  */
 @ConfigurationProperties("interest.policy")
 public record InterestPolicy(
@@ -19,7 +19,9 @@ public record InterestPolicy(
         boolean updateLastAccount,
         NegativeBalance negativeBalance,
         ZeroInterest zeroInterest,
-        InactiveAccounts inactiveAccounts) {
+        InactiveAccounts inactiveAccounts,
+        MultiCard multiCard,
+        Overflow overflow) {
 
     /** INT-Q01. */
     public enum Rounding { TRUNCATE, HALF_UP, HALF_EVEN }
@@ -39,6 +41,12 @@ public record InterestPolicy(
     /** INT-H04. */
     public enum InactiveAccounts { CHARGE, SKIP }
 
+    /** INT-H03. */
+    public enum MultiCard { STOP, FIRST_BY_CARD_NUM }
+
+    /** INT-H05. */
+    public enum Overflow { STOP, WIDEN }
+
     private static final DateTimeFormatter RUN_DATE_PREFIX = DateTimeFormatter.ofPattern("yyyyMMdd'00'");
 
     public InterestPolicy {
@@ -48,12 +56,18 @@ public record InterestPolicy(
         negativeBalance = negativeBalance == null ? NegativeBalance.CHARGE : negativeBalance;
         zeroInterest = zeroInterest == null ? ZeroInterest.WRITE : zeroInterest;
         inactiveAccounts = inactiveAccounts == null ? InactiveAccounts.CHARGE : inactiveAccounts;
+        multiCard = multiCard == null ? MultiCard.STOP : multiCard;
+        overflow = overflow == null ? Overflow.STOP : overflow;
+        if (overflow == Overflow.WIDEN) {
+            throw new IllegalArgumentException("interest.policy.overflow=WIDEN (INT-H05) is not built: it needs wider "
+                    + "fields than the frozen record layouts (FI-1) and schema (FI-4) have");
+        }
     }
 
     /** The legacy behaviour of every switch. */
     public static InterestPolicy legacy() {
         return new InterestPolicy(Rounding.TRUNCATE, IdPrefix.PARM, TimestampSource.RUN_CLOCK, false,
-                NegativeBalance.CHARGE, ZeroInterest.WRITE, InactiveAccounts.CHARGE);
+                NegativeBalance.CHARGE, ZeroInterest.WRITE, InactiveAccounts.CHARGE, MultiCard.STOP, Overflow.STOP);
     }
 
     /**
@@ -118,5 +132,23 @@ public record InterestPolicy(
      */
     public boolean intH04ChargesInactiveAccounts() {
         return inactiveAccounts == InactiveAccounts.CHARGE;
+    }
+
+    /**
+     * INT-H03 (CBACT04C:34-39, 393-404; G08): the source does not determine which card an account
+     * with several cards gets, or whether the run stops. STOP (proposed default) stops the run;
+     * FIRST_BY_CARD_NUM takes the lowest card number.
+     */
+    public boolean intH03StopsOnSeveralCards() {
+        return multiCard == MultiCard.STOP;
+    }
+
+    /**
+     * INT-H05 (CBACT04C:464-467, 474): the source does not determine what an amount or counter
+     * larger than its field becomes. STOP (proposed default) stops the run; nothing is cut.
+     * WIDEN is refused when the policy is built.
+     */
+    public boolean intH05StopsOnOverflow() {
+        return overflow == Overflow.STOP;
     }
 }

@@ -71,12 +71,24 @@ public final class InterestCalculator {
             }
             Optional<BigDecimal> interest = interestOn(account, read.balance());
             if (interest.isPresent()) {
-                totalInterest = totalInterest.add(interest.get()).setScale(2, RoundingMode.UNNECESSARY);
+                totalInterest = stored(totalInterest.add(interest.get()).setScale(2, RoundingMode.UNNECESSARY),
+                        FieldRange.INTEREST_INTEGER_DIGITS, "the interest total of an account");
                 transactions.add(interestTransaction(account, cardNumber, interest.get()));
             }
         }
 
         return new AccountInterest(item.accountId(), transactions, newBalanceAtBreak(item, account, totalInterest));
+    }
+
+    /**
+     * INT-H05 (standards S3.4): a value is checked against its field before it is stored. As
+     * proposed the run stops; the value is never cut to fit.
+     */
+    private BigDecimal stored(BigDecimal amount, int integerDigits, String what) {
+        if (!FieldRange.fits(amount, integerDigits) && policy.intH05StopsOnOverflow()) {
+            throw RunStop.of(runLog, StopReason.OVERFLOW, what + " does not fit its field");
+        }
+        return amount;
     }
 
     /** INT-H04: as coded every account with a balance is charged, whatever its active flag says. */
@@ -97,8 +109,9 @@ public final class InterestCalculator {
         if (balance.balance().signum() < 0 && !policy.intQ05ChargesCreditBalance()) {
             return Optional.empty();
         }
-        BigDecimal interest = InterestFormula.monthlyInterest(
-                balance.balance(), yearlyRate, policy.intQ01InterestRoundingMode());
+        BigDecimal interest = stored(InterestFormula.monthlyInterest(
+                balance.balance(), yearlyRate, policy.intQ01InterestRoundingMode()),
+                FieldRange.INTEREST_INTEGER_DIGITS, "the interest on a balance");
         if (interest.signum() == 0 && !policy.intQ06WritesZeroInterest()) {
             return Optional.empty();
         }
@@ -118,7 +131,7 @@ public final class InterestCalculator {
         runLog.line(RunLogLines.GROUP_RATE_MISSING);
         runLog.line(RunLogLines.TRY_DEFAULT_GROUP);
         return rates.findRate(DEFAULT_GROUP, balance.typeCode(), balance.categoryCode())
-                .orElseThrow(() -> new InterestRunStoppedException(StopReason.DEFAULT_RATE_MISSING,
+                .orElseThrow(() -> RunStop.of(runLog, StopReason.DEFAULT_RATE_MISSING,
                         "neither the account's group nor the group DEFAULT has a rate for a balance"));
     }
 
@@ -131,28 +144,37 @@ public final class InterestCalculator {
                 || (item.endsInput() && !policy.intQ04UpdatesAccountEndingInput())) {
             return Optional.empty();
         }
-        return Optional.of(account.currentBalance().add(totalInterest).setScale(2, RoundingMode.UNNECESSARY));
+        return Optional.of(stored(account.currentBalance().add(totalInterest).setScale(2, RoundingMode.UNNECESSARY),
+                FieldRange.ACCOUNT_BALANCE_INTEGER_DIGITS, "the new balance of an account"));
     }
 
     private Account accountOf(long accountId) {
-        return accounts.find(accountId).orElseThrow(() -> new InterestRunStoppedException(
-                StopReason.ACCOUNT_MISSING, "a balance names an account that is not on the account file"));
+        return accounts.find(accountId).orElseThrow(() -> RunStop.recordMissing(runLog, StopReason.ACCOUNT_MISSING,
+                accountId, "a balance names an account that is not on the account file"));
     }
 
-    /** INT-R06: the card number of the account. Several cards are INT-H03: the run stops (proposed default). */
+    /**
+     * INT-R06: the card number of the account. INT-H03: with several cards the run stops (proposed
+     * default) or, when switched, the first in card-number order is taken - the port returns them
+     * in that order.
+     */
     private String cardNumberOf(long accountId) {
         List<String> cardNumbers = cards.cardNumbersOf(accountId);
         if (cardNumbers.isEmpty()) {
-            throw new InterestRunStoppedException(StopReason.CARD_MISSING, "an account has no card cross-reference");
+            throw RunStop.recordMissing(runLog, StopReason.CARD_MISSING, accountId,
+                    "an account has no card cross-reference");
         }
-        if (cardNumbers.size() > 1) {
-            throw new InterestRunStoppedException(StopReason.MULTI_CARD, "an account has several cards");
+        if (cardNumbers.size() > 1 && policy.intH03StopsOnSeveralCards()) {
+            throw RunStop.of(runLog, StopReason.MULTI_CARD, "an account has several cards");
         }
         return cardNumbers.get(0);
     }
 
     /** INT-R06, with the id of INT-Q02 and the timestamps of INT-Q03; the clock is read once per transaction. */
     private InterestTransaction interestTransaction(Account account, String cardNumber, BigDecimal interest) {
+        if (counter.isExhausted() && policy.intH05StopsOnOverflow()) {
+            throw RunStop.of(runLog, StopReason.OVERFLOW, "the transaction counter does not fit the six digits of the id");
+        }
         LocalDateTime now = LocalDateTime.now(clock);
         String timestamp = policy.intQ03StampsCycleDate()
                 ? RunTimestamp.ofCycleDate(parmDate)
@@ -162,7 +184,7 @@ public final class InterestCalculator {
                 INTEREST_TYPE_CODE,
                 INTEREST_CATEGORY_CODE,
                 INTEREST_SOURCE,
-                DESCRIPTION_PREFIX + String.format("%011d", account.accountId()),
+                DESCRIPTION_PREFIX + AccountIdText.elevenDigits(account.accountId()),
                 interest,
                 NO_MERCHANT,
                 cardNumber,

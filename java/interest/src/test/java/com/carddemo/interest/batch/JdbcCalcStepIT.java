@@ -281,8 +281,10 @@ class JdbcCalcStepIT {
         assertEquals(new BigDecimal("1010.00"), balanceOf(2001L));
         assertEquals("FAILED", runStatus(interestRunId));
         // the run log holds what was displayed before the failure, the record of account 2002 included
+        // and, since ticket 08, the legacy lines of a failed write (CBACT04C:510, 629); no status line, because a
+        // database failure does not determine a legacy file status (standards S6.1)
         assertEquals(List.of("START OF EXECUTION OF PROGRAM CBACT04C", "000000020010100010000010000{",
-                "000000020020100010000024000{"), runLogLines());
+                "000000020020100010000024000{", "ERROR WRITING TRANSACTION RECORD", "ABENDING PROGRAM"), runLogLines());
 
         JobExecution restarted = jobLauncher.run(interestCalcJob, parameters);
 

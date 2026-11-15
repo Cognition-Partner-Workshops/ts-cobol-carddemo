@@ -3,12 +3,13 @@ package com.carddemo.interest;
 import com.carddemo.interest.policy.InterestPolicy;
 import com.carddemo.interest.policy.InterestPolicy.IdPrefix;
 import com.carddemo.interest.policy.InterestPolicy.InactiveAccounts;
+import com.carddemo.interest.policy.InterestPolicy.MultiCard;
 import com.carddemo.interest.policy.InterestPolicy.NegativeBalance;
 import com.carddemo.interest.policy.InterestPolicy.Rounding;
 import com.carddemo.interest.policy.InterestPolicy.TimestampSource;
 import com.carddemo.interest.policy.InterestPolicy.ZeroInterest;
 
-/** Test policies: the legacy behaviour with exactly one switch of ticket 04 set to another value. */
+/** Test policies: the legacy behaviour with exactly one switch set to another value. */
 public final class PolicySwitches {
 
     private PolicySwitches() {
@@ -40,5 +41,9 @@ public final class PolicySwitches {
 
     public static InterestPolicy inactiveAccounts(InactiveAccounts value) {
         return new InterestPolicy(null, null, null, false, null, null, value, null, null);
+    }
+
+    public static InterestPolicy multiCard(MultiCard value) {
+        return new InterestPolicy(null, null, null, false, null, null, null, value, null);
     }
 }

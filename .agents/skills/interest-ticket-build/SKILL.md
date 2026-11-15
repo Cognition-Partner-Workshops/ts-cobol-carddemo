@@ -112,6 +112,7 @@ Run every command from the repository root.
    [INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
    [INFO] BUILD SUCCESS
    ```
+   On `demo/05b-integration` after wave 1 (tickets 02, 03, 04) the totals are 176 unit and 28 integration tests.
    The first total is surefire (unit), the second failsafe (integration). Your ticket adds to both
    numbers; neither may go down. One unit test class while you work:
    ```sh

@@ -18,6 +18,17 @@ class RecordLayoutTest {
 
     private static final String CASE = "i01-baseline";
 
+    /** The record image of a fixture line: the trailing spaces the line does not hold are put back. */
+    private static String image(String line, RecordLayout layout) {
+        return FixtureCodePage.image(
+                RecordFormat.fixture().records(FixtureCodePage.bytes(line), layout, "test").get(0));
+    }
+
+    /** The fixture line of a record image. */
+    private static String line(String image) {
+        return FixtureCodePage.image(RecordFormat.fixture().content(List.of(FixtureCodePage.bytes(image)))).stripTrailing();
+    }
+
     private static List<String> expectedDataset(String name) {
         return Fixtures.lines(Fixtures.expected(CASE).resolve("datasets").resolve(name));
     }
@@ -25,7 +36,7 @@ class RecordLayoutTest {
     @Test
     void cvtra01y_decodesTheBalanceOfI01() {
         // 00000002001 / 01 / 0001 / 0000010000{ = account 2001, type 01, category 1, 1000.00
-        String image = RecordImage.fromLine("000000020010100010000010000{", CategoryBalanceRecord.LENGTH);
+        String image = image("000000020010100010000010000{", CategoryBalanceRecord.LAYOUT);
 
         assertEquals(new CategoryBalance(2001L, "01", 1, new BigDecimal("1000.00")), CategoryBalanceRecord.decode(image));
         assertEquals(50, image.length());
@@ -34,22 +45,22 @@ class RecordLayoutTest {
     @Test
     void cvtra02y_decodesTheRateOfI01() {
         // "GOLD      " / 01 / 0001 / 00120{ = 12.00 %
-        String image = RecordImage.fromLine("GOLD      01000100120{", DisclosureGroupRecord.LENGTH);
+        String image = image("GOLD      01000100120{", DisclosureGroupRecord.LAYOUT);
 
         assertEquals(new Rate("GOLD", "01", 1, new BigDecimal("12.00")), DisclosureGroupRecord.decode(image));
     }
 
     @Test
     void cvact03y_decodesTheCardOfI01() {
-        String image = RecordImage.fromLine("400000000000200100000200100000002001", CardXrefRecord.LENGTH);
+        String image = image("400000000000200100000200100000002001", CardXrefRecord.LAYOUT);
 
         assertEquals(new CardXrefRecord.CardOfAccount(2001L, "4000000000002001"), CardXrefRecord.decode(image));
     }
 
     @Test
     void cvact01y_decodesTheAccountOfI01() {
-        String image = RecordImage.fromLine(
-                Fixtures.lines(Fixtures.input(CASE).resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt")).get(0), AccountRecord.LENGTH);
+        String image = image(
+                Fixtures.lines(Fixtures.input(CASE).resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt")).get(0), AccountRecord.LAYOUT);
 
         assertEquals(new Account(2001L, new BigDecimal("1000.00"), "GOLD"), AccountRecord.decode(image));
     }
@@ -58,11 +69,11 @@ class RecordLayoutTest {
     void intR07_accountBreakRewritesThreeFieldsOnly() {
         // input record of account 2001 with 1010.00 posted must equal the recorded legacy record, byte for byte
         String input = Fixtures.lines(Fixtures.input(CASE).resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt")).get(0);
-        String image = RecordImage.fromLine(input, AccountRecord.LENGTH);
+        String image = image(input, AccountRecord.LAYOUT);
 
         String updated = AccountRecord.withInterestPosted(image, new BigDecimal("1010.00"));
 
-        assertEquals(expectedDataset("AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt").get(0), RecordImage.toLine(updated));
+        assertEquals(expectedDataset("AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt").get(0), line(updated));
         assertEquals(300, updated.length());
     }
 
@@ -70,8 +81,9 @@ class RecordLayoutTest {
     void e4_accountFillerRoundTrip() {
         // synthetic FILLER content: the 178 bytes after ACCT-GROUP-ID come back untouched
         String filler = "filler bytes <>{}[] 0123456789".repeat(6).substring(0, 178);
-        String image = RecordImage.fromLine(
-                Fixtures.lines(Fixtures.input(CASE).resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt")).get(0), 122) + filler;
+        String image = image(
+                Fixtures.lines(Fixtures.input(CASE).resolve("AWS.M2.CARDDEMO.ACCTDATA.PS.txt")).get(0), AccountRecord.LAYOUT)
+                .substring(0, 122) + filler;
 
         String updated = AccountRecord.withInterestPosted(image, new BigDecimal("1010.00"));
 
@@ -90,10 +102,20 @@ class RecordLayoutTest {
         String image = TransactionRecord.encode(transaction);
 
         assertEquals(350, image.length());
-        assertEquals(expectedDataset("AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt").get(0), RecordImage.toLine(image));
+        assertEquals(expectedDataset("AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt").get(0), line(image));
         // INT-T04, G05: the tail of TRAN-DESC and the FILLER are spaces
         assertEquals(" ".repeat(76), image.substring(56, 132));
         assertEquals(" ".repeat(20), image.substring(330));
+    }
+
+    @Test
+    void cvtra05y_decodesTheRecordedTransactionOfI01() {
+        String image = image(expectedDataset("AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt").get(0), TransactionRecord.LAYOUT);
+
+        assertEquals(new InterestTransaction("2022071800000001", "01", 5, "System",
+                "Int. for a/c 00000002001", new BigDecimal("10.00"), 0L, "4000000000002001",
+                "2022-07-05-10.00.00.000000", "2022-07-05-10.00.00.000000"),
+                TransactionRecord.decode(image, RecordOrigin.IN_MEMORY));
     }
 
     @Test

@@ -76,7 +76,10 @@ Run every command from the repository root.
 
    Package `recon` is named in `architecture.md` section 2 and exists only once its ticket is combined;
    `load` and `jdbc/load` (ticket 05), `jdbc/calc` (ticket 06, the JDBC adapters of the ports) and `export`
-   and `jdbc/export` (ticket 07) exist since wave 2. The tables of the stream are in
+   and `jdbc/export` (ticket 07) exist since wave 2. Since ticket 08, `batch/DatabaseFailureStops` turns a database
+   failure of the JDBC adapters into the stop exception, `domain/RunStops` holds the legacy lines of every stop and
+   `domain/HoleDecisions` the decisions INT-H03 and INT-H05; `InterestCalculator` takes `HoleDecisions` as its sixth
+   constructor argument (a test that builds it passes `HoleDecisions.stop()`). The tables of the stream are in
    `db/postgres/02-interest.sql` (ticket 02); every connection of the job has `search_path = batch`
    (`application.yml`), so SQL names `carddemo.<table>`.
 

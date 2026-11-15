@@ -164,6 +164,7 @@ first. Run every command from the repository root.
    |---|---|
    | `test-output.txt` | the command below |
    | `parity-report.md` | `.agents/skills/interest-ticket-verify/parity-report.sh <ticket file name> <case the ticket names> [...]` |
+   | `schema-test-output.txt` | tickets with SQL assertions under `db/postgres/tests`: `db/postgres/tests/run.sh > java/interest/evidence/<ticket file name>/schema-test-output.txt 2>&1` |
    | `report.md` (the ticket's report) | by hand, step 9 |
 
    The commands were run in step 5a with ticket 01, the only ticket built, to prove them; that

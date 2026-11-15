@@ -1,7 +1,7 @@
 # Parity report - ticket 04-calculation-rules (java/interest)
 
-Revision of the code: `a50a098bbfab4d46f49e65af38e3c5feb4678714` (branch `demo/05-04-calculation-rules`).
-Produced 2026-11-15T15:57:02Z, comparator `tools/parity/compare.py` unchanged.
+Revision of the code: `633b098744dbce5e985acf453b1391f68e97a960` (branch `demo/05-04-calculation-rules`, with uncommitted changes).
+Produced 2026-11-15T16:09:02Z, comparator `tools/parity/compare.py` unchanged.
 
 ## Result per case
 
@@ -565,20 +565,20 @@ Checked 2 datasets, 4 records, 50 decoded fields, 1 SYSOUT files, 0 table snapsh
 
     job_name     |  status   |                   steps                   |                   run_id                    
 -----------------+-----------+-------------------------------------------+---------------------------------------------
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758220-13756-i07-nontie-rounding
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758218-13756-i06-negative-balance
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758217-13756-i05-multi-category
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758215-13756-i04-default-group-fallback
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758214-13756-i03-zero-rate-skipped
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758212-13756-i02-tie-half-cent
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758211-13756-i01-baseline
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758207-13429-i07-nontie-rounding
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758203-13159-i06-negative-balance
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758200-12846-i05-multi-category
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758196-12570-i04-default-group-fallback
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758192-12256-i03-zero-rate-skipped
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758188-11935-i02-tie-half-cent
- interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758185-11664-i01-baseline
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758940-26792-i07-nontie-rounding
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758938-26792-i06-negative-balance
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758937-26792-i05-multi-category
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758935-26792-i04-default-group-fallback
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758934-26792-i03-zero-rate-skipped
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758932-26792-i02-tie-half-cent
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758930-26792-i01-baseline
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758926-26524-i07-nontie-rounding
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758923-26246-i06-negative-balance
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758919-25921-i05-multi-category
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758916-25650-i04-default-group-fallback
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=1 write=1 | 1794758912-25372-i03-zero-rate-skipped
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758907-24998-i02-tie-half-cent
+ interestCalcJob | COMPLETED | calcInterestStep:COMPLETED read=2 write=2 | 1794758903-24716-i01-baseline
 (14 rows)
 
  table_schema |        table_name        

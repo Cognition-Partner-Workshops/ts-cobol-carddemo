@@ -1,7 +1,8 @@
 # Ticket 04 - complete calculation rules behind the policy switches - report
 
 Ticket: `modernization/design/tickets/04-calculation-rules.md` (INT-T04). Branch `demo/05-04-calculation-rules`,
-started from `demo/05b-integration` at `a5cce81`. Code revision the evidence was produced from: `a50a098`.
+started from `demo/05b-integration` at `a5cce81`; `demo/05b-integration` at `b4ab502` (tickets 02 and 03) was merged
+into it afterwards. Code revision the evidence was produced from: `633b098` (the merge commit).
 
 Read this with [parity-report.md](parity-report.md) (seven PASS sections), [switch-test-output.txt](switch-test-output.txt)
 (the switch test and the empty-input run) and [test-output.txt](test-output.txt) (`mvn clean verify`).
@@ -19,7 +20,7 @@ Read this with [parity-report.md](parity-report.md) (seven PASS sections), [swit
 | Switch test: each of updateLastAccount, idPrefix, timestampSource, negativeBalance, zeroInterest, inactiveAccounts changes exactly the values that `modernization/rules/interest/expected/<case>.json` lists for that option | met | `PolicySwitchExpectationsTest` (105 runs = 15 switch values x 7 cases, rounding included); its 105 `switch-test` lines are the last section of switch-test-output.txt. zeroInterest and inactiveAccounts change no value of any case, as the expectations list none (see section 2) |
 | Errors: an empty balance input writes no transaction, touches no account and ends COMPLETED (INT-T09) | met | `InterestCalcJobIT.intT09_emptyBalanceInputCompletesAndWritesNoTransaction` (job COMPLETED, exit code 0, read 0 / write 0); `FixtureCasesTest.intT09_emptyInputWritesNothing`; switch-test-output.txt, "Errors (INT-T09)" (job exit 0, SYSTRAN 0 bytes, account file identical to the input) |
 | Database assertions: none (file adapters only) | n/a | the job repository checks of ticket 01 still pass in `InterestCalcJobIT`; parity-report.md, last section |
-| Build: `mvn -q -f java/interest/pom.xml verify`; one unit test per rule id and per switch, named by the id | met: 205 unit tests and 20 integration tests, 0 failures, BUILD SUCCESS | test-output.txt; test names per rule in section 4, line S7.1 |
+| Build: `mvn -q -f java/interest/pom.xml verify`; one unit test per rule id and per switch, named by the id | met: 313 unit tests and 20 integration tests, 0 failures, BUILD SUCCESS | test-output.txt; test names per rule in section 4, line S7.1 |
 
 Parity per case: i01, i02, i03, i04, i05, i06, i07 PASS.
 
@@ -28,7 +29,7 @@ Not touched: `app/`, `fixtures/`, `tools/`, `modernization/`, `.agents/`, `db/`,
 No golden file was re-recorded. No ticket system was written to. Nothing was merged.
 
 Files changed outside the ticket's Allowed files, each inside the grant of the build prompt and nothing more:
-`codec/AccountRecord.java` (passes ACCT-ACTIVE-STATUS to the domain), `RecordLayoutTest` (under `src/test`, the one
+`codec/AccountRecord.java` (passes ACCT-ACTIVE-STATUS to the domain; after the merge this is one line on the codec of ticket 03), `RecordLayoutTest` (under `src/test`, the one
 assertion that broke) and `application.yml` (the three new switches with their legacy defaults).
 
 ## 2. What the ticket does not cover (gaps)
@@ -79,7 +80,7 @@ Standards:
 - [x] S3.2 Formula: exact product, one division, mode from the policy - PASS: `InterestFormula` unchanged; `InterestFormulaTest`
 - [x] S3.3 Rounding mode named on every other arithmetic step - PASS: `InterestCalculator` total and new balance `setScale(2, RoundingMode.UNNECESSARY)`
 - [ ] S3.4 Range check before store; overflow goes to the policy - N/A: INT-H05 is excluded from this ticket (ticket 08)
-- [x] S3.5 Encodings only in `record-codec` - PASS: the domain compares trimmed text and `BigDecimal`; the test decodes with `codec/Field`
+- [x] S3.5 Encodings only in `record-codec` - PASS: the domain compares trimmed text and `BigDecimal`; the switch test reads the zoned amounts by hand, not with the codec
 - [x] S3.6 Width, padding and FILLER only in codec and schema - PASS: `DEFAULT` is the trimmed constant in the domain (`intR03_defaultGroupKeyPadded`); `AccountRecord.withInterestPosted` unchanged
 - [x] S3.7 Code page and key order each in one place - PASS: not touched (`FileRunWorkspace`)
 - [x] S3.8 Clock and run parameters injected; `parmDate` is text - PASS with a proposal: `RunTimestamp.ofCycleDate` slices the PARM text and never parses a date; the cycle date is not a job parameter of its own (section 5, proposal 1)
@@ -164,11 +165,13 @@ Skill corrections (interest-ticket-build, interest-ticket-verify, interest-pitfa
 export JAVA_HOME="$(dirname "$(dirname "$(update-alternatives --list java | grep -m1 -- '-21-')")")"
 git fetch origin && git ls-remote --heads origin 'demo/*' && gh pr list --state open      # no branch or PR for ticket 04
 git checkout -b demo/05-04-calculation-rules origin/demo/05b-integration
-mvn -B -f java/interest/pom.xml verify                                                    # 205 + 20, BUILD SUCCESS
+mvn -B -f java/interest/pom.xml verify                                                    # 205 + 20, BUILD SUCCESS (before the merge)
 make parity-java                                                                          # 7 PASS, exit 0
 git checkout -- tools/parity/__pycache__
 git diff --stat origin/demo/05b-integration -- app fixtures tools modernization .agents db docker-compose.yml   # empty
-git commit   # a50a098, then the evidence from that revision:
+git commit   # a50a098; evidence first produced from it, PR opened
+git merge origin/demo/05b-integration   # the base had moved (tickets 02, 03): two conflicts, see failure 4; commit 633b098
+mvn -B -f java/interest/pom.xml verify  # 313 + 20, BUILD SUCCESS; then the evidence again, from 633b098:
 mvn -B -f java/interest/pom.xml clean verify      > java/interest/evidence/04-calculation-rules/test-output.txt
 .agents/skills/interest-ticket-verify/parity-report.sh 04-calculation-rules $(ls fixtures/interest)   # exit 0
 # switch-test-output.txt: interest-ticket-verify step 4 once per switch value, compare.py on each, the empty input, psql
@@ -183,6 +186,13 @@ Failures hit:
 2. **Symptom.** `mvn -o ... test` ended with `Plugin org.apache.maven.plugins:maven-failsafe-plugin:3.5.4 ... could
    not be resolved ... in offline mode`. **Cause.** I had added `-o`; the local repository did not hold the plugin.
    **Fix.** Run without `-o`, as the skill says.
+4. **Symptom.** The pull request reported merge conflicts with `demo/05b-integration` after tickets 02 and 03 were
+   integrated: `codec/AccountRecord.java` and `codec/RecordLayoutTest.java`; after resolving them
+   `PolicySwitchExpectationsTest` did not compile (`codec.Field` no longer exists). **Cause.** Ticket 03 replaced the
+   pilot's codec (`Field`, string images) by `RecordCodec` on byte records, and this ticket had touched the same two
+   files under its grant. **Fix.** The base was merged into the branch (no rebase, no force-push); both files take
+   ticket 03's version plus the one thing this ticket needs (`values.text(ACTIVE_STATUS)` passed to `Account`, and
+   `"Y"` in the one assertion); the switch test now reads zoned amounts by hand. All evidence was produced again.
 3. No JSON library at compile or test scope besides `org.json` and json-path (from `spring-boot-starter-test`); the
    switch test uses `org.json`, so no dependency was added.
 

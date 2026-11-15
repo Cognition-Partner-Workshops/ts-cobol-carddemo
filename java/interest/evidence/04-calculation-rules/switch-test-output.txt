@@ -1,5 +1,5 @@
 # Switch test of ticket 04 through the job jar and tools/parity/compare.py (interest-ticket-verify step 4)
-# revision a50a098bbfab4d46f49e65af38e3c5feb4678714, 2026-11-15T15:57:24Z
+# revision 633b098744dbce5e985acf453b1391f68e97a960, 2026-11-15T16:09:23Z
 
 ## rounding (INT-Q01): HALF_EVEN fails i02 on TRAN-AMT, i07 still passes; the default passes both
 $ java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN  parmDate=2022071800 runId=<new> format=fixture inputDir=fixtures/interest/i02-tie-half-cent/input outputDir=work/manual/i02-default/actual
@@ -212,4 +212,4 @@ switch-test i07-nontie-rounding INT-Q06 option A zeroInterest=WRITE: 35 values c
 switch-test i07-nontie-rounding INT-Q06 option B zeroInterest=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
 switch-test i07-nontie-rounding INT-H04 option A inactiveAccounts=CHARGE: 35 values compared, expectation lists 0 changed, job changed 0
 switch-test i07-nontie-rounding INT-H04 option B inactiveAccounts=SKIP: 35 values compared, expectation lists 0 changed, job changed 0
-[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.322 s -- in com.carddemo.interest.batch.PolicySwitchExpectationsTest
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.321 s -- in com.carddemo.interest.batch.PolicySwitchExpectationsTest

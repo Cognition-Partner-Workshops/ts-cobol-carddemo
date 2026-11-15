@@ -1,11 +1,13 @@
 # Ticket 04 calculation rules - report
 
 Ticket: `modernization/design/tickets/04-calculation-rules.md` (INT-T04). Branch `demo/05-04-calculation-rules`, started from
-`demo/05b-integration` at `7634342`; continued after `git merge origin/demo/05b-integration` (merge commit `303a172`, clean, no conflict). Code revision the evidence was produced from: `94f7667`.
+`demo/05b-integration` at `7634342`; continued after `git merge origin/demo/05b-integration` (merge commit `303a172`, clean, no conflict). Code revision the evidence was produced from: `5ac6473`.
 
-**Status: stopped. Every acceptance line is met except the build line:** the granted change to `codec/AccountRecord.decode`
-makes one test of ticket 03 fail, `RecordLayoutTest.cvact01y_decodesTheAccountOfI01`, which this ticket may not change.
-It expects `Account(2001, 1000.00, GOLD)` with `active=Optional.empty`; decode now returns `active=Optional[true]`. See section 2.
+**Status: done. Every acceptance line of the ticket is met.** The one conflict with ticket 03 is settled: the coordinator
+granted the change of the one assertion `RecordLayoutTest.cvact01y_decodesTheAccountOfI01` (line 65 of ticket 03's file),
+which now expects `Account(2001, 1000.00, GOLD, Optional.of(true))`, as `AccountRecord.decode` returns it. Nothing else of
+ticket 03's tests was changed. `mvn -B -f java/interest/pom.xml clean verify` ends with BUILD SUCCESS: 176 unit tests and
+28 integration tests (`InactiveAccountsSkipJobIT` 8, `InterestCalcJobIT` 20), 0 failures.
 
 Read this with [parity-report.md](parity-report.md), [test-output.txt](test-output.txt) and
 [switch-test-output.txt](switch-test-output.txt).
@@ -21,23 +23,24 @@ Read this with [parity-report.md](parity-report.md), [test-output.txt](test-outp
 | inactiveAccounts changes exactly the listed values | met, through the job | switch-test-output.txt, last seven runs: `--interest.policy.inactiveAccounts=SKIP` on each case, job exit 0, comparator PASS with 0 differences (every fixture account is active, so SKIP changes nothing, as `expected/<case>.json` lists). `PolicySwitchFixtureTest.intH04_skipInactiveAccountsChangesNothingInTheCases` now takes the flag from `AccountRecord.decode`. An account that is skipped is shown by `InactiveAccountsSkipJobIT.intH04_inactiveAccountSkippedThroughTheJob` (i01 input with account 2001 set to N: one transaction, for 2002, numbered ...000001; no account record changes) and `AccountRecordActiveStatusTest` |
 | An empty balance input writes no transaction, touches no account and ends COMPLETED (INT-T09) | met | `InterestCalcJobIT.intT09_emptyInputWritesNothing` |
 | Database assertions: none | n/a | - |
-| `mvn -q -f java/interest/pom.xml verify` | **not met: BUILD FAILURE, 176 unit tests, 1 failure**; the integration tests are not reached. The failure is `RecordLayoutTest.cvact01y_decodesTheAccountOfI01:65` (ticket 03's test, frozen for this ticket). Without that one test the same revision passes: 175 unit tests and 28 integration tests, 0 failures | test-output.txt (first run: the required command; second run: the same without that test) |
+| `mvn -q -f java/interest/pom.xml verify` | met: BUILD SUCCESS, 176 unit tests and 28 integration tests, 0 failures, 0 errors, 0 skipped (run as `mvn -B -f java/interest/pom.xml clean verify`) | test-output.txt |
 | One unit test per rule id and per switch, named by the id | met | section 4, S7.1 |
 
-Parity per case: all seven PASS (i03 and i04 failed on the base branch and pass now; the five others still pass).
+Parity per case: all seven PASS (all seven also pass on `demo/05b-integration` since the wave 1 combination; none regressed).
 
 Not touched: `app/`, `fixtures/`, `tools/`, `modernization/`, `.agents/`, `db/`, `docker-compose.yml`, `Makefile`,
-`.github/`, `java/interest/pom.xml`, the ports, `batch/`, `file/`, ticket 03's tests
+`.github/`, `java/interest/pom.xml`, the ports, `batch/`, `file/`
 (`git diff --stat origin/demo/05b-integration -- app fixtures tools modernization .agents db docker-compose.yml Makefile .github java/interest/pom.xml` is empty).
 Granted and changed: `codec/AccountRecord.java` (`from` passes `Optional.of("Y".equals(ACCT-ACTIVE-STATUS))`; layout and encode side unchanged)
-and `application.yml` (three lines under `interest.policy`).
+and `application.yml` (three lines under `interest.policy`); in this run `src/test/.../codec/RecordLayoutTest.java` (ticket 03's test):
+the expected Account of `cvact01y_decodesTheAccountOfI01` gains `Optional.of(true)`, plus `import java.util.Optional;` - two lines, nothing else.
 No golden file was re-recorded. No ticket system was written to. Nothing was merged.
 
 ## 2. What the ticket does not cover (gaps)
 
 | Gap | State | Owner |
 |---|---|---|
-| The build fails on one test of ticket 03 | `RecordLayoutTest.cvact01y_decodesTheAccountOfI01` (line 65) asserts `assertEquals(new Account(2001L, new BigDecimal("1000.00"), "GOLD"), AccountRecord.decode(image))`, that is `active=Optional.empty`. The granted change makes decode return `active=Optional[true]`, so the two cannot both hold. Ticket 03's tests are not to be changed by this ticket, and the domain was not bent to hide it (for example by leaving `active` out of `Account`'s equality). **Change requested:** line 65 becomes `assertEquals(new Account(2001L, new BigDecimal("1000.00"), "GOLD", Optional.of(true)), AccountRecord.decode(image));` with `import java.util.Optional;` | coordinator |
+| The build failed on one test of ticket 03 | **closed.** The coordinator granted the change of that one assertion; made in `5ac6473` exactly as requested (expected Account gains `Optional.of(true)`, import of `java.util.Optional`). The build passes | - |
 | INT-Q06 has no fixture | Tested with synthetic data: `intQ06_zeroInterestStillWritten` (0.50 x 12.00 / 1200 = 0.005, written as 0.00), `intQ06_zeroInterestSkippedWhenSwitched`, and `PolicySwitchFixtureTest.intQ06_skipZeroInterestChangesNothingInTheCases` | mainframe application owner for a recorded run |
 | INT-H04 has no fixture with an inactive account | Synthetic: `intH04_inactiveAccountChargedLikeAnyOther`, `intH04_inactiveAccountSkippedWhenSwitched`, `intH04_skipWithoutTheFlagStops`, `InactiveAccountsSkipJobIT.intH04_inactiveAccountSkippedThroughTheJob`, `AccountRecordActiveStatusTest` | same |
 | INT-T09 has no fixture | Synthetic: the i01 input with an empty balance file, through the job | same |
@@ -83,16 +86,16 @@ Standards:
 - [ ] S6.1 Status and message mapping as in section 6 - **N/A** except the DISCGRP status 23 row, which is **PASS** (`intR03_fallsBackToDefault`, i04 parity). The messages of the stops are ticket 08; `DEFAULT_RATE_MISSING` stops without the legacy lines.
 - [x] S6.2 One stop exception, one exit-code constant, no skip or retry - **PASS** with one remark: an unreadable PARM under `CYCLE_DATE` raises `IllegalArgumentException` from the policy (the step still fails, exit 12), because `policy` does not depend on `domain`.
 - [ ] S6.3 Restart as in the architecture - **N/A**. File adapters, no restart state; not in this ticket.
-- [x] S6.4 Outputs in the recorded format; failed run leaves no SYSTRAN - **PASS**, unchanged from the pilot: seven cases byte for byte; `switch-test-output.txt` shows a stopped run leaves no output.
+- [x] S6.4 Outputs in the recorded format; failed run leaves no SYSTRAN - **PASS**, unchanged from the pilot: seven cases byte for byte; a stopped run leaves no output: `InterestCalcJobIT.intR08_missingInputFileFailsTheJobAndLeavesNoOutput`, `FileRunWorkspaceTest.intR08_discardedRunLeavesNothing` (the switch runs of switch-test-output.txt all end with job exit 0 and do not show it).
 - [x] S6.5 Run log byte for byte; no account data in the application log - **PASS**. SYSOUT of all seven cases equals the recorded one; no log statement was added.
 - [x] S7.1 A test per rule id, named for it - **PASS**. INT-R01 to R07, Q01 to Q06, H01, H04, T02, T09 each have tests named by the id; each switch has a default test and a test of every other value. INT-H06 is outside the job and has no test. INT-R08, H02 (pilot's test kept), H03, H05 belong to other tickets.
 - [x] S7.2 Fixture and edge cases of each rule covered - **PASS**. All seven cases; synthetic data for INT-Q06, INT-H04 and INT-T09, which have no fixture.
-- [x] S7.3 Integration tests on PostgreSQL 15 in a container - **PASS** for how they are built (`InterestCalcJobIT`, `InactiveAccountsSkipJobIT` on Testcontainers `postgres:15`, 28 tests); they are reached only in the second run of test-output.txt, because the unit phase of the required command fails (section 1).
+- [x] S7.3 Integration tests on PostgreSQL 15 in a container - **PASS**. `InterestCalcJobIT` (20) and `InactiveAccountsSkipJobIT` (8) on Testcontainers `postgres:15`, 28 tests, 0 failures (test-output.txt).
 - [x] S7.4 No assertion against the code's own output - **PASS**. Expected values are the recorded files, the expectation files under `modernization/rules/interest/expected` (derived from rules and inputs) or hand arithmetic in the test comment.
 - [x] S8.1 No edit under `app/`, `fixtures/`, `tools/parity` - **PASS**. The scope `git diff --stat` is empty.
 - [x] S8.2 No golden file re-recorded - **PASS**.
 - [x] S8.3 Every new dependency explained in the pull request - **PASS**. None added; `pom.xml` unchanged. The test uses `json-path`, already on the test classpath through `spring-boot-starter-test`.
-- [ ] S8.4 Frozen shared interfaces unchanged - **PASS** with the two granted changes (`codec/AccountRecord.from`, three lines of `application.yml`); layout, encode side, ports, schema and build file unchanged. One further change is requested and not made: ticket 03's `RecordLayoutTest` line 65 (section 2).
+- [x] S8.4 Frozen shared interfaces unchanged - **PASS** with the three changes the coordinator granted and nothing beyond them: `codec/AccountRecord.from` passes the active flag, three lines of `application.yml`, one assertion of ticket 03's `RecordLayoutTest`. Layout, encode side, ports, schema, build file, switch names and parity entry point unchanged.
 - [x] S8.5 Synthetic data only - **PASS**. Accounts 2001-2010 and the card numbers of the fixtures.
 
 Behaviours PRESENT in section 4:
@@ -156,6 +159,15 @@ git checkout -- tools/parity/__pycache__
 mvn -B -f java/interest/pom.xml clean verify  > test-output.txt          # both runs above, in this order
 .agents/skills/interest-ticket-verify/parity-report.sh 04-calculation-rules i01-baseline ... i07-nontie-rounding   # exit 0
 # switch runs through the job, interest-ticket-verify step 4 -> switch-test-output.txt; inactiveAccounts=SKIP on all seven cases
+# third session (this evidence)
+git fetch origin && git checkout demo/05-04-calculation-rules           # a4b9e72, no merge, no rebase
+# RecordLayoutTest: expected Account gains Optional.of(true), import java.util.Optional   -> commit 5ac6473
+mvn -B -f java/interest/pom.xml clean verify                             # 176 + 28, BUILD SUCCESS
+# evidence, from the committed revision 5ac6473, working tree clean
+REPORT=work/parity-report-04.md .agents/skills/interest-ticket-verify/parity-report.sh 04-calculation-rules i01-baseline ... i07-nontie-rounding   # exit 0, 7 of 7 PASS; copied to parity-report.md
+mvn -B -f java/interest/pom.xml clean verify  > test-output.txt          # one run, the required command, exit code 0
+# switch runs through the job again -> switch-test-output.txt (16 runs, same results as before)
+git checkout -- tools/parity/__pycache__
 ```
 
 Failures hit:
@@ -166,9 +178,9 @@ Failures hit:
 | `i01-baseline run log ==> expected ... "000000020010100010000010000{" but was "...{   (spaces)"` | the expectation files give the record echo without its trailing spaces; the recorded SYSOUT has the full 50 bytes | the switch test compares the run log with trailing spaces removed; the byte-for-byte comparison is against the recorded SYSOUT |
 | `mvn -o` fails: `maven-failsafe-plugin:3.5.4 ... has not been downloaded` | offline mode on a machine that had not built the module | run without `-o` |
 | pitfall P6 (`tools/parity/__pycache__` changed) | as described | `git checkout -- tools/parity/__pycache__` |
-| `RecordLayoutTest.cvact01y_decodesTheAccountOfI01:65 expected: <Account[... active=Optional.empty]> but was: <Account[... active=Optional[true]]>` | ticket 03's test fixes the decoded account without the flag; the granted change supplies it | not fixed: the test is frozen for this ticket; change requested in section 2 |
+| `RecordLayoutTest.cvact01y_decodesTheAccountOfI01:65 expected: <Account[... active=Optional.empty]> but was: <Account[... active=Optional[true]]>` | ticket 03's test fixes the decoded account without the flag; the granted change supplies it | fixed in `5ac6473` after the coordinator granted the change of that one assertion |
 | `InactiveAccountsSkipJobIT`: `method decode in class TransactionRecord cannot be applied to given types` | ticket 03's `TransactionRecord.decode` takes a `RecordOrigin` | pass `RecordOrigin.IN_MEMORY` |
-| parity-report.md says "with uncommitted changes" | the script looks at `java/`, where test-output.txt had just been rewritten; the code was committed (`git status --short` showed only the three evidence files) | none; skill correction reported |
+| parity-report.md says "with uncommitted changes" although `git status --short` is empty when the script starts | `parity-report.sh` opens its report with `> "$report"` before it runs `git diff --quiet HEAD -- java Makefile`; when a parity-report.md of the ticket is already committed (any renewal of the evidence), the truncated file is itself the difference. A first run does not show it, because the file is untracked then | run with `REPORT=work/parity-report-04.md` on a clean tree and copy the file into the evidence directory; skill correction reported |
 
 ## 7. Dependencies (S8.3)
 

@@ -1,4 +1,4 @@
-# Switch tests through the job (interest-ticket-verify step 4), revision 94f76675c4cd27386793b80a65c017b81f57a464, 2026-11-15T11:13:37Z
+# Switch tests through the job (interest-ticket-verify step 4), revision 5ac64733725242ac09bee9cdd6ad4c18a52693d0, 2026-11-15T11:19:17Z
 # jar java/interest/target/interest.jar built from that revision; comparator tools/parity/compare.py unchanged
 # each run: docker run --rm --network container:$db --user $(id -u):$(id -g) -v "$PWD":/estate -w /estate eclipse-temurin:21-jre java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN <option> parmDate=2022071800 runId=manual-<new> format=fixture inputDir=fixtures/interest/<case>/input outputDir=work/manual/<label>/actual
 # then: python3 tools/parity/compare.py interest <case> --actual work/manual/<label>/actual --label <label> --report work/manual/diff.md

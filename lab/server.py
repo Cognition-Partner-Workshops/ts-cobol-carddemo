@@ -109,6 +109,9 @@ def meta():
             "decisions": {k: {"status": v["status"], "approvedOption": v["approvedOption"]}
                           for k, v in decisions.items()},
             "limits": replay.limits, "classes": replay.classes})
+    # the toolchain is read once; the commit of the checkout is read on every request, it can change under a running lab
+    metaCache["header"].update(labCommit=replay.gitValue("rev-parse", "HEAD"),
+                               branch=replay.gitValue("rev-parse", "--abbrev-ref", "HEAD"))
     return metaCache
 
 

@@ -37,6 +37,8 @@ def test_01_page_loads_clean_with_complete_header(lab):
     clock = json.loads((repoRoot / "tools/runjcl/chains.json").read_text())["interest"]["clock"]
     assert header.locator("#baselineSha").inner_text() == sha
     assert header.locator("#businessDate").inner_text() == clock
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repoRoot, capture_output=True, text=True).stdout.strip()
+    assert header.locator("#labCommit").inner_text().startswith(head[:12])
     assert lab.locator("#gateVerdict").inner_text() == "NOT RUN"
     assert lab.consoleErrors == []
 

@@ -1,0 +1,15 @@
+{
+ "chain": "posting",
+ "description": "POSTTRAN STEP15: CBTRN02C and TRANREPT STEP10R: CBTRN03C (GnuCOBOL) or java/posting (Spring Batch on PostgreSQL 15)",
+ "default": "legacy",
+ "implementations": {
+  "java": {
+   "requires": "java/posting/target/posting.jar",
+   "build": "make java-posting-build",
+   "programs": {
+    "CBTRN02C": ["java", "-jar", "java/posting/target/posting.jar", "CBTRN02C"],
+    "CBTRN03C": ["java", "-jar", "java/posting/target/posting.jar", "CBTRN03C"]
+   }
+  }
+ }
+}

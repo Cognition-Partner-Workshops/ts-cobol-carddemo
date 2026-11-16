@@ -1,6 +1,6 @@
 package com.carddemo.posting.batch;
 
-import com.carddemo.posting.ChainRun;
+import com.carddemo.posting.StepFiles;
 import com.carddemo.posting.record.Records;
 import com.carddemo.posting.record.Records.Account;
 import com.carddemo.posting.record.Records.CardXref;
@@ -42,8 +42,7 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
 
     static final String JOB = "POSTTRAN";
     static final String STEP = "STEP15";
-    static final String DALYTRAN = "AWS.M2.CARDDEMO.DALYTRAN.PS";
-    static final String DALYREJS = "AWS.M2.CARDDEMO.DALYREJS.G0001V00";
+    static final int REJECT_LRECL = 430;
 
     /** A DALYTRAN record as read (kept verbatim for the reject file) and as parsed. */
     public record Daily(String record, Transaction transaction) {
@@ -53,14 +52,14 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
     public record Outcome(Daily daily, Transaction posted, int reason, String reasonDescription) {
     }
 
-    private final ChainRun run;
+    private final StepFiles run;
     private final PostingStore store;
-    private BufferedReader dailyFile;
+    private java.util.Iterator<String> dailyRecords;
     private BufferedWriter rejectFile;
     private long transactionCount;
     private long rejectCount;
 
-    public PostTransactionsStep(ChainRun run, PostingStore store) {
+    public PostTransactionsStep(StepFiles run, PostingStore store) {
         this.run = run;
         this.store = store;
     }
@@ -69,17 +68,14 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
     public void beforeStep(StepExecution stepExecution) {
         transactionCount = 0;
         rejectCount = 0;
-        run.sysout(JOB, STEP).add("START OF EXECUTION OF PROGRAM CBTRN02C");
+        run.display("START OF EXECUTION OF PROGRAM CBTRN02C");
     }
 
     @Override
     public void open(ExecutionContext executionContext) {
         try {
-            Path rejects = run.dataset(DALYREJS);
-            Files.createDirectories(rejects.getParent());
-            rejectFile = Files.newBufferedWriter(rejects, StandardCharsets.ISO_8859_1);
-            Path daily = run.input(DALYTRAN);
-            dailyFile = Files.exists(daily) ? Files.newBufferedReader(daily, StandardCharsets.ISO_8859_1) : null;
+            rejectFile = Files.newBufferedWriter(StepFiles.dd("DALYREJS"), StandardCharsets.ISO_8859_1);
+            dailyRecords = StepFiles.readFixed(StepFiles.dd("DALYTRAN"), Transaction.LRECL).iterator();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -87,8 +83,11 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
 
     @Override
     public Daily read() throws IOException {
-        String line = dailyFile == null ? null : dailyFile.readLine();
-        return line == null ? null : new Daily(Text.pad(line, Transaction.LRECL), Transaction.parse(line));
+        if (dailyRecords == null || !dailyRecords.hasNext()) {
+            return null;
+        }
+        String record = dailyRecords.next();
+        return new Daily(record, Transaction.parse(record));
     }
 
     @Override
@@ -130,7 +129,7 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
     private void updateTranCatBalance(long acctId, Transaction tran) {
         Optional<TranCatBalance> balance = store.findTranCatBalance(acctId, tran.typeCd(), tran.catCd());
         if (balance.isEmpty()) {
-            run.sysout(JOB, STEP).add("TCATBAL record not found for key : "
+            run.display("TCATBAL record not found for key : "
                     + TranCatBalance.key(acctId, tran.typeCd(), tran.catCd()) + ".. Creating.");
             store.insert(new TranCatBalance(acctId, tran.typeCd(), tran.catCd(),
                     Zoned.fit(tran.amount(), 9, 2)));
@@ -160,8 +159,7 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
                 rejectCount++;
                 String reject = Records.reject(outcome.daily().record(), outcome.reason(),
                         outcome.reasonDescription());
-                rejectFile.write(Text.rtrim(reject));
-                rejectFile.write('\n');
+                rejectFile.write(Text.pad(reject, REJECT_LRECL));
             }
         }
         rejectFile.flush();
@@ -170,9 +168,6 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
     @Override
     public void close() {
         try {
-            if (dailyFile != null) {
-                dailyFile.close();
-            }
             if (rejectFile != null) {
                 rejectFile.close();
             }
@@ -183,11 +178,10 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
-        List<String> sysout = run.sysout(JOB, STEP);
-        sysout.add("TRANSACTIONS PROCESSED :" + Text.digits(transactionCount, 9));
-        sysout.add("TRANSACTIONS REJECTED  :" + Text.digits(rejectCount, 9));
-        sysout.add("END OF EXECUTION OF PROGRAM CBTRN02C");
-        run.returnCode(JOB, STEP, rejectCount > 0 ? 4 : 0);
+        run.display("TRANSACTIONS PROCESSED :" + Text.digits(transactionCount, 9));
+        run.display("TRANSACTIONS REJECTED  :" + Text.digits(rejectCount, 9));
+        run.display("END OF EXECUTION OF PROGRAM CBTRN02C");
+        run.returnCode(rejectCount > 0 ? 4 : 0);
         return stepExecution.getExitStatus();
     }
 }

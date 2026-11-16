@@ -7,52 +7,65 @@ is selected.
 
 ## The switch
 
-`make run` and `make parity` take an implementation selector, `IMPL`:
+Posting uses the same step-level strangler seam as `java/interest` (stacked on that PR). The JCL,
+the setup jobs, POSTTRAN's other steps and TRANREPT's REPRO and SORT steps stay on the JCL runner.
+Only the program behind `EXEC PGM=` changes:
 
-```sh
-make parity CHAIN=posting                 # legacy COBOL/JCL (default, IMPL=legacy)  -> work/parity/report.md
-make parity CHAIN=posting IMPL=java       # this implementation                      -> work/parity/report-java.md
-make run    CHAIN=posting IMPL=java CASE=p04-overlimit-reject   # outputs in work/run/posting/<case>
+| JCL step | Legacy | Java |
+|---|---|---|
+| `POSTTRAN STEP15 EXEC PGM=CBTRN02C` | GnuCOBOL | `java -jar java/posting/target/posting.jar CBTRN02C` |
+| `TRANREPT STEP10R EXEC PGM=CBTRN03C` | GnuCOBOL | `java -jar java/posting/target/posting.jar CBTRN03C` |
+
+`tools/runjcl/impl/posting.json` registers both programs and holds the chain's default
+(`"default": "legacy"`). `tools/runjcl/candidate.py` reads it.
+
+| What | How |
+|---|---|
+| Run one case on Java | `make run CHAIN=posting IMPL=java [CASE=p04-overlimit-reject]` |
+| Parity on Java (report `work/parity/report-java-posting.md`) | `make parity-java-posting [CASE=..]` (also part of `make parity-java`) |
+| Ad hoc, several chains | `CARDDEMO_IMPL=posting=java,interest=legacy make run CHAIN=posting` |
+| Cut over | set `"default": "java"` in `tools/runjcl/impl/posting.json` (one reviewed line) |
+| Roll back | set it back to `"legacy"`, or `IMPL=legacy` / `CARDDEMO_IMPL=posting=legacy` for a single run |
+
+With no `IMPL` and no `CARDDEMO_IMPL`, everything runs as before, and `make parity` remains the
+legacy golden-file check. The joblog shows which implementation ran
+(`CBTRN02C -> posting=java: java -jar ...`). CI runs `make parity-java-posting` after the legacy
+parity and the interest Java parity.
+
+### Step contract
+
+Each program keeps the contract of the COBOL program it replaces (`StepFiles`):
+
+* Datasets arrive as `DD_<ddname>` paths and hold fixed-length unblocked records. The runner unloads
+  KSDS clusters to flat images before the step. Afterwards it reloads any image the program changed
+  (CBTRN02C changes `TRANFILE`, `ACCTFILE` and `TCATBALF`). `DALYREJS(+1)`, `TRANREPT(+1)`,
+  the sorted `TRANFILE` and `DATEPARM` are plain sequential files.
+* STDOUT is SYSOUT and carries only the DISPLAY lines. Logging goes to STDERR, which ends up in the joblog.
+* The exit status is the step return code: 0, 4 when CBTRN02C rejected anything, or 12 after an
+  abend (as from the `CEE3ABD` stand-in).
+* The clock is `COB_CURRENT_DATE`, the chain's frozen clock that the runner sets.
+
+### Inside the jobs
+
+```
+PostingRunner           picks the job from argv[0], prints SYSOUT, exits with the RC
+  Job CBTRN02C
+    CBTRN02C.load       LoadClustersTasklet     XREFFILE, ACCTFILE, TCATBALF images -> schema posting
+    CBTRN02C.post       chunk step              PostTransactionsStep: read DALYTRAN, validate,
+                                                post (tran_cat_balance, account, transaction), write DALYREJS
+    CBTRN02C.unload     UnloadClustersTasklet   tables -> TRANFILE, ACCTFILE, TCATBALF images (key order)
+  Job CBTRN03C
+    CBTRN03C.load       LoadClustersTasklet     CARDXREF, TRANTYPE, TRANCATG images -> schema posting
+    CBTRN03C.report     TransactionReportTasklet  sorted TRANFILE + DATEPARM -> TRANREPT (133-byte records)
 ```
 
-Both go through `tools/impl/run-case.sh <chain> <case> <out>`:
-
-* `IMPL=legacy` (or unset) runs `tools/parity/record.py` in the `estate` container, the same
-  command the Makefile ran before the switch existed.
-* `IMPL=java` runs `java/<chain>/run-case.sh`, here `java/posting/run-case.sh`. A chain that has
-  no implementation under `java/` fails with a clear message instead of falling back.
-
-Cutting posting over means running the chain with `IMPL=java`; rolling back means dropping
-the selector (or `IMPL=legacy`). Nothing is shared between the two paths except the fixture
-inputs and the output layout, so either can run at any time and both are compared with the
-same `tools/parity/compare.py`. `make record` (golden files) stays legacy-only.
-
-`java/posting/run-case.sh` builds and runs the `posting-java` service from
-`java/posting/compose.yml`, an overlay on the root `docker-compose.yml` that uses the same
-PostgreSQL 15 `db` service. CI runs `make parity CHAIN=posting IMPL=java` after the legacy
-`make parity`. If Maven Central is rate-limited on your host, set `MAVEN_MIRROR_URL` (for
-example `https://maven-central.storage-download.googleapis.com/maven2`) and the image build
-uses that mirror.
-
-## How the chain maps
-
-| Legacy | Java |
-|---|---|
-| setup jobs `ACCTFILE`, `XREFFILE`, `TCATBALF`, `TRANTYPE`, `TRANCATG`, `TRANFILE` (DELETE/DEFINE + REPRO) | step `setup.loadClusters` (`LoadClustersTasklet`): truncate and load the `posting` schema tables from the case's flat files |
-| VSAM KSDS clusters ACCTDATA, CARDXREF, TCATBALF, TRANTYPE, TRANCATG, TRANSACT | tables `account`, `card_xref`, `tran_cat_balance`, `tran_type`, `tran_category`, `transaction` (Flyway `V1`) |
-| `POSTTRAN` STEP15, `CBTRN02C` | chunk step `POSTTRAN.STEP15` (`PostTransactionsStep`: reader, processor, writer, listener) |
-| `DALYREJS(+1)` GDG | `datasets/AWS.M2.CARDDEMO.DALYREJS.G0001V00.txt` |
-| `TRANREPT` PRC001/STEP05R (REPRO + DFSORT), STEP10R `CBTRN03C` | tasklet `TRANREPT.STEP10R` (`TransactionReportTasklet`, extract via `PostingStore.reportExtract`) |
-| `TRANREPT(+1)` GDG | `datasets/AWS.M2.CARDDEMO.TRANREPT.G0001V00.txt` |
-| `record.py` unload, SYSOUT capture, `rc.json` | step `unload` (`UnloadTasklet`) |
-
-Spring Batch's JobRepository tables live in the same `posting` schema (Flyway `V2`).
-Record layouts are in `record/Records.java`, a private copy of the copybook offsets. No Java
-code is shared with other migrated chains.
-
-Return codes: the Java steps report under the legacy step names in `rc.json`. Every step is 0
-except `POSTTRAN/STEP15`, which is 4 when any transaction was rejected, as in the legacy run.
-The JVM exits 0 when the job completes (RC 4 is recorded, not raised) and 12 when it fails.
+Flyway creates the tables in a `posting` schema on the estate's PostgreSQL 15 (`db` service): V1 for
+the clusters, V2 for Spring Batch's JobRepository tables. While the chain is strangled, the KSDS
+clusters remain the system of record, so every run rebuilds the schema from the step's DD images and
+writes the results back. That adapter (`LoadClustersTasklet` / `UnloadClustersTasklet`) is the part
+that goes away once the neighbouring chains read PostgreSQL directly. Record layouts
+(`record/Records.java`, `Zoned.java`) are a private copy of the copybooks, and no Java code is
+shared with `java/interest`.
 
 ## Legacy quirks reproduced on purpose
 
@@ -75,8 +88,8 @@ CBTRN02C (posting):
    `TCATBAL record not found for key : <key>.. Creating.` (p06).
 6. **The processing timestamp** is `FUNCTION CURRENT-DATE` reshaped to
    `YYYY-MM-DD-HH.MM.SS.hh0000`: hundredths, then a literal `0000`, not microseconds. The clock
-   is the chain's frozen clock from `tools/runjcl/chains.json` (`posting.clock` overrides it,
-   and it falls back to the wall clock when neither is set).
+   is `COB_CURRENT_DATE`, the chain's frozen clock that the JCL runner sets. Without it the
+   wall clock is used.
 7. **Reject records** are the 350-byte daily record exactly as read, plus the reason
    `PIC 9(4)` and the description `X(76)`.
 8. **RC 4 when anything was rejected**, plus the `TRANSACTIONS PROCESSED :` and
@@ -87,11 +100,10 @@ CBTRN02C (posting):
 TRANREPT / CBTRN03C (report):
 
 10. **The SORT window is hardcoded in the JCL**, not taken from DATEPARM. STEP05R keeps
-    records with `TRAN-PROC-TS(1:10)` between `2022-01-01` and `2022-07-06` (SYMNAMES in
-    `TRANREPT.jcl`, here `posting.report.sort-start-date` / `sort-end-date`). DATEPARM only
-    drives CBTRN03C's own filter and the header.
-11. **Sort order** is by card number only. The sort is stable, so ties keep TRANSACT key
-    (TRAN-ID) order.
+    records with `TRAN-PROC-TS(1:10)` between `2022-01-01` and `2022-07-06`. That step still runs
+    on the JCL runner. DATEPARM only drives CBTRN03C's own filter and the header.
+11. **Sort order** is by card number only (the JCL SORT, unchanged). CBTRN03C reads the sorted
+    file as it is.
 12. **`NEXT SENTENCE` leaves the whole report loop.** A record outside the DATEPARM range ends
     the report on the spot, with no page or grand totals. On an empty day the
     still-blank `TRAN-RECORD` fails the date test the same way, so the report dataset is empty,
@@ -116,22 +128,29 @@ TRANREPT / CBTRN03C (report):
     characters.
 19. **An unknown card, type or category abends the step**
     (`INVALID CARD NUMBER : ...` / `INVALID TRANSACTION TYPE : ...` / `INVALID TRAN CATG KEY : ...`
-    then `ABENDING PROGRAM`). Java fails the job (exit 12) and keeps SYSOUT and `rc.json`.
+    then `FILE STATUS IS: NNNN0023`, `ABENDING PROGRAM`, `CEE3ABD: USER ABEND U+0000000999`).
+    The step ends with RC 12, `END OF EXECUTION` is not displayed, and report lines written
+    before the abend are kept.
+20. **CBTRN02C opens TRANFILE OUTPUT**, so the transaction cluster is rebuilt from this run's
+    postings only (in every fixture it starts empty).
 
 ## Not proven by the fixtures
 
 The seven fixtures pass field for field, but they do not cover the behaviour below. The Java
 code follows the COBOL as written; confirm on the mainframe before relying on it.
 
-* **Abend return codes** (quirk 19, and I/O errors): `rc.json` for an abended legacy step was
-  not recorded, so the Java job only reports failure.
+* **Abends** (quirk 19, and I/O errors): no fixture covers them. The SYSOUT lines and RC 12
+  follow the COBOL and the `CEE3ABD` stand-in. If CBTRN02C abends mid-run, Java writes no cluster
+  changes back, while legacy keeps the records written before the abend.
 * **Overflow** (quirk 9): no fixture comes close to the PIC limits. Left truncation is the
   COBOL standard; GnuCOBOL vs Enterprise COBOL `TRUNC` options were not compared.
 * **A zero total or amount** edits to spaces (quirk 18). No fixture prints a zero total.
 * **A record outside the DATEPARM range** (quirk 12) only shows up on an empty day in the
   fixtures. The SORT window and DATEPARM agree in every case.
-* **ZD sort key:** the JCL sorts `TRAN-CARD-NUM` as `ZD`, but the off-host runner (and this
-  code) compares bytes. That only differs for card numbers that are not all digits.
+* **TRANFILE OPEN OUTPUT** (quirk 20): GnuCOBOL recreates the indexed file. On z/OS, OPEN OUTPUT
+  on a non-empty KSDS without REUSE fails. The fixtures never start with transactions.
+* **ACCTDATA filler:** the account record's 178-byte FILLER is rewritten as spaces. It is blank
+  in every fixture.
 * **Duplicate TRAN-ID in one day:** COBOL abends on the failed WRITE. Java fails the chunk
   on the primary key, so the effect is the same (job fails), but the reject/SYSOUT state at
   the point of failure was not compared.
@@ -141,6 +160,10 @@ code follows the COBOL as written; confirm on the mainframe before relying on it
 ## Build and test
 
 ```sh
-cd java/posting && mvn -B package        # Java 21; unit tests for the zoned/edited-number codec
-make parity CHAIN=posting IMPL=java      # the real test: golden-file parity, in Docker
+make up && make build              # legacy estate (once)
+make java-posting-build            # mvn package in maven:3.9-eclipse-temurin-21 (uses ~/.m2 as cache)
+make parity-java-posting           # 7 posting fixtures through the Java implementation
+make parity                        # legacy, unchanged
 ```
+
+`mvn test` runs the zoned / edited-number codec unit tests.

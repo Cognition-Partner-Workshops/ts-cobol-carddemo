@@ -1,81 +1,59 @@
 package com.carddemo.posting;
 
-import com.carddemo.posting.batch.FailureOutcome;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Stream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.stereotype.Component;
 
 /**
- * {@code java -jar posting.jar <case-dir> <out-dir>}: runs the posting chain on a fixture case
- * and writes outputs in the recorder's layout. Exit code 0 when the job completes (the legacy
- * RC 4 for rejects is reported in rc.json, as the legacy harness does), 12 otherwise.
+ * {@code java -jar posting.jar CBTRN02C|CBTRN03C}: the program behind {@code EXEC PGM=} in
+ * POSTTRAN STEP15 / TRANREPT STEP10R, with the step contract described in {@link StepFiles}.
  */
 @Component
 public class PostingRunner implements ApplicationRunner, ExitCodeGenerator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostingRunner.class);
-
     private final JobLauncher jobLauncher;
-    private final Job postingJob;
-    private final ChainRun run;
+    private final Job cbtrn02c;
+    private final Job cbtrn03c;
+    private final StepFiles files;
     private int exitCode;
 
-    public PostingRunner(JobLauncher jobLauncher, Job postingJob, ChainRun run) {
+    public PostingRunner(JobLauncher jobLauncher, @Qualifier("cbtrn02cJob") Job cbtrn02c,
+                         @Qualifier("cbtrn03cJob") Job cbtrn03c, StepFiles files) {
         this.jobLauncher = jobLauncher;
-        this.postingJob = postingJob;
-        this.run = run;
+        this.cbtrn02c = cbtrn02c;
+        this.cbtrn03c = cbtrn03c;
+        this.files = files;
     }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        List<String> paths = args.getNonOptionArgs();
-        if (paths.size() != 2) {
-            LOG.error("usage: posting.jar <fixtures/posting/<case>> <out-dir>");
-            exitCode = 2;
-            return;
-        }
-        Path caseDir = Path.of(paths.get(0));
-        Path outDir = Path.of(paths.get(1));
-        recreate(outDir);
-        run.start(caseDir, outDir);
-        JobExecution execution = jobLauncher.run(postingJob, new JobParametersBuilder()
-                .addString("case", caseDir.toString())
-                .addString("out", outDir.toString())
-                .addLong("launchedAt", System.currentTimeMillis())
-                .toJobParameters());
-        if (execution.getStatus() == BatchStatus.COMPLETED) {
-            LOG.info("posting {} -> {}: {}", caseDir, outDir, run.returnCodes());
-            exitCode = 0;
-        } else {
-            FailureOutcome.write(run);
-            execution.getAllFailureExceptions().forEach(e -> LOG.error("posting failed", e));
-            exitCode = 12;
-        }
-    }
-
-    private static void recreate(Path dir) throws IOException {
-        if (Files.exists(dir)) {
-            try (Stream<Path> walk = Files.walk(dir)) {
-                for (Path path : walk.sorted(Comparator.reverseOrder()).toList()) {
-                    Files.delete(path);
-                }
+        String program = args.getNonOptionArgs().isEmpty() ? "" : args.getNonOptionArgs().get(0).toUpperCase();
+        Job job = switch (program) {
+            case "CBTRN02C" -> cbtrn02c;
+            case "CBTRN03C" -> cbtrn03c;
+            default -> throw new IllegalArgumentException("usage: posting.jar CBTRN02C|CBTRN03C, got '" + program + "'");
+        };
+        try {
+            JobExecution execution = jobLauncher.run(job, new JobParametersBuilder()
+                    .addString("program", program)
+                    .addLong("launchedAt", System.currentTimeMillis())
+                    .toJobParameters());
+            if (!files.abended() && execution.getStatus() != BatchStatus.COMPLETED) {
+                throw new IllegalStateException(program + " ended " + execution.getStatus() + ": "
+                        + execution.getAllFailureExceptions());
             }
+            exitCode = files.returnCode();
+        } finally {
+            files.sysout().forEach(System.out::println);
+            System.out.flush();
         }
-        Files.createDirectories(dir);
     }
 
     @Override

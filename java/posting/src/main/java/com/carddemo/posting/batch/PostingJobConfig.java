@@ -2,6 +2,7 @@ package com.carddemo.posting.batch;
 
 import com.carddemo.posting.batch.PostTransactionsStep.Daily;
 import com.carddemo.posting.batch.PostTransactionsStep.Outcome;
+import com.carddemo.posting.store.PostingStore;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -12,52 +13,38 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
- * The posting chain as one Spring Batch job. Step names follow the legacy jobs:
- * setup jobs -> POSTTRAN STEP15 (CBTRN02C) -> TRANREPT STEP05R/STEP10R (SORT + CBTRN03C) -> unload.
+ * One Spring Batch job per migrated program. The JCL around them (setup jobs, POSTTRAN's other
+ * steps, TRANREPT's REPRO and SORT) still runs on the JCL runner.
  */
 @Configuration
 public class PostingJobConfig {
 
     static final int CHUNK_SIZE = 100;
 
+    /** POSTTRAN STEP15. */
     @Bean
-    public Job postingJob(JobRepository jobRepository, Step loadClusters, Step postTransactions,
-                          Step transactionReport, Step unloadOutputs) {
-        return new JobBuilder("posting", jobRepository)
-                .start(loadClusters)
-                .next(postTransactions)
-                .next(transactionReport)
-                .next(unloadOutputs)
-                .build();
-    }
-
-    @Bean
-    public Step loadClusters(JobRepository jobRepository, PlatformTransactionManager transactionManager,
-                             LoadClustersTasklet tasklet) {
-        return new StepBuilder("setup.loadClusters", jobRepository).tasklet(tasklet, transactionManager).build();
-    }
-
-    @Bean
-    public Step postTransactions(JobRepository jobRepository, PlatformTransactionManager transactionManager,
-                                 PostTransactionsStep posting) {
-        return new StepBuilder("POSTTRAN.STEP15", jobRepository)
-                .<Daily, Outcome>chunk(CHUNK_SIZE, transactionManager)
+    public Job cbtrn02cJob(JobRepository jobRepository, PlatformTransactionManager tm, PostingStore store,
+                           PostTransactionsStep posting, UnloadClustersTasklet unload) {
+        Step load = new StepBuilder("CBTRN02C.load", jobRepository)
+                .tasklet(new LoadClustersTasklet(store, "XREFFILE", "ACCTFILE", "TCATBALF"), tm).build();
+        Step post = new StepBuilder("CBTRN02C.post", jobRepository)
+                .<Daily, Outcome>chunk(CHUNK_SIZE, tm)
                 .reader(posting)
                 .processor(posting)
                 .writer(posting)
                 .listener(posting)
                 .build();
+        Step unloadStep = new StepBuilder("CBTRN02C.unload", jobRepository).tasklet(unload, tm).build();
+        return new JobBuilder("CBTRN02C", jobRepository).start(load).next(post).next(unloadStep).build();
     }
 
+    /** TRANREPT STEP10R. */
     @Bean
-    public Step transactionReport(JobRepository jobRepository, PlatformTransactionManager transactionManager,
-                                  TransactionReportTasklet tasklet) {
-        return new StepBuilder("TRANREPT.STEP10R", jobRepository).tasklet(tasklet, transactionManager).build();
-    }
-
-    @Bean
-    public Step unloadOutputs(JobRepository jobRepository, PlatformTransactionManager transactionManager,
-                              UnloadTasklet tasklet) {
-        return new StepBuilder("unload", jobRepository).tasklet(tasklet, transactionManager).build();
+    public Job cbtrn03cJob(JobRepository jobRepository, PlatformTransactionManager tm, PostingStore store,
+                           TransactionReportTasklet report) {
+        Step load = new StepBuilder("CBTRN03C.load", jobRepository)
+                .tasklet(new LoadClustersTasklet(store, "CARDXREF", "TRANTYPE", "TRANCATG"), tm).build();
+        Step reportStep = new StepBuilder("CBTRN03C.report", jobRepository).tasklet(report, tm).build();
+        return new JobBuilder("CBTRN03C", jobRepository).start(load).next(reportStep).build();
     }
 }

@@ -1,7 +1,7 @@
 package com.carddemo.posting.batch;
 
-import com.carddemo.posting.ChainRun;
 import com.carddemo.posting.LegacyAbend;
+import com.carddemo.posting.StepFiles;
 import com.carddemo.posting.record.Records.CardXref;
 import com.carddemo.posting.record.Records.TranCategory;
 import com.carddemo.posting.record.Records.TranType;
@@ -31,21 +31,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class TransactionReportTasklet implements Tasklet {
 
-    static final String JOB = "TRANREPT";
-    static final String STEP = "STEP10R";
-    static final String DATEPARM = "AWS.M2.CARDDEMO.DATEPARM";
-    static final String TRANREPT = "AWS.M2.CARDDEMO.TRANREPT.G0001V00";
     static final int LRECL = 133;
 
     private static final String HEADER_2 = "-".repeat(LRECL);
 
-    private final ChainRun run;
+    private final StepFiles run;
     private final PostingStore store;
-    private final String sortStartDate;
-    private final String sortEndDate;
     private final int pageSize;
 
-    private List<String> sysout;
     private List<String> report;
     private String startDate;
     private String endDate;
@@ -54,27 +47,23 @@ public class TransactionReportTasklet implements Tasklet {
     private BigDecimal accountTotal;
     private BigDecimal grandTotal;
 
-    public TransactionReportTasklet(ChainRun run, PostingStore store,
-                                    @Value("${posting.report.sort-start-date}") String sortStartDate,
-                                    @Value("${posting.report.sort-end-date}") String sortEndDate,
+    public TransactionReportTasklet(StepFiles run, PostingStore store,
                                     @Value("${posting.report.page-size}") int pageSize) {
         this.run = run;
         this.store = store;
-        this.sortStartDate = sortStartDate;
-        this.sortEndDate = sortEndDate;
         this.pageSize = pageSize;
     }
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws IOException {
-        sysout = run.sysout(JOB, STEP);
         report = new ArrayList<>();
         lineCounter = 0;
         pageTotal = BigDecimal.ZERO;
         accountTotal = BigDecimal.ZERO;
         grandTotal = BigDecimal.ZERO;
         try {
-            produceReport(store.reportExtract(sortStartDate, sortEndDate));
+            produceReport(StepFiles.readFixed(StepFiles.dd("TRANFILE"), Transaction.LRECL).stream()
+                    .map(Transaction::parse).toList());
         } finally {
             writeReport();
         }
@@ -82,7 +71,7 @@ public class TransactionReportTasklet implements Tasklet {
     }
 
     private void produceReport(List<Transaction> sorted) {
-        sysout.add("START OF EXECUTION OF PROGRAM CBTRN03C");
+        run.display("START OF EXECUTION OF PROGRAM CBTRN03C");
         boolean endOfFile = !readDateParm();
         boolean firstTime = true;
         String currentCard = "";
@@ -103,7 +92,7 @@ public class TransactionReportTasklet implements Tasklet {
                 break;
             }
             if (!endOfFile) {
-                sysout.add(tranRecord.format());
+                run.display(tranRecord.format());
                 if (!currentCard.equals(Text.pad(tranRecord.cardNum(), 16))) {
                     if (!firstTime) {
                         writeAccountTotals();
@@ -124,26 +113,26 @@ public class TransactionReportTasklet implements Tasklet {
                 addToTotals(tranRecord.amount());
                 writeDetail(tranRecord, xref, type, category);
             } else {
-                sysout.add("TRAN-AMT " + Zoned.display(tranRecord.amount(), 9, 2));
-                sysout.add("WS-PAGE-TOTAL" + Zoned.display(pageTotal, 9, 2));
+                run.display("TRAN-AMT " + Zoned.display(tranRecord.amount(), 9, 2));
+                run.display("WS-PAGE-TOTAL" + Zoned.display(pageTotal, 9, 2));
                 // Quirk: the last transaction is added to the page/account totals a second time.
                 addToTotals(tranRecord.amount());
                 writePageTotals();
                 writeGrandTotals();
             }
         }
-        sysout.add("END OF EXECUTION OF PROGRAM CBTRN03C");
+        run.display("END OF EXECUTION OF PROGRAM CBTRN03C");
     }
 
     private boolean readDateParm() {
-        List<String> records = run.readInput(DATEPARM);
+        List<String> records = StepFiles.readFixed(StepFiles.dd("DATEPARM"), 80);
         if (records.isEmpty()) {
             return false;
         }
         String record = Text.pad(records.get(0), 80);
         startDate = record.substring(0, 10);
         endDate = record.substring(11, 21);
-        sysout.add("Reporting from " + startDate + " to " + endDate);
+        run.display("Reporting from " + startDate + " to " + endDate);
         return true;
     }
 
@@ -167,9 +156,7 @@ public class TransactionReportTasklet implements Tasklet {
     }
 
     private LegacyAbend abend(String message) {
-        sysout.add(message);
-        sysout.add("ABENDING PROGRAM");
-        return new LegacyAbend(JOB + "/" + STEP + ": " + message);
+        return run.abend(message, "23");
     }
 
     private void write(String line) {
@@ -214,11 +201,7 @@ public class TransactionReportTasklet implements Tasklet {
         lineCounter++;
     }
 
-    private void writeReport() throws IOException {
-        Path target = run.dataset(TRANREPT);
-        Files.createDirectories(target.getParent());
-        StringBuilder text = new StringBuilder();
-        report.forEach(line -> text.append(Text.rtrim(line)).append('\n'));
-        Files.writeString(target, text, StandardCharsets.ISO_8859_1);
+    private void writeReport() {
+        StepFiles.writeFixed(StepFiles.dd("TRANREPT"), report, LRECL);
     }
 }

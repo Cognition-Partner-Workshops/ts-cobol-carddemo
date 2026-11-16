@@ -27,6 +27,9 @@ jobs:
       - name: Interest chain on the Java implementation (java/interest)
         run: make parity-java-interest
 
+      - name: Posting chain on the Java implementation (java/posting)
+        run: make parity-java-posting
+
       - name: Naive half-even reference fails only on the tie case
         run: |
           set +e

@@ -124,14 +124,4 @@ public class PostingStore {
     public List<Transaction> transactions() {
         return jdbc.query("select * from transaction order by tran_id", TRANSACTION);
     }
-
-    /**
-     * TRANREPT STEP05R: REPRO of the KSDS (key order) then SORT FIELDS=(TRAN-CARD-NUM,A) with
-     * INCLUDE COND on TRAN-PROC-TS(1:10). The sort is stable, so ties keep TRAN-ID order.
-     */
-    public List<Transaction> reportExtract(String startDate, String endDate) {
-        return jdbc.query("select * from transaction where substr(rpad(proc_ts, 26), 1, 10) collate \"C\" >= ?"
-                + " and substr(rpad(proc_ts, 26), 1, 10) collate \"C\" <= ? order by card_num, tran_id",
-                TRANSACTION, startDate, endDate);
-    }
 }

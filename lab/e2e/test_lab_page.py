@@ -96,6 +96,15 @@ def test_04_unresolved_item_links_to_its_open_register_row(lab):
     assert "cut off at the cent, or rounded" in registerRow.inner_text()
     assert registerRow.locator("td").last.inner_text().strip() == "OPEN"
     assert register.evaluate("document.querySelector('tr:target').id") == "INT-Q01"
+    assert summaryRows(lab).count() == 1                                   # the lab tab kept its result
+    # a browser that opens the link in the same tab: Back returns to the lab with the result still there
+    lab.goto(register.url)
+    assert lab.locator("tr#INT-Q01 td").last.inner_text().strip() == "OPEN"
+    lab.go_back()
+    lab.wait_for_selector("#goldenList li")
+    lab.wait_for_function("document.getElementById('status').textContent.startsWith('Back on the lab page')")
+    assert summaryRows(lab).count() == 1 and summaryRows(lab).first.get_attribute("data-case") == tieCase
+    assert lab.locator(f"#case-golden-{tieCase} table.items tr[data-class=UNRESOLVED]").count() == 11
 
 
 def test_05_every_edge_probe_returns_a_result_and_fixtures_stay_untouched(lab):
@@ -170,6 +179,11 @@ def test_08_link_to_the_rules_board_opens_the_board(lab):
     assert board.url.endswith("/board")
     assert "Not SME sign-off" in board.locator("#notice").inner_text()
     assert board.locator("article.card").count() == 20
+    lab.goto(board.url)                                                    # same-tab browsers: the board, then Back
+    assert lab.locator("article.card").count() == 20
+    lab.go_back()
+    lab.wait_for_selector("#goldenList li")
+    assert lab.locator("#gateVerdict").inner_text() == "NOT RUN" and lab.consoleErrors == []
 
 
 def test_09_reload_during_a_run_shows_no_stale_result(lab):

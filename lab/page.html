@@ -203,7 +203,8 @@ async function loadMeta() {
   byId("customInput").value = meta.customTemplate;
   for (const text of meta.limits) byId("limits").append(element("li", {text}));
   byId("loadedAt").textContent = new Date().toLocaleTimeString();
-  setStatus("Ready. Pick a case to run it through both engines.");
+  if (restoreAfterBack()) setStatus("Back on the lab page: the " + pageState.results.length + " result(s) below are the runs started from it before you followed a link.");
+  else setStatus("Ready. Pick a case to run it through both engines.");
 }
 
 function caseEntry(kind, name, title, note) {
@@ -269,12 +270,38 @@ function showCustomError(error) {
   box.hidden = false;
 }
 
+// Results live in this page only. They are kept in sessionStorage for one purpose: a browser that opens
+// the register or the board in this tab instead of a new one can come back (Back button) without losing
+// them. A reload or a fresh visit always starts empty, so nothing stale is shown.
+const storageKey = "replayLabResults";
+
+function rememberResults() {
+  try {
+    if (pageState.results.length) sessionStorage.setItem(storageKey, JSON.stringify(pageState.results));
+    else sessionStorage.removeItem(storageKey);
+  } catch (error) { /* storage full or unavailable: the page works without it */ }
+}
+
+function restoreAfterBack() {
+  const entry = performance.getEntriesByType("navigation")[0];
+  let stored = null;
+  try {
+    stored = sessionStorage.getItem(storageKey);
+    if (!entry || entry.type !== "back_forward") sessionStorage.removeItem(storageKey);
+  } catch (error) { return false; }
+  if (!stored || !entry || entry.type !== "back_forward") return false;
+  pageState.results = JSON.parse(stored);
+  render();
+  return true;
+}
+
 function addResult(result) {
   const key = result.kind === "custom" ? result.case : result.kind + ":" + result.case;
   result.key = key;
   const existing = pageState.results.findIndex((r) => r.key === key);
   if (existing >= 0) pageState.results.splice(existing, 1);
   pageState.results.push(result);
+  rememberResults();
   render(key);
 }
 
@@ -456,7 +483,7 @@ byId("runAllProbes").addEventListener("click", () => runCases(pageState.meta.pro
 byId("runCustom").addEventListener("click", () => runCases([{kind: "custom", input: byId("customInput").value}]));
 byId("resetCustom").addEventListener("click", () => { byId("customInput").value = pageState.meta.customTemplate; byId("customError").hidden = true; });
 byId("saveSnapshot").addEventListener("click", saveSnapshot);
-byId("clearResults").addEventListener("click", () => { pageState.generation += 1; pageState.results = []; render(); setStatus("Results cleared."); });
+byId("clearResults").addEventListener("click", () => { pageState.generation += 1; pageState.results = []; rememberResults(); render(); setStatus("Results cleared."); });
 loadMeta().catch((error) => setStatus("The lab could not be loaded: " + error.message, "error"));
 </script>
 </body>

@@ -87,3 +87,39 @@ baseline:
 reset:
 	rm -rf datasets loadlib work
 	$(COMPOSE) down -v
+
+# ------------------------------------------------- strangler-fig implementation switch
+# Each tools/runjcl/impl/<chain>.json names a chain's migrated programs and its default
+# implementation (legacy until cut over).  IMPL=<impl> switches CHAIN (or every chain that
+# has an impl file) for this invocation of run / parity / record; CARDDEMO_IMPL=interest=java,...
+# selects per chain explicitly.  See tools/runjcl/candidate.py.
+IMPL ?=
+IMPL_CHAINS = $(or $(CHAIN),$(basename $(notdir $(wildcard tools/runjcl/impl/*.json))))
+CARDDEMO_IMPL ?= $(if $(IMPL),$(shell echo $(foreach c,$(IMPL_CHAINS),$(c)=$(IMPL)) | tr ' ' ','))
+ifneq ($(CARDDEMO_IMPL),)
+EXEC = $(COMPOSE) exec -T -e CARDDEMO_IMPL=$(CARDDEMO_IMPL) estate
+endif
+
+# ------------------------------------------------------------ java/interest (INTCALC)
+#   make java-interest-build      package java/interest/target/interest.jar (Maven in Docker)
+#   make parity-java-interest [CASE=..]  interest chain on the Java implementation -> work/parity/report-java-interest.md
+MAVEN_IMAGE ?= maven:3.9-eclipse-temurin-21
+MAVEN_HOME_DIR ?= $(HOME)/.m2
+
+.PHONY: java-interest-build parity-java-interest parity-java
+
+java-interest-build:
+	@mkdir -p "$(MAVEN_HOME_DIR)"
+	docker run --rm -u $(UID):$(GID) -e HOME=/var/maven -e MAVEN_CONFIG=/var/maven/.m2 \
+	  -v "$(MAVEN_HOME_DIR)":/var/maven/.m2 -v "$(CURDIR)/java/interest":/src -w /src \
+	  $(MAVEN_IMAGE) mvn -B -q -Duser.home=/var/maven package
+
+parity-java: parity-java-interest
+
+parity-java-interest: java-interest-build
+	@rm -f work/parity/report-java-interest.md; mkdir -p work/parity; fail=0; \
+	for case in $(if $(CASE),$(CASE),$$(ls fixtures/interest)); do \
+	  $(COMPOSE) exec -T -e CARDDEMO_IMPL=interest=java estate $(PY) tools/parity/record.py interest $$case --out work/parity/interest/$$case/java > /dev/null || { echo "interest/$$case: java run failed"; fail=1; continue; }; \
+	  $(COMPOSE) exec -T estate $(PY) tools/parity/compare.py interest $$case --actual work/parity/interest/$$case/java --report work/parity/report-java-interest.md --label "java (java/interest)" || fail=1; \
+	done; \
+	echo "report: work/parity/report-java-interest.md"; exit $$fail

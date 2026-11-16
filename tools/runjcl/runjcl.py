@@ -33,6 +33,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import candidate  # noqa: E402
 JCL_DIR = ROOT / "app" / "jcl"
 PROC_DIRS = [ROOT / "app" / "proc", ROOT / "app" / "app-transaction-type-db2" / "proc"]
 CTL_DIRS = [ROOT / "app" / "ctl", ROOT / "app" / "app-transaction-type-db2" / "ctl"]
@@ -520,6 +522,7 @@ class Runner:
         self.pending_gdg: dict[str, int] = {}
         self.rcs: dict[str, int] = {}
         self.outputs: list[dict] = []      # datasets written by this run
+        self.candidates = candidate.load(sys.modules[__name__])   # per-chain switch, see candidate.py
         DATASETS.mkdir(parents=True, exist_ok=True)
         self.joblog.mkdir(parents=True, exist_ok=True)
 
@@ -1078,6 +1081,8 @@ class Runner:
             return 0
         if program == "IKJEFT01":
             return self.ikjeft01(step, env, infos, stepdir)
+        if program in self.candidates:
+            return candidate.run_step(self, sys.modules[__name__], step, env, infos, stepdir, self.candidates[program])
         argv = ["PARMDRV", program, step.parm.strip("'")] if step.parm else [program]
         return self._cobcrun(argv, env, stepdir=stepdir)
 

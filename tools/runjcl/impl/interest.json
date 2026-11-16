@@ -1,0 +1,14 @@
+{
+ "chain": "interest",
+ "description": "INTCALC STEP15: CBACT04C (GnuCOBOL) or java/interest (Spring Batch on PostgreSQL 15)",
+ "default": "legacy",
+ "implementations": {
+  "java": {
+   "requires": "java/interest/target/interest.jar",
+   "build": "make java-interest-build",
+   "programs": {
+    "CBACT04C": ["java", "-jar", "java/interest/target/interest.jar"]
+   }
+  }
+ }
+}

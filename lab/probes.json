@@ -1,0 +1,113 @@
+{
+ "notice": "Edge probes of the replay lab. Synthetic inputs designed to stress the interest stream beyond the seven golden fixtures. They have no golden file: the observed side is the legacy lane run at replay time, and nothing is recorded under fixtures/.",
+ "probes": [
+  {
+   "name": "p01-tie-ladder",
+   "title": "Rounding ties, positive",
+   "stresses": "Four balances of one account at 12.00 %, each exactly half a cent of interest: 0.015, 0.025, 12.355 and 12.365. Truncation, half-up and half-even give three different totals (24.74, 24.78, 24.76), so the account balance shows which one an engine used. A second account closes the file.",
+   "accounts": [
+    {"id": 3001, "balance": "2500.00", "group": "GOLD", "cycleCredit": "40.00", "cycleDebit": "15.00"},
+    {"id": 3002, "balance": "900.00", "group": "GOLD"}
+   ],
+   "balances": [
+    {"account": 3001, "type": "01", "category": 1, "balance": "1.50"},
+    {"account": 3001, "type": "01", "category": 2, "balance": "2.50"},
+    {"account": 3001, "type": "01", "category": 3, "balance": "1235.50"},
+    {"account": 3001, "type": "01", "category": 4, "balance": "1236.50"},
+    {"account": 3002, "type": "01", "category": 1, "balance": "900.00"}
+   ],
+   "rates": [
+    {"group": "GOLD", "type": "01", "category": 1, "rate": "12.00"},
+    {"group": "GOLD", "type": "01", "category": 2, "rate": "12.00"},
+    {"group": "GOLD", "type": "01", "category": 3, "rate": "12.00"},
+    {"group": "GOLD", "type": "01", "category": 4, "rate": "12.00"},
+    {"group": "DEFAULT", "type": "01", "category": 1, "rate": "21.00"}
+   ]
+  },
+  {
+   "name": "p02-tie-negative",
+   "title": "Rounding ties, negative",
+   "stresses": "Credit balances whose interest is exactly minus half a cent: -0.025 and -12.355. Cutting off towards zero gives -0.02 and -12.35; rounding down (floor) or half-up away from zero would give -0.03 and -12.36.",
+   "accounts": [
+    {"id": 3003, "balance": "-1238.00", "group": "GOLD"},
+    {"id": 3004, "balance": "500.00", "group": "STANDARD"}
+   ],
+   "balances": [
+    {"account": 3003, "type": "01", "category": 1, "balance": "-1235.50"},
+    {"account": 3003, "type": "01", "category": 2, "balance": "-2.50"},
+    {"account": 3004, "type": "01", "category": 1, "balance": "500.00"}
+   ],
+   "rates": [
+    {"group": "GOLD", "type": "01", "category": 1, "rate": "12.00"},
+    {"group": "GOLD", "type": "01", "category": 2, "rate": "12.00"},
+    {"group": "STANDARD", "type": "01", "category": 1, "rate": "18.50"},
+    {"group": "DEFAULT", "type": "01", "category": 1, "rate": "21.00"}
+   ]
+  },
+  {
+   "name": "p03-last-account",
+   "title": "The last account on the file",
+   "stresses": "Three accounts with balances; the last one has two balances and non-zero cycle amounts, and it is not the last record of the account file (account 3013 follows it there with no balance). The legacy program updates 3010 and 3011, writes the transactions of 3012 but leaves its balance and cycle amounts as they were, and never touches 3013.",
+   "accounts": [
+    {"id": 3010, "balance": "1000.00", "group": "GOLD", "cycleCredit": "10.00", "cycleDebit": "20.00"},
+    {"id": 3011, "balance": "2000.00", "group": "STANDARD", "cycleCredit": "30.00", "cycleDebit": "40.00"},
+    {"id": 3012, "balance": "3000.00", "group": "GOLD", "cycleCredit": "50.00", "cycleDebit": "60.00"},
+    {"id": 3013, "balance": "4000.00", "group": "GOLD", "cycleCredit": "70.00", "cycleDebit": "80.00"}
+   ],
+   "balances": [
+    {"account": 3010, "type": "01", "category": 1, "balance": "1000.00"},
+    {"account": 3011, "type": "01", "category": 1, "balance": "1200.00"},
+    {"account": 3011, "type": "01", "category": 2, "balance": "800.00"},
+    {"account": 3012, "type": "01", "category": 1, "balance": "2500.00"},
+    {"account": 3012, "type": "01", "category": 2, "balance": "500.00"}
+   ]
+  },
+  {
+   "name": "p04-no-disclosure-group",
+   "title": "An account with no disclosure group",
+   "stresses": "Account 3020 has an empty group id. Both of its balances have no rate of their own, so each falls back to the group DEFAULT with the two messages in the job log: the purchase balance is charged at 21.00 %, the payment balance has the DEFAULT rate 0 and gets no transaction. Account 3021 closes the file.",
+   "accounts": [
+    {"id": 3020, "balance": "1000.00", "group": ""},
+    {"id": 3021, "balance": "100.00", "group": "GOLD"}
+   ],
+   "balances": [
+    {"account": 3020, "type": "01", "category": 1, "balance": "1000.00"},
+    {"account": 3020, "type": "02", "category": 1, "balance": "250.00"},
+    {"account": 3021, "type": "01", "category": 1, "balance": "100.00"}
+   ]
+  },
+  {
+   "name": "p05-negative-balance",
+   "title": "Negative balances",
+   "stresses": "Account 3030 has a debit and a larger credit balance, so its interest nets to -12.50 and the account balance goes down. Account 3031 has no group and a credit balance of -300.10: DEFAULT rate, interest -5.25175 cut off towards zero to -5.25, and as the last account its balance is not changed.",
+   "accounts": [
+    {"id": 3030, "balance": "-500.00", "group": "GOLD", "cycleCredit": "1500.00", "cycleDebit": "1000.00"},
+    {"id": 3031, "balance": "-300.10", "group": ""}
+   ],
+   "balances": [
+    {"account": 3030, "type": "01", "category": 1, "balance": "1000.00"},
+    {"account": 3030, "type": "01", "category": 2, "balance": "-1500.00"},
+    {"account": 3031, "type": "01", "category": 1, "balance": "-300.10"}
+   ]
+  },
+  {
+   "name": "p06-sub-cent-inactive",
+   "title": "Interest below one cent, inactive account",
+   "stresses": "Balances of 0.50 and -0.50 at 12.00 % give +0.005 and -0.005, both cut off to zero: a 0.00 transaction is still written (INT-Q06), and the second one is a zero with a negative origin. The account is inactive (INT-H04) and is charged all the same. Account 3041 closes the file.",
+   "accounts": [
+    {"id": 3040, "balance": "75.00", "group": "GOLD", "active": "N"},
+    {"id": 3041, "balance": "10.00", "group": "GOLD"}
+   ],
+   "balances": [
+    {"account": 3040, "type": "01", "category": 1, "balance": "0.50"},
+    {"account": 3040, "type": "01", "category": 2, "balance": "-0.50"},
+    {"account": 3041, "type": "01", "category": 1, "balance": "10.00"}
+   ],
+   "rates": [
+    {"group": "GOLD", "type": "01", "category": 1, "rate": "12.00"},
+    {"group": "GOLD", "type": "01", "category": 2, "rate": "12.00"},
+    {"group": "DEFAULT", "type": "01", "category": 1, "rate": "21.00"}
+   ]
+  }
+ ]
+}

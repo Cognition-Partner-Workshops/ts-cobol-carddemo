@@ -1,0 +1,25 @@
+lab-gate: replay of the interest stream (INTCALC -> CBACT04C against java/interest)
+golden i01-baseline                 MATCH 48  INTENDED_CHANGE 0  UNRESOLVED 8  UNCLASSIFIED 0
+golden i02-tie-half-cent            MATCH 45  INTENDED_CHANGE 0  UNRESOLVED 11  UNCLASSIFIED 0
+golden i03-zero-rate-skipped        MATCH 25  INTENDED_CHANGE 0  UNRESOLVED 6  UNCLASSIFIED 0
+golden i04-default-group-fallback   MATCH 25  INTENDED_CHANGE 0  UNRESOLVED 5  UNCLASSIFIED 0
+golden i05-multi-category           MATCH 36  INTENDED_CHANGE 0  UNRESOLVED 8  UNCLASSIFIED 0
+golden i06-negative-balance         MATCH 14  INTENDED_CHANGE 0  UNRESOLVED 16  UNCLASSIFIED 0
+golden i07-nontie-rounding          MATCH 48  INTENDED_CHANGE 0  UNRESOLVED 8  UNCLASSIFIED 0
+golden total: 7 cases, 303 compared values: MATCH 241  INTENDED_CHANGE 0  UNRESOLVED 62  UNCLASSIFIED 0
+golden rule coverage: 13 of 20 rules exercised
+probe  p01-tie-ladder               MATCH 77  INTENDED_CHANGE 0  UNRESOLVED 21  UNCLASSIFIED 0
+probe  p02-tie-negative             MATCH 36  INTENDED_CHANGE 0  UNRESOLVED 34  UNCLASSIFIED 0
+probe  p03-last-account             MATCH 104  INTENDED_CHANGE 0  UNRESOLVED 18  UNCLASSIFIED 0
+probe  p04-no-disclosure-group      MATCH 50  INTENDED_CHANGE 0  UNRESOLVED 7  UNCLASSIFIED 0
+probe  p05-negative-balance         MATCH 37  INTENDED_CHANGE 0  UNRESOLVED 33  UNCLASSIFIED 0
+probe  p06-sub-cent-inactive        MATCH 38  INTENDED_CHANGE 0  UNRESOLVED 32  UNCLASSIFIED 0
+probe total: 6 cases, 487 compared values: MATCH 342  INTENDED_CHANGE 0  UNRESOLVED 145  UNCLASSIFIED 0
+probe rule coverage: 15 of 20 rules exercised
+all total: 13 cases, 790 compared values: MATCH 583  INTENDED_CHANGE 0  UNRESOLVED 207  UNCLASSIFIED 0
+rule coverage: 15 of 20 rules exercised by these cases; not exercised: INT-R08, INT-H02, INT-H03, INT-H05, INT-H06
+rule verdicts, legacy: no rule violated in any case
+rule verdicts, target: no rule violated in any case
+gate: PASS (UNCLASSIFIED = 0)
+report: work/lab/report.md
+exit code: 0

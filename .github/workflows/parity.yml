@@ -60,6 +60,36 @@ jobs:
           test "$(grep -c '^interest/.* \[java\]: FAIL' $out/gate.log)" -eq 1 || { echo "another case than the tie case failed"; exit 1; }
           grep -q '^parity-java: 6 of 7 cases PASS$' $out/gate.log || { echo "expected 6 of 7 cases to pass"; exit 1; }
 
+      # ---- Replay lab of the interest stream (lab/): classification gate and the page suite
+      - name: Set up Python for the replay lab
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Replay lab - dependencies
+        run: |
+          pip install -r lab/requirements.txt
+          python3 -m playwright install --with-deps chromium
+
+      - name: Replay lab - unit tests of the classification and the rule verdicts
+        run: make lab-test
+
+      - name: Replay lab - gate, no UNCLASSIFIED difference (make lab-gate)
+        run: make lab-gate
+
+      - name: Replay lab - Playwright suite of the page (make lab-e2e)
+        run: make lab-e2e
+
+      - name: Upload replay lab report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: replay-lab-report
+          path: |
+            work/lab/report.md
+            work/lab/gate.json
+          if-no-files-found: ignore
+
       - name: Upload parity report
         if: always()
         uses: actions/upload-artifact@v4

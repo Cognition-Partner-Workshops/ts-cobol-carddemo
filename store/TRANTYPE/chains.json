@@ -1,0 +1,880 @@
+{
+  "meta": {
+    "module": "TRANTYPE",
+    "generated_at": "2026-11-16T15:36:16Z",
+    "tool": "mftb 0.2.1",
+    "inputs": {
+      "selectors": [
+        "WEEKLY-TransactionTypesDBRefresh",
+        "TransactionTypesDBRefresh",
+        "MNTTRDYN",
+        "CREADB2"
+      ]
+    }
+  },
+  "chains": [
+    {
+      "table": "CREADB2",
+      "requested_as": "CREADB2",
+      "selection_basis": "CREADB2 is the scanned JCL member app/app-transaction-type-db2/jcl/CREADB21.jcl; no parsed scheduler table schedules it, so the chain is rooted in that JCL and carries no scheduler order",
+      "generated_at": "2026-11-16T15:36:16Z",
+      "jobs": [
+        {
+          "job": "CREADB2",
+          "memname": "CREADB21",
+          "level": 1,
+          "variants": 1,
+          "scanned": true,
+          "setvars": [],
+          "path": "app/app-transaction-type-db2/jcl/CREADB21.jcl",
+          "source": "app/app-transaction-type-db2/jcl/CREADB21.jcl:1",
+          "steps": [
+            {
+              "step": "FREEPLN",
+              "proc_step": null,
+              "kind": "launcher",
+              "pgm": "IKJEFT01",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-transaction-type-db2/jcl/CREADB21.jcl:40"
+            },
+            {
+              "step": "CRCRDDB",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IKJEFT01",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-transaction-type-db2/jcl/CREADB21.jcl:52"
+            },
+            {
+              "step": "LDTTYPE",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IEFBR14",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [
+                "COND=(0,NE)"
+              ],
+              "source": "app/app-transaction-type-db2/jcl/CREADB21.jcl:64"
+            },
+            {
+              "step": "RUNTEP2",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IKJEFT01",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-transaction-type-db2/jcl/CREADB21.jcl:65"
+            },
+            {
+              "step": "LDTCCAT",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IKJEFT01",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [
+                "COND=(0,NE)"
+              ],
+              "source": "app/app-transaction-type-db2/jcl/CREADB21.jcl:77"
+            }
+          ]
+        }
+      ],
+      "infrastructure": [
+        {
+          "dsn": "OEM.DB2.&DB2S..RUNLIB.LOAD",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "CREADB2"
+          ]
+        },
+        {
+          "dsn": "OEM.DB2.DAZ1.SDSNEXIT",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "CREADB2"
+          ]
+        }
+      ],
+      "lineage": [],
+      "shared_state": [],
+      "inputs": [],
+      "outputs": [],
+      "paths": [
+        {
+          "job": "CREADB2",
+          "path": "bypass",
+          "when": "NOT COND=(0,NE)",
+          "effect": "LDTTYPE skipped",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/CREADB21.jcl:64"
+          ]
+        },
+        {
+          "job": "CREADB2",
+          "path": "bypass",
+          "when": "NOT COND=(0,NE)",
+          "effect": "LDTCCAT skipped",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/CREADB21.jcl:77"
+          ]
+        }
+      ],
+      "unreached": {
+        "programs": [
+          "CBTRNDYN",
+          "COBTUPDT"
+        ],
+        "note": "batch (non-CICS) programs of the module no CREADB2 step runs or reaches statically"
+      },
+      "notes": [],
+      "asks": [
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "CREADB2",
+          "message": "CREADB2 FREEPLN (launcher IKJEFT01) cannot be traversed: db2-command",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/CREADB21.jcl:40"
+          ],
+          "request": "Provide the PROC/program so the step's data flow can be read",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "CREADB2",
+          "message": "CREADB2 CRCRDDB (utility IKJEFT01) cannot be traversed: systsin-member",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/CREADB21.jcl:52"
+          ],
+          "request": "Provide the PROC/program so the step's data flow can be read",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "CREADB2",
+          "message": "CREADB2 RUNTEP2 (utility IKJEFT01) cannot be traversed: systsin-member",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/CREADB21.jcl:65"
+          ],
+          "request": "Provide the PROC/program so the step's data flow can be read",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "CREADB2",
+          "message": "CREADB2 LDTCCAT (utility IKJEFT01) cannot be traversed: systsin-member",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/CREADB21.jcl:77"
+          ],
+          "request": "Provide the PROC/program so the step's data flow can be read",
+          "status": "open"
+        },
+        {
+          "kind": "chain-not-scheduled",
+          "severity": "high",
+          "job": "CREADB2",
+          "message": "CREADB2 was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/CREADB21.jcl"
+          ],
+          "request": "supply the scheduler export that runs CREADB2 - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "table": "MNTTRDYN",
+      "requested_as": "MNTTRDYN",
+      "selection_basis": "MNTTRDYN is the scanned JCL member app/app-transaction-type-db2/jcl/MNTTRDYN.jcl; no parsed scheduler table schedules it, so the chain is rooted in that JCL and carries no scheduler order",
+      "generated_at": "2026-11-16T15:36:16Z",
+      "jobs": [
+        {
+          "job": "MNTTRDYN",
+          "memname": "MNTTRDYN",
+          "level": 1,
+          "variants": 1,
+          "scanned": true,
+          "setvars": [],
+          "path": "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl",
+          "source": "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:1",
+          "steps": [
+            {
+              "step": "STEP1",
+              "proc_step": null,
+              "kind": "launcher",
+              "pgm": "IKJEFT01",
+              "program": "CBTRNDYN",
+              "reached": [],
+              "reads": [
+                {
+                  "dd": "DYNSQL",
+                  "dsn": "DYNSQL",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "open-mode INPUT (CBTRNDYN DYNSQL-FILE)",
+                  "source": "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:29"
+                },
+                {
+                  "dd": "INPFILE",
+                  "dsn": "INPFILE",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "disp-only SHR (no program binding)",
+                  "source": "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:30"
+                }
+              ],
+              "writes": [],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:23"
+            }
+          ]
+        }
+      ],
+      "infrastructure": [
+        {
+          "dsn": "AWS.M2.CARDDEMO.DBRMLIB",
+          "dds": [
+            "DBRMLIB"
+          ],
+          "jobs": [
+            "MNTTRDYN"
+          ]
+        },
+        {
+          "dsn": "OEM.DB2.DAZ1.SDSNEXIT",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "MNTTRDYN"
+          ]
+        }
+      ],
+      "lineage": [],
+      "shared_state": [],
+      "inputs": [
+        {
+          "kind": "dataset",
+          "name": "DYNSQL",
+          "consumers": [
+            "MNTTRDYN.STEP1"
+          ],
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:29"
+          ],
+          "basis": null,
+          "other_chain": null
+        },
+        {
+          "kind": "dataset",
+          "name": "INPFILE",
+          "consumers": [
+            "MNTTRDYN.STEP1"
+          ],
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:30"
+          ],
+          "basis": null,
+          "other_chain": "WEEKLY-TransactionTypesDBRefresh"
+        }
+      ],
+      "outputs": [],
+      "paths": [],
+      "unreached": {
+        "programs": [
+          "COBTUPDT"
+        ],
+        "note": "batch (non-CICS) programs of the module no MNTTRDYN step runs or reaches statically"
+      },
+      "notes": [
+        {
+          "text": "STEP1 runs CBTRNDYN through the DSN RUN command with PARMS('COBTUPDT') in SYSTSIN; the scanner looks for PARM= on the EXEC statement and records the parameter as missing, so the dynamic CALL target stays an open evidence request rather than being taken from this line.",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:23",
+            "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:31-34",
+            "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:59-62"
+          ]
+        }
+      ],
+      "asks": [
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "MNTTRDYN",
+          "message": "MNTTRDYN STEP1 reaches CBTRNDYN whose 1 dynamic CALL/CANCEL site(s) on WS-PGM-NAME are open (0 candidate(s)) - the files/tables of whichever target runs are not attributed to this step",
+          "evidence": [
+            "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:62"
+          ],
+          "request": "Work the dynamic-call-resolution skill on CBTRNDYN or supply the artifacts its open ends request",
+          "status": "open"
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "MNTTRDYN",
+          "message": "DYNSQL is read by MNTTRDYN.STEP1 and written by no job of any scanned table",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:29"
+          ],
+          "request": "Identify the producer of DYNSQL (online region, another application, external feed?)",
+          "status": "open"
+        },
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "MNTTRDYN",
+          "message": "MNTTRDYN reads INPFILE which table(s) WEEKLY-TransactionTypesDBRefresh also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:30"
+          ],
+          "request": null,
+          "status": "open"
+        },
+        {
+          "kind": "chain-not-scheduled",
+          "severity": "high",
+          "job": "MNTTRDYN",
+          "message": "MNTTRDYN was built from its JCL alone: no parsed scheduler table schedules it, so its steps, programs and data are proven but its order relative to other jobs, its triggers, guards, hand-offs and restart path are not",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl"
+          ],
+          "request": "supply the scheduler export that runs MNTTRDYN - a Control-M CTMBLT export or folder XML, or a CA 7 LJOB,...,LIST=ALL listing - and re-run scan-schedule, then scan-chains without --from-jcl",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "table": "TransactionTypesDBRefresh",
+      "requested_as": "TransactionTypesDBRefresh",
+      "selection_basis": "TRANSACTIONTYPESDBREFRESH is a table in app/scheduler/CardDemo.controlm",
+      "generated_at": "2026-11-16T15:36:16Z",
+      "jobs": [
+        {
+          "job": "TRANEXTR",
+          "memname": "TRANEXTR",
+          "level": 0,
+          "variants": 1,
+          "scanned": true,
+          "setvars": [],
+          "path": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl",
+          "source": "app/scheduler/CardDemo.controlm:58",
+          "steps": [
+            {
+              "step": "STEP10",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IEBGENER",
+              "program": null,
+              "reached": [],
+              "reads": [
+                {
+                  "dd": "SYSUT1",
+                  "dsn": "&HLQ..TRANTYPE.PS",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "utility-convention IEBGENER SYSUT1",
+                  "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:34"
+                }
+              ],
+              "writes": [
+                {
+                  "dd": "SYSUT2",
+                  "dsn": "&HLQ..TRANTYPE.BKUP",
+                  "generation": "+1",
+                  "member": null,
+                  "disp": "(NEW,CATLG)",
+                  "basis": "utility-convention IEBGENER SYSUT2",
+                  "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:35"
+                }
+              ],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:31"
+            },
+            {
+              "step": "STEP20",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IEBGENER",
+              "program": null,
+              "reached": [],
+              "reads": [
+                {
+                  "dd": "SYSUT1",
+                  "dsn": "&HLQ..TRANCATG.PS",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "utility-convention IEBGENER SYSUT1",
+                  "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:45"
+                }
+              ],
+              "writes": [
+                {
+                  "dd": "SYSUT2",
+                  "dsn": "&HLQ..TRANCATG.PS.BKUP",
+                  "generation": "+1",
+                  "member": null,
+                  "disp": "(NEW,CATLG)",
+                  "basis": "utility-convention IEBGENER SYSUT2",
+                  "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:46"
+                }
+              ],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [
+                "COND=(0,NE)"
+              ],
+              "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:42"
+            },
+            {
+              "step": "STEP30",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IEFBR14",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [
+                {
+                  "dd": "DD01",
+                  "dsn": "&HLQ..TRANTYPE.PS",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(MOD,DELETE,DELETE)",
+                  "basis": "IEFBR14 allocation/deletion DISP=(MOD,DELETE,DELETE)",
+                  "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:54"
+                },
+                {
+                  "dd": "DD02",
+                  "dsn": "&HLQ..TRANCATG.PS",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(MOD,DELETE,DELETE)",
+                  "basis": "IEFBR14 allocation/deletion DISP=(MOD,DELETE,DELETE)",
+                  "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:58"
+                }
+              ],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [
+                "COND=(0,NE)"
+              ],
+              "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:53"
+            },
+            {
+              "step": "STEP40",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IKJEFT01",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [
+                {
+                  "dd": "SYSREC00",
+                  "dsn": "&HLQ..TRANTYPE.PS",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(NEW,CATLG,DELETE)",
+                  "basis": "disp-only NEW (no program binding)",
+                  "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:72"
+                }
+              ],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [
+                "COND=(0,NE)"
+              ],
+              "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:65"
+            },
+            {
+              "step": "STEP50",
+              "proc_step": null,
+              "kind": "utility",
+              "pgm": "IKJEFT01",
+              "program": null,
+              "reached": [],
+              "reads": [],
+              "writes": [
+                {
+                  "dd": "SYSREC00",
+                  "dsn": "&HLQ..TRANCATG.PS",
+                  "generation": null,
+                  "member": null,
+                  "disp": "(NEW,CATLG,DELETE)",
+                  "basis": "disp-only NEW (no program binding)",
+                  "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:102"
+                }
+              ],
+              "db2": [],
+              "ims": [],
+              "idms": [],
+              "conditions": [
+                "COND=(4,LT)"
+              ],
+              "source": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:95"
+            }
+          ]
+        }
+      ],
+      "infrastructure": [
+        {
+          "dsn": "OEM.DB2.DAZ1.RUNLIB.LOAD",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "TRANEXTR"
+          ]
+        }
+      ],
+      "lineage": [],
+      "shared_state": [],
+      "inputs": [
+        {
+          "kind": "condition",
+          "name": "WEEKLY-TransactionTypesDBRefresh-MNTTRDB2 ODAT",
+          "consumers": [
+            "TRANEXTR"
+          ],
+          "other_chain": "WEEKLY-TransactionTypesDBRefresh",
+          "evidence": [
+            "app/scheduler/CardDemo.controlm:58"
+          ]
+        }
+      ],
+      "outputs": [],
+      "paths": [
+        {
+          "job": "TRANEXTR",
+          "path": "bypass",
+          "when": "NOT COND=(0,NE)",
+          "effect": "STEP20 skipped; not written: &HLQ..TRANCATG.PS.BKUP(+1)",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:42"
+          ]
+        },
+        {
+          "job": "TRANEXTR",
+          "path": "bypass",
+          "when": "NOT COND=(0,NE)",
+          "effect": "STEP30 skipped; not written: &HLQ..TRANCATG.PS, &HLQ..TRANTYPE.PS",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:53"
+          ]
+        },
+        {
+          "job": "TRANEXTR",
+          "path": "bypass",
+          "when": "NOT COND=(0,NE)",
+          "effect": "STEP40 skipped; not written: &HLQ..TRANTYPE.PS",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:65"
+          ]
+        },
+        {
+          "job": "TRANEXTR",
+          "path": "bypass",
+          "when": "NOT COND=(4,LT)",
+          "effect": "STEP50 skipped; not written: &HLQ..TRANCATG.PS",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:95"
+          ]
+        },
+        {
+          "job": "TRANEXTR",
+          "path": "restart",
+          "when": "NOTOK, automatic rerun",
+          "effect": "MAXRERUN=5 INTERVAL=00005M min (definition only; program/JCL restart behaviour not proven here)",
+          "evidence": [
+            "app/scheduler/CardDemo.controlm:58"
+          ]
+        }
+      ],
+      "unreached": {
+        "programs": [
+          "CBTRNDYN",
+          "COBTUPDT"
+        ],
+        "note": "batch (non-CICS) programs of the module no TransactionTypesDBRefresh step runs or reaches statically"
+      },
+      "notes": [
+        {
+          "text": "The job comment says TRANEXTR runs once a day, while the Control-M smart folder that schedules it is described 'WEEKLY TransactionTypesDBRefresh'; the two statements are not reconciled by any scanned source.",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:19-21",
+            "app/scheduler/CardDemo.controlm:57-58"
+          ]
+        }
+      ],
+      "asks": [
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "TRANEXTR",
+          "message": "TRANEXTR STEP40 (utility IKJEFT01) cannot be traversed: systsin-inline",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:65"
+          ],
+          "request": "Provide the PROC/program so the step's data flow can be read",
+          "status": "open"
+        },
+        {
+          "kind": "chain-step-opaque",
+          "severity": "medium",
+          "job": "TRANEXTR",
+          "message": "TRANEXTR STEP50 (utility IKJEFT01) cannot be traversed: systsin-inline",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:95"
+          ],
+          "request": "Provide the PROC/program so the step's data flow can be read",
+          "status": "open"
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "high",
+          "job": "TRANEXTR",
+          "message": "TRANEXTR STEP20 reads temporary dataset &HLQ..TRANCATG.PS that no earlier step of the job writes - the job cannot run as written (a && name lives only for the job)",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:45"
+          ],
+          "request": "Check TRANEXTR: is a DISP=(NEW,PASS) step missing or was the member edited?",
+          "status": "closed",
+          "closure": {
+            "by": "skill",
+            "how": "&HLQ is a JCL symbol set to AWS.M2.CARDDEMO, so the name is the catalogued dataset AWS.M2.CARDDEMO.TRANCATG.PS, not a && temporary. STEP20 backs up the copy left by the previous run; STEP30 deletes it and STEP50 catalogs a new one. The first-run gap is filed as the skill's ask below.",
+            "evidence": [
+              "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:25",
+              "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:45",
+              "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:58-61",
+              "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:103"
+            ]
+          }
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "high",
+          "job": "TRANEXTR",
+          "message": "TRANEXTR STEP10 reads temporary dataset &HLQ..TRANTYPE.PS that no earlier step of the job writes - the job cannot run as written (a && name lives only for the job)",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:34"
+          ],
+          "request": "Check TRANEXTR: is a DISP=(NEW,PASS) step missing or was the member edited?",
+          "status": "closed",
+          "closure": {
+            "by": "skill",
+            "how": "&HLQ is a JCL symbol set to AWS.M2.CARDDEMO, so the name is the catalogued dataset AWS.M2.CARDDEMO.TRANTYPE.PS, not a && temporary. STEP10 backs up the copy left by the previous run; STEP30 deletes it and STEP40 catalogs a new one (NEW,CATLG). The first-run gap is filed as the skill's ask below.",
+            "evidence": [
+              "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:25",
+              "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:34",
+              "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:53-57",
+              "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:71-73"
+            ]
+          }
+        },
+        {
+          "kind": "chain-input-unproduced",
+          "severity": "medium",
+          "job": "TRANEXTR",
+          "message": "TRANEXTR STEP10 and STEP20 read AWS.M2.CARDDEMO.TRANTYPE.PS and AWS.M2.CARDDEMO.TRANCATG.PS with DISP=SHR before STEP40/STEP50 create them, so the job depends on the files left by its own previous run; no scanned job creates them for a first run",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:34",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:45",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:71-73",
+            "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:103"
+          ],
+          "request": "Confirm how the two extract files are first created (or that a first run is expected to fail at STEP10), and whether the job comment 'runs once a day' or the scheduler description 'WEEKLY' is the real frequency",
+          "status": "open"
+        }
+      ]
+    },
+    {
+      "table": "WEEKLY-TransactionTypesDBRefresh",
+      "requested_as": "WEEKLY-TransactionTypesDBRefresh",
+      "selection_basis": "WEEKLY-TRANSACTIONTYPESDBREFRESH is a table in app/scheduler/CardDemo.controlm",
+      "generated_at": "2026-11-16T15:36:16Z",
+      "jobs": [
+        {
+          "job": "MNTTRDB2",
+          "memname": "MNTTRDB2",
+          "level": 0,
+          "variants": 1,
+          "scanned": true,
+          "setvars": [],
+          "path": "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl",
+          "source": "app/scheduler/CardDemo.controlm:27",
+          "steps": [
+            {
+              "step": "STEP1",
+              "proc_step": null,
+              "kind": "launcher",
+              "pgm": "IKJEFT01",
+              "program": "COBTUPDT",
+              "reached": [],
+              "reads": [
+                {
+                  "dd": "INPFILE",
+                  "dsn": "INPFILE",
+                  "generation": null,
+                  "member": null,
+                  "disp": "SHR",
+                  "basis": "open-mode INPUT (COBTUPDT TR-RECORD)",
+                  "source": "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl:27"
+                }
+              ],
+              "writes": [],
+              "db2": [
+                {
+                  "table": "CARDDEMO.TRANSACTION_TYPE",
+                  "ops": [
+                    "DCLGEN",
+                    "DELETE",
+                    "INSERT",
+                    "UPDATE"
+                  ],
+                  "program": "COBTUPDT",
+                  "source": "app/app-transaction-type-db2/dcl/DCLTRTYP.dcl:28-31"
+                }
+              ],
+              "ims": [],
+              "idms": [],
+              "conditions": [],
+              "source": "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl:21"
+            }
+          ]
+        }
+      ],
+      "infrastructure": [
+        {
+          "dsn": "AWS.M2.CARDDEMO.DBRMLIB",
+          "dds": [
+            "DBRMLIB"
+          ],
+          "jobs": [
+            "MNTTRDB2"
+          ]
+        },
+        {
+          "dsn": "OEM.DB2.DAZ1.SDSNEXIT",
+          "dds": [
+            "STEPLIB"
+          ],
+          "jobs": [
+            "MNTTRDB2"
+          ]
+        }
+      ],
+      "lineage": [],
+      "shared_state": [],
+      "inputs": [
+        {
+          "kind": "dataset",
+          "name": "INPFILE",
+          "consumers": [
+            "MNTTRDB2.STEP1"
+          ],
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl:27"
+          ],
+          "basis": null,
+          "other_chain": "MNTTRDYN"
+        }
+      ],
+      "outputs": [
+        {
+          "kind": "condition",
+          "name": "WEEKLY-TransactionTypesDBRefresh-MNTTRDB2",
+          "producers": [
+            "MNTTRDB2"
+          ],
+          "other_chain": "DisclosureGroupsRefresh, TransactionTypesDBRefresh",
+          "evidence": [
+            "app/scheduler/CardDemo.controlm:27"
+          ]
+        }
+      ],
+      "paths": [
+        {
+          "job": "MNTTRDB2",
+          "path": "restart",
+          "when": "NOTOK, automatic rerun",
+          "effect": "MAXRERUN=5 INTERVAL=None min (definition only; program/JCL restart behaviour not proven here)",
+          "evidence": [
+            "app/scheduler/CardDemo.controlm:27"
+          ]
+        }
+      ],
+      "unreached": {
+        "programs": [
+          "CBTRNDYN"
+        ],
+        "note": "batch (non-CICS) programs of the module no WEEKLY-TransactionTypesDBRefresh step runs or reaches statically"
+      },
+      "notes": [],
+      "asks": [
+        {
+          "kind": "chain-shared-dataset",
+          "severity": "info",
+          "job": "MNTTRDB2",
+          "message": "WEEKLY-TransactionTypesDBRefresh reads INPFILE which table(s) MNTTRDYN also touch - cross-chain lineage",
+          "evidence": [
+            "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl:27"
+          ],
+          "request": null,
+          "status": "open"
+        }
+      ]
+    }
+  ]
+}

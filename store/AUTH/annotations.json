@@ -1,0 +1,166 @@
+{
+  "meta": {
+    "module": "AUTH",
+    "skill": "dynamic-call-resolution",
+    "updated_at": "2026-11-15T06:04:58Z"
+  },
+  "dynamic_calls": [
+    {
+      "site": "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:322",
+      "program": "COPAUS0C",
+      "construct": "CICS-XCTL",
+      "variable": "CDEMO-TO-PROGRAM",
+      "status": "resolved",
+      "targets": [
+        {
+          "name": "COPAUS1C",
+          "basis": "derived",
+          "in_inventory": true,
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:316",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:34",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:322-325"
+          ],
+          "reasoning": "the XCTL sits in the WHEN 'S'/'s' branch directly after MOVE WS-PGM-AUTH-DTL TO CDEMO-TO-PROGRAM (line 316); lines 317-320 write CDEMO-FROM-TRANID, CDEMO-FROM-PROGRAM and CDEMO-PGM-CONTEXT only; WS-PGM-AUTH-DTL is VALUE 'COPAUS1C' with no other writer"
+        }
+      ],
+      "traversal": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:322 EXEC CICS XCTL PROGRAM(CDEMO-TO-PROGRAM)",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:316 MOVE WS-PGM-AUTH-DTL TO CDEMO-TO-PROGRAM (same WHEN branch, lines 314-325)",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:317-320 MOVEs/SET to CDEMO-FROM-TRANID, CDEMO-FROM-PROGRAM, CDEMO-PGM-CONTEXT - none writes CDEMO-TO-PROGRAM",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:34 05 WS-PGM-AUTH-DTL PIC X(08) VALUE 'COPAUS1C'",
+        "app/cpy/COCOM01Y.cpy:24 10 CDEMO-TO-PROGRAM PIC X(08)"
+      ],
+      "excluded_candidates": {
+        "names": [
+          "COMEN01C",
+          "COPAUS0C",
+          "COSGN00C"
+        ],
+        "evidence": [
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:192",
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:200",
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:236",
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:669",
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:316"
+        ],
+        "reasoning": "the writers at lines 192, 200 (DFHCOMMAREA copy), 236 and 669 are all overwritten by the MOVE at line 316, which is the last write before the XCTL at line 322 on the only path that reaches it"
+      },
+      "closed_by_reasoning": [
+        {
+          "kinds": [
+            "layout-mismatch"
+          ],
+          "tracer_open_end": "layout-mismatch CDEMO-TO-PROGRAM (bytes 16..24 of CARDDEMO-COMMAREA vs DFHCOMMAREA)",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:200",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:316",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:322-325"
+          ],
+          "reasoning": "the DFHCOMMAREA bytes copied at line 200 are overwritten at line 316 before the XCTL at line 322, so no name can come from the caller's COMMAREA at this site",
+          "residual": "none for this site; what the caller passed in those bytes is never used as the XCTL target here"
+        }
+      ],
+      "open_ends": []
+    },
+    {
+      "site": "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:674",
+      "program": "COPAUS0C",
+      "construct": "CICS-XCTL",
+      "variable": "CDEMO-TO-PROGRAM",
+      "status": "partial",
+      "targets": [],
+      "traversal": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:674 EXEC CICS XCTL PROGRAM(CDEMO-TO-PROGRAM) in RETURN-TO-PREV-SCREEN (lines 665-677)",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:237 PERFORM RETURN-TO-PREV-SCREEN - the only PERFORM of the paragraph",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:236 MOVE WS-PGM-MENU TO CDEMO-TO-PROGRAM",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:35 05 WS-PGM-MENU PIC X(08) VALUE 'COMEN01C'",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:668-670 IF CDEMO-TO-PROGRAM = LOW-VALUES OR SPACES MOVE 'COSGN00C' - not taken, the item holds 'COMEN01C'",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:671-673 MOVEs to CDEMO-FROM-TRANID, CDEMO-FROM-PROGRAM, CDEMO-PGM-CONTEXT only",
+        "conclusion (derived): the only value CDEMO-TO-PROGRAM can hold at line 674 is 'COMEN01C' - RETURN-TO-PREV-SCREEN is performed from one place only (line 237, WHEN DFHPF3), directly after MOVE WS-PGM-MENU TO CDEMO-TO-PROGRAM (line 236); WS-PGM-MENU is VALUE 'COMEN01C' with no other writer, so the LOW-VALUES/SPACES test at line 668 is false; COMEN01C is not in the AUTH sources (the estate catalog places app/cbl/COMEN01C.cbl in module CARDDEMO)"
+      ],
+      "excluded_candidates": {
+        "names": [
+          "COPAUS0C",
+          "COPAUS1C",
+          "COSGN00C"
+        ],
+        "evidence": [
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:192",
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:316",
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:322",
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:668-670",
+          "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:236"
+        ],
+        "reasoning": "line 192 is on the EIBCALEN = 0 path, which never performs RETURN-TO-PREV-SCREEN; line 316 is followed by the XCTL at 322, which leaves the program; 'COSGN00C' (line 669) needs CDEMO-TO-PROGRAM blank, which the MOVE at 236 rules out"
+      },
+      "closed_by_reasoning": [
+        {
+          "kinds": [
+            "layout-mismatch"
+          ],
+          "tracer_open_end": "layout-mismatch CDEMO-TO-PROGRAM (bytes 16..24 of CARDDEMO-COMMAREA vs DFHCOMMAREA)",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:200",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:236-237",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:674-677"
+          ],
+          "reasoning": "the DFHCOMMAREA bytes copied at line 200 are overwritten at line 236 before the only PERFORM of RETURN-TO-PREV-SCREEN (line 237), so no name can come from the caller's COMMAREA at this site",
+          "residual": "none for this site; what the caller passed in those bytes is never used as the XCTL target here"
+        }
+      ],
+      "open_ends": [
+        {
+          "kind": "callee-not-scanned",
+          "class": "EVR",
+          "request": "COMEN01C, the one remaining candidate of this XCTL (app/app-authorization-ims-db2-mq/cbl/COPAUS0C.cbl:236, :35), is not in the AUTH sources; the estate catalog places app/cbl/COMEN01C.cbl in module CARDDEMO. Scan module CARDDEMO (python3 -m mftb scan --module CARDDEMO --from-catalog) to follow the hop. It is recorded here as an open end rather than under targets[] because mftb 0.2.1 scan-connections fails on an annotation target with in_inventory false (mftb/analysis/external.py:554 reads evidence entries as objects, the skill writes path:line strings)."
+        }
+      ]
+    },
+    {
+      "site": "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:367",
+      "program": "COPAUS1C",
+      "construct": "CICS-XCTL",
+      "variable": "CDEMO-TO-PROGRAM",
+      "status": "resolved",
+      "targets": [
+        {
+          "name": "COPAUS0C",
+          "basis": "derived",
+          "in_inventory": true,
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:168-169",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:185-186",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:34",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:360-370"
+          ],
+          "reasoning": "RETURN-TO-PREV-SCREEN is performed at lines 169 and 186 only, each directly after MOVE WS-PGM-AUTH-SMRY TO CDEMO-TO-PROGRAM (168, 185); WS-PGM-AUTH-SMRY is VALUE 'COPAUS0C' with no other writer; lines 362-365 do not write CDEMO-TO-PROGRAM"
+        }
+      ],
+      "traversal": [
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:367 EXEC CICS XCTL PROGRAM(CDEMO-TO-PROGRAM) in RETURN-TO-PREV-SCREEN (lines 360-370)",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:169 PERFORM RETURN-TO-PREV-SCREEN (EIBCALEN = 0) after app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:168 MOVE WS-PGM-AUTH-SMRY TO CDEMO-TO-PROGRAM",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:186 PERFORM RETURN-TO-PREV-SCREEN (WHEN DFHPF3) after app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:185 MOVE WS-PGM-AUTH-SMRY TO CDEMO-TO-PROGRAM",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:34 05 WS-PGM-AUTH-SMRY PIC X(08) VALUE 'COPAUS0C'",
+        "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:362-365 MOVEs/SET to CDEMO-FROM-TRANID, CDEMO-FROM-PROGRAM, CDEMO-PGM-CONTEXT only"
+      ],
+      "closed_by_reasoning": [
+        {
+          "kinds": [
+            "layout-mismatch"
+          ],
+          "tracer_open_end": "layout-mismatch CDEMO-TO-PROGRAM (bytes 16..24 of CARDDEMO-COMMAREA vs DFHCOMMAREA)",
+          "evidence": [
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:171",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:185-186",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:168-169",
+            "app/app-authorization-ims-db2-mq/cbl/COPAUS1C.cbl:367-370"
+          ],
+          "reasoning": "the DFHCOMMAREA bytes copied at line 171 are overwritten at line 185 before the PERFORM at 186 (and the line-169 path never copies DFHCOMMAREA), so no name can come from the caller's COMMAREA at this site",
+          "residual": "none for this site; what the caller passed in those bytes is never used as the XCTL target here"
+        }
+      ],
+      "open_ends": []
+    }
+  ]
+}

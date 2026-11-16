@@ -1,0 +1,55 @@
+{
+  "notes": [
+    {
+      "transid": "CTLI",
+      "note": "COTRTLIC transfers to the add/update program with XCTL PROGRAM(LIT-ADDTPGM), whose VALUE is 'COTRTUPC'; it re-enters itself with RETURN TRANSID(LIT-THISTRANID), VALUE 'CTLI'.",
+      "evidence": [
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:44",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:50",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:648-651",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:910-914"
+      ]
+    },
+    {
+      "transid": "CTTU",
+      "note": "COTRTUPC re-enters itself with RETURN TRANSID(LIT-THISTRANID), VALUE 'CTTU'; its XCTL PROGRAM(CDEMO-TO-PROGRAM) target is LIT-ADMINPGM ('COADM01C', not in this module) or the calling program carried in the commarea, which stays an open ask.",
+      "evidence": [
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:204",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:209",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:438-442",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:457-460",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:567-568"
+      ]
+    }
+  ],
+  "closures": [
+    {
+      "kind": "online-map-no-source",
+      "transid": "CTLI",
+      "match": "mapset COTRTLI",
+      "how": "the symbolic map copybook COTRTLI is in the module's cpy-bms root, so the screen fields and their COBOL names are known without the BMS macro source",
+      "evidence": [
+        "app/app-transaction-type-db2/cpy-bms/COTRTLI.cpy:17"
+      ]
+    },
+    {
+      "kind": "online-map-no-source",
+      "transid": "CTLI",
+      "match": "mapset COTRTUP",
+      "how": "the symbolic map copybook COTRTUP is in the module's cpy-bms root, so the screen fields and their COBOL names are known without the BMS macro source",
+      "evidence": [
+        "app/app-transaction-type-db2/cpy-bms/COTRTUP.cpy:17"
+      ]
+    },
+    {
+      "kind": "online-map-no-source",
+      "transid": "CTTU",
+      "match": "mapset COTRTUP",
+      "how": "the symbolic map copybook COTRTUP is in the module's cpy-bms root, so the screen fields and their COBOL names are known without the BMS macro source",
+      "evidence": [
+        "app/app-transaction-type-db2/cpy-bms/COTRTUP.cpy:17"
+      ]
+    }
+  ],
+  "asks": []
+}

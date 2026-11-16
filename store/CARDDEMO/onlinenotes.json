@@ -1,0 +1,392 @@
+{
+ "meta": {
+  "module": "CARDDEMO",
+  "written_by": "online-transaction-analysis skill"
+ },
+ "notes": [
+  {
+   "transid": "CC00",
+   "note": "CC00 starts COSGN00C: with no COMMAREA it sends the sign-on map; on ENTER it reads the user from USRSEC and, when the password matches, transfers to COADM01C for an admin user and to COMEN01C otherwise; PF3 sends a thank-you text. The screen after a failed sign-on is the sign-on map again with a message.",
+   "evidence": [
+    "app/cbl/COSGN00C.cbl:80-96",
+    "app/cbl/COSGN00C.cbl:209-255",
+    "app/csd/CARDDEMO.CSD:378"
+   ]
+  },
+  {
+   "transid": "CM00",
+   "note": "The main menu sends its map on first entry and, on ENTER, transfers to the program of the option keyed (options 1-11 of COMEN02Y); PF3 goes back to the sign-on program. Which screen follows is therefore the operator's choice - unknown at analysis time.",
+   "evidence": [
+    "app/cbl/COMEN01C.cbl:82-102",
+    "app/cbl/COMEN01C.cbl:145-187",
+    "app/cpy/COMEN02Y.cpy:21-90"
+   ]
+  },
+  {
+   "transid": "CA00",
+   "note": "The admin menu sends its map on first entry and, on ENTER, transfers to the program of the option keyed (options 1-6 of COADM02Y: four user-maintenance programs and COTRTLIC / COTRTUPC, which are outside this module's scan); PF3 goes back to the sign-on program.",
+   "evidence": [
+    "app/cbl/COADM01C.cbl:86-109",
+    "app/cbl/COADM01C.cbl:131-148",
+    "app/cpy/COADM02Y.cpy:22-53"
+   ]
+  },
+  {
+   "transid": "CR00",
+   "note": "CORPT00C submits the report job by writing its JCL records to TD queue JOBS; the scheduled batch chains bracket their work with CLOSEFIL/OPENFIL, which close and reopen TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC in the region - a job submitted from this screen is not bracketed by them.",
+   "evidence": [
+    "app/cbl/CORPT00C.cbl:515-518",
+    "app/jcl/CLOSEFIL.jcl:26-30",
+    "app/jcl/OPENFIL.jcl:26-30"
+   ]
+  }
+ ],
+ "closures": [
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COACTUP but",
+   "how": "the symbolic map copybook for mapset COACTUP is among the scanned copybooks (app/cpy-bms/COACTUP.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COACTUP.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COACTUP.CPY:17",
+    "app/bms/COACTUP.bms:20"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COACTVW but",
+   "how": "the symbolic map copybook for mapset COACTVW is among the scanned copybooks (app/cpy-bms/COACTVW.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COACTVW.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COACTVW.CPY:17",
+    "app/bms/COACTVW.bms:20"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COADM01 but",
+   "how": "the symbolic map copybook for mapset COADM01 is among the scanned copybooks (app/cpy-bms/COADM01.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COADM01.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COADM01.CPY:17",
+    "app/bms/COADM01.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COBIL00 but",
+   "how": "the symbolic map copybook for mapset COBIL00 is among the scanned copybooks (app/cpy-bms/COBIL00.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COBIL00.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COBIL00.CPY:17",
+    "app/bms/COBIL00.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COCRDLI but",
+   "how": "the symbolic map copybook for mapset COCRDLI is among the scanned copybooks (app/cpy-bms/COCRDLI.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COCRDLI.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COCRDLI.CPY:17",
+    "app/bms/COCRDLI.bms:20"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COCRDSL but",
+   "how": "the symbolic map copybook for mapset COCRDSL is among the scanned copybooks (app/cpy-bms/COCRDSL.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COCRDSL.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COCRDSL.CPY:17",
+    "app/bms/COCRDSL.bms:20"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COCRDUP but",
+   "how": "the symbolic map copybook for mapset COCRDUP is among the scanned copybooks (app/cpy-bms/COCRDUP.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COCRDUP.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COCRDUP.CPY:17",
+    "app/bms/COCRDUP.bms:20"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COMEN01 but",
+   "how": "the symbolic map copybook for mapset COMEN01 is among the scanned copybooks (app/cpy-bms/COMEN01.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COMEN01.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COMEN01.CPY:17",
+    "app/bms/COMEN01.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset CORPT00 but",
+   "how": "the symbolic map copybook for mapset CORPT00 is among the scanned copybooks (app/cpy-bms/CORPT00.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/CORPT00.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/CORPT00.CPY:17",
+    "app/bms/CORPT00.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COSGN00 but",
+   "how": "the symbolic map copybook for mapset COSGN00 is among the scanned copybooks (app/cpy-bms/COSGN00.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COSGN00.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COSGN00.CPY:17",
+    "app/bms/COSGN00.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COTRN00 but",
+   "how": "the symbolic map copybook for mapset COTRN00 is among the scanned copybooks (app/cpy-bms/COTRN00.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COTRN00.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COTRN00.CPY:17",
+    "app/bms/COTRN00.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COTRN01 but",
+   "how": "the symbolic map copybook for mapset COTRN01 is among the scanned copybooks (app/cpy-bms/COTRN01.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COTRN01.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COTRN01.CPY:17",
+    "app/bms/COTRN01.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COTRN02 but",
+   "how": "the symbolic map copybook for mapset COTRN02 is among the scanned copybooks (app/cpy-bms/COTRN02.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COTRN02.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COTRN02.CPY:17",
+    "app/bms/COTRN02.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COUSR00 but",
+   "how": "the symbolic map copybook for mapset COUSR00 is among the scanned copybooks (app/cpy-bms/COUSR00.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COUSR00.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COUSR00.CPY:17",
+    "app/bms/COUSR00.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COUSR01 but",
+   "how": "the symbolic map copybook for mapset COUSR01 is among the scanned copybooks (app/cpy-bms/COUSR01.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COUSR01.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COUSR01.CPY:17",
+    "app/bms/COUSR01.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COUSR02 but",
+   "how": "the symbolic map copybook for mapset COUSR02 is among the scanned copybooks (app/cpy-bms/COUSR02.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COUSR02.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COUSR02.CPY:17",
+    "app/bms/COUSR02.bms:19"
+   ]
+  },
+  {
+   "kind": "online-map-no-source",
+   "match": "uses mapset COUSR03 but",
+   "how": "the symbolic map copybook for mapset COUSR03 is among the scanned copybooks (app/cpy-bms/COUSR03.CPY), so the COBOL names of the screen fields are known; the BMS macro source is also in the repository (app/bms/COUSR03.bms) but the toolbox does not parse BMS, so attributes and positions were not read",
+   "evidence": [
+    "app/cpy-bms/COUSR03.CPY:17",
+    "app/bms/COUSR03.bms:19"
+   ]
+  },
+  {
+   "kind": "online-transid-variable",
+   "match": "reaches COADM01C: XCTL names its target through a data item, so which of the 6 candidate",
+   "how": "worked by dynamic-call-resolution (annotations.json): the data item can only hold COTRTLIC, COTRTUPC, COUSR00C, COUSR01C, COUSR02C, COUSR03C at this XCTL - tracer candidate, unchanged: occurrence of CDEMO-ADMIN-OPT-PGMNAME in CDEMO-ADMIN-OPTIONS-DATA. Which of them runs on a given entry is selected by what the operator keys, which is run-time data",
+   "evidence": [
+    "app/cbl/COADM01C.cbl:145",
+    "app/cpy/COADM02Y.cpy:24"
+   ]
+  },
+  {
+   "kind": "online-transid-variable",
+   "match": "reaches COMEN01C: XCTL names its target through a data item, so which of the 11 candidate",
+   "how": "worked by dynamic-call-resolution (annotations.json): the data item can only hold COPAUS0C at this XCTL - this XCTL is inside WHEN CDEMO-MENU-OPT-PGMNAME(WS-OPTION) = 'COPAUS0C' (:147) and runs only when EXEC CICS INQUIRE PROGRAM returns NORMAL (:148-152); the row is option 11 (COMEN02Y.cpy:86-90). Which of them runs on a given entry is selected by what the operator keys, which is run-time data",
+   "evidence": [
+    "app/cbl/COMEN01C.cbl:156",
+    "app/cpy/COMEN02Y.cpy:22",
+    "app/cbl/COMEN01C.cbl:147-160",
+    "app/cpy/COMEN02Y.cpy:89"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CA00",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COADM01C.cbl:111",
+    "app/cbl/COADM01C.cbl:280",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CB00",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COBIL00C.cbl:146",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CM00",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COMEN01C.cbl:107",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-transid-variable",
+   "match": "reaches CORPT00C: XCTL names its target through a data item, so which of the 2 candidate",
+   "how": "worked by dynamic-call-resolution (annotations.json): the data item can only hold COSGN00C, COMEN01C at this XCTL - RETURN-TO-PREV-SCREEN (:540) is performed at :174 after MOVE 'COSGN00C' (:173) and at :189 after MOVE 'COMEN01C' (:188); the commarea copy at :176 precedes the second and is skipped on the first. Which of them runs on a given entry is selected by what the operator keys, which is run-time data",
+   "evidence": [
+    "app/cbl/CORPT00C.cbl:548",
+    "app/cbl/CORPT00C.cbl:173-174",
+    "app/cbl/CORPT00C.cbl:188-189",
+    "app/cbl/CORPT00C.cbl:540-549"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CR00",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/CORPT00C.cbl:199",
+    "app/cbl/CORPT00C.cbl:587",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-transid-variable",
+   "match": "reaches COTRN00C: XCTL names its target through a data item, so which of the 3 candidate",
+   "how": "worked by dynamic-call-resolution (annotations.json): the data item can only hold COTRN01C at this XCTL - MOVE 'COTRN01C' TO CDEMO-TO-PROGRAM at :188 is in the same branch as the XCTL at :192-193 and nothing between them writes the item, so the value copied from DFHCOMMAREA at :111 never reaches this XCTL. Which of them runs on a given entry is selected by what the operator keys, which is run-time data",
+   "evidence": [
+    "app/cbl/COTRN00C.cbl:192",
+    "app/cbl/COTRN00C.cbl:188",
+    "app/cbl/COTRN00C.cbl:192-193"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CT00",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COTRN00C.cbl:138",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CT01",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COTRN01C.cbl:136",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CT02",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COTRN02C.cbl:156",
+    "app/cbl/COTRN02C.cbl:530",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-transid-variable",
+   "match": "reaches COUSR00C: XCTL names its target through a data item, so which of the 4 candidate",
+   "how": "worked by dynamic-call-resolution (annotations.json): the data item can only hold COUSR02C at this XCTL - MOVE 'COUSR02C' TO CDEMO-TO-PROGRAM at :192 is in the same branch as the XCTL at :196-197, after the commarea copy at :114. Which of them runs on a given entry is selected by what the operator keys, which is run-time data",
+   "evidence": [
+    "app/cbl/COUSR00C.cbl:196",
+    "app/cbl/COUSR00C.cbl:192",
+    "app/cbl/COUSR00C.cbl:196-197"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CU00",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COUSR00C.cbl:141",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-transid-variable",
+   "match": "reaches COUSR01C: XCTL names its target through a data item, so which of the 2 candidate",
+   "how": "worked by dynamic-call-resolution (annotations.json): the data item can only hold COSGN00C, COADM01C at this XCTL - RETURN-TO-PREV-SCREEN (:165) is performed at :80 after MOVE 'COSGN00C' (:79) and at :95 after MOVE 'COADM01C' (:94); the commarea copy at :82 precedes the second and is skipped on the first. Which of them runs on a given entry is selected by what the operator keys, which is run-time data",
+   "evidence": [
+    "app/cbl/COUSR01C.cbl:175",
+    "app/cbl/COUSR01C.cbl:79-80",
+    "app/cbl/COUSR01C.cbl:94-95",
+    "app/cbl/COUSR01C.cbl:165-176"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CU01",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COUSR01C.cbl:107",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CU02",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COUSR02C.cbl:135",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  },
+  {
+   "kind": "online-commarea-unproven",
+   "transid": "CU03",
+   "match": "returns to itself with a COMMAREA but no LENGTH",
+   "how": "the RETURN names COMMAREA(CARDDEMO-COMMAREA) with no LENGTH option, so the item's own length applies; its layout is the scanned copybook COCOM01Y, whose PICTURE clauses add up to 160 bytes (general 34, customer 84, account 12, card 16, map names 14)",
+   "evidence": [
+    "app/cbl/COUSR03C.cbl:134",
+    "app/cpy/COCOM01Y.cpy:19-44"
+   ]
+  }
+ ],
+ "asks": [
+  {
+   "kind": "online-boundary-order-unproven",
+   "transid": null,
+   "severity": "medium",
+   "message": "CLOSEFIL and OPENFIL close and reopen only TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC in region CICSAWSA; batch steps also use the card and customer clusters the region has open (files CARDDAT, CUSTDAT), which those two jobs do not name",
+   "evidence": [
+    "app/jcl/CLOSEFIL.jcl:26-30",
+    "app/jcl/OPENFIL.jcl:26-30",
+    "app/csd/CARDDEMO.CSD:25-26",
+    "app/csd/CARDDEMO.CSD:50",
+    "app/jcl/CREASTMT.JCL:86",
+    "app/jcl/READCARD.jcl:25-26",
+    "app/jcl/READCUST.jcl:24-25"
+   ],
+   "request": "Confirm how batch access to the card and customer VSAM clusters is sequenced against the online region (share options, a separate close, or accepted concurrent read)"
+  }
+ ]
+}

@@ -1,0 +1,353 @@
+{
+ "meta": {
+  "module": "CARDDEMO",
+  "written_by": "batch-chain-analysis skill"
+ },
+ "tables": {
+  "CARDDEMO": {
+   "directions": [
+    {
+     "job": "PRTCATBL",
+     "step": "STEP05R",
+     "dd": "FILEIN",
+     "direction": "R",
+     "basis": "REPROCT control card REPRO INFILE(FILEIN) OUTFILE(FILEOUT)",
+     "evidence": [
+      "app/ctl/REPROCT.ctl:15",
+      "app/proc/REPROC.prc:27-28",
+      "app/jcl/PRTCATBL.jcl:29-33"
+     ]
+    },
+    {
+     "job": "PRTCATBL",
+     "step": "STEP05R",
+     "dd": "FILEOUT",
+     "direction": "W",
+     "basis": "REPROCT control card REPRO INFILE(FILEIN) OUTFILE(FILEOUT)",
+     "evidence": [
+      "app/ctl/REPROCT.ctl:15",
+      "app/proc/REPROC.prc:27-28",
+      "app/jcl/PRTCATBL.jcl:35-39"
+     ]
+    }
+   ],
+   "closures": [
+    {
+     "kind": "chain-step-opaque",
+     "job": "CLOSEFIL",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) CLO) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/CLOSEFIL.jcl:22-30"
+     ]
+    },
+    {
+     "kind": "chain-step-opaque",
+     "job": "CLOSEFIL1",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) CLO) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/CLOSEFIL.jcl:22-30"
+     ]
+    },
+    {
+     "kind": "chain-step-opaque",
+     "job": "CLOSEFIL2",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) CLO) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/CLOSEFIL.jcl:22-30"
+     ]
+    },
+    {
+     "kind": "chain-step-opaque",
+     "job": "OPENFIL",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) OPE) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/OPENFIL.jcl:22-30"
+     ]
+    },
+    {
+     "kind": "chain-step-opaque",
+     "job": "PRTCATBL",
+     "match": "STEP05R.PRC001 runs IDCAMS with control cards outside the store",
+     "how": "PROC REPROC reads SYSIN from &CNTLLIB(REPROCT) and the job passes CNTLLIB=AWS.M2.CARDDEMO.CNTL; the scanned control member app/ctl/REPROCT.ctl holds the single card REPRO INFILE(FILEIN) OUTFILE(FILEOUT). That the scanned member is the content of AWS.M2.CARDDEMO.CNTL(REPROCT) rests on the estate map placing app/ctl in this module, not on a library listing",
+     "evidence": [
+      "app/ctl/REPROCT.ctl:15",
+      "app/proc/REPROC.prc:21-28",
+      "app/jcl/PRTCATBL.jcl:29-33"
+     ]
+    },
+    {
+     "kind": "chain-input-unproduced",
+     "job": "TXT2PDF1",
+     "match": "AWS.M2.LBD.TXT2PDF.EXEC is read by",
+     "how": "the dataset is allocated to DD SYSEXEC of the batch TSO step, i.e. the library the %TXT2PDF exec named in SYSTSIN is loaded from; it is program library, not chain data. What the exec does stays the open chain-step-opaque ask on this step",
+     "evidence": [
+      "app/jcl/TXT2PDF1.JCL:24-31",
+      "app/jcl/TXT2PDF1.JCL:37-39"
+     ]
+    }
+   ],
+   "asks": [],
+   "notes": [
+    {
+     "text": "TXT2PDF1's SYSTSIN runs %TXT2PDF with IN DD:INDD (AWS.M2.CARDDEMO.STATEMNT.PS, written by CREASTMT.STEP040) and OUT 'AWS.M2.CARDDEMO.STATEMNT.PS.PDF'; the output dataset is named only in the command text, so the pass lists no write for the step. The exec itself (AWS.M2.LBD.TXT2PDF.EXEC) is not a scanned input.",
+     "evidence": [
+      "app/jcl/TXT2PDF1.JCL:31-39",
+      "app/jcl/CREASTMT.JCL:79-91"
+     ]
+    },
+    {
+     "text": "CBPAUP0J is triggered by CLOSEFIL and triggers POSTTRAN, but no JCL member of that name is in this module's roots; the estate catalogue holds a member CBPAUP0J under app/app-authorization-ims-db2-mq/jcl, which belongs to another module's scan. What the job does between the file close and the posting run is not in this inventory.",
+     "evidence": [
+      "app/scheduler/CardDemo.ca7:43",
+      "app/scheduler/CardDemo.ca7:70",
+      "app/app-authorization-ims-db2-mq/jcl/CBPAUP0J.jcl:1"
+     ]
+    },
+    {
+     "text": "The CA 7 listing defines CLOSEFIL1 and CLOSEFIL2 as separate job names that both run JCL member CLOSEFIL; they are triggered by WAITSTEP under schedule ids 031 and 032 and trigger TRANCATG and TCATBALF respectively.",
+     "evidence": [
+      "app/scheduler/CardDemo.ca7:216-217",
+      "app/scheduler/CardDemo.ca7:224",
+      "app/scheduler/CardDemo.ca7:244",
+      "app/scheduler/CardDemo.ca7:271"
+     ]
+    }
+   ]
+  },
+  "DAILY-TransactionBackup": {
+   "directions": [
+    {
+     "job": "TRANBKP",
+     "step": "STEP05R",
+     "dd": "FILEIN",
+     "direction": "R",
+     "basis": "REPROCT control card REPRO INFILE(FILEIN) OUTFILE(FILEOUT)",
+     "evidence": [
+      "app/ctl/REPROCT.ctl:15",
+      "app/proc/REPROC.prc:27-28",
+      "app/jcl/TRANBKP.jcl:23-27"
+     ]
+    },
+    {
+     "job": "TRANBKP",
+     "step": "STEP05R",
+     "dd": "FILEOUT",
+     "direction": "W",
+     "basis": "REPROCT control card REPRO INFILE(FILEIN) OUTFILE(FILEOUT)",
+     "evidence": [
+      "app/ctl/REPROCT.ctl:15",
+      "app/proc/REPROC.prc:27-28",
+      "app/jcl/TRANBKP.jcl:29-33"
+     ]
+    }
+   ],
+   "closures": [
+    {
+     "kind": "chain-step-opaque",
+     "job": "CLOSEFIL",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) CLO) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/CLOSEFIL.jcl:22-30"
+     ]
+    },
+    {
+     "kind": "chain-step-opaque",
+     "job": "OPENFIL",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) OPE) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/OPENFIL.jcl:22-30"
+     ]
+    },
+    {
+     "kind": "chain-step-opaque",
+     "job": "TRANBKP",
+     "match": "STEP05R.PRC001 runs IDCAMS with control cards outside the store",
+     "how": "PROC REPROC reads SYSIN from &CNTLLIB(REPROCT) and the job passes CNTLLIB=AWS.M2.CARDDEMO.CNTL; the scanned control member app/ctl/REPROCT.ctl holds the single card REPRO INFILE(FILEIN) OUTFILE(FILEOUT). That the scanned member is the content of AWS.M2.CARDDEMO.CNTL(REPROCT) rests on the estate map placing app/ctl in this module, not on a library listing",
+     "evidence": [
+      "app/ctl/REPROCT.ctl:15",
+      "app/proc/REPROC.prc:21-28",
+      "app/jcl/TRANBKP.jcl:23-27"
+     ]
+    }
+   ],
+   "asks": [
+    {
+     "kind": "chain-path-unproven",
+     "severity": "medium",
+     "job": "TRANBKP",
+     "message": "TRANBKP unloads the transaction master to TRANSACT.BKUP(+1), deletes the cluster and its alternate index, and redefines only the cluster; no step of the job, and no later job of this table, reloads the master or rebuilds the alternate index before OPENFIL reopens the files",
+     "evidence": [
+      "app/jcl/TRANBKP.jcl:23-33",
+      "app/jcl/TRANBKP.jcl:37-46",
+      "app/jcl/TRANBKP.jcl:51-67",
+      "app/scheduler/CardDemo.controlm:14-24"
+     ],
+     "request": "Confirm that the transaction master is meant to be empty after the daily backup, and what rebuilds AWS.M2.CARDDEMO.TRANSACT.VSAM.AIX afterwards (TRANIDX defines and builds it but is in no scheduler table)"
+    }
+   ],
+   "notes": []
+  },
+  "DisclosureGroupsRefresh": {
+   "directions": [],
+   "closures": [
+    {
+     "kind": "chain-step-opaque",
+     "job": "CLOSEFIL",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) CLO) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/CLOSEFIL.jcl:22-30"
+     ]
+    },
+    {
+     "kind": "chain-step-opaque",
+     "job": "OPENFIL",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) OPE) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/OPENFIL.jcl:22-30"
+     ]
+    }
+   ],
+   "asks": [],
+   "notes": [
+    {
+     "text": "CLOSEFIL closes TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; no CEMT command in it names a file over the disclosure group cluster that DISCGRP deletes and redefines.",
+     "evidence": [
+      "app/jcl/CLOSEFIL.jcl:26-30",
+      "app/jcl/DISCGRP.jcl:22-36"
+     ]
+    }
+   ]
+  },
+  "MONTHLY-InterestCalculation": {
+   "directions": [],
+   "closures": [
+    {
+     "kind": "chain-step-opaque",
+     "job": "CLOSEFIL",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) CLO) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/CLOSEFIL.jcl:22-30"
+     ]
+    },
+    {
+     "kind": "chain-step-opaque",
+     "job": "OPENFIL",
+     "match": "(utility SDSF) cannot be traversed",
+     "how": "the step's in-stream ISFIN cards are MVS modify commands to region CICSAWSA (CEMT SET FIL(...) OPE) for files TRANSACT, CCXREF, ACCTDAT, CXACAIX and USRSEC; the step allocates only SYSOUT and in-stream DDs, so it moves no dataset. Whether the region acts on the commands is not visible in the JCL",
+     "evidence": [
+      "app/jcl/OPENFIL.jcl:22-30"
+     ]
+    },
+    {
+     "kind": "chain-output-unconsumed",
+     "job": "INTCALC",
+     "match": "AWS.M2.CARDDEMO.SYSTRAN written by INTCALC.STEP15",
+     "how": "COMBTRAN.STEP05R reads AWS.M2.CARDDEMO.SYSTRAN(0) as the second dataset concatenated to SORTIN, so today's SYSTRAN(+1) from INTCALC is the next job's (0) (GDG roll). The pass recorded only the first dataset of the concatenation - reported as a toolbox gap, not patched",
+     "evidence": [
+      "app/jcl/COMBTRAN.jcl:23-26",
+      "app/jcl/INTCALC.jcl:37-41"
+     ]
+    }
+   ],
+   "asks": [
+    {
+     "kind": "chain-path-unproven",
+     "severity": "medium",
+     "job": "INTCALC",
+     "message": "INTCALC passes the literal PARM='2022071800' to CBACT04C, which strings the PARM date into the id of every interest transaction it writes; the member as scanned therefore runs one fixed cycle date, and nothing in the Control-M definition supplies a variable",
+     "evidence": [
+      "app/jcl/INTCALC.jcl:22",
+      "app/cbl/CBACT04C.cbl:474-480",
+      "app/scheduler/CardDemo.controlm:69-74"
+     ],
+     "request": "Confirm how the cycle date in INTCALC's PARM is changed for each monthly run (manual edit, scheduler variable, or a different production member)"
+    }
+   ],
+   "notes": [
+    {
+     "text": "COMBTRAN's first SORTIN dataset is TRANSACT.BKUP(0), a generation no job of this table writes; TRANBKP (DAILY-TransactionBackup) and TRANREPT (submitted from CICS) each write TRANSACT.BKUP(+1). Which of them ran last before the monthly chain is not ordered by anything scanned.",
+     "evidence": [
+      "app/jcl/COMBTRAN.jcl:23-24",
+      "app/jcl/TRANBKP.jcl:29-33",
+      "app/jcl/TRANREPT.jcl:29-33"
+     ]
+    }
+   ]
+  },
+  "TRANREPT": {
+   "directions": [
+    {
+     "job": "TRANREPT",
+     "step": "STEP05R",
+     "dd": "FILEIN",
+     "direction": "R",
+     "basis": "REPROCT control card REPRO INFILE(FILEIN) OUTFILE(FILEOUT)",
+     "evidence": [
+      "app/ctl/REPROCT.ctl:15",
+      "app/proc/REPROC.prc:27-28",
+      "app/jcl/TRANREPT.jcl:23-27"
+     ]
+    },
+    {
+     "job": "TRANREPT",
+     "step": "STEP05R",
+     "dd": "FILEOUT",
+     "direction": "W",
+     "basis": "REPROCT control card REPRO INFILE(FILEIN) OUTFILE(FILEOUT)",
+     "evidence": [
+      "app/ctl/REPROCT.ctl:15",
+      "app/proc/REPROC.prc:27-28",
+      "app/jcl/TRANREPT.jcl:29-33"
+     ]
+    }
+   ],
+   "closures": [
+    {
+     "kind": "chain-step-opaque",
+     "job": "TRANREPT",
+     "match": "STEP05R.PRC001 runs IDCAMS with control cards outside the store",
+     "how": "PROC REPROC reads SYSIN from &CNTLLIB(REPROCT) and the job passes CNTLLIB=AWS.M2.CARDDEMO.CNTL; the scanned control member app/ctl/REPROCT.ctl holds the single card REPRO INFILE(FILEIN) OUTFILE(FILEOUT). That the scanned member is the content of AWS.M2.CARDDEMO.CNTL(REPROCT) rests on the estate map placing app/ctl in this module, not on a library listing",
+     "evidence": [
+      "app/ctl/REPROCT.ctl:15",
+      "app/proc/REPROC.prc:21-28",
+      "app/jcl/TRANREPT.jcl:23-27"
+     ]
+    },
+    {
+     "kind": "chain-input-unproduced",
+     "job": "TRANREPT",
+     "match": "AWS.M2.CARDDEMO.DATEPARM is read by",
+     "how": "when the job is submitted online, the JCL CORPT00C writes carries //STEP10R.DATEPARM DD * followed by a card holding the start and end date the user asked for, overriding the DATEPARM dataset; the cataloged AWS.M2.CARDDEMO.DATEPARM is read only when member TRANREPT is run as written",
+     "evidence": [
+      "app/cbl/CORPT00C.cbl:115-121",
+      "app/jcl/TRANREPT.jcl:73-74"
+     ]
+    }
+   ],
+   "asks": [
+    {
+     "kind": "chain-path-unproven",
+     "severity": "medium",
+     "job": "TRANREPT",
+     "message": "JCL member TRANREPT filters on the literal dates 2022-01-01 to 2022-07-06 in its SYMNAMES cards, while the job CORPT00C submits (TRNRPT00) executes PROC TRANREPT and overrides STEP05R.SYMNAMES and STEP10R.DATEPARM with the dates entered online; the pass analysed the JCL member, not the submitted job",
+     "evidence": [
+      "app/jcl/TRANREPT.jcl:40-48",
+      "app/cbl/CORPT00C.cbl:84-121",
+      "app/proc/TRANREPT.prc:21-78"
+     ],
+     "request": "Confirm whether member TRANREPT is ever run as written (fixed date range) or only through the CORPT00C submission, and that PROC TRANREPT in AWS.M2.CARDDEMO.PROC is the scanned app/proc/TRANREPT.prc"
+    }
+   ],
+   "notes": []
+  }
+ }
+}

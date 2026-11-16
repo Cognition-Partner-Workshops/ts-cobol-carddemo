@@ -1,0 +1,260 @@
+{
+  "meta": {
+    "module": "TRANTYPE",
+    "generated_at": "2026-11-16T15:36:26Z",
+    "tool": "mftb 0.2.1",
+    "inputs": [
+      "programs.json",
+      "jobs.json",
+      "schedule.json"
+    ]
+  },
+  "author": "agent",
+  "summary": {
+    "subjects": 8,
+    "written": 8,
+    "unknown": 0,
+    "by_kind": {
+      "program": 4,
+      "jcl": 4,
+      "proc": 0
+    },
+    "with_key_points": 7,
+    "overviews": 7,
+    "overviews_written": 7
+  },
+  "overviews": [
+    {
+      "kind": "module",
+      "name": "TRANTYPE",
+      "key_points": [
+        "Maintains the transaction type reference data held in Db2: administrators list, add, change and delete types online through CICS transactions CTLI and CTTU.",
+        "The same table is maintained in batch from an input file (MNTTRDB2 running COBTUPDT), and the type and category tables are unloaded to flat files for transaction reporting (TRANEXTR).",
+        "A setup job (CREADB2) creates the Db2 database and loads the two tables, and an ad-hoc driver (MNTTRDYN running CBTRNDYN) runs a SQL statement supplied in a dataset."
+      ],
+      "basis": [
+        "app/app-transaction-type-db2/README.md:1-60",
+        "app/app-transaction-type-db2/csd/CRDDEMOD.csd:11-44",
+        "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl:5-30",
+        "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:19-21",
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl:36-84",
+        "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:1-6"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "CARDDEMO",
+      "key_points": [
+        "CA-7 job listing for the wider CardDemo batch (CLOSEFIL, CBPAUP0J, POSTTRAN, TRANTYPE, TRANCATG, TCATBALF, CREASTMT and others); none of the listed jobs has its JCL in this module."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.ca7:18-537"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "DAILY-TransactionBackup",
+      "key_points": [
+        "Control-M folder of four jobs - CLOSEFIL, TRANBKP, WAITSTEP, OPENFIL - described as daily; none of their JCL members is part of this module, so what the jobs do is not stated here."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:3-25"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "WEEKLY-TransactionTypesDBRefresh",
+      "key_points": [
+        "Control-M folder with a single job, MNTTRDB2 (described 'WEEKLY MNTTRDB2'), which applies the add, update and delete records of INPFILE to the Db2 transaction type table through COBTUPDT."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:26-31",
+        "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl:5-30"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "DisclosureGroupsRefresh",
+      "key_points": [
+        "Control-M smart folder of four jobs - CLOSEFIL, DISCGRP, WAITSTEP, OPENFIL - described as weekly; none of their JCL members is part of this module, so what the jobs do is not stated here."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:32-56"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "TransactionTypesDBRefresh",
+      "key_points": [
+        "Control-M smart folder with a single job, TRANEXTR, which backs up the previous transaction type and category extract files and unloads both Db2 tables into new ones with DSNTIAUL."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:57-63",
+        "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:31-119"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "chain",
+      "name": "MONTHLY-InterestCalculation",
+      "key_points": [
+        "Control-M folder of five jobs - CLOSEFIL, INTCALC, COMBTRAN, WAITSTEP, OPENFIL - described as monthly; none of their JCL members is part of this module, so what the jobs do is not stated here."
+      ],
+      "basis": [
+        "app/scheduler/CardDemo.controlm:64-92"
+      ],
+      "written_by": "agent"
+    }
+  ],
+  "descriptions": [
+    {
+      "kind": "program",
+      "name": "CBTRNDYN",
+      "path": "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl",
+      "description": "Ad-hoc batch maintenance driver: runs one SQL statement read from DYNSQL as dynamic SQL, then calls the program named in its PARM.",
+      "key_points": [
+        "Concatenates the non-comment records of the DYNSQL file into one statement, PREPAREs and EXECUTEs it, and sets return code 8 when the PREPARE fails or the EXECUTE returns a negative SQLCODE.",
+        "When a PARM is passed, moves its value to WS-PGM-NAME and issues CALL WS-PGM-NAME; the called program is whatever the PARM names at run time."
+      ],
+      "basis": [
+        "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:1-6",
+        "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:34-36",
+        "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:53-63",
+        "app/app-transaction-type-db2/cbl/CBTRNDYN.cbl:67-102"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "COBTUPDT",
+      "path": "app/app-transaction-type-db2/cbl/COBTUPDT.cbl",
+      "description": "Batch maintenance of Db2 table CARDDEMO.TRANSACTION_TYPE: adds, updates or deletes rows as directed by the records of INPFILE.",
+      "key_points": [
+        "Reads INPFILE sequentially; the record type selects INSERT ('A'), UPDATE ('U') or DELETE ('D'), '*' marks a comment line, and any other type is reported as invalid.",
+        "A negative SQLCODE, or +100 on update or delete, builds a message and performs 9999-ABEND, which displays it and sets return code 4."
+      ],
+      "basis": [
+        "app/app-transaction-type-db2/cbl/COBTUPDT.cbl:1-5",
+        "app/app-transaction-type-db2/cbl/COBTUPDT.cbl:31",
+        "app/app-transaction-type-db2/cbl/COBTUPDT.cbl:91-130",
+        "app/app-transaction-type-db2/cbl/COBTUPDT.cbl:137-163",
+        "app/app-transaction-type-db2/cbl/COBTUPDT.cbl:172-185",
+        "app/app-transaction-type-db2/cbl/COBTUPDT.cbl:202-216",
+        "app/app-transaction-type-db2/cbl/COBTUPDT.cbl:230-233"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "COTRTLIC",
+      "path": "app/app-transaction-type-db2/cbl/COTRTLIC.cbl",
+      "description": "CICS screen program for transaction CTLI: pages through Db2 transaction types and lets the user update or delete the listed rows.",
+      "key_points": [
+        "Pages forward and backward through CARDDEMO.TRANSACTION_TYPE with two cursors and sends/receives its list map.",
+        "Updates and deletes rows of CARDDEMO.TRANSACTION_TYPE, and transfers to the add/update program COTRTUPC through XCTL PROGRAM(LIT-ADDTPGM).",
+        "Returns pseudo-conversationally with TRANSID(LIT-THISTRANID), whose value is 'CTLI'."
+      ],
+      "basis": [
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:1-6",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:43-51",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:339-358",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:648-651",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:910-914",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:931",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:1588",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:1806",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:1847",
+        "app/app-transaction-type-db2/cbl/COTRTLIC.cbl:1901"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "program",
+      "name": "COTRTUPC",
+      "path": "app/app-transaction-type-db2/cbl/COTRTUPC.cbl",
+      "description": "CICS screen program for transaction CTTU: accepts a transaction type from the screen and adds, changes or deletes it in Db2.",
+      "key_points": [
+        "Receives its map, reads CARDDEMO.TRANSACTION_TYPE and issues UPDATE, INSERT and DELETE against it.",
+        "Leaves through XCTL PROGRAM(CDEMO-TO-PROGRAM), set from LIT-ADMINPGM or from the calling program carried in the commarea, and returns with TRANSID(LIT-THISTRANID), whose value is 'CTTU'."
+      ],
+      "basis": [
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:1-4",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:201-209",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:438-442",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:457-460",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:567-568",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:642",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:1480",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:1545",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:1598",
+        "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:1628"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "jcl",
+      "name": "CREADB2",
+      "path": "app/app-transaction-type-db2/jcl/CREADB21.jcl",
+      "description": "Setup job: frees existing Db2 plans and packages, then creates the CardDemo database and loads the transaction type and category tables.",
+      "key_points": [
+        "Each Db2 step runs IKJEFT01 with SYSTSIN and SYSIN taken from control members (DB2FREE, DB2TIAD1/DB2CREAT, DB2TEP41/DB2LTTYP, DB2TEP41/DB2LTCAT) of the &LBNM..CNTL library."
+      ],
+      "basis": [
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl:36-46",
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl:48-59",
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl:64-72",
+        "app/app-transaction-type-db2/jcl/CREADB21.jcl:77-84"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "jcl",
+      "name": "MNTTRDB2",
+      "path": "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl",
+      "description": "Maintains the Db2 transaction type table in batch: runs COBTUPDT under plan CARDDEMO to insert, update or delete the rows listed in INPFILE.",
+      "key_points": [
+        "The job comment gives the INPFILE layout: column 1 is A (add), D (delete) or U (update), columns 2-3 the transaction type, columns 4-53 the description."
+      ],
+      "basis": [
+        "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl:5-18",
+        "app/app-transaction-type-db2/jcl/MNTTRDB2.jcl:21-30"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "jcl",
+      "name": "MNTTRDYN",
+      "path": "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl",
+      "description": "Runs CBTRNDYN under plan CARDDEMO through IKJEFT01, with the DYNSQL and INPFILE datasets allocated and PARMS('COBTUPDT') on the DSN RUN command.",
+      "key_points": [],
+      "basis": [
+        "app/app-transaction-type-db2/jcl/MNTTRDYN.jcl:23-34"
+      ],
+      "written_by": "agent"
+    },
+    {
+      "kind": "jcl",
+      "name": "TRANEXTR",
+      "path": "app/app-transaction-type-db2/jcl/TRANEXTR.jcl",
+      "description": "Extracts the Db2 transaction type and transaction category tables to flat files with DSNTIAUL, after backing up and deleting the previous extract files.",
+      "key_points": [
+        "STEP10 and STEP20 copy the previous TRANTYPE.PS and TRANCATG.PS to GDG backups, STEP30 deletes both files, and STEP40 and STEP50 unload CARDDEMO.TRANSACTION_TYPE and CARDDEMO.TRANSACTION_TYPE_CATEGORY into new copies.",
+        "The job comment says it extracts reference data for transaction report generation and runs once a day."
+      ],
+      "basis": [
+        "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:19-21",
+        "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:25",
+        "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:31-46",
+        "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:53-61",
+        "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:65-91",
+        "app/app-transaction-type-db2/jcl/TRANEXTR.jcl:95-119"
+      ],
+      "written_by": "agent"
+    }
+  ]
+}

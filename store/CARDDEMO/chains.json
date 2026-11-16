@@ -1,17 +1,17 @@
 {
   "meta": {
     "module": "CARDDEMO",
-    "generated_at": "2026-11-16T15:36:16Z",
+    "generated_at": "2026-11-16T15:41:21Z",
     "tool": "mftb 0.2.1",
     "inputs": {
       "selectors": [
         "CARDDEMO",
         "DAILY-TransactionBackup",
-        "WEEKLY-TransactionTypesDBRefresh",
         "DisclosureGroupsRefresh",
-        "TransactionTypesDBRefresh",
         "MONTHLY-InterestCalculation",
-        "TRANREPT"
+        "TRANREPT",
+        "TransactionTypesDBRefresh",
+        "WEEKLY-TransactionTypesDBRefresh"
       ]
     }
   },
@@ -20,7 +20,7 @@
       "table": "CARDDEMO",
       "requested_as": "CARDDEMO",
       "selection_basis": "CARDDEMO is a table in app/scheduler/CardDemo.ca7",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "CLOSEFIL",
@@ -2101,7 +2101,7 @@
       "table": "DAILY-TransactionBackup",
       "requested_as": "DAILY-TransactionBackup",
       "selection_basis": "DAILY-TRANSACTIONBACKUP is a table in app/scheduler/CardDemo.controlm",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "CLOSEFIL",
@@ -2551,7 +2551,7 @@
       "table": "DisclosureGroupsRefresh",
       "requested_as": "DisclosureGroupsRefresh",
       "selection_basis": "DISCLOSUREGROUPSREFRESH is a table in app/scheduler/CardDemo.controlm",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "CLOSEFIL",
@@ -2922,7 +2922,7 @@
       "table": "MONTHLY-InterestCalculation",
       "requested_as": "MONTHLY-InterestCalculation",
       "selection_basis": "MONTHLY-INTERESTCALCULATION is a table in app/scheduler/CardDemo.controlm",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "CLOSEFIL",
@@ -3558,7 +3558,7 @@
       "table": "TRANREPT",
       "requested_as": "TRANREPT",
       "selection_basis": "TRANREPT is submitted from CICS by CORPT00C, which writes its JCL to TDQUEUE JOBS (app/cbl/CORPT00C.cbl:517); no scheduler table orders it",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "TRANREPT",
@@ -3979,7 +3979,7 @@
       "table": "TransactionTypesDBRefresh",
       "requested_as": "TransactionTypesDBRefresh",
       "selection_basis": "TRANSACTIONTYPESDBREFRESH is a table in app/scheduler/CardDemo.controlm",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "TRANEXTR",
@@ -4060,7 +4060,7 @@
       "table": "WEEKLY-TransactionTypesDBRefresh",
       "requested_as": "WEEKLY-TransactionTypesDBRefresh",
       "selection_basis": "WEEKLY-TRANSACTIONTYPESDBREFRESH is a table in app/scheduler/CardDemo.controlm",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "MNTTRDB2",

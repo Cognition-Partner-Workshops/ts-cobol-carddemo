@@ -1,12 +1,48 @@
 {
- "meta": {"module": "CARDDEMO", "skill": "module-classification", "updated_at": "2026-11-15T06:40:00Z"},
+ "meta": {
+  "module": "CARDDEMO",
+  "skill": "module-classification",
+  "updated_at": "2026-11-16T16:00:00Z"
+ },
  "members": [
-  {"name": "CBFEECAL", "artifact": "unresolved-target", "module": "CARDDEMO",
-   "binding": {"kind": "application-module", "product": null, "component": null,
-               "confidence": "derived",
-               "evidence": ["app/pli/CBFEECAL.pli:21", "app/cbl/CBFEEDRV.cbl:101", "store/modules.json#CARDDEMO"],
-               "reasoning": "the estate map places the PL/I member app/pli/CBFEECAL.pli, whose procedure is named CBFEECAL, in module CARDDEMO; CBFEEDRV calls that name statically. The toolbox does not read PL/I, so what the routine does is not in this inventory",
-               "confirmed": null},
-   "request": "Confirm that the CBFEECAL load module in AWS.M2.CARDDEMO.LOADLIB is built from app/pli/CBFEECAL.pli (a load-module listing or the PL/I compile JCL would settle it)"}
+  {
+   "name": "CBFEECAL",
+   "artifact": "unresolved-target",
+   "module": "CARDDEMO",
+   "binding": {
+    "kind": "application-module",
+    "product": null,
+    "component": null,
+    "confidence": "derived",
+    "evidence": [
+     "app/pli/CBFEECAL.pli:21",
+     "app/cbl/CBFEEDRV.cbl:101",
+     "store/modules.json#CARDDEMO"
+    ],
+    "reasoning": "the estate map places the PL/I member app/pli/CBFEECAL.pli, whose procedure is named CBFEECAL, in module CARDDEMO; CBFEEDRV calls that name statically. The toolbox does not read PL/I, so what the routine does is not in this inventory",
+    "confirmed": null
+   },
+   "request": "Confirm that the CBFEECAL load module in AWS.M2.CARDDEMO.LOADLIB is built from app/pli/CBFEECAL.pli (a load-module listing or the PL/I compile JCL would settle it)"
+  },
+  {
+   "name": "COTRTUPC",
+   "artifact": "unresolved-target",
+   "module": "TRANTYPE",
+   "binding": {
+    "kind": "application-module",
+    "product": null,
+    "component": null,
+    "confidence": "derived",
+    "evidence": [
+     "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:1",
+     "app/cpy/COADM02Y.cpy:53",
+     "app/app-transaction-type-db2/csd/CRDDEMOD.csd:1",
+     "store/modules.json#TRANTYPE"
+    ],
+    "reasoning": "the estate map places app/app-transaction-type-db2/cbl/COTRTUPC.cbl in TRANTYPE; COADM01C reaches it through the admin-menu option table (COADM02Y). Whether the XCTL happens at run time is dynamic-call-resolution's question",
+    "confirmed": null
+   },
+   "request": null
+  }
  ]
 }

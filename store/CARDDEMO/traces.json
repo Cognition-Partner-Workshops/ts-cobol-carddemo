@@ -1,7 +1,7 @@
 {
   "meta": {
     "module": "CARDDEMO",
-    "generated_at": "2026-11-16T15:36:25Z",
+    "generated_at": "2026-11-16T15:41:22Z",
     "tool": "mftb 0.2.1",
     "inputs": {
       "programs": {
@@ -39,9 +39,9 @@
     },
     "edges_by_certainty": {
       "proven": 136,
-      "open": 14,
+      "open": 5,
       "candidate": 47,
-      "derived": 14
+      "derived": 23
     },
     "boundaries_by_class": {
       "utility": 6,
@@ -59,9 +59,9 @@
       "unsupplied-module": 2
     },
     "roots": 105,
-    "open_ends": 11,
+    "open_ends": 2,
     "unreached_programs": 19,
-    "cycles": 40
+    "cycles": 45
   },
   "nodes": [
     {
@@ -3243,17 +3243,6 @@
     },
     {
       "from": "COACTUPC",
-      "to": "?CDEMO-TO-PROGRAM",
-      "kind": "cics-xctl",
-      "certainty": "open",
-      "source": "app/cbl/COACTUPC.cbl:956",
-      "detail": "CICS-XCTL CDEMO-TO-PROGRAM - layout-mismatch",
-      "site": "app/cbl/COACTUPC.cbl:956",
-      "variable": "CDEMO-TO-PROGRAM",
-      "blocked_by": "dynamic-call-open"
-    },
-    {
-      "from": "COACTUPC",
       "to": "COACTUPC",
       "kind": "cics-xctl",
       "certainty": "candidate",
@@ -3281,17 +3270,6 @@
         "app/cbl/COACTUPC.cbl:557"
       ],
       "blocked_by": null
-    },
-    {
-      "from": "COACTVWC",
-      "to": "?CDEMO-TO-PROGRAM",
-      "kind": "cics-xctl",
-      "certainty": "open",
-      "source": "app/cbl/COACTVWC.cbl:349",
-      "detail": "CICS-XCTL CDEMO-TO-PROGRAM - layout-mismatch",
-      "site": "app/cbl/COACTVWC.cbl:349",
-      "variable": "CDEMO-TO-PROGRAM",
-      "blocked_by": "dynamic-call-open"
     },
     {
       "from": "COACTVWC",
@@ -3449,17 +3427,6 @@
     },
     {
       "from": "COBIL00C",
-      "to": "?CDEMO-TO-PROGRAM",
-      "kind": "cics-xctl",
-      "certainty": "open",
-      "source": "app/cbl/COBIL00C.cbl:281",
-      "detail": "CICS-XCTL CDEMO-TO-PROGRAM - layout-mismatch",
-      "site": "app/cbl/COBIL00C.cbl:281",
-      "variable": "CDEMO-TO-PROGRAM",
-      "blocked_by": "dynamic-call-open"
-    },
-    {
-      "from": "COBIL00C",
       "to": "COBIL00C",
       "kind": "cics-xctl",
       "certainty": "candidate",
@@ -3604,14 +3571,52 @@
     },
     {
       "from": "COCRDSLC",
-      "to": "?CDEMO-TO-PROGRAM",
+      "to": "COACTUPC",
       "kind": "cics-xctl",
-      "certainty": "open",
+      "certainty": "derived",
       "source": "app/cbl/COCRDSLC.cbl:331",
-      "detail": "CICS-XCTL CDEMO-TO-PROGRAM - layout-mismatch",
+      "detail": "CICS-XCTL CDEMO-TO-PROGRAM -> COACTUPC (dynamic-call-resolution: derived)",
       "site": "app/cbl/COCRDSLC.cbl:331",
       "variable": "CDEMO-TO-PROGRAM",
-      "blocked_by": "dynamic-call-open"
+      "reached_from": null,
+      "evidence": [
+        "app/cbl/COACTUPC.cbl:566",
+        "app/cbl/COACTUPC.cbl:945"
+      ],
+      "blocked_by": null
+    },
+    {
+      "from": "COCRDSLC",
+      "to": "COACTVWC",
+      "kind": "cics-xctl",
+      "certainty": "derived",
+      "source": "app/cbl/COCRDSLC.cbl:331",
+      "detail": "CICS-XCTL CDEMO-TO-PROGRAM -> COACTVWC (dynamic-call-resolution: derived)",
+      "site": "app/cbl/COCRDSLC.cbl:331",
+      "variable": "CDEMO-TO-PROGRAM",
+      "reached_from": null,
+      "evidence": [
+        "app/cbl/COACTVWC.cbl:177",
+        "app/cbl/COACTVWC.cbl:342"
+      ],
+      "blocked_by": null
+    },
+    {
+      "from": "COCRDSLC",
+      "to": "COCRDLIC",
+      "kind": "cics-xctl",
+      "certainty": "derived",
+      "source": "app/cbl/COCRDSLC.cbl:331",
+      "detail": "CICS-XCTL CDEMO-TO-PROGRAM -> COCRDLIC (dynamic-call-resolution: derived)",
+      "site": "app/cbl/COCRDSLC.cbl:331",
+      "variable": "CDEMO-TO-PROGRAM",
+      "reached_from": null,
+      "evidence": [
+        "app/cbl/COCRDLIC.cbl:196",
+        "app/cbl/COCRDLIC.cbl:319",
+        "app/cbl/COCRDLIC.cbl:387"
+      ],
+      "blocked_by": null
     },
     {
       "from": "COCRDSLC",
@@ -3625,6 +3630,22 @@
       "reached_from": null,
       "evidence": [
         "app/cbl/COCRDSLC.cbl:163"
+      ],
+      "blocked_by": null
+    },
+    {
+      "from": "COCRDSLC",
+      "to": "COCRDUPC",
+      "kind": "cics-xctl",
+      "certainty": "derived",
+      "source": "app/cbl/COCRDSLC.cbl:331",
+      "detail": "CICS-XCTL CDEMO-TO-PROGRAM -> COCRDUPC (dynamic-call-resolution: derived)",
+      "site": "app/cbl/COCRDSLC.cbl:331",
+      "variable": "CDEMO-TO-PROGRAM",
+      "reached_from": null,
+      "evidence": [
+        "app/cbl/COCRDUPC.cbl:244",
+        "app/cbl/COCRDUPC.cbl:457"
       ],
       "blocked_by": null
     },
@@ -3645,14 +3666,52 @@
     },
     {
       "from": "COCRDUPC",
-      "to": "?CDEMO-TO-PROGRAM",
+      "to": "COACTUPC",
       "kind": "cics-xctl",
-      "certainty": "open",
+      "certainty": "derived",
       "source": "app/cbl/COCRDUPC.cbl:473",
-      "detail": "CICS-XCTL CDEMO-TO-PROGRAM - layout-mismatch",
+      "detail": "CICS-XCTL CDEMO-TO-PROGRAM -> COACTUPC (dynamic-call-resolution: derived)",
       "site": "app/cbl/COCRDUPC.cbl:473",
       "variable": "CDEMO-TO-PROGRAM",
-      "blocked_by": "dynamic-call-open"
+      "reached_from": null,
+      "evidence": [
+        "app/cbl/COACTUPC.cbl:542",
+        "app/cbl/COACTUPC.cbl:945"
+      ],
+      "blocked_by": null
+    },
+    {
+      "from": "COCRDUPC",
+      "to": "COACTVWC",
+      "kind": "cics-xctl",
+      "certainty": "derived",
+      "source": "app/cbl/COCRDUPC.cbl:473",
+      "detail": "CICS-XCTL CDEMO-TO-PROGRAM -> COACTVWC (dynamic-call-resolution: derived)",
+      "site": "app/cbl/COCRDUPC.cbl:473",
+      "variable": "CDEMO-TO-PROGRAM",
+      "reached_from": null,
+      "evidence": [
+        "app/cbl/COACTVWC.cbl:160",
+        "app/cbl/COACTVWC.cbl:342"
+      ],
+      "blocked_by": null
+    },
+    {
+      "from": "COCRDUPC",
+      "to": "COCRDLIC",
+      "kind": "cics-xctl",
+      "certainty": "derived",
+      "source": "app/cbl/COCRDUPC.cbl:473",
+      "detail": "CICS-XCTL CDEMO-TO-PROGRAM -> COCRDLIC (dynamic-call-resolution: derived)",
+      "site": "app/cbl/COCRDUPC.cbl:473",
+      "variable": "CDEMO-TO-PROGRAM",
+      "reached_from": null,
+      "evidence": [
+        "app/cbl/COCRDLIC.cbl:204",
+        "app/cbl/COCRDLIC.cbl:319",
+        "app/cbl/COCRDLIC.cbl:387"
+      ],
+      "blocked_by": null
     },
     {
       "from": "COCRDUPC",
@@ -3994,17 +4053,6 @@
     },
     {
       "from": "COTRN01C",
-      "to": "?CDEMO-TO-PROGRAM",
-      "kind": "cics-xctl",
-      "certainty": "open",
-      "source": "app/cbl/COTRN01C.cbl:205",
-      "detail": "CICS-XCTL CDEMO-TO-PROGRAM - layout-mismatch",
-      "site": "app/cbl/COTRN01C.cbl:205",
-      "variable": "CDEMO-TO-PROGRAM",
-      "blocked_by": "dynamic-call-open"
-    },
-    {
-      "from": "COTRN01C",
       "to": "COMEN01C",
       "kind": "cics-xctl",
       "certainty": "candidate",
@@ -4063,17 +4111,6 @@
         "app/cbl/COTRN01C.cbl:36"
       ],
       "blocked_by": null
-    },
-    {
-      "from": "COTRN02C",
-      "to": "?CDEMO-TO-PROGRAM",
-      "kind": "cics-xctl",
-      "certainty": "open",
-      "source": "app/cbl/COTRN02C.cbl:508",
-      "detail": "CICS-XCTL CDEMO-TO-PROGRAM - layout-mismatch",
-      "site": "app/cbl/COTRN02C.cbl:508",
-      "variable": "CDEMO-TO-PROGRAM",
-      "blocked_by": "dynamic-call-open"
     },
     {
       "from": "COTRN02C",
@@ -4223,17 +4260,6 @@
     },
     {
       "from": "COUSR02C",
-      "to": "?CDEMO-TO-PROGRAM",
-      "kind": "cics-xctl",
-      "certainty": "open",
-      "source": "app/cbl/COUSR02C.cbl:258",
-      "detail": "CICS-XCTL CDEMO-TO-PROGRAM - layout-mismatch",
-      "site": "app/cbl/COUSR02C.cbl:258",
-      "variable": "CDEMO-TO-PROGRAM",
-      "blocked_by": "dynamic-call-open"
-    },
-    {
-      "from": "COUSR02C",
       "to": "COADM01C",
       "kind": "cics-xctl",
       "certainty": "candidate",
@@ -4266,6 +4292,23 @@
     },
     {
       "from": "COUSR02C",
+      "to": "COUSR00C",
+      "kind": "cics-xctl",
+      "certainty": "derived",
+      "source": "app/cbl/COUSR02C.cbl:258",
+      "detail": "CICS-XCTL CDEMO-TO-PROGRAM -> COUSR00C (dynamic-call-resolution: derived)",
+      "site": "app/cbl/COUSR02C.cbl:258",
+      "variable": "CDEMO-TO-PROGRAM",
+      "reached_from": null,
+      "evidence": [
+        "app/cbl/COUSR00C.cbl:192",
+        "app/cbl/COUSR00C.cbl:194",
+        "app/cbl/COUSR00C.cbl:204"
+      ],
+      "blocked_by": null
+    },
+    {
+      "from": "COUSR02C",
       "to": "COUSR02C",
       "kind": "cics-xctl",
       "certainty": "candidate",
@@ -4278,17 +4321,6 @@
         "app/cbl/COUSR02C.cbl:36"
       ],
       "blocked_by": null
-    },
-    {
-      "from": "COUSR03C",
-      "to": "?CDEMO-TO-PROGRAM",
-      "kind": "cics-xctl",
-      "certainty": "open",
-      "source": "app/cbl/COUSR03C.cbl:205",
-      "detail": "CICS-XCTL CDEMO-TO-PROGRAM - layout-mismatch",
-      "site": "app/cbl/COUSR03C.cbl:205",
-      "variable": "CDEMO-TO-PROGRAM",
-      "blocked_by": "dynamic-call-open"
     },
     {
       "from": "COUSR03C",
@@ -4319,6 +4351,23 @@
       "evidence": [
         "app/cbl/COUSR03C.cbl:200",
         "app/cbl/COUSR03C.cbl:91"
+      ],
+      "blocked_by": null
+    },
+    {
+      "from": "COUSR03C",
+      "to": "COUSR00C",
+      "kind": "cics-xctl",
+      "certainty": "derived",
+      "source": "app/cbl/COUSR03C.cbl:205",
+      "detail": "CICS-XCTL CDEMO-TO-PROGRAM -> COUSR00C (dynamic-call-resolution: derived)",
+      "site": "app/cbl/COUSR03C.cbl:205",
+      "variable": "CDEMO-TO-PROGRAM",
+      "reached_from": null,
+      "evidence": [
+        "app/cbl/COUSR00C.cbl:202",
+        "app/cbl/COUSR00C.cbl:194",
+        "app/cbl/COUSR00C.cbl:204"
       ],
       "blocked_by": null
     },
@@ -7007,34 +7056,6 @@
   ],
   "open_ends": [
     {
-      "program": "COACTUPC",
-      "site": "app/cbl/COACTUPC.cbl:956",
-      "construct": "CICS-XCTL",
-      "variable": "CDEMO-TO-PROGRAM",
-      "kinds": [
-        "layout-mismatch"
-      ],
-      "candidates": [
-        "COACTUPC",
-        "COMEN01C"
-      ],
-      "resolve_with": "dynamic-call-resolution skill"
-    },
-    {
-      "program": "COACTVWC",
-      "site": "app/cbl/COACTVWC.cbl:349",
-      "construct": "CICS-XCTL",
-      "variable": "CDEMO-TO-PROGRAM",
-      "kinds": [
-        "layout-mismatch"
-      ],
-      "candidates": [
-        "COACTVWC",
-        "COMEN01C"
-      ],
-      "resolve_with": "dynamic-call-resolution skill"
-    },
-    {
       "program": "COADM01C",
       "site": "app/cbl/COADM01C.cbl:168",
       "construct": "CICS-XCTL",
@@ -7048,49 +7069,6 @@
       "resolve_with": "dynamic-call-resolution skill"
     },
     {
-      "program": "COBIL00C",
-      "site": "app/cbl/COBIL00C.cbl:281",
-      "construct": "CICS-XCTL",
-      "variable": "CDEMO-TO-PROGRAM",
-      "kinds": [
-        "layout-mismatch"
-      ],
-      "candidates": [
-        "COBIL00C",
-        "COMEN01C",
-        "COSGN00C"
-      ],
-      "resolve_with": "dynamic-call-resolution skill"
-    },
-    {
-      "program": "COCRDSLC",
-      "site": "app/cbl/COCRDSLC.cbl:331",
-      "construct": "CICS-XCTL",
-      "variable": "CDEMO-TO-PROGRAM",
-      "kinds": [
-        "layout-mismatch"
-      ],
-      "candidates": [
-        "COCRDSLC",
-        "COMEN01C"
-      ],
-      "resolve_with": "dynamic-call-resolution skill"
-    },
-    {
-      "program": "COCRDUPC",
-      "site": "app/cbl/COCRDUPC.cbl:473",
-      "construct": "CICS-XCTL",
-      "variable": "CDEMO-TO-PROGRAM",
-      "kinds": [
-        "layout-mismatch"
-      ],
-      "candidates": [
-        "COCRDUPC",
-        "COMEN01C"
-      ],
-      "resolve_with": "dynamic-call-resolution skill"
-    },
-    {
       "program": "COMEN01C",
       "site": "app/cbl/COMEN01C.cbl:201",
       "construct": "CICS-XCTL",
@@ -7100,67 +7078,6 @@
       ],
       "candidates": [
         "COSGN00C"
-      ],
-      "resolve_with": "dynamic-call-resolution skill"
-    },
-    {
-      "program": "COTRN01C",
-      "site": "app/cbl/COTRN01C.cbl:205",
-      "construct": "CICS-XCTL",
-      "variable": "CDEMO-TO-PROGRAM",
-      "kinds": [
-        "layout-mismatch"
-      ],
-      "candidates": [
-        "COMEN01C",
-        "COSGN00C",
-        "COTRN00C",
-        "COTRN01C"
-      ],
-      "resolve_with": "dynamic-call-resolution skill"
-    },
-    {
-      "program": "COTRN02C",
-      "site": "app/cbl/COTRN02C.cbl:508",
-      "construct": "CICS-XCTL",
-      "variable": "CDEMO-TO-PROGRAM",
-      "kinds": [
-        "layout-mismatch"
-      ],
-      "candidates": [
-        "COMEN01C",
-        "COSGN00C",
-        "COTRN02C"
-      ],
-      "resolve_with": "dynamic-call-resolution skill"
-    },
-    {
-      "program": "COUSR02C",
-      "site": "app/cbl/COUSR02C.cbl:258",
-      "construct": "CICS-XCTL",
-      "variable": "CDEMO-TO-PROGRAM",
-      "kinds": [
-        "layout-mismatch"
-      ],
-      "candidates": [
-        "COADM01C",
-        "COSGN00C",
-        "COUSR02C"
-      ],
-      "resolve_with": "dynamic-call-resolution skill"
-    },
-    {
-      "program": "COUSR03C",
-      "site": "app/cbl/COUSR03C.cbl:205",
-      "construct": "CICS-XCTL",
-      "variable": "CDEMO-TO-PROGRAM",
-      "kinds": [
-        "layout-mismatch"
-      ],
-      "candidates": [
-        "COADM01C",
-        "COSGN00C",
-        "COUSR03C"
       ],
       "resolve_with": "dynamic-call-resolution skill"
     }
@@ -7189,6 +7106,30 @@
     },
     {
       "path": [
+        "COACTUPC",
+        "COMEN01C",
+        "COCRDUPC",
+        "COACTUPC"
+      ],
+      "sources": [
+        "app/cbl/COCRDUPC.cbl:473"
+      ],
+      "self": false
+    },
+    {
+      "path": [
+        "COACTUPC",
+        "COMEN01C",
+        "COCRDSLC",
+        "COACTUPC"
+      ],
+      "sources": [
+        "app/cbl/COCRDSLC.cbl:331"
+      ],
+      "self": false
+    },
+    {
+      "path": [
         "COACTVWC",
         "COACTVWC"
       ],
@@ -7205,6 +7146,30 @@
       ],
       "sources": [
         "app/cbl/COMEN01C.cbl:184"
+      ],
+      "self": false
+    },
+    {
+      "path": [
+        "COACTVWC",
+        "COMEN01C",
+        "COCRDUPC",
+        "COACTVWC"
+      ],
+      "sources": [
+        "app/cbl/COCRDUPC.cbl:473"
+      ],
+      "self": false
+    },
+    {
+      "path": [
+        "COACTVWC",
+        "COMEN01C",
+        "COCRDSLC",
+        "COACTVWC"
+      ],
+      "sources": [
+        "app/cbl/COCRDSLC.cbl:331"
       ],
       "self": false
     },
@@ -7297,6 +7262,28 @@
     {
       "path": [
         "COCRDLIC",
+        "COCRDUPC",
+        "COCRDLIC"
+      ],
+      "sources": [
+        "app/cbl/COCRDUPC.cbl:473"
+      ],
+      "self": false
+    },
+    {
+      "path": [
+        "COCRDLIC",
+        "COCRDSLC",
+        "COCRDLIC"
+      ],
+      "sources": [
+        "app/cbl/COCRDSLC.cbl:331"
+      ],
+      "self": false
+    },
+    {
+      "path": [
+        "COCRDLIC",
         "COMEN01C",
         "COCRDLIC"
       ],
@@ -7328,18 +7315,6 @@
     },
     {
       "path": [
-        "COCRDSLC",
-        "COMEN01C",
-        "COCRDLIC",
-        "COCRDSLC"
-      ],
-      "sources": [
-        "app/cbl/COCRDLIC.cbl:538"
-      ],
-      "self": false
-    },
-    {
-      "path": [
         "COCRDUPC",
         "COCRDUPC"
       ],
@@ -7351,11 +7326,12 @@
     {
       "path": [
         "COCRDUPC",
-        "COMEN01C",
+        "COCRDLIC",
+        "COCRDSLC",
         "COCRDUPC"
       ],
       "sources": [
-        "app/cbl/COMEN01C.cbl:184"
+        "app/cbl/COCRDSLC.cbl:331"
       ],
       "self": false
     },
@@ -7363,11 +7339,10 @@
       "path": [
         "COCRDUPC",
         "COMEN01C",
-        "COCRDLIC",
         "COCRDUPC"
       ],
       "sources": [
-        "app/cbl/COCRDLIC.cbl:538"
+        "app/cbl/COMEN01C.cbl:184"
       ],
       "self": false
     },
@@ -7567,6 +7542,28 @@
     },
     {
       "path": [
+        "COUSR00C",
+        "COUSR03C",
+        "COUSR00C"
+      ],
+      "sources": [
+        "app/cbl/COUSR03C.cbl:205"
+      ],
+      "self": false
+    },
+    {
+      "path": [
+        "COUSR00C",
+        "COUSR02C",
+        "COUSR00C"
+      ],
+      "sources": [
+        "app/cbl/COUSR02C.cbl:258"
+      ],
+      "self": false
+    },
+    {
+      "path": [
         "COUSR02C",
         "COUSR02C"
       ],
@@ -7577,18 +7574,6 @@
     },
     {
       "path": [
-        "COUSR02C",
-        "COADM01C",
-        "COUSR00C",
-        "COUSR02C"
-      ],
-      "sources": [
-        "app/cbl/COUSR00C.cbl:196"
-      ],
-      "self": false
-    },
-    {
-      "path": [
         "COUSR03C",
         "COUSR03C"
       ],
@@ -7596,18 +7581,6 @@
         "app/cbl/COUSR03C.cbl:205"
       ],
       "self": true
-    },
-    {
-      "path": [
-        "COUSR03C",
-        "COADM01C",
-        "COUSR00C",
-        "COUSR03C"
-      ],
-      "sources": [
-        "app/cbl/COUSR00C.cbl:206"
-      ],
-      "self": false
     }
   ],
   "unreached": {

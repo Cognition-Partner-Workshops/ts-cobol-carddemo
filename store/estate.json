@@ -605,7 +605,7 @@
         "TRANTYPE"
       ],
       "findings": {
-        "open": 236,
+        "open": 218,
         "high": 4
       }
     },
@@ -649,7 +649,7 @@
         "CARDDEMO"
       ],
       "findings": {
-        "open": 115,
+        "open": 135,
         "high": 8
       }
     },

@@ -1,14 +1,14 @@
 {
   "meta": {
     "module": "TRANTYPE",
-    "generated_at": "2026-11-16T15:36:16Z",
+    "generated_at": "2026-11-16T15:41:21Z",
     "tool": "mftb 0.2.1",
     "inputs": {
       "selectors": [
-        "WEEKLY-TransactionTypesDBRefresh",
-        "TransactionTypesDBRefresh",
+        "CREADB2",
         "MNTTRDYN",
-        "CREADB2"
+        "TransactionTypesDBRefresh",
+        "WEEKLY-TransactionTypesDBRefresh"
       ]
     }
   },
@@ -17,7 +17,7 @@
       "table": "CREADB2",
       "requested_as": "CREADB2",
       "selection_basis": "CREADB2 is the scanned JCL member app/app-transaction-type-db2/jcl/CREADB21.jcl; no parsed scheduler table schedules it, so the chain is rooted in that JCL and carries no scheduler order",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "CREADB2",
@@ -225,7 +225,7 @@
       "table": "MNTTRDYN",
       "requested_as": "MNTTRDYN",
       "selection_basis": "MNTTRDYN is the scanned JCL member app/app-transaction-type-db2/jcl/MNTTRDYN.jcl; no parsed scheduler table schedules it, so the chain is rooted in that JCL and carries no scheduler order",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "MNTTRDYN",
@@ -391,7 +391,7 @@
       "table": "TransactionTypesDBRefresh",
       "requested_as": "TransactionTypesDBRefresh",
       "selection_basis": "TRANSACTIONTYPESDBREFRESH is a table in app/scheduler/CardDemo.controlm",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "TRANEXTR",
@@ -743,7 +743,7 @@
       "table": "WEEKLY-TransactionTypesDBRefresh",
       "requested_as": "WEEKLY-TransactionTypesDBRefresh",
       "selection_basis": "WEEKLY-TRANSACTIONTYPESDBREFRESH is a table in app/scheduler/CardDemo.controlm",
-      "generated_at": "2026-11-16T15:36:16Z",
+      "generated_at": "2026-11-16T15:41:21Z",
       "jobs": [
         {
           "job": "MNTTRDB2",

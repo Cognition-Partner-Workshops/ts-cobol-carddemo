@@ -7,7 +7,8 @@ const steps = [
   { id: 3, title: "Check the map" },
   { id: 4, title: "Scan the modules" },
   { id: 5, title: "Roll the estate up" },
-  { id: 6, title: "Open asks and next steps" },
+  { id: 6, title: "Deeper module analysis" },
+  { id: 7, title: "Open asks and next steps" },
 ];
 const placeableExcluded = new Set(["document", "data", "tooling", "binary", "empty", "unclassified"]);
 const state = { catalog: null, modules: null, estate: null, perModule: {} };
@@ -35,7 +36,7 @@ async function loadStore() {
     getJson("store/catalog.json"), getJson("store/modules.json"), getJson("store/estate.json"),
   ]);
   Object.assign(state, { catalog, modules, estate });
-  const files = ["descriptions", "findings", "online", "chains"];
+  const files = ["descriptions", "findings", "online", "chains", "annotations", "modulenotes", "profile", "dyncalls"];
   await Promise.all(moduleIds.map(async (moduleId) => {
     const docs = await Promise.all(files.map((f) => getJson(`store/${moduleId}/${f}.json`)));
     state.perModule[moduleId] = Object.fromEntries(files.map((f, i) => [f, docs[i]]));
@@ -156,6 +157,35 @@ function viewRollup() {
     <h3>Inventory by owner</h3><table><thead><tr><th>kind</th><th class="num">files</th>${moduleIds.map((m) => `<th class="num">${m}</th>`).join("")}<th class="num">shared</th></tr></thead><tbody>${invRows}</tbody></table>` + stepNav(5);
 }
 
+
+function viewDeep() {
+  const rows = moduleIds.map((m) => {
+    const pm = state.perModule[m];
+    const ann = pm.annotations?.dynamic_calls || [];
+    const sites = pm.dyncalls?.sites?.length || 0;
+    const resolved = ann.filter((a) => a.status === "resolved").length;
+    const prof = pm.profile?.summary || {};
+    const openDyn = (pm.findings?.findings || []).filter((f) => f.status === "open" && f.kind.startsWith("dynamic-call")).length;
+    return `<tr><td><a href="#/module/${m}"><b>${m}</b></a></td><td class="num">${sites}</td><td class="num">${resolved}</td><td class="num">${openDyn}</td>
+      <td class="num">${(pm.modulenotes?.members || []).length}</td><td class="num">${pm.online?.summary?.transactions ?? 0}</td><td class="num">${(pm.chains?.chains || []).length}</td>
+      <td class="num">${prof.detected ?? 0}</td><td class="num">${prof.defaulted ?? 0}</td><td class="num">${prof.unanswered ?? 0}</td></tr>`;
+  }).join("");
+  const dynRows = moduleIds.flatMap((m) => (state.perModule[m].annotations?.dynamic_calls || []).map((a) =>
+    `<tr><td>${pill(m)}</td><td><code>${esc(a.program)}</code><div class="cite">${esc(a.site)}</div></td><td>${pill(a.status, a.status === "resolved" ? "ok" : "medium")}</td>
+     <td>${a.targets.map((t) => `<code>${esc(t.name)}</code> <span class="cite">${esc(t.basis)}</span>`).join(", ") || "–"}${(a.open_ends || []).map((o) => `<div class="cite">open: ${esc(o.request || o.kind)}</div>`).join("")}</td></tr>`)).join("");
+  const bindRows = moduleIds.flatMap((m) => (state.perModule[m].modulenotes?.members || []).map((b) =>
+    `<tr><td>${pill(m)}</td><td><code>${esc(b.name)}</code></td><td>${esc(b.binding.kind)}${b.module ? " → " + pill(b.module) : ""} ${pill(b.binding.confirmed ? "confirmed" : b.binding.confidence, b.binding.confirmed ? "ok" : "medium")}</td><td>${esc(b.binding.reasoning)}${b.request ? `<div class="cite">ask: ${esc(b.request)}</div>` : ""}</td></tr>`)).join("");
+  const profAsks = {};
+  moduleIds.forEach((m) => (state.perModule[m].profile?.asks || []).forEach((a) => { const k = a.field || a.kind; (profAsks[k] = profAsks[k] || { a, mods: [] }).mods.push(m); }));
+  const profRows = Object.entries(profAsks).map(([k, { a, mods }]) => `<tr><td><code>${esc(k)}</code></td><td>${pill(a.severity || "", a.severity)}</td><td>${mods.map((m) => pill(m)).join(" ")}</td><td>${esc(a.request || a.message || "")}</td></tr>`).join("");
+  return stepHeader(6, "The per-module passes of <code>module-inventory-analysis</code>: dynamic-call resolution (cited, never guessed), name bindings for what a scan cannot read, every CICS transaction and batch chain worked end to end, and the environment profile. What reasoning could not close stays an ask.") +
+    `<table><thead><tr><th>module</th><th class="num">dyn. sites</th><th class="num">annotated resolved</th><th class="num">dyn. findings open</th><th class="num">bindings</th><th class="num">transactions</th><th class="num">chains</th><th class="num">profile detected</th><th class="num">assumed</th><th class="num">unanswered</th></tr></thead><tbody>${rows}</tbody></table>
+    <h3>Dynamic-call resolution</h3><table><thead><tr><th>module</th><th>site</th><th>status</th><th>targets (basis)</th></tr></thead><tbody>${dynRows}</tbody></table>
+    <h3>Name bindings</h3><table><thead><tr><th>module</th><th>name</th><th>binding</th><th>why / ask</th></tr></thead><tbody>${bindRows}</tbody></table>
+    <h3>Environment questions for the customer (${Object.keys(profAsks).length})</h3><p class="lede">Asked once per field; assumed values are mftb defaults, not facts.</p>
+    <table><thead><tr><th>field</th><th>severity</th><th>modules</th><th>the ask</th></tr></thead><tbody>${profRows}</tbody></table>` + stepNav(6);
+}
+
 function viewAsks() {
   const asks = state.estate.asks;
   const scopes = ["all", ...new Set(asks.map((a) => a.scope))];
@@ -167,7 +197,7 @@ function viewAsks() {
        const mod = state.estate.modules.find((x) => x.id === m);
        return `<div class="card"><b>${m}</b><p style="margin:6px 0">Run <code>module-inventory-analysis ${m}</code>: environment profile, dynamic-call resolution and name bindings on top of this scan.</p>
          <div class="cite">${mod.findings.open} open findings · ${mod.findings.high} high · boundary must-establish ${mod.boundary["must-establish"] || 0}</div></div>`;
-     }).join("")}</div>` + stepNav(6);
+     }).join("")}</div>` + stepNav(7);
   setTimeout(() => {
     const draw = () => {
       const scope = document.getElementById("askScope").value;
@@ -201,8 +231,7 @@ function viewModule(moduleId) {
   const progRows = (descriptions?.descriptions || []).map((d) =>
     `<tr><td><code>${esc(d.name)}</code><div class="cite">${esc(d.kind)}</div></td><td>${esc(d.description)}${cites(d.basis, 2)}</td></tr>`).join("");
   const high = (findings?.findings || []).filter((f) => f.severity === "high" && f.status === "open");
-  const onlinePages = ["CA00", "CC00", "CDV1", "CM00", "CP00", "CPVD", "CTLI", "CDRA", "CDRD"];
-  const pageLinks = (online?.entry_points || []).filter((t) => onlinePages.includes(t.transid))
+  const pageLinks = (online?.entry_points || [])
     .map((t) => reportLink(`reports/${moduleId}/online/online-${t.transid}.html`, t.transid)).join(" · ");
   return `<div class="cite">Module</div><h2>${esc(mod.id)} — ${esc(mod.name)}</h2><p class="lede">${esc(mod.what_it_does)}</p>
     <div class="stats">${stat(mod.members.length, "members")}${stat(estateMod.jobs, "jobs")}${stat(online?.summary?.transactions ?? 0, "transactions")}${stat((chains?.chains || []).length, "batch chains")}${stat(estateMod.datasets, "datasets")}${stat(estateMod.findings.open, "open findings")}</div>
@@ -226,7 +255,7 @@ function route() {
   const view = document.getElementById("view");
   const [kind, ...rest] = hash.split("/");
   const arg = decodeURIComponent(rest.join("/"));
-  const stepViews = { 1: viewSweep, 2: viewModules, 3: viewCheck, 4: viewScans, 5: viewRollup, 6: viewAsks };
+  const stepViews = { 1: viewSweep, 2: viewModules, 3: viewCheck, 4: viewScans, 5: viewRollup, 6: viewDeep, 7: viewAsks };
   if (kind === "step" && stepViews[arg]) view.innerHTML = stepViews[arg]();
   else if (kind === "module" && moduleIds.includes(arg)) view.innerHTML = viewModule(arg);
   else if (kind === "report" && /^reports\/[\w./-]+\.html$/.test(arg) && !arg.includes("..")) view.innerHTML = viewReport(arg);

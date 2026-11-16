@@ -1,7 +1,7 @@
 {
   "meta": {
     "module": "CARDDEMO",
-    "generated_at": "2026-11-16T15:36:02Z",
+    "generated_at": "2026-11-16T15:41:14Z",
     "tool": "mftb 0.2.1",
     "inputs": {
       "csd": [
@@ -14491,7 +14491,22 @@
             }
           ]
         },
-        "binding": null,
+        "binding": {
+          "kind": "application-module",
+          "module": "TRANTYPE",
+          "product": null,
+          "component": null,
+          "confidence": "derived",
+          "reasoning": "the estate map places app/app-transaction-type-db2/cbl/COTRTUPC.cbl in TRANTYPE; COADM01C reaches it through the admin-menu option table (COADM02Y). Whether the XCTL happens at run time is dynamic-call-resolution's question",
+          "evidence": [
+            "app/app-transaction-type-db2/cbl/COTRTUPC.cbl:1",
+            "app/cpy/COADM02Y.cpy:53",
+            "app/app-transaction-type-db2/csd/CRDDEMOD.csd:1",
+            "store/modules.json#TRANTYPE"
+          ],
+          "confirmed": null,
+          "source": "module-classification"
+        },
         "candidate_only": false,
         "identity": {
           "likely": "CICS program / candidate of a dynamic call (name comes from data at run time)",

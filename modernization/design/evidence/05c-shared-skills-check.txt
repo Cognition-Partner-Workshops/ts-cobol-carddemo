@@ -1,0 +1,573 @@
+Step 5c, point 5 - the shared skills proven on the interest stream
+====================================================================
+
+What was followed: .agents/skills/carddemo-ticket-build, carddemo-ticket-verify, carddemo-pitfalls and
+carddemo-conversion-standards (shared) plus .agents/skills/carddemo-stream-interest (annex), and nothing else,
+with <stream> = interest, <parity-target> = parity-java, <out> = work/parity-java.
+
+Clean checkout: a fresh `git clone` of branch demo/05c-shared-skills at 39e5fb4 into an empty directory
+(/home/ubuntu/work5c/clean/carddemo-5c): no java/interest/target, no work/, loadlib/, datasets/; a Docker Compose
+project of its own (carddemo-5c), so a new `db` container, a new database volume and a new `estate` image;
+a shell without JAVA_HOME. Run on 2026-11-16 (UTC), JDK 21.0.13, Maven 3.6.3, Docker Engine 29.9.2,
+Docker Compose v5.6.1, Python 3.10.12, GNU Make 4.3, PostgreSQL 15.20.
+
+Result against the combined check recorded in modernization/design/build-run.md, section 3:
+
+  Command                                          Recorded (5b, 079b641)                         Step 5c, clean checkout        Equal
+  mvn -B -f java/interest/pom.xml clean verify     396 unit, 105 integration, 0 failures,         396 unit, 105 integration,     yes
+                                                   0 errors, BUILD SUCCESS                        0 failures, 0 errors,
+                                                                                                  BUILD SUCCESS (every run)  
+  make up && make build                            exit 0                                         exit 0                         yes
+  make parity-java                                 7 of 7 cases PASS, exit 0                      7 of 7 cases PASS, exit 0      yes
+  make parity (legacy chains)                      all 24 cases PASS, exit 0                      all 24 cases PASS, exit 0      yes
+  every case under fixtures/interest through       (not a line of the recorded check)             7 of 7 PASS, each exit 0       -
+  tools/parity/compare.py
+
+The skills needed no correction to reach this result. Two commands were first run in a slightly different form
+than the skill prints (build step 8 with "| tail -6" added; verify step 8 with double instead of single quotes
+because of the wrapper). Both were run again exactly as printed, and the first command of the combined check was
+run with the grep the skill now prints: see the addendum at the end.
+
+Exit codes other than 0 in the transcript, all expected: the `ls` of directories that must not exist in a clean
+checkout (2), `grep -c` counting no volume (1), and the comparator's FAIL for the HALF_UP run of annex step 4 (1).
+
+After this run the skills changed only as follows: the quoted outputs were filled in from this transcript, the
+grep of the combined check's first command was changed to the one of verify step 8 (run in the addendum), and
+the posting annex and skills-shared.md sections 2 to 7 were added. No other command changed.
+
+Lines removed from the transcript: 102 Docker image-pull progress lines, 1467 lines of `docker build` output of the
+estate image (inside `make up`), and repeated blank lines. The JSON of `gh pr list` is shortened to number and
+branches. Nothing else was edited.
+
+Transcript
+==========
+==== clean checkout ====
+
+$ env -u JAVA_HOME bash -c 'echo JAVA_HOME=${JAVA_HOME:-unset}'
+JAVA_HOME=unset
+[exit 0]
+
+$ git clone -q --branch demo/05c-shared-skills https://git-manager.devin.ai/proxy/github.com/Cognition-Partner-Workshops/ts-cobol-carddemo carddemo-5c && cd carddemo-5c && git rev-parse HEAD && git status --short | wc -l && ls java/interest/target work loadlib datasets 2>&1
+39e5fb48b5816dc033663e2b8745ee75e15403d3
+0
+ls: cannot access 'java/interest/target': No such file or directory
+ls: cannot access 'work': No such file or directory
+ls: cannot access 'loadlib': No such file or directory
+ls: cannot access 'datasets': No such file or directory
+[exit 2]
+
+$ docker compose ps -a --format '{{.Name}} {{.Status}}'; docker volume ls -q | grep -c carddemo-5c
+0
+[exit 1]
+
+==== carddemo-ticket-build step 1 ====
+
+$ docker --version && docker compose version && python3 --version && make --version | head -1
+Docker version 29.9.2, build a82e528
+Docker Compose version v5.6.1
+Python 3.10.12
+GNU Make 4.3
+[exit 0]
+
+==== carddemo-ticket-build step 2 ====
+
+$ export JAVA_HOME="$(dirname "$(dirname "$(update-alternatives --list java | grep -m1 -- '-21-')")")"
+
+$ mvn -v
+Apache Maven 3.6.3
+Maven home: /usr/share/maven
+Java version: 21.0.13.0.3, vendor: Ubuntu, runtime: /usr/lib/jvm/java-21-openjdk-amd64
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "6.8.0-1060-aws", arch: "amd64", family: "unix"
+[exit 0]
+
+==== carddemo-ticket-build step 3 ====
+
+$ git fetch origin
+[exit 0]
+
+$ git ls-remote --heads origin 'demo/*'
+6face58c092d254a9b89ce8bbfbddce561720a40	refs/heads/demo/01-intake
+c018c2c5179561324ddcbb72d3a4b583ccc61605	refs/heads/demo/01-intake-AUTH
+752195d8f3db6b06574eeb9d94d154e53cf2b4e5	refs/heads/demo/01-intake-CARDDEMO
+fe077610bdd865849971f1a6d6a6ac45a614c441	refs/heads/demo/01-intake-TRANTYPE
+7bf3ae3975d36bff7232653dfa7deea275ea7b01	refs/heads/demo/01-intake-VSAMMQ
+fb8def9fb9acb0c02a50cdc120ca7ffe8e7283b0	refs/heads/demo/02-stream
+18db1a56bbfd3d9c289395337e931af1df852637	refs/heads/demo/03-rules
+02a99e44d6454bb4f2a78d30b0eb4bfeb6d9ad25	refs/heads/demo/04-design
+f64e0fb5d6d4d7e4bc038d8cde36b96a9fa446a1	refs/heads/demo/04a-standards
+cf4e80973bc1b065b75a6215efeee306f86a6e8e	refs/heads/demo/05-g1-groundwork
+cd5f2bd7cfb157ef8cdd9b5bc8d5810871dfa851	refs/heads/demo/05-g2-logic
+58c7852e4208164650ab8d98bc66803c8d84c0ba	refs/heads/demo/05-g3-data-flow
+8d94f1578e29f54dae08aa5c9770a7e713bd1c16	refs/heads/demo/05-g4-gate
+2c4b023675ef83970ee77795e0e163ac015d3fd6	refs/heads/demo/05-pilot
+6f6c1a62d88e1aa1d23cdc4792109c5068742756	refs/heads/demo/05a-skills
+b92b9d17dba288118d44e0c2f61c8b4cf65b597f	refs/heads/demo/05b-integration
+39e5fb48b5816dc033663e2b8745ee75e15403d3	refs/heads/demo/05c-shared-skills
+[exit 0]
+
+$ gh pr list --state open --json number,title,headRefName,baseRefName
+[#200 demo/05b-integration -> demo/05a-skills, #199 demo/05-g4-gate -> demo/05b-integration, #198 demo/05-g3-data-flow -> demo/05b-integration, #197 demo/05-g2-logic -> demo/05b-integration, #196 demo/05-g1-groundwork -> demo/05b-integration, #175 demo/05a-skills -> demo/05-pilot, #174 demo/05-pilot -> demo/04a-standards, #173 demo/04a-standards -> demo/04-design, #172 demo/04-design -> demo/03-rules, #171 demo/03-rules -> demo/02-stream, #170 demo/02-stream -> demo/01-intake, #169 demo/01-intake -> main, #168 demo/01-intake-CARDDEMO -> demo/01-intake, #167 demo/01-intake-AUTH -> demo/01-intake, #166 demo/01-intake-TRANTYPE -> demo/01-intake, #165 demo/01-intake-VSAMMQ -> demo/01-intake, #162 devin/1794528450-four-chain-s4c-noskill -> demo-cobol2cloud, #160 devin/1794521772-trantype-dynamic-spring-batch -> demo-cobol2cloud, #159 devin/1794521795-trantype-update-spring-batch -> demo-cobol2cloud, #158 devin/1794520631-interest-spring-batch -> demo-cobol2cloud, #149 devin/1793850083-cbact04c-java -> demo-modernization, #147 devin/1792623286-cr144-goldpromo1-java -> main, #146 devin/1792622464-cr144-goldpromo1-spec -> main, #145 assessment/merge -> main, #143 devin/1792620000-sdd-2610-batch-spec -> main, #139 devin/sdd-2610-java-target -> main, #138 devin/sdd-2610-spec-harness -> main, #136 devin/fix-ui07-create-hit -> devin/1789516557-carddemo-java-engagement, #99 devin/1788757216-cardemo-account-view-stream -> main, #94 DJ-105/statement-html-title-palette -> migration/in-progress]   (JSON of 30 open pull requests, shown as number, head -> base)
+[exit 0]
+
+$ git checkout -b check/05c-proof origin/demo/05c-shared-skills
+Switched to a new branch 'check/05c-proof'
+branch 'check/05c-proof' set up to track 'origin/demo/05c-shared-skills'.
+[exit 0]
+
+==== carddemo-ticket-build step 4 ====
+
+$ cat -A fixtures/interest/i01-baseline/expected/rc.json | tail -3
+  }$
+ }$
+}[exit 0]
+
+==== carddemo-ticket-build step 6 ====
+
+$ docker compose up -d --wait db
+ Image postgres:15 Pulling 
+ Image postgres:15 Pulled 
+ Network carddemo-5c_default Creating 
+ Network carddemo-5c_default Creating 
+ Volume carddemo-5c_carddemo-db Creating 
+ Volume carddemo-5c_carddemo-db Creating 
+ Volume carddemo-5c_carddemo-db Created 
+ Volume carddemo-5c_carddemo-db Created 
+ Network carddemo-5c_default Created 
+ Network carddemo-5c_default Created 
+ Container carddemo-5c-db-1 Creating 
+ Container carddemo-5c-db-1 Created 
+ Container carddemo-5c-db-1 Starting 
+ Container carddemo-5c-db-1 Started 
+ Container carddemo-5c-db-1 Waiting 
+ Container carddemo-5c-db-1 Healthy 
+[exit 0]
+
+$ docker compose exec -T db psql -U carddemo -d carddemo -c 'show server_version'
+         server_version          
+---------------------------------
+ 15.20 (Debian 15.20-1.pgdg13+1)
+(1 row)
+
+[exit 0]
+
+==== carddemo-ticket-build step 7 ====
+
+$ mvn -q -f java/interest/pom.xml -DskipTests package && ls java/interest/target/interest.jar
+java/interest/target/interest.jar
+[exit 0]
+
+==== carddemo-ticket-build step 8 ====
+
+$ mvn -B -f java/interest/pom.xml verify 2>&1 | grep -E '^\[(INFO|ERROR|WARNING)\] (Tests run:|BUILD)' | tail -6
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.298 s -- in com.carddemo.interest.batch.CalculationRulesJobIT
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.637 s -- in com.carddemo.interest.batch.JdbcCalcStepIT
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.441 s -- in com.carddemo.interest.recon.ReconReporterIT
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.565 s -- in com.carddemo.interest.load.ExtractLoaderIT
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[exit 0]
+
+$ mvn -B -f java/interest/pom.xml test -Dtest=InterestFormulaTest 2>&1 | grep -E '^\[(INFO|ERROR)\] (Tests run:|BUILD)'
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.052 s -- in com.carddemo.interest.domain.InterestFormulaTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[exit 0]
+
+==== carddemo-ticket-build step 9 ====
+
+$ git checkout -- tools/parity/__pycache__
+[exit 0]
+
+$ git diff --stat origin/demo/05c-shared-skills -- app fixtures tools modernization .agents db docker-compose.yml
+[exit 0]
+
+$ git status --short
+[exit 0]
+
+==== carddemo-ticket-verify step 1 (annex: parity-java) ====
+
+$ make parity-java CASE=i01-baseline
+docker compose up -d --wait db
+ Container carddemo-5c-db-1 Running 
+ Container carddemo-5c-db-1 Waiting 
+ Container carddemo-5c-db-1 Healthy 
+mvn -q -f java/interest/pom.xml -DskipTests package
+Unable to find image 'eclipse-temurin:21-jre' locally
+Digest: sha256:18bb4a91a3dea3f03ee31d3755af34dfb40f904fc77ab56cdc2f092e32fff9c2
+Status: Downloaded newer image for eclipse-temurin:21-jre
+recon i01-baseline: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i01-baseline/recon.md
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+parity-java: 1 of 1 cases PASS
+report: work/parity-java/report.md
+[exit 0]
+
+==== carddemo-ticket-verify step 2 ====
+
+$ find work/parity-java/i01-baseline -type f | sort && wc -l work/parity-java/i01-baseline/actual/datasets/*
+work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+work/parity-java/i01-baseline/actual/rc.json
+work/parity-java/i01-baseline/actual/sysout/INTCALC.STEP15.txt
+work/parity-java/i01-baseline/recon.md
+  2 work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+  2 work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+  4 total
+[exit 0]
+
+==== carddemo-ticket-verify step 3 ====
+
+$ python3 tools/parity/compare.py interest i01-baseline --actual work/parity-java/i01-baseline/actual --label java
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+[exit 0]
+
+$ make parity-java
+docker compose up -d --wait db
+ Container carddemo-5c-db-1 Running 
+ Container carddemo-5c-db-1 Waiting 
+ Container carddemo-5c-db-1 Healthy 
+mvn -q -f java/interest/pom.xml -DskipTests package
+recon i01-baseline: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i01-baseline/recon.md
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+recon i02-tie-half-cent: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i02-tie-half-cent/recon.md
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+recon i03-zero-rate-skipped: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i03-zero-rate-skipped/recon.md
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+recon i04-default-group-fallback: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i04-default-group-fallback/recon.md
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+recon i05-multi-category: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i05-multi-category/recon.md
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+recon i06-negative-balance: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i06-negative-balance/recon.md
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+recon i07-nontie-rounding: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i07-nontie-rounding/recon.md
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+parity-java: 7 of 7 cases PASS
+report: work/parity-java/report.md
+[exit 0]
+
+$ rm -f work/parity-java/compare.md
+[exit 0]
+
+$ for c in $(ls fixtures/interest); do
+  python3 tools/parity/compare.py interest $c --actual work/parity-java/$c/actual --label java --report work/parity-java/compare.md
+  echo "  exit $?"
+done
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+  exit 0
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+  exit 0
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+  exit 0
+[exit 0]
+
+==== pitfalls P6, P7, P3 (shared) as seen in this run ====
+
+$ git status --short
+ M tools/parity/__pycache__/copybook.cpython-310.pyc
+[exit 0]
+
+$ grep -c '^## ' work/parity-java/compare.md
+7
+[exit 0]
+
+$ docker compose port db 5432
+:0
+[exit 0]
+
+$ git checkout -- tools/parity/__pycache__ && git status --short
+[exit 0]
+
+==== annex section 4, step 4 (run the job by hand) ====
+
+$ db=$(docker compose ps -q db)
+docker run --rm --network container:$db --user $(id -u):$(id -g) -v "$PWD":/estate -w /estate eclipse-temurin:21-jre \
+  java -jar java/interest/target/interest.jar --interest.clock.frozen="2022-07-05 10:00:00.00" --logging.level.root=WARN \
+    --interest.policy.rounding=HALF_UP \
+    parmDate=2022071800 runId=manual-$(date +%s) format=fixture \
+    inputDir=fixtures/interest/i02-tie-half-cent/input outputDir=work/manual/i02-halfup/actual
+echo "job exit=$?"
+python3 tools/parity/compare.py interest i02-tie-half-cent --actual work/manual/i02-halfup/actual --label java-halfup --report work/manual/diff.md
+job exit=0
+interest/i02-tie-half-cent [java-halfup]: FAIL (4 records, 50 fields, 3 differences)
+[exit 1]
+
+==== annex section 4, step 6 (error path) ====
+
+$ mkdir -p work/manual/miss/input && cp fixtures/interest/i01-baseline/input/* work/manual/miss/input/ \
+  && rm work/manual/miss/input/AWS.M2.CARDDEMO.CARDXREF.PS.txt
+db=$(docker compose ps -q db)
+docker run --rm --network container:$db --user $(id -u):$(id -g) -v "$PWD":/estate -w /estate eclipse-temurin:21-jre \
+  java -jar java/interest/target/interest.jar --logging.level.root=WARN parmDate=2022071800 runId=miss-$(date +%s) format=fixture \
+    inputDir=work/manual/miss/input outputDir=work/manual/miss/actual 2>&1 | grep -E "InterestRunStoppedException|CalcInterestRun  "
+echo "job exit=${PIPESTATUS[0]}"; ls work/manual/miss
+com.carddemo.interest.domain.InterestRunStoppedException: OPEN_INPUT (INT-R08): cannot read input file AWS.M2.CARDDEMO.CARDXREF.PS.txt
+2026-11-16T02:04:53.970Z ERROR 1 --- [interest] [           main] c.c.interest.batch.CalcInterestRun       : run miss-1794794692 step calcInterestStep stopped before any work
+job exit=12
+input
+[exit 0]
+
+==== carddemo-ticket-verify step 7 (shared query) and annex step 7 (job repository, interest_run) ====
+
+$ docker compose exec -T db psql -U carddemo -d carddemo -c "select table_schema, table_name from information_schema.tables where table_schema in ('carddemo', 'public') order by 1, 2"
+ table_schema |        table_name        
+--------------+--------------------------
+ carddemo     | account
+ carddemo     | card_xref
+ carddemo     | disclosure_group
+ carddemo     | interest_run
+ carddemo     | interest_transaction
+ carddemo     | tran_cat_balance
+ carddemo     | transaction_type
+ carddemo     | transaction_type_categor
+(8 rows)
+
+[exit 0]
+
+$ docker compose exec -T db psql -U carddemo -d carddemo -c "select i.job_name, e.status, (select string_agg(s.step_name || ':' || s.status || ' read=' || s.read_count || ' write=' || s.write_count, ', ' order by s.step_execution_id) from batch.batch_step_execution s where s.job_execution_id = e.job_execution_id) as steps, p.parameter_value as run_id from batch.batch_job_execution e join batch.batch_job_instance i using (job_instance_id) join batch.batch_job_execution_params p on p.job_execution_id = e.job_execution_id and p.parameter_name = 'runId' where p.parameter_value like '%i01-baseline' order by e.job_execution_id desc limit 1"
+    job_name     |  status   |                                                               steps                                                                |            run_id             
+-----------------+-----------+------------------------------------------------------------------------------------------------------------------------------------+-------------------------------
+ interestCalcJob | COMPLETED | loadExtractsStep:COMPLETED read=0 write=21, calcInterestStep:COMPLETED read=2 write=2, exportDatasetsStep:COMPLETED read=0 write=4 | 1794794667-18413-i01-baseline
+(1 row)
+
+[exit 0]
+
+$ docker compose exec -T db psql -U carddemo -d carddemo -c 'select run_id, status, written_transaction_count, written_tran_amt_sum, written_account_count from carddemo.interest_run order by run_id desc limit 1'
+ run_id |  status  | written_transaction_count | written_tran_amt_sum | written_account_count 
+--------+----------+---------------------------+----------------------+-----------------------
+      8 | EXPORTED |                         2 |                29.03 |                     1
+(1 row)
+
+[exit 0]
+
+==== carddemo-ticket-verify step 8 (evidence; ticket=09-parity-gate, files not kept) ====
+
+$ ticket=09-parity-gate
+mkdir -p java/interest/evidence/$ticket
+{ echo "# mvn -B -f java/interest/pom.xml clean verify"
+  echo "# revision $(git rev-parse HEAD), $(date -u +%Y-%m-%dT%H:%M:%SZ), $("$JAVA_HOME"/bin/java -version 2>&1 | head -1), Docker $(docker version --format "{{.Server.Version}}")"
+  mvn -B -f java/interest/pom.xml clean verify 2>&1 | sed "s/\x1b\[[0-9;]*m//g"
+  echo "# exit code ${PIPESTATUS[0]}"; } > java/interest/evidence/$ticket/test-output.txt
+tail -1 java/interest/evidence/$ticket/test-output.txt; grep -E "Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|BUILD" java/interest/evidence/$ticket/test-output.txt
+# exit code 0
+[INFO] Tests run: 396, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[exit 0]
+
+$ REPORT=work/5c/parity-report.md .agents/skills/interest-ticket-verify/parity-report.sh 09-parity-gate $(ls fixtures/interest)
+i01-baseline	0	0
+i02-tie-half-cent	0	0
+i03-zero-rate-skipped	0	0
+i04-default-group-fallback	0	0
+i05-multi-category	0	0
+i06-negative-balance	0	0
+i07-nontie-rounding	0	0
+report: work/5c/parity-report.md
+[exit 0]
+
+==== carddemo-ticket-verify: combined check of a stream ====
+
+$ mvn -B -f java/interest/pom.xml clean verify 2>&1 | grep -E '^\[(INFO|ERROR|WARNING)\] (Tests run:|BUILD)' | tail -4
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.404 s -- in com.carddemo.interest.recon.ReconReporterIT
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.512 s -- in com.carddemo.interest.load.ExtractLoaderIT
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[exit 0]
+
+$ make up && make build
+docker compose up -d --build --wait
+ Image carddemo-5c-estate Building 
+(docker build output of the estate image removed here)
+ Image carddemo-5c-estate Built 
+ Container carddemo-5c-db-1 Running 
+ Container carddemo-5c-estate-1 Creating 
+ Container carddemo-5c-estate-1 Created 
+ Container carddemo-5c-db-1 Waiting 
+ Container carddemo-5c-db-1 Healthy 
+ Container carddemo-5c-estate-1 Starting 
+ Container carddemo-5c-estate-1 Started 
+ Container carddemo-5c-estate-1 Waiting 
+ Container carddemo-5c-db-1 Waiting 
+ Container carddemo-5c-estate-1 Healthy 
+ Container carddemo-5c-db-1 Healthy 
+docker compose up -d --build --wait
+ Image carddemo-5c-estate Building 
+(docker build output of the estate image removed here)
+ Image carddemo-5c-estate Built 
+ Container carddemo-5c-estate-1 Running 
+ Container carddemo-5c-db-1 Running 
+ Container carddemo-5c-db-1 Waiting 
+ Container carddemo-5c-db-1 Healthy 
+ Container carddemo-5c-db-1 Waiting 
+ Container carddemo-5c-estate-1 Waiting 
+ Container carddemo-5c-estate-1 Healthy 
+ Container carddemo-5c-db-1 Healthy 
+docker compose exec -T estate tools/build.sh
+CBACT01C: compiled
+CBACT02C: compiled
+CBACT03C: compiled
+CBACT04C: compiled
+CBCUS01C: compiled
+CBEXPORT: skipped (known GnuCOBOL failure, docs/BASELINE.md)
+CBFEEDRV: compiled
+CBIMPORT: skipped (known GnuCOBOL failure, docs/BASELINE.md)
+CBTRN01C: compiled
+CBTRN02C: compiled
+CBTRN03C: compiled
+CSUTLDTC: compiled
+COBSWAIT: compiled
+PARMDRV: compiled
+CEE3ABD: compiled
+esql_prep: app/app-transaction-type-db2/dcl/DCLTRCAT.dcl: removed EXEC SQL DECLARE ... TABLE
+esql_prep: app/app-transaction-type-db2/dcl/DCLTRTYP.dcl: removed EXEC SQL DECLARE ... TABLE
+esql_prep: app/app-transaction-type-db2/cbl/CBTRNDYN.cbl: columns 73-80 only
+esql_prep: app/app-transaction-type-db2/cbl/COBTUPDT.cbl: joined multi-line INCLUDE SQLCA
+CBTRNDYN: precompiled (ocesql) and compiled
+COBTUPDT: precompiled (ocesql) and compiled
+DSNEXIT: precompiled (ocesql) and compiled
+DSNRUN: precompiled (ocesql) and compiled
+[exit 0]
+
+$ make parity-java
+docker compose up -d --wait db
+ Container carddemo-5c-db-1 Running 
+ Container carddemo-5c-db-1 Waiting 
+ Container carddemo-5c-db-1 Healthy 
+mvn -q -f java/interest/pom.xml -DskipTests package
+recon i01-baseline: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i01-baseline/recon.md
+interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+recon i02-tie-half-cent: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i02-tie-half-cent/recon.md
+interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+recon i03-zero-rate-skipped: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i03-zero-rate-skipped/recon.md
+interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+recon i04-default-group-fallback: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i04-default-group-fallback/recon.md
+interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+recon i05-multi-category: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i05-multi-category/recon.md
+interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+recon i06-negative-balance: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i06-negative-balance/recon.md
+interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+recon i07-nontie-rounding: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i07-nontie-rounding/recon.md
+interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+parity-java: 7 of 7 cases PASS
+report: work/parity-java/report.md
+[exit 0]
+
+$ make parity
+posting/p01-baseline-mixed [legacy rerun]: PASS (23 records, 92 fields, 0 differences)
+posting/p02-invalid-card [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p03-account-missing [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p04-overlimit-reject [legacy rerun]: PASS (12 records, 44 fields, 0 differences)
+posting/p05-expired-account [legacy rerun]: PASS (14 records, 60 fields, 0 differences)
+posting/p06-credits-new-category [legacy rerun]: PASS (18 records, 67 fields, 0 differences)
+posting/p07-empty-day [legacy rerun]: PASS (2 records, 16 fields, 0 differences)
+interest/i01-baseline [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i02-tie-half-cent [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+interest/i03-zero-rate-skipped [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i04-default-group-fallback [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i05-multi-category [legacy rerun]: PASS (3 records, 38 fields, 0 differences)
+interest/i06-negative-balance [legacy rerun]: PASS (2 records, 25 fields, 0 differences)
+interest/i07-nontie-rounding [legacy rerun]: PASS (4 records, 50 fields, 0 differences)
+trantype-update/t01-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t02-update [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t03-delete [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t04-comments [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t05-delete-missing [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t06-duplicate-add [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-update/t07-mixed-batch [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d01-update-then-apply [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d02-delete-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+trantype-dynamic/d03-bad-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+report: work/parity/report.md
+[exit 0]
+
+$ git status --short
+ M java/interest/evidence/09-parity-gate/test-output.txt
+ M tools/parity/__pycache__/copybook.cpython-310.pyc
+ M tools/runjcl/__pycache__/runjcl.cpython-310.pyc
+[exit 0]
+
+$ git checkout -- tools/parity/__pycache__ tools/runjcl/__pycache__ java/interest/evidence && git status --short
+[exit 0]
+
+==== end ====
+
+==== addendum: two commands repeated exactly as the shared skills print them ====
+
+==== carddemo-ticket-build step 8, without the "| tail -6" used in the first pass ====
+
+$ mvn -B -f java/interest/pom.xml verify 2>&1 | grep -E '^\[(INFO|ERROR|WARNING)\] (Tests run:|BUILD)'
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.086 s -- in com.carddemo.interest.export.ExportedReturnCodesTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.carddemo.interest.batch.InterestJobParametersTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.047 s -- in com.carddemo.interest.batch.InterestJobStepsTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.086 s -- in com.carddemo.interest.file.FileRunWorkspaceTest
+[INFO] Tests run: 53, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.188 s -- in com.carddemo.interest.file.SevenCasesFileParityTest
+[INFO] Tests run: 49, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.184 s -- in com.carddemo.interest.file.PolicySwitchExpectationsTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in com.carddemo.interest.codec.RecordCodecErrorTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.carddemo.interest.codec.RecordLayoutTest
+[INFO] Tests run: 51, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.078 s -- in com.carddemo.interest.codec.ZonedDecimalTest
+[INFO] Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.036 s -- in com.carddemo.interest.codec.CopybookTest
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in com.carddemo.interest.codec.TextAndFillerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.030 s -- in com.carddemo.interest.codec.FixtureRoundTripTest
+[INFO] Tests run: 26, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.069 s -- in com.carddemo.interest.recon.SideBySideTest
+[INFO] Tests run: 24, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 s -- in com.carddemo.interest.recon.ReconReportTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.carddemo.interest.domain.InterestFormulaTest
+[INFO] Tests run: 23, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in com.carddemo.interest.domain.InterestCalculatorTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in com.carddemo.interest.domain.StopConditionsTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in com.carddemo.interest.domain.CalculationSwitchesTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.carddemo.interest.domain.RunTimestampTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.carddemo.interest.load.ExtractFormatTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.carddemo.interest.load.RoundTripTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 s -- in com.carddemo.interest.load.ExtractDecoderTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in com.carddemo.interest.load.ExtractProfileTest
+[INFO] Tests run: 396, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 25, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.329 s -- in com.carddemo.interest.export.DatasetExporterIT
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.611 s -- in com.carddemo.interest.batch.MultiCardSwitchJdbcIT
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.767 s -- in com.carddemo.interest.batch.InterestJobFlowIT
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.541 s -- in com.carddemo.interest.batch.ErrorPathsJdbcIT
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.393 s -- in com.carddemo.interest.batch.InterestCalcJobIT
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.369 s -- in com.carddemo.interest.batch.CalculationRulesJobIT
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.622 s -- in com.carddemo.interest.batch.JdbcCalcStepIT
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.468 s -- in com.carddemo.interest.recon.ReconReporterIT
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.550 s -- in com.carddemo.interest.load.ExtractLoaderIT
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[exit 0]
+
+==== carddemo-ticket-verify step 8, quoting as printed in the skill ====
+
+$ ticket=09-parity-gate
+mkdir -p java/interest/evidence/$ticket
+{ echo "# mvn -B -f java/interest/pom.xml clean verify"
+  echo "# revision $(git rev-parse HEAD), $(date -u +%Y-%m-%dT%H:%M:%SZ), $("$JAVA_HOME"/bin/java -version 2>&1 | head -1), Docker $(docker version --format '{{.Server.Version}}')"
+  mvn -B -f java/interest/pom.xml clean verify 2>&1 | sed 's/\x1b\[[0-9;]*m//g'
+  echo "# exit code ${PIPESTATUS[0]}"; } > java/interest/evidence/$ticket/test-output.txt
+tail -1 java/interest/evidence/$ticket/test-output.txt; grep -E 'Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|BUILD' java/interest/evidence/$ticket/test-output.txt
+# exit code 0
+[INFO] Tests run: 396, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[exit 0]
+
+$ head -2 java/interest/evidence/09-parity-gate/test-output.txt
+# mvn -B -f java/interest/pom.xml clean verify
+# revision 39e5fb48b5816dc033663e2b8745ee75e15403d3, 2026-11-16T02:12:18Z, openjdk version "21.0.13.0.3" 2026-10-24, Docker 29.9.2
+[exit 0]
+
+$ git checkout -- tools/parity/__pycache__ tools/runjcl/__pycache__ java/interest/evidence && git status --short
+[exit 0]
+
+==== carddemo-ticket-verify, combined check, first command with the grep the skill prints ====
+
+$ mvn -B -f java/interest/pom.xml clean verify 2>&1 | grep -E 'Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|BUILD'
+[INFO] Tests run: 396, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[exit 0]

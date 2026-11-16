@@ -27,7 +27,12 @@ target writes to, one `<out>/<case>/actual` per case. Both are in section 1 of t
    ```
    Example output (interest: `make parity-java CASE=i01-baseline`):
    ```
-@@v1@@
+   docker compose up -d --wait db
+   mvn -q -f java/interest/pom.xml -DskipTests package
+   recon i01-baseline: 36 EQUAL, 0 DIFFERENT, 1 NOT AVAILABLE -> work/parity-java/i01-baseline/recon.md
+   interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+   parity-java: 1 of 1 cases PASS
+   report: work/parity-java/report.md
    ```
    The target is the stream's own: what it starts, which parameters it passes to the job and what makes a
    case fail are in the annex. Exit code 0 only if every case it ran passed. Without `CASE` it runs every
@@ -41,7 +46,14 @@ target writes to, one `<out>/<case>/actual` per case. Both are in section 1 of t
    ```
    Example output (interest):
    ```
-@@v2@@
+   work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+   work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+   work/parity-java/i01-baseline/actual/rc.json
+   work/parity-java/i01-baseline/actual/sysout/INTCALC.STEP15.txt
+   work/parity-java/i01-baseline/recon.md
+     2 work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.ACCTDATA.VSAM.KSDS.txt
+     2 work/parity-java/i01-baseline/actual/datasets/AWS.M2.CARDDEMO.SYSTRAN.G0001V00.txt
+     4 total
    ```
    The layout is the one of `fixtures/<stream>/<case>/expected`: `datasets/<DSN>.txt`,
    `sysout/<JOB>.<STEP>.txt`, `rc.json`. `work/` is ignored by git.
@@ -53,7 +65,7 @@ target writes to, one `<out>/<case>/actual` per case. Both are in section 1 of t
    ```
    Example output (interest):
    ```
-@@v3a@@
+   interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
    ```
    Exit code 0 is PASS, 1 is FAIL. All cases, into one fresh Markdown report (pitfall P7: the report
    file is appended to, so remove it first):
@@ -68,7 +80,20 @@ target writes to, one `<out>/<case>/actual` per case. Both are in section 1 of t
    ```
    Example output of the loop (interest, step 5c):
    ```
-@@v3b@@
+   interest/i01-baseline [java]: PASS (4 records, 50 fields, 0 differences)
+     exit 0
+   interest/i02-tie-half-cent [java]: PASS (4 records, 50 fields, 0 differences)
+     exit 0
+   interest/i03-zero-rate-skipped [java]: PASS (2 records, 25 fields, 0 differences)
+     exit 0
+   interest/i04-default-group-fallback [java]: PASS (2 records, 25 fields, 0 differences)
+     exit 0
+   interest/i05-multi-category [java]: PASS (3 records, 38 fields, 0 differences)
+     exit 0
+   interest/i06-negative-balance [java]: PASS (2 records, 25 fields, 0 differences)
+     exit 0
+   interest/i07-nontie-rounding [java]: PASS (4 records, 50 fields, 0 differences)
+     exit 0
    ```
    A case your ticket does not name may pass or fail; report it, do not claim it. Once every case of the
    stream passes on your base branch, any FAIL is a regression.
@@ -97,7 +122,17 @@ target writes to, one `<out>/<case>/actual` per case. Both are in section 1 of t
    ```
    Example output (interest, step 5c):
    ```
-@@v7@@
+    table_schema |        table_name
+   --------------+--------------------------
+    carddemo     | account
+    carddemo     | card_xref
+    carddemo     | disclosure_group
+    carddemo     | interest_run
+    carddemo     | interest_transaction
+    carddemo     | tran_cat_balance
+    carddemo     | transaction_type
+    carddemo     | transaction_type_categor
+   (8 rows)
    ```
    The job-repository query and the queries on the stream's own tables are in the annex.
 
@@ -124,7 +159,10 @@ target writes to, one `<out>/<case>/actual` per case. Both are in section 1 of t
    ```
    Example output (interest, step 5c):
    ```
-@@v8@@
+   # exit code 0
+   [INFO] Tests run: 396, Failures: 0, Errors: 0, Skipped: 0
+   [INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+   [INFO] BUILD SUCCESS
    ```
    Files the tests leave under `java/<stream>/target/` are those of the last `clean verify`; use them
    before running Maven again.
@@ -153,14 +191,22 @@ The check a coordinating session runs on a base branch after tickets were combin
 under `app/`, `fixtures/` or `tools/` moved.
 
 ```sh
-mvn -B -f java/<stream>/pom.xml clean verify 2>&1 | grep -E '^\[(INFO|ERROR|WARNING)\] (Tests run:|BUILD)' | tail -4
+mvn -B -f java/<stream>/pom.xml clean verify 2>&1 | grep -E 'Tests run: [0-9]+, Failures: [0-9]+, Errors: [0-9]+, Skipped: [0-9]+$|BUILD'
 make up && make build
 make <parity-target>
 make parity
 ```
 Result for interest in step 5c:
 ```
-@@combined@@
+[INFO] Tests run: 396, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+...                                   (make up && make build: 13 programs compiled, 2 skipped as docs/BASELINE.md says, 4 precompiled; exit 0)
+parity-java: 7 of 7 cases PASS
+report: work/parity-java/report.md
+...                                   (make parity: 24 lines, one per case, every one PASS)
+trantype-dynamic/d03-bad-statement [legacy rerun]: PASS (0 records, 0 fields, 0 differences)
+report: work/parity/report.md
 ```
 `make up` builds the `estate` image the first time. `make parity` runs every case of every legacy chain and
 ends with `report: work/parity/report.md`; exit code 0 only when all pass. Afterwards:

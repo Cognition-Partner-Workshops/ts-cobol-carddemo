@@ -24,14 +24,17 @@ Run every command from the repository root.
 
 ## Workflow
 
-1. **Check the tools.** Proven with: JDK 21.0.13, Maven 3.6.3, Docker Engine @@dockerEngine@@, Docker Compose
-   @@composeVersion@@, Python 3.10.12, GNU Make 4.3.
+1. **Check the tools.** Proven with: JDK 21.0.13, Maven 3.6.3, Docker Engine 29.9.2, Docker Compose
+   v5.6.1, Python 3.10.12, GNU Make 4.3.
 
    ```sh
    docker --version && docker compose version && python3 --version && make --version | head -1
    ```
    ```
-@@b1@@
+   Docker version 29.9.2, build a82e528
+   Docker Compose version v5.6.1
+   Python 3.10.12
+   GNU Make 4.3
    ```
 
 2. **Put Maven on a JDK 21.** `mvn -v` names the JDK Maven uses; it must say 21. On Debian/Ubuntu with
@@ -42,7 +45,8 @@ Run every command from the repository root.
    mvn -v
    ```
    ```
-@@b2@@
+   Apache Maven 3.6.3
+   Java version: 21.0.13.0.3, vendor: Ubuntu, runtime: /usr/lib/jvm/java-21-openjdk-amd64
    ```
    Every `mvn` and the stream's Java parity target (annex) need this shell setting (pitfall P1).
 
@@ -80,7 +84,8 @@ Run every command from the repository root.
    docker compose exec -T db psql -U carddemo -d carddemo -c "show server_version"
    ```
    ```
-@@b6@@
+    Container carddemo-5c-db-1 Healthy
+    15.20 (Debian 15.20-1.pgdg13+1)
    ```
    The service publishes no port to the host (pitfall P3).
 
@@ -91,7 +96,7 @@ Run every command from the repository root.
    ```
    Example output (interest):
    ```
-@@b7@@
+   java/interest/target/interest.jar
    ```
    `-q` prints nothing on success.
 
@@ -102,7 +107,10 @@ Run every command from the repository root.
    ```
    The output ends with two totals and the build result. Example (interest, step 5c):
    ```
-@@b8@@
+   [INFO] Tests run: 396, Failures: 0, Errors: 0, Skipped: 0
+   ...
+   [INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+   [INFO] BUILD SUCCESS
    ```
    The first total is surefire (unit), the second failsafe (integration). Compare with the totals in the
    newest `java/<stream>/evidence/*/test-output.txt` of your base branch, not with the figures quoted here.
@@ -112,7 +120,9 @@ Run every command from the repository root.
    ```
    Example (interest, the test class named in the annex):
    ```
-@@b8b@@
+   [INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.052 s -- in com.carddemo.interest.domain.InterestFormulaTest
+   [INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0
+   [INFO] BUILD SUCCESS
    ```
 
 9. **Before every commit,** undo what the comparator changed and check you stayed in scope.

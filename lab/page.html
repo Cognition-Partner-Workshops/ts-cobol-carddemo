@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Replay lab - interest stream (INTCALC)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{--ink:#1b1f24;--muted:#57606a;--line:#c9d1d9;--soft:#f3f5f7;--blue:#0b5fbf;--green:#1a7f37;--amber:#9a6700;--red:#b3261e;--violet:#6639ba}
+*{box-sizing:border-box}
+body{font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);margin:0;background:#fff}
+header{background:#10243f;color:#fff;padding:14px 24px}
+header h1{font-size:20px;margin:0 0 8px}
+header a{color:#cfe3ff}
+#headerFacts{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+#headerFacts b{font-weight:600}
+#toolchain{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#toolchain span{background:#1f3d66;border-radius:4px;padding:2px 8px;font-size:12.5px}
+main{padding:16px 24px 60px;max-width:1500px}
+#notice{background:#fff8e1;border:1px solid #e3c260;border-radius:6px;padding:8px 12px;margin:0 0 14px}
+#snapshotBanner{background:#e7f0ff;border:1px solid #9bbcf0;border-radius:6px;padding:8px 12px;margin:0 0 14px;font-weight:600}
+h2{font-size:17px;margin:22px 0 8px}
+h3{font-size:15px;margin:14px 0 6px}
+button{font:inherit;padding:5px 12px;border:1px solid #8c959f;border-radius:6px;background:#fff;cursor:pointer}
+button:hover:not(:disabled){background:var(--soft)}
+button:disabled{opacity:.5;cursor:default}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+button.primary:hover:not(:disabled){background:#094c99}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line)}
+.tabs button{border-radius:6px 6px 0 0;border-bottom:none;margin-bottom:-2px}
+.tabs button[aria-selected=true]{background:#fff;border-color:var(--line);border-bottom:2px solid #fff;font-weight:700;color:var(--blue)}
+.tabPanel{border:1px solid var(--line);border-top:none;padding:12px;border-radius:0 0 6px 6px}
+.caseList{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:8px}
+.caseList li{border:1px solid var(--line);border-radius:6px;padding:8px 10px;display:flex;gap:10px;align-items:flex-start}
+.caseList .text{flex:1;font-size:13.5px;color:var(--muted)}
+.caseList .text b{color:var(--ink);font-size:14.5px}
+textarea{width:100%;min-height:230px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;border:1px solid #8c959f;border-radius:6px;padding:8px}
+#customError{color:var(--red);background:#fdecea;border:1px solid #f1b0aa;border-radius:6px;padding:8px 12px;margin:8px 0 0}
+#customError ul{margin:4px 0 0 18px;padding:0}
+#status{margin:12px 0;padding:8px 12px;border-radius:6px;background:var(--soft);min-height:38px}
+#status.busy{background:#e7f0ff}
+#status.error{background:#fdecea;color:var(--red)}
+#gate{border:2px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px 28px;align-items:center}
+#gate.PASS{border-color:var(--green);background:#eefaf0}
+#gate.FAIL{border-color:var(--red);background:#fdecea}
+#gateVerdict{font-size:22px;font-weight:800}
+#gateWhy{flex-basis:100%}
+#gateReasons{margin:2px 0 0 18px;padding:0}
+#gateReasons li.failed{color:var(--red);font-weight:600}
+.openQuestion{background:#fff8e1;border:1px solid #e3c260;border-radius:6px;padding:8px 12px;margin:8px 0}
+.openQuestion p{margin:3px 0}
+.caseNotes{margin:6px 0 6px 18px;padding:0;font-size:13.5px;color:var(--muted)}
+.laterRun{border-top:2px dashed var(--line);margin-top:10px;padding-top:6px}
+#gate.PASS #gateVerdict{color:var(--green)}
+#gate.FAIL #gateVerdict{color:var(--red)}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid var(--line);padding:4px 7px;text-align:left;vertical-align:top;font-size:13.5px}
+th{background:var(--soft);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+#summary tbody tr{cursor:pointer}
+#summary tbody tr:hover{background:#eef4ff}
+#summary tfoot td{font-weight:700;background:var(--soft)}
+.badge{display:inline-block;border-radius:10px;padding:0 8px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap}
+.badge.MATCH,.badge.CONFORMS,.badge.PASS{background:var(--green)}
+.badge.INTENDED_CHANGE{background:var(--violet)}
+.badge.UNRESOLVED,.badge.OPEN{background:var(--amber)}
+.badge.UNCLASSIFIED,.badge.VIOLATES,.badge.FAIL{background:var(--red)}
+.badge.NOT{background:#8c959f}
+details.case{border:1px solid var(--line);border-radius:8px;margin:10px 0;padding:0 12px 12px}
+details.case>summary{cursor:pointer;padding:10px 0;font-weight:700;font-size:15.5px}
+details.case>summary .counts{font-weight:400;color:var(--muted);margin-left:10px;font-size:13.5px}
+.meta{color:var(--muted);font-size:13.5px;margin:2px 0}
+.lanes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.lane{border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:0;overflow-x:auto}
+.lane.legacy{border-top:4px solid #8250df}
+.lane.target{border-top:4px solid #0b5fbf}
+.lane h4{margin:0 0 4px;font-size:14.5px}
+.lane h5{margin:10px 0 3px;font-size:13px;color:var(--muted);font-weight:600}
+pre{background:var(--soft);padding:6px 8px;border-radius:4px;overflow-x:auto;margin:0;font:12.5px/1.35 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
+.items td.value{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;white-space:pre-wrap;word-break:break-all;max-width:330px}
+.showMatch:not(:checked)~table.items tr.MATCH{display:none}
+.items details summary{cursor:pointer}
+.items details p{margin:4px 0}
+.evidence{font-size:12.5px;color:var(--red);margin:2px 0}
+#limits li{margin:2px 0}
+a{color:var(--blue)}
+.empty{color:var(--muted);font-style:italic}
+footer{color:var(--muted);font-size:13px;margin-top:26px}
+</style>
+</head>
+<body>
+<header>
+<h1>Replay lab - interest stream <small>INTCALC &rarr; CBACT04C &nbsp;against&nbsp; java/interest</small></h1>
+<div id="headerFacts">
+<span>Baseline SHA of the estate <b id="baselineSha">...</b> <span id="baselineState"></span></span>
+<span>Lab commit <b id="labCommit">...</b></span>
+<span>Frozen business date <b id="businessDate">...</b></span>
+<span>PARM <b id="parmDate">...</b></span>
+<span>Target options <b id="targetArgs">...</b></span>
+<span><a id="boardLink" href="/board" target="_blank" rel="noopener">Rules board</a></span>
+<span><a id="registerLink" href="/decisions" target="_blank" rel="noopener">Decision register</a></span>
+</div>
+<div id="toolchain" aria-label="Toolchain versions"></div>
+</header>
+<main>
+<p id="notice" role="note"><b>Not SME sign-off.</b> Expected values come from a rulebook an agent read out of the code. Every decision in the register is still open; a value classed UNRESOLVED is waiting for one of them.</p>
+
+<section id="picker">
+<h2>Pick a case</h2>
+<div class="tabs" role="tablist">
+<button type="button" role="tab" id="tab-golden" aria-selected="true" aria-controls="panel-golden">Golden</button>
+<button type="button" role="tab" id="tab-probes" aria-selected="false" aria-controls="panel-probes">Edge probes</button>
+<button type="button" role="tab" id="tab-custom" aria-selected="false" aria-controls="panel-custom">Custom</button>
+</div>
+<div class="tabPanel" id="panel-golden" role="tabpanel" aria-labelledby="tab-golden">
+<button type="button" class="primary" id="runAllGolden">Run all seven</button>
+<span class="meta">The seven fixtures of fixtures/interest. The legacy rerun is also compared with the golden files.</span>
+<ul class="caseList" id="goldenList"></ul>
+</div>
+<div class="tabPanel" id="panel-probes" role="tabpanel" aria-labelledby="tab-probes" hidden>
+<button type="button" class="primary" id="runAllProbes">Run every edge probe</button>
+<span class="meta">New inputs with no golden file: the observed side is the legacy lane run now. Nothing is recorded under fixtures/.</span>
+<ul class="caseList" id="probeList"></ul>
+</div>
+<div class="tabPanel" id="panel-custom" role="tabpanel" aria-labelledby="tab-custom" hidden>
+<label for="customInput">Accounts and balances as JSON. Optional <code>rates</code>; without it the rate table of the fixtures is used (GOLD 12.00 / 18.00, STANDARD 18.50 / 24.00, DEFAULT 21.00 / 27.00 for type 01 categories 1 / 2).</label>
+<textarea id="customInput" spellcheck="false"></textarea>
+<p><button type="button" class="primary" id="runCustom">Run custom input</button>
+<button type="button" id="resetCustom">Reset to the example</button></p>
+<div id="customError" role="alert" hidden></div>
+</div>
+</section>
+
+<div id="status" role="status" aria-live="polite">Loading the lab...</div>
+
+<section>
+<h2>Gate</h2>
+<div id="gate" class="NOTRUN">
+<span id="gateVerdict">NOT RUN</span>
+<span id="gateScope">No case has been run in this page since it was loaded.</span>
+<span id="gateCounts"></span>
+<span id="gateCoverage"></span>
+<span id="gateOpenQuestions"></span>
+<div id="gateWhy"><b id="gateWhyTitle"></b><ul id="gateReasons"></ul></div>
+</div>
+<p class="meta">The gate passes only when both conditions hold over the cases run in this page: no compared value is UNCLASSIFIED, and neither engine VIOLATES a rule in any case. <code>make lab-gate</code> runs the seven golden cases and the edge probes and exits 0 or 1 by the same rule.</p>
+</section>
+
+<section>
+<h2>Cases run in this page</h2>
+<table id="summary">
+<thead><tr><th>Set</th><th>Case</th><th class="num">MATCH</th><th class="num">INTENDED_CHANGE</th><th class="num">UNRESOLVED</th><th class="num">engines agree</th><th class="num">engines differ</th><th class="num">UNCLASSIFIED</th><th>Legacy breaks</th><th>Target breaks</th><th>Run</th></tr></thead>
+<tbody id="summaryBody"><tr id="summaryEmpty"><td colspan="11" class="empty">No result yet. Results appear here only for runs started from this page after it was loaded.</td></tr></tbody>
+<tfoot id="summaryFoot" hidden></tfoot>
+</table>
+<p><button type="button" id="saveSnapshot" disabled>Save this page as a file</button>
+<button type="button" id="clearResults" disabled>Clear results</button></p>
+</section>
+
+<section id="results"></section>
+
+<section>
+<h2>What the lab does not prove</h2>
+<ul id="limits"></ul>
+</section>
+<footer>Replay lab, served by lab/server.py. Page loaded <span id="loadedAt"></span>.</footer>
+</main>
+<script>
+"use strict";
+const pageState = {meta: null, results: [], generation: 0, busy: false};
+const byId = (id) => document.getElementById(id);
+const classNames = ["MATCH", "INTENDED_CHANGE", "UNRESOLVED", "UNCLASSIFIED"];
+
+function element(tag, attributes, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attributes || {})) {
+    if (key === "class") node.className = value;
+    else if (key === "text") node.textContent = value;
+    else node.setAttribute(key, value);
+  }
+  for (const child of children) node.append(child);
+  return node;
+}
+
+function badge(text) {
+  return element("span", {class: "badge " + text.split(" ")[0], text});
+}
+
+function setStatus(text, kind) {
+  const status = byId("status");
+  status.textContent = text;
+  status.className = kind || "";
+}
+
+function setBusy(busy) {
+  pageState.busy = busy;
+  for (const button of document.querySelectorAll("#picker button:not([role=tab])")) button.disabled = busy;
+}
+
+async function loadMeta() {
+  const response = await fetch("/api/meta");
+  if (!response.ok) throw new Error("the lab server answered " + response.status);
+  const meta = pageState.meta = await response.json();
+  byId("baselineSha").textContent = meta.header.baselineSha;
+  byId("baselineState").textContent = "(" + meta.header.baselineState + ")";
+  byId("labCommit").textContent = meta.header.labCommit.slice(0, 12) + " (" + meta.header.branch + ")";
+  byId("businessDate").textContent = meta.header.businessDate;
+  byId("parmDate").textContent = meta.header.parmDate;
+  byId("targetArgs").textContent = meta.header.targetArgs.length ? meta.header.targetArgs.join(" ") : "none (defaults of java/interest)";
+  for (const [name, version] of meta.header.toolchain)
+    byId("toolchain").append(element("span", {text: name + " " + version}));
+  for (const item of meta.golden) byId("goldenList").append(caseEntry("golden", item.name, item.name, item.note));
+  for (const item of meta.probes) byId("probeList").append(caseEntry("probe", item.name, item.name + " - " + item.title, item.stresses));
+  byId("customInput").value = meta.customTemplate;
+  for (const text of meta.limits) byId("limits").append(element("li", {text}));
+  byId("loadedAt").textContent = new Date().toLocaleTimeString();
+  if (restoreAfterBack()) setStatus("Back on the lab page: the " + pageState.results.length + " result(s) below are the runs started from it before you followed a link.");
+  else setStatus("Ready. Pick a case to run it through both engines.");
+}
+
+function caseEntry(kind, name, title, note) {
+  const button = element("button", {type: "button", "data-kind": kind, "data-name": name, text: "Run"});
+  button.addEventListener("click", () => runCases([{kind, name}]));
+  const text = element("div", {class: "text"}, element("b", {text: title}), element("br"), note.replace(/^# .*\n/, ""));
+  return element("li", {}, button, text);
+}
+
+async function startRun(request) {
+  const response = await fetch("/api/runs", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(request)});
+  const body = await response.json();
+  if (!response.ok || !body.accepted) {
+    const error = new Error(body.error || "the lab refused the run");
+    error.problems = body.problems || [];
+    throw error;
+  }
+  return body.runId;
+}
+
+async function waitForRun(runId, label, generation) {
+  for (;;) {
+    const response = await fetch("/api/runs/" + runId);
+    const job = await response.json();
+    if (generation !== pageState.generation) return null;
+    if (!response.ok) throw new Error(job.error || "the run was lost");
+    if (job.status === "done") return job.result;
+    if (job.status === "failed") throw new Error(job.error);
+    setStatus(label + (job.status === "queued" ? " - waiting for an earlier run to finish" : " - running both engines") + " (run " + runId + ")", "busy");
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+}
+
+async function runCases(requests) {
+  if (pageState.busy) return;
+  const generation = pageState.generation;
+  byId("customError").hidden = true;
+  setBusy(true);
+  let done = 0;
+  try {
+    for (const request of requests) {
+      const label = "Running " + (request.name || "custom input") + " (" + (done + 1) + " of " + requests.length + ")";
+      setStatus(label, "busy");
+      const runId = await startRun(request);
+      const result = await waitForRun(runId, label, generation);
+      if (result === null) return;
+      addResult(result);
+      done += 1;
+    }
+    setStatus("Done: " + done + " case" + (done === 1 ? "" : "s") + " run. Finished " + new Date().toLocaleTimeString() + ".");
+  } catch (error) {
+    if (requests[0].kind === "custom" && error.problems) showCustomError(error);
+    setStatus("Not run: " + error.message + (error.problems && error.problems.length ? " " + error.problems.join("; ") : ""), "error");
+  } finally {
+    setBusy(false);
+  }
+}
+
+function showCustomError(error) {
+  const box = byId("customError");
+  box.replaceChildren(element("b", {text: error.message + " Nothing was run; correct the input and run it again."}),
+    element("ul", {}, ...error.problems.map((text) => element("li", {text}))));
+  box.hidden = false;
+}
+
+// Results live in this page only. They are kept in sessionStorage for one purpose: a browser that opens
+// the register or the board in this tab instead of a new one can come back (Back button) without losing
+// them. A reload or a fresh visit always starts empty, so nothing stale is shown.
+const storageKey = "replayLabResults";
+
+function rememberResults() {
+  try {
+    if (pageState.results.length) sessionStorage.setItem(storageKey, JSON.stringify(pageState.results));
+    else sessionStorage.removeItem(storageKey);
+  } catch (error) { /* storage full or unavailable: the page works without it */ }
+}
+
+function restoreAfterBack() {
+  const entry = performance.getEntriesByType("navigation")[0];
+  let stored = null;
+  try {
+    stored = sessionStorage.getItem(storageKey);
+    if (!entry || entry.type !== "back_forward") sessionStorage.removeItem(storageKey);
+  } catch (error) { return false; }
+  if (!stored || !entry || entry.type !== "back_forward") return false;
+  pageState.results = JSON.parse(stored);
+  render();
+  return true;
+}
+
+function addResult(result) {
+  const key = result.kind === "custom" ? result.case : result.kind + ":" + result.case;
+  result.key = key;
+  const existing = pageState.results.findIndex((r) => r.key === key);
+  if (existing >= 0) pageState.results.splice(existing, 1);
+  pageState.results.push(result);
+  rememberResults();
+  render(key);
+}
+
+function unresolvedOf(result) {
+  return result.unresolved || {agree: result.counts.UNRESOLVED, differ: 0};
+}
+
+function countsText(counts, split, separator) {
+  return classNames.map((n) => n + " " + counts[n] + (n === "UNRESOLVED" ? " (engines agree " + split.agree + ", engines differ " + split.differ + ")" : "")).join(separator);
+}
+
+function violationText(result, engine) {
+  return result.violations[engine].length ? result.violations[engine].join(", ") : "none";
+}
+
+function render(openKey) {
+  const results = pageState.results;
+  const body = byId("summaryBody");
+  body.replaceChildren();
+  byId("results").replaceChildren();
+  byId("saveSnapshot").disabled = byId("clearResults").disabled = results.length === 0;
+  if (!results.length) {
+    body.append(element("tr", {id: "summaryEmpty"}, element("td", {colspan: "11", class: "empty", text: "No result yet. Results appear here only for runs started from this page after it was loaded."})));
+    byId("summaryFoot").hidden = true;
+  }
+  const totals = {MATCH: 0, INTENDED_CHANGE: 0, UNRESOLVED: 0, UNCLASSIFIED: 0};
+  const totalSplit = {agree: 0, differ: 0}, failures = [], violated = [];
+  const exercised = new Set(), broken = {legacy: new Set(), target: new Set()};
+  for (const result of results) {
+    const row = element("tr", {"data-case": result.case, "data-kind": result.kind, title: "Show this case"},
+      element("td", {text: result.kind}), element("td", {text: result.case}));
+    const split = unresolvedOf(result);
+    totalSplit.agree += split.agree;
+    totalSplit.differ += split.differ;
+    for (const name of classNames) {
+      totals[name] += result.counts[name];
+      row.append(element("td", {class: "num", "data-class": name, text: String(result.counts[name])}));
+      if (name === "UNRESOLVED") row.append(element("td", {class: "num", "data-class": "UNRESOLVED_AGREE", text: String(split.agree)}),
+        element("td", {class: "num", "data-class": "UNRESOLVED_DIFFER", text: String(split.differ)}));
+    }
+    if (result.counts.UNCLASSIFIED) failures.push({failed: true, text: "UNCLASSIFIED: case " + result.case + ", " + result.counts.UNCLASSIFIED + " value(s)"});
+    for (const engine of ["legacy", "target"]) for (const rule of result.violations[engine])
+      violated.push({failed: true, text: "VIOLATES: case " + result.case + ", engine " + engine + ", rule " + rule});
+    row.append(element("td", {text: violationText(result, "legacy")}), element("td", {text: violationText(result, "target")}),
+      element("td", {text: result.runId + " " + result.finishedAt.slice(11)}));
+    row.addEventListener("click", () => {
+      const section = byId("case-" + result.key.replace(":", "-"));
+      section.open = true;
+      section.scrollIntoView({behavior: "smooth", block: "start"});
+    });
+    body.append(row);
+    result.rulesExercised.forEach((r) => exercised.add(r));
+    for (const engine of ["legacy", "target"]) result.violations[engine].forEach((r) => broken[engine].add(r));
+    byId("results").append(caseSection(result, result.key === openKey));
+  }
+  if (results.length) {
+    const foot = byId("summaryFoot");
+    const total = element("tr", {id: "summaryTotal"}, element("td", {colspan: "2", text: "Total, " + results.length + " case" + (results.length === 1 ? "" : "s")}));
+    for (const name of classNames) {
+      total.append(element("td", {class: "num", "data-class": name, text: String(totals[name])}));
+      if (name === "UNRESOLVED") total.append(element("td", {class: "num", "data-class": "UNRESOLVED_AGREE", text: String(totalSplit.agree)}),
+        element("td", {class: "num", "data-class": "UNRESOLVED_DIFFER", text: String(totalSplit.differ)}));
+    }
+    total.append(element("td", {text: [...broken.legacy].sort().join(", ") || "none"}), element("td", {text: [...broken.target].sort().join(", ") || "none"}), element("td"));
+    foot.replaceChildren(total);
+    foot.hidden = false;
+  }
+  const gate = byId("gate");
+  if (!results.length) {
+    gate.className = "NOTRUN";
+    byId("gateVerdict").textContent = "NOT RUN";
+    byId("gateScope").textContent = "No case has been run in this page since it was loaded.";
+    byId("gateCounts").textContent = byId("gateCoverage").textContent = byId("gateOpenQuestions").textContent = byId("gateWhyTitle").textContent = "";
+    byId("gateReasons").replaceChildren();
+    return;
+  }
+  const verdict = failures.length === 0 && violated.length === 0 ? "PASS" : "FAIL";
+  const kinds = {golden: 0, probe: 0, custom: 0};
+  results.forEach((r) => { kinds[r.kind] += 1; });
+  gate.className = verdict;
+  byId("gateVerdict").textContent = verdict;
+  byId("gateScope").textContent = "Over " + results.length + " case" + (results.length === 1 ? "" : "s") + " run in this page: " + kinds.golden + " golden, " + kinds.probe + " edge probes, " + kinds.custom + " custom.";
+  byId("gateCounts").textContent = countsText(totals, totalSplit, "   ");
+  const waiting = pageState.meta.notReplayable, waitingIds = waiting.map((n) => n.rule);
+  const replayable = pageState.meta.rules.filter((r) => !waitingIds.includes(r.id));
+  const missing = replayable.filter((r) => !exercised.has(r.id)).map((r) => r.id);
+  byId("gateCoverage").textContent = "Rule coverage: " + (replayable.length - missing.length) + " of " + replayable.length + " rules a replay can exercise" + (missing.length ? "; not exercised: " + missing.join(", ") : "");
+  byId("gateOpenQuestions").textContent = "Open questions no case can settle: " + waiting.length + " - " + waiting.map((n) => n.rule + " (" + n.waitsFor + ")").join("; ");
+  byId("gateWhyTitle").textContent = verdict === "PASS" ? "Why PASS: both conditions hold." : "Why FAIL:";
+  byId("gateReasons").replaceChildren(
+    element("li", {class: failures.length ? "failed" : "", "data-condition": "UNCLASSIFIED", text: "Condition 1, no compared value is UNCLASSIFIED: " + (failures.length ? "FAILED (" + totals.UNCLASSIFIED + " values)" : "passed")}),
+    ...failures.map((f) => element("li", {class: "failed reason", text: f.text})),
+    element("li", {class: violated.length ? "failed" : "", "data-condition": "VIOLATES", text: "Condition 2, neither engine VIOLATES a rule in any case: " + (violated.length ? "FAILED (" + violated.length + " violation(s))" : "passed")}),
+    ...violated.map((f) => element("li", {class: "failed reason", text: f.text})));
+}
+
+function recordTable(records, fields) {
+  if (!records.length) return element("p", {class: "empty", text: "no record"});
+  const table = element("table", {}, element("thead", {}, element("tr", {}, ...fields.map((f) => element("th", {text: f})))));
+  const body = element("tbody");
+  for (const record of records) body.append(element("tr", {}, ...fields.map((f) => element("td", {text: record[f]}))));
+  table.append(body);
+  return table;
+}
+
+function laneColumn(lane, result) {
+  const column = element("div", {class: "lane " + lane.engine, "data-engine": lane.engine},
+    element("h4", {text: (lane.engine === "legacy" ? "Observed - legacy: " : "Target: ") + lane.label}));
+  laneRun(column, lane, result, 1);
+  (lane.laterRuns || []).forEach((later, index) => {
+    const block = element("div", {class: "laterRun", "data-run-number": String(index + 2)}, element("h4", {text: "Run " + (index + 2) + " - on the files the run before left"}));
+    laneRun(block, later, result, index + 2);
+    column.append(block);
+  });
+  return column;
+}
+
+function laneRun(column, lane, result, number) {
+  column.append(element("p", {class: "meta laneEnd", text: "Ended: " + lane.runEnd + " - return code " + (lane.returnCode === null ? "not written" : lane.returnCode) + " (" + lane.returnCodeSource + ") - " + lane.seconds + " s - output " + lane.outputDir}));
+  if (number > 1) {
+    laneFiles(column, lane);
+    return;
+  }
+  if (lane.engine === "legacy")
+    column.append(element("p", {class: "meta", text: result.goldenParity
+      ? "Rerun against the golden files of fixtures/: " + result.goldenParity.verdict + " (" + result.goldenParity.fields + " decoded fields, " + result.goldenParity.differences + " differences)"
+      : "No golden file for this case: this run is the observed side."}));
+  else column.append(element("p", {class: "meta", text: "Three steps through PostgreSQL (profile database), as make parity-java launches the job."}));
+  laneFiles(column, lane);
+}
+
+function laneFiles(column, lane) {
+  column.append(element("h5", {text: "Interest transactions (" + (lane.transactionDataset || "not written") + ")"}),
+    recordTable(lane.transactions, ["TRAN-ID", "TRAN-TYPE-CD", "TRAN-CAT-CD", "TRAN-AMT", "TRAN-CARD-NUM", "TRAN-DESC", "TRAN-ORIG-TS"]),
+    element("h5", {text: "Accounts after the run (" + (lane.accountDataset || "not written") + ")"}),
+    recordTable(lane.accounts, ["ACCT-ID", "ACCT-ACTIVE-STATUS", "ACCT-CURR-BAL", "ACCT-CURR-CYC-CREDIT", "ACCT-CURR-CYC-DEBIT", "ACCT-GROUP-ID"]),
+    element("h5", {text: "Job log (SYSOUT INTCALC.STEP15)"}), element("pre", {text: (lane.sysout || ["(not written)"]).join("\n")}));
+  if (lane.stopped) column.append(element("p", {class: "meta", text: "The run stopped. The files above are what it left behind; they are shown, not compared."}));
+}
+
+function itemsTable(result) {
+  const table = element("table", {class: "items"}, element("thead", {}, element("tr", {},
+    ...["Class", "Where", "Field", "Observed (legacy)", "Target (Java)", "Rulebook (as coded until decided)", "Decision and reason"].map((t) => element("th", {text: t})))));
+  const body = element("tbody");
+  for (const item of result.items) {
+    const detail = element("details", {class: "itemDetail"}, element("summary", {text: item.decisions.length ? item.decisions.join(", ") : "why"}),
+      element("p", {text: item.reason + "."}));
+    for (const decision of item.decisions) {
+      const state = pageState.meta.decisions[decision];
+      detail.append(element("p", {}, element("a", {href: "/decisions#" + decision, target: "_blank", rel: "noopener", class: "decisionLink", "data-decision": decision,
+        text: "Decision register row " + decision}), " - status in the register: ", badge(state ? state.status : "OPEN")));
+    }
+    if (item.options && item.options.length) detail.append(element("p", {class: "options", text: "Options of the open decision: " +
+      item.options.map((o) => o.rule + " " + o.option + (o.asCoded ? " (as coded)" : "") + " gives " + o.value).join("; ")}));
+    if (item.rules.length) detail.append(element("p", {class: "meta", text: "Rulebook cites: " + item.rules.join(", ") + " (expectation " + item.expectedStatus + ")"}));
+    body.append(element("tr", {class: item.class, "data-class": item.class, "data-agree": String(item.agree !== false), "data-where": item.where, "data-field": item.field},
+      element("td", {}, badge(item.class), item.class === "UNRESOLVED" ? element("div", {class: "meta unresolvedKind", text: item.agree === false ? "engines differ" : "engines agree"}) : ""),
+      element("td", {text: item.where}), element("td", {text: item.field}),
+      element("td", {class: "value", text: item.observed}), element("td", {class: "value", text: item.target}),
+      element("td", {class: "value", text: item.expected}), element("td", {}, detail)));
+  }
+  table.append(body);
+  return table;
+}
+
+function verdictTable(result) {
+  const table = element("table", {class: "verdicts"}, element("thead", {}, element("tr", {},
+    ...["Rule", "Type", "What it says", "Legacy (COBOL)", "Target (Java)", "Evidence"].map((t) => element("th", {text: t})))));
+  const body = element("tbody");
+  for (const row of result.ruleVerdicts) {
+    const evidence = element("td");
+    for (const engine of ["legacy", "target"])
+      for (const entry of row[engine + "Evidence"])
+        evidence.append(element("p", {class: "evidence", text: engine + ": " + entry.where + " " + entry.field + " is " + entry.got + ", the rulebook requires " + entry.required}));
+    body.append(element("tr", {"data-rule": row.rule}, element("td", {text: row.rule}), element("td", {text: row.type + (row.decision ? " (" + row.decision + ")" : "")}),
+      element("td", {text: row.title}), element("td", {"data-engine": "legacy"}, badge(row.legacy)), element("td", {"data-engine": "target"}, badge(row.target)), evidence));
+  }
+  table.append(body);
+  return table;
+}
+
+function caseSection(result, open) {
+  const section = element("details", {class: "case", id: "case-" + result.key.replace(":", "-"), "data-case": result.case, "data-run": result.runId});
+  if (open) section.open = true;
+  const counts = countsText(result.counts, unresolvedOf(result), "  ");
+  section.append(element("summary", {}, (result.kind === "golden" ? "Golden: " : result.kind === "probe" ? "Edge probe: " : "Custom: ") + result.case,
+    element("span", {class: "counts", text: counts + "  -  run " + result.runId + ", finished " + result.finishedAt})));
+  section.append(element("p", {class: "meta", text: result.note.replace(/^# .*\n/, "")}),
+    element("p", {class: "meta", text: "Expected from: " + result.expectationSource + " (status " + result.expectationStatus + "). " + result.compared + " values compared."}));
+  for (const question of result.openQuestions || [])
+    section.append(element("div", {class: "openQuestion", "data-rule": question.rule},
+      element("p", {}, element("b", {text: question.rule + " - what the engines do today, not what is right."})),
+      element("p", {text: question.note}), element("p", {text: "Legacy today: " + question.legacy + "."}),
+      element("p", {text: "Target today: " + question.target + "."})));
+  if ((result.notes || []).length) section.append(element("ul", {class: "caseNotes"}, ...result.notes.map((text) => element("li", {text}))));
+  section.append(element("h3", {text: "The two lanes"}), element("div", {class: "lanes"}, laneColumn(result.legacy, result), laneColumn(result.target, result)));
+  const showMatchId = "showMatch-" + result.runId;
+  section.append(element("h3", {text: "Classified differences"}),
+    element("p", {class: "meta", text: "Every compared value has one class. UNRESOLVED and UNCLASSIFIED rows are listed; tick the box to see the MATCH rows too. Open the last column of a row for the reason and the link to its decision."}),
+    element("input", {type: "checkbox", class: "showMatch", id: showMatchId}), element("label", {for: showMatchId, text: " also show the " + result.counts.MATCH + " MATCH rows"}),
+    itemsTable(result));
+  section.append(element("h3", {text: "Rule verdicts - each engine against the rulebook"}),
+    element("p", {class: "meta", text: "Independent of the comparison above: an engine VIOLATES a rule when one of its values is not what the rulebook requires, even when both engines agree. A VIOLATES fails the gate. NOT DETERMINED: the source does not determine this case. NOT JUDGED: the run stopped before the rule could show in a compared value."}),
+    verdictTable(result));
+  return section;
+}
+
+function saveSnapshot() {
+  const copy = document.documentElement.cloneNode(true);
+  copy.querySelectorAll("script").forEach((node) => node.remove());
+  copy.querySelectorAll("#picker, #status, #saveSnapshot, #clearResults").forEach((node) => node.remove());
+  copy.querySelectorAll("input.showMatch").forEach((node) => { if (byId(node.id).checked) node.setAttribute("checked", ""); });
+  copy.querySelectorAll("a[href]").forEach((node) => node.setAttribute("href", new URL(node.getAttribute("href"), location.href).href));
+  const banner = document.createElement("p");
+  banner.id = "snapshotBanner";
+  banner.textContent = "Saved copy of the replay lab page, " + new Date().toLocaleString() + ". Not live: nothing can be run from this file, and its links to the decision register and the rules board need the lab running (make lab).";
+  copy.querySelector("main").prepend(banner);
+  const blob = new Blob(["<!doctype html>\n" + copy.outerHTML], {type: "text/html"});
+  const link = element("a", {href: URL.createObjectURL(blob), download: "replay-lab-page.html"});
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
+
+for (const tab of document.querySelectorAll("[role=tab]"))
+  tab.addEventListener("click", () => {
+    for (const other of document.querySelectorAll("[role=tab]")) {
+      other.setAttribute("aria-selected", String(other === tab));
+      byId(other.getAttribute("aria-controls")).hidden = other !== tab;
+    }
+  });
+byId("runAllGolden").addEventListener("click", () => runCases(pageState.meta.golden.map((c) => ({kind: "golden", name: c.name}))));
+byId("runAllProbes").addEventListener("click", () => runCases(pageState.meta.probes.map((c) => ({kind: "probe", name: c.name}))));
+byId("runCustom").addEventListener("click", () => runCases([{kind: "custom", input: byId("customInput").value}]));
+byId("resetCustom").addEventListener("click", () => { byId("customInput").value = pageState.meta.customTemplate; byId("customError").hidden = true; });
+byId("saveSnapshot").addEventListener("click", saveSnapshot);
+byId("clearResults").addEventListener("click", () => { pageState.generation += 1; pageState.results = []; rememberResults(); render(); setStatus("Results cleared."); });
+loadMeta().catch((error) => setStatus("The lab could not be loaded: " + error.message, "error"));
+</script>
+</body>
+</html>

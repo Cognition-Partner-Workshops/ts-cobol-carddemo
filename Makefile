@@ -13,6 +13,9 @@
 #   make rules / rules-check   regenerate / verify the interest rulebook outputs (board, register, expectations)
 #   make board-e2e              Playwright suite for the rules review board (needs: pip install -r e2e/requirements.txt)
 #   make design / design-check  regenerate / verify the interest design outputs (modernization/design)
+#   make lab                    replay lab page of the interest stream on http://127.0.0.1:8090 (LAB_PORT=...), see lab/README.md
+#   make lab-gate               replay every golden case and edge probe through both engines; exit 0 only when UNCLASSIFIED is 0
+#   make lab-test / lab-e2e     unit tests of the classification / Playwright suite of the lab page (pip install -r lab/requirements.txt)
 #   make reset                  drop datasets, loadlib, work/ and the database volume
 
 # run the estate container as the invoking user so bind-mounted loadlib/, work/,
@@ -212,3 +215,47 @@ design:
 
 design-check:
 	$(PY) $(DESIGN_TOOLS)/build_design.py --check
+
+# ------------------------------------------- Replay lab of the interest stream (lab/)
+# Compares, per case, what the rulebook expects, what the legacy COBOL run does (estate container)
+# and what the Java job does (JRE container on the network of `db`, profile `database`).
+# Host: Docker, make, python3 with PyYAML, JDK 21 and Maven for the jar.  See lab/README.md.
+#   make lab        the page, http://127.0.0.1:8090 (LAB_PORT, LAB_HOST override)
+#   make lab-gate   seven golden cases + edge probes; classified report -> work/lab/report.md;
+#                   exit 0 only when no compared value is UNCLASSIFIED and neither engine VIOLATES a rule
+#   make lab-gate-negative   the gate with half-even rounding in the Java job: must fail on INT-Q01, tie cases only
+#   LAB_TARGET_ARGS="--interest.policy.rounding=HALF_EVEN"   extra options of the Java job (to see a difference)
+.PHONY: lab lab-half-even lab-prepare lab-gate lab-gate-negative lab-test lab-e2e
+LAB_PORT ?= 8090
+export LAB_PORT
+
+lab-prepare:
+	$(COMPOSE) up -d --build --wait
+	@test -e loadlib/CBACT04C.so || $(EXEC) tools/build.sh
+	@$(COMPOSE) exec -T db psql -U carddemo -d carddemo -Atc "select to_regclass('carddemo.interest_run')" | grep -q interest_run \
+	  || $(COMPOSE) exec -T db psql -q -v ON_ERROR_STOP=1 -U carddemo -d carddemo -f /docker-entrypoint-initdb.d/02-interest.sql
+	@test -e $(INTEREST_JAR) && test -z "$$(find java/interest/src java/interest/pom.xml -newer $(INTEREST_JAR) -print -quit)" \
+	  || mvn -q -f java/interest/pom.xml -DskipTests package
+
+lab: lab-prepare
+	$(PY) lab/server.py
+
+# the same page with the Java job rounding half-even: its Gate box must show FAIL and name INT-Q01
+lab-half-even: lab-prepare
+	LAB_TARGET_ARGS="--interest.policy.rounding=HALF_EVEN" $(PY) lab/server.py
+
+lab-gate: lab-prepare
+	$(PY) lab/replay.py gate --report work/lab/report.md --json work/lab/gate.json
+
+# negative control: the gate with the Java job rounding half-even.  Passes only when the gate fails and the
+# violations are INT-Q01 by the target on the tie cases and nowhere else -> work/lab/negative-report.md
+lab-gate-negative: lab-prepare
+	$(PY) lab/replay.py negative --report work/lab/negative-report.md --json work/lab/negative.json
+
+lab-test:
+	$(PY) -m pytest lab/tests -q -p no:cacheprovider
+
+# starts its own lab server on LAB_E2E_PORT (default 8091) unless LAB_E2E_URL names a running one, and a
+# half-even lab on LAB_E2E_NEGATIVE_PORT (default 8092) for row 10
+lab-e2e: lab-prepare
+	$(PY) -m pytest lab/e2e -v -p no:cacheprovider

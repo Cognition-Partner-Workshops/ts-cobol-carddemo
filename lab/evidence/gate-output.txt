@@ -1,23 +1,3 @@
-docker compose up -d --build --wait
-python3 lab/replay.py gate --report work/lab/report.md --json work/lab/gate.json
-  ran golden i01-baseline: MATCH 48  INTENDED_CHANGE 0  UNRESOLVED 8 (engines agree 8, engines differ 0)  UNCLASSIFIED 0
-  ran golden i02-tie-half-cent: MATCH 45  INTENDED_CHANGE 0  UNRESOLVED 11 (engines agree 11, engines differ 0)  UNCLASSIFIED 0
-  ran golden i03-zero-rate-skipped: MATCH 25  INTENDED_CHANGE 0  UNRESOLVED 6 (engines agree 6, engines differ 0)  UNCLASSIFIED 0
-  ran golden i04-default-group-fallback: MATCH 25  INTENDED_CHANGE 0  UNRESOLVED 5 (engines agree 5, engines differ 0)  UNCLASSIFIED 0
-  ran golden i05-multi-category: MATCH 36  INTENDED_CHANGE 0  UNRESOLVED 8 (engines agree 8, engines differ 0)  UNCLASSIFIED 0
-  ran golden i06-negative-balance: MATCH 14  INTENDED_CHANGE 0  UNRESOLVED 16 (engines agree 16, engines differ 0)  UNCLASSIFIED 0
-  ran golden i07-nontie-rounding: MATCH 48  INTENDED_CHANGE 0  UNRESOLVED 8 (engines agree 8, engines differ 0)  UNCLASSIFIED 0
-  ran probe p01-tie-ladder: MATCH 77  INTENDED_CHANGE 0  UNRESOLVED 21 (engines agree 21, engines differ 0)  UNCLASSIFIED 0
-  ran probe p02-tie-negative: MATCH 36  INTENDED_CHANGE 0  UNRESOLVED 34 (engines agree 34, engines differ 0)  UNCLASSIFIED 0
-  ran probe p03-last-account: MATCH 104  INTENDED_CHANGE 0  UNRESOLVED 18 (engines agree 18, engines differ 0)  UNCLASSIFIED 0
-  ran probe p04-no-disclosure-group: MATCH 50  INTENDED_CHANGE 0  UNRESOLVED 7 (engines agree 7, engines differ 0)  UNCLASSIFIED 0
-  ran probe p05-negative-balance: MATCH 37  INTENDED_CHANGE 0  UNRESOLVED 33 (engines agree 33, engines differ 0)  UNCLASSIFIED 0
-  ran probe p06-sub-cent-inactive: MATCH 38  INTENDED_CHANGE 0  UNRESOLVED 32 (engines agree 32, engines differ 0)  UNCLASSIFIED 0
-  ran probe p07-stop-missing-account: MATCH 3  INTENDED_CHANGE 0  UNRESOLVED 0 (engines agree 0, engines differ 0)  UNCLASSIFIED 0
-  ran probe p08-stop-missing-card: MATCH 3  INTENDED_CHANGE 0  UNRESOLVED 0 (engines agree 0, engines differ 0)  UNCLASSIFIED 0
-  ran probe p09-stop-missing-default-rate: MATCH 3  INTENDED_CHANGE 0  UNRESOLVED 0 (engines agree 0, engines differ 0)  UNCLASSIFIED 0
-  ran probe p10-run-twice: MATCH 72  INTENDED_CHANGE 0  UNRESOLVED 92 (engines agree 92, engines differ 0)  UNCLASSIFIED 0
-  ran probe p11-two-cards: MATCH 0  INTENDED_CHANGE 0  UNRESOLVED 83 (engines agree 0, engines differ 83)  UNCLASSIFIED 0
 lab-gate: replay of the interest stream (INTCALC -> CBACT04C against java/interest)
 golden i01-baseline                 MATCH 48  INTENDED_CHANGE 0  UNRESOLVED 8 (engines agree 8, engines differ 0)  UNCLASSIFIED 0
 golden i02-tie-half-cent            MATCH 45  INTENDED_CHANGE 0  UNRESOLVED 11 (engines agree 11, engines differ 0)  UNCLASSIFIED 0

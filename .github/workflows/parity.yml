@@ -77,6 +77,9 @@ jobs:
       - name: Replay lab - gate, no UNCLASSIFIED difference (make lab-gate)
         run: make lab-gate
 
+      - name: Replay lab - negative control, half-even fails the gate on INT-Q01 in the tie cases only
+        run: make lab-gate-negative
+
       - name: Replay lab - Playwright suite of the page (make lab-e2e)
         run: make lab-e2e
 
@@ -88,6 +91,7 @@ jobs:
           path: |
             work/lab/report.md
             work/lab/gate.json
+            work/lab/negative-report.md
           if-no-files-found: ignore
 
       - name: Upload parity report

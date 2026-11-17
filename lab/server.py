@@ -108,6 +108,7 @@ def meta():
             "rules": [{"id": r["id"], "type": r["type"], "title": r["title"]} for r in rulebook["rules"]],
             "decisions": {k: {"status": v["status"], "approvedOption": v["approvedOption"]}
                           for k, v in decisions.items()},
+            "notReplayable": [{"rule": r, "waitsFor": w} for r, w in replay.notReplayable.items()],
             "limits": replay.limits, "classes": replay.classes})
     # the toolchain is read once; the commit of the checkout is read on every request, it can change under a running lab
     metaCache["header"].update(labCommit=replay.gitValue("rev-parse", "HEAD"),

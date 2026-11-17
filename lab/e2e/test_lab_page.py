@@ -4,11 +4,30 @@ import re
 import subprocess
 import time
 
-from conftest import repoRoot, rowCounts, waitDone
+from conftest import halfEven, repoRoot, rowCounts, waitDone
 
 goldenCases = sorted(p.name for p in (repoRoot / "fixtures" / "interest").iterdir() if (p / "input").is_dir())
 probes = [p["name"] for p in json.loads((repoRoot / "lab" / "probes.json").read_text())["probes"]]
 tieCase = "i02-tie-half-cent"
+classNames = ("MATCH", "INTENDED_CHANGE", "UNRESOLVED", "UNCLASSIFIED")
+stopProbes = ["p07-stop-missing-account", "p08-stop-missing-card", "p09-stop-missing-default-rate"]
+
+
+def compared(counts):
+    return sum(counts[name] for name in classNames)
+
+
+def conditionsOnPage(page):
+    """The lines of the Gate box in the wording of the gate's output."""
+    return [text.replace("Condition", "gate condition") for text in page.locator("#gateReasons li[data-condition]").all_inner_texts()]
+
+
+def runEverything(page):
+    page.click("#runAllGolden")
+    waitDone(page, 7)
+    page.click("#tab-probes")
+    page.click("#runAllProbes")
+    waitDone(page, len(probes))
 
 
 def summaryRows(page):
@@ -59,7 +78,7 @@ def test_02_golden_all_seven_cases_equal_the_gate(lab, gate):
             assert lane.locator("table").count() == 2 and lane.locator("pre").count() == 1
         assert "PASS" in section.locator(".lane.legacy").inner_text()      # rerun against the golden files
         assert section.locator("table.items").is_visible()
-        assert section.locator("table.items tbody tr").count() == sum(gate["cases"][name].values())
+        assert section.locator("table.items tbody tr").count() == compared(gate["cases"][name])
         assert section.locator("table.verdicts tbody tr").count() == 20
     assert rowCounts(lab.locator("#summaryTotal")) == gate["totals"]["golden"]
     assert lab.consoleErrors == []
@@ -120,10 +139,27 @@ def test_05_every_edge_probe_returns_a_result_and_fixtures_stay_untouched(lab):
     for name in probes:
         lab.click(f"#summaryBody tr[data-case={name}]")
         section = lab.locator(f"#case-probe-{name}")
-        assert sum(rowCounts(lab.locator(f"#summaryBody tr[data-case={name}]")).values()) > 0
+        counts = rowCounts(lab.locator(f"#summaryBody tr[data-case={name}]"))
+        assert compared(counts) > 0 and counts["UNCLASSIFIED"] == 0
         assert "No golden file for this case" in section.locator(".lane.legacy").inner_text()
-        for engine in ("legacy", "target"):
-            assert section.locator(f".lane.{engine} table").first.locator("tbody tr").count() >= 1
+        ends = [section.locator(f".lane.{engine} .laneEnd").first.inner_text() for engine in ("legacy", "target")]
+        if name in stopProbes:                                             # INT-R08: both stop, three values compared
+            assert all("abend" in end and "return code 12" in end for end in ends), ends
+            assert counts["MATCH"] == 3 and compared(counts) == 3
+            for engine in ("legacy", "target"):
+                assert "ABENDING PROGRAM" in section.locator(f".lane.{engine} pre").first.inner_text()
+        elif name == "p11-two-cards":                                      # INT-H03: the engines differ, still open
+            assert "normal end" in ends[0] and "abend" in ends[1]
+            assert counts["engines differ"] == counts["UNRESOLVED"] > 0 and counts["MATCH"] == 0
+            box = section.locator(".openQuestion[data-rule=INT-H03]").inner_text()
+            assert "not what is right" in box and "GnuCOBOL" in box and "may differ from the host" in box
+        else:
+            assert all("normal end, return code 0" in end for end in ends), ends
+            for engine in ("legacy", "target"):
+                assert section.locator(f".lane.{engine} table").first.locator("tbody tr").count() >= 1
+        if name == "p10-run-twice":                                        # INT-H02: a second run on the same files
+            assert section.locator(".laterRun[data-run-number='2']").count() == 2
+            assert "not what is right" in section.locator(".openQuestion[data-rule=INT-H02]").inner_text()
         assert section.locator("table.verdicts tbody tr").count() == 20
     after = fixturesState()
     assert before[0] == "" and after[0] == "", "git status --short fixtures is not empty"
@@ -160,17 +196,24 @@ def test_06_custom_valid_runs_invalid_is_refused_and_the_page_stays_usable(lab):
     assert lab.consoleErrors == []
 
 
-def test_07_gate_on_the_page_equals_the_exit_code_of_the_gate(lab, gate):
-    lab.click("#runAllGolden")
-    waitDone(lab, 7)
-    lab.click("#tab-probes")
-    lab.click("#runAllProbes")
-    waitDone(lab, len(probes))
-    assert lab.locator("#gateVerdict").inner_text() == ("PASS" if gate["exitCode"] == 0 else "FAIL")
-    assert rowCounts(lab.locator("#summaryTotal")) == gate["totals"]["all"]
-    exercised, total = gate["coverage"]
-    assert f"Rule coverage: {exercised} of {total} rules exercised" in lab.locator("#gateCoverage").inner_text()
-    assert f"UNCLASSIFIED {gate['totals']['all']['UNCLASSIFIED']}" in lab.locator("#gateCounts").inner_text()
+def test_07_gate_on_the_page_equals_the_exit_code_of_the_gate_and_says_why(lab, gate):
+    runEverything(lab)
+    assert gate["verdict"] == ("PASS" if gate["exitCode"] == 0 else "FAIL")
+    assert lab.locator("#gateVerdict").inner_text() == gate["verdict"]
+    assert conditionsOnPage(lab) == gate["conditions"]                     # the two conditions, passed or FAILED
+    assert lab.locator("#gateReasons li.reason").all_inner_texts() == gate["violations"]
+    assert lab.locator("#gateWhyTitle").inner_text().startswith("Why " + gate["verdict"])
+    total = gate["totals"]["all"]
+    assert rowCounts(lab.locator("#summaryTotal")) == total
+    exercised, replayable = gate["coverage"]
+    assert f"Rule coverage: {exercised} of {replayable} rules a replay can exercise" in lab.locator("#gateCoverage").inner_text()
+    waiting = lab.locator("#gateOpenQuestions").inner_text()
+    assert "INT-H05 (needs host evidence" in waiting and "INT-H06 (needs an answer from operations" in waiting
+    counts = lab.locator("#gateCounts").inner_text()
+    assert f"UNCLASSIFIED {total['UNCLASSIFIED']}" in counts
+    assert (f"UNRESOLVED {total['UNRESOLVED']} (engines agree {total['engines agree']}, "
+            f"engines differ {total['engines differ']})") in counts
+    assert lab.consoleErrors == []
 
 
 def test_08_link_to_the_rules_board_opens_the_board(lab):
@@ -203,3 +246,17 @@ def test_09_reload_during_a_run_shows_no_stale_result(lab):
     assert lab.locator("details.case").count() == 1
     assert lab.locator("details.case").get_attribute("data-case") == "i03-zero-rate-skipped"
     assert lab.consoleErrors == []
+
+
+def test_10_half_even_lab_shows_gate_fail_and_names_int_q01(halfEvenLab):
+    page = halfEvenLab
+    assert page.locator("#targetArgs").inner_text() == halfEven
+    runEverything(page)
+    assert page.locator("#gateVerdict").inner_text() == "FAIL"
+    assert page.locator("#gateWhyTitle").inner_text() == "Why FAIL:"
+    assert page.locator("#gateReasons li.reason").all_inner_texts() == [
+        f"VIOLATES: case {name}, engine target, rule INT-Q01" for name in (tieCase, "p01-tie-ladder", "p02-tie-negative")]
+    conditions = page.locator("#gateReasons li[data-condition]").all_inner_texts()
+    assert conditions[0].endswith("UNCLASSIFIED: passed") and "FAILED (3 violation(s))" in conditions[1]
+    assert rowCounts(page.locator("#summaryTotal"))["UNCLASSIFIED"] == 0
+    assert page.consoleErrors == []

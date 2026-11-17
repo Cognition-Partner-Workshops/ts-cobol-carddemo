@@ -160,16 +160,117 @@ def test_another_option_of_an_open_rule_breaks_that_rule_only(expectation, decis
     assert (row["legacy"], row["target"]) == ("VIOLATES", "CONFORMS")
 
 
-def test_gate_fails_only_on_unclassified():
-    def result(unclassified):
-        return {"counts": {"MATCH": 5, "INTENDED_CHANGE": 1, "UNRESOLVED": 3, "UNCLASSIFIED": unclassified},
-                "compared": 9 + unclassified, "rulesExercised": ["INT-R01"], "case": "x",
-                "violations": {"legacy": ["INT-R06"], "target": []}}
-    assert replay.summarise([result(0)])["gate"] == "PASS"      # a violated rule is reported, not gated
-    assert replay.summarise([result(0), result(1)])["gate"] == "FAIL"
-    lines, total = replay.gateLines([("golden", [result(0)])])
-    assert lines[-1] == "gate: PASS (UNCLASSIFIED = 0)" and total["rulesTotal"] == 20
-    assert "rule verdicts, legacy: VIOLATES INT-R06" in lines
+def caseResult(name="x", unclassified=0, legacy=(), target=(), agree=3, differ=0, tie=False):
+    return {"counts": {"MATCH": 5, "INTENDED_CHANGE": 0, "UNRESOLVED": agree + differ, "UNCLASSIFIED": unclassified},
+            "unresolved": {"agree": agree, "differ": differ}, "compared": 5 + agree + differ + unclassified,
+            "rulesExercised": ["INT-R01", "INT-Q01"], "case": name, "tieCase": tie,
+            "violations": {"legacy": list(legacy), "target": list(target)}}
+
+
+def test_gate_passes_with_no_violation_and_no_unclassified():
+    summary = replay.summarise([caseResult("a"), caseResult("b", differ=4)])
+    assert summary["gate"] == "PASS" and summary["failures"] == []
+    lines, _ = replay.gateLines([("golden", [caseResult("a")])])
+    assert lines[-1] == "gate: PASS"
+    assert "gate condition 1, no compared value is UNCLASSIFIED: passed" in lines
+    assert "gate condition 2, neither engine VIOLATES a rule in any case: passed" in lines
+
+
+def test_a_violation_alone_fails_the_gate_and_is_named():
+    results = [caseResult("clean"), caseResult("i02-tie-half-cent", target=["INT-Q01"])]
+    summary = replay.summarise(results)
+    assert summary["counts"]["UNCLASSIFIED"] == 0 and summary["gate"] == "FAIL"
+    assert summary["failures"] == [{"condition": "VIOLATES", "case": "i02-tie-half-cent", "engine": "target",
+                                    "rule": "INT-Q01"}]
+    lines, _ = replay.gateLines([("golden", results)])
+    assert lines[-1] == "gate: FAIL"
+    assert "gate condition 1, no compared value is UNCLASSIFIED: passed" in lines
+    assert "  VIOLATES: case i02-tie-half-cent, engine target, rule INT-Q01" in lines
+
+
+def test_two_engines_breaking_the_same_rule_fail_the_gate_too():
+    summary = replay.summarise([caseResult("both", legacy=["INT-R06"], target=["INT-R06"])])
+    assert summary["gate"] == "FAIL" and len(summary["failures"]) == 2
+
+
+def test_unclassified_alone_fails_the_gate_and_names_the_case():
+    summary = replay.summarise([caseResult("a"), caseResult("b", unclassified=2)])
+    assert summary["gate"] == "FAIL"
+    assert summary["failures"] == [{"condition": "UNCLASSIFIED", "case": "b", "count": 2}]
+    assert "  UNCLASSIFIED: case b, 2 value(s)" in replay.gateConditionLines(summary)
+
+
+def test_unresolved_is_counted_as_agree_and_differ(expectation, decisions):
+    legacy, target = laneFrom(expectation, "legacy"), laneFrom(expectation, "target")
+    target["transactions"][0]["TRAN-AMT"] = "12.36"
+    items = replay.compareLanes(expectation, legacy, target, decisions)
+    differing = [i for i in items if i["class"] == "UNRESOLVED" and not i["agree"]]
+    assert [(i["field"], i["decisions"]) for i in differing] == [("TRAN-AMT", ["INT-Q01"])]
+    assert sum(1 for i in items if i["class"] == "UNRESOLVED" and i["agree"]) == 10
+    line = replay.countsLine({"MATCH": 1, "INTENDED_CHANGE": 0, "UNRESOLVED": 11, "UNCLASSIFIED": 0},
+                             {"agree": 10, "differ": 1})
+    assert "UNRESOLVED 11 (engines agree 10, engines differ 1)" in line
+
+
+def test_coverage_is_two_lines_replayable_rules_and_open_questions_no_case_settles():
+    summary = replay.summarise([caseResult()])
+    assert summary["rulesTotal"] == 20 and summary["rulesReplayable"] == 18
+    first, second = replay.coverageLines(summary)
+    assert first.startswith("rule coverage: 2 of 18 rules a replay can exercise")
+    assert second.startswith("open questions no case can settle: 2 - INT-H05 (needs host evidence")
+    assert "INT-H06 (needs an answer from operations" in second
+
+
+def stoppedLane(engine, extra=()):
+    log = ["START OF EXECUTION OF PROGRAM CBACT04C", "000000020030100010000012355{", "ACCOUNT NOT FOUND: 00000002003",
+           "ERROR READING ACCOUNT FILE", "FILE STATUS IS: NNNN0023", "ABENDING PROGRAM"]
+    return {"engine": engine, "transactions": [], "accounts": [], "sysout": log + list(extra), "jobLog": log,
+            "returnCodes": None, "returnCode": 12, "stopped": True, "runEnd": "abend - return code 12"}
+
+
+def test_two_stopped_runs_are_compared_on_end_return_code_and_job_log_only(expectation, decisions):
+    legacy = stoppedLane("legacy", ["CEE3ABD: USER ABEND U+0000000999", "libcob: warning"])
+    legacy["transactions"] = [{f: "left behind" for f in replay.transactionFields}]
+    items = replay.compareLanes(expectation, legacy, stoppedLane("target"), decisions)
+    assert sorted(i["field"] for i in items) == ["how the run ended", "job log (SYSOUT INTCALC.STEP15)",
+                                                 "return code of the step"]
+    assert {i["class"] for i in items} == {"MATCH"}
+    other = stoppedLane("target")
+    other["returnCode"] = 16
+    items = replay.compareLanes(expectation, legacy, other, decisions)
+    assert itemOf(items, "run", "return code of the step")["class"] == "UNCLASSIFIED"
+
+
+def test_job_log_of_a_stopped_run_needs_the_rulebook_lines_in_order():
+    wanted = ["START", "ERROR READING ACCOUNT FILE", "ABENDING PROGRAM"]
+    assert replay.inOrder(wanted, ["START", "ERROR READING ACCOUNT FILE", "FILE STATUS IS: NNNN0023",
+                                   "ABENDING PROGRAM"]) == (True, ["FILE STATUS IS: NNNN0023"])
+    assert replay.inOrder(wanted, ["START", "ABENDING PROGRAM"])[0] is False
+
+
+def test_a_case_the_rulebook_does_not_determine_is_unresolved_differ_and_not_judged(expectation, decisions, rulebook):
+    open03 = {**copy.deepcopy(expectation), "unresolved": [{"rule": "INT-H03", "reason": "account has 2 cards"}]}
+    legacy, target = laneFrom(expectation, "legacy"), stoppedLane("target")
+    items = replay.compareLanes(open03, legacy, target, decisions)
+    assert counts(items)["UNCLASSIFIED"] == 0 and counts(items)["MATCH"] == 0
+    assert all(i["class"] == "UNRESOLVED" and not i["agree"] and i["decisions"] == ["INT-H03"] for i in items)
+    rows, _ = replay.ruleVerdicts(open03, legacy, target, decisions, rulebook)
+    assert {r["legacy"] for r in rows} == {"NOT DETERMINED", "NOT EXERCISED"}
+    assert "VIOLATES" not in {r["target"] for r in rows}
+
+
+def test_negative_control_passes_only_on_int_q01_in_the_tie_cases():
+    tie = caseResult("i02-tie-half-cent", target=["INT-Q01"], tie=True)
+    good = [caseResult("i01-baseline"), tie]
+    assert replay.negativeVerdict(good, replay.summarise(good))[0] is True
+    passedGate = [caseResult("i01-baseline"), caseResult("i02-tie-half-cent", tie=True)]
+    passed, lines = replay.negativeVerdict(passedGate, replay.summarise(passedGate))
+    assert passed is False and any("the gate passed with half-even rounding" in line for line in lines)
+    elsewhere = [caseResult("i01-baseline", target=["INT-Q01"]), tie]
+    passed, lines = replay.negativeVerdict(elsewhere, replay.summarise(elsewhere))
+    assert passed is False and any("unexpected violation: case i01-baseline" in line for line in lines)
+    otherRule = [caseResult("i02-tie-half-cent", target=["INT-Q01", "INT-R05"], tie=True)]
+    assert replay.negativeVerdict(otherRule, replay.summarise(otherRule))[0] is False
 
 
 def test_minus_zero_is_zero_but_text_is_compared_as_text():
@@ -199,6 +300,7 @@ def test_probes_are_valid_and_cover_what_was_asked():
     for probe in probes:
         cases.checkCase(probe)
     names = " ".join(p["name"] for p in probes)
-    for wanted in ("tie", "last-account", "no-disclosure-group", "negative"):
+    for wanted in ("tie", "last-account", "no-disclosure-group", "negative", "stop-missing-account",
+                   "stop-missing-card", "stop-missing-default-rate", "run-twice", "two-cards"):
         assert wanted in names
     assert cases.fixturesRoot not in cases.labCasesRoot.parents

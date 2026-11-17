@@ -222,9 +222,10 @@ design-check:
 # Host: Docker, make, python3 with PyYAML, JDK 21 and Maven for the jar.  See lab/README.md.
 #   make lab        the page, http://127.0.0.1:8090 (LAB_PORT, LAB_HOST override)
 #   make lab-gate   seven golden cases + edge probes; classified report -> work/lab/report.md;
-#                   exit 0 only when no compared value is UNCLASSIFIED
+#                   exit 0 only when no compared value is UNCLASSIFIED and neither engine VIOLATES a rule
+#   make lab-gate-negative   the gate with half-even rounding in the Java job: must fail on INT-Q01, tie cases only
 #   LAB_TARGET_ARGS="--interest.policy.rounding=HALF_EVEN"   extra options of the Java job (to see a difference)
-.PHONY: lab lab-prepare lab-gate lab-test lab-e2e
+.PHONY: lab lab-half-even lab-prepare lab-gate lab-gate-negative lab-test lab-e2e
 LAB_PORT ?= 8090
 export LAB_PORT
 
@@ -239,12 +240,22 @@ lab-prepare:
 lab: lab-prepare
 	$(PY) lab/server.py
 
+# the same page with the Java job rounding half-even: its Gate box must show FAIL and name INT-Q01
+lab-half-even: lab-prepare
+	LAB_TARGET_ARGS="--interest.policy.rounding=HALF_EVEN" $(PY) lab/server.py
+
 lab-gate: lab-prepare
 	$(PY) lab/replay.py gate --report work/lab/report.md --json work/lab/gate.json
+
+# negative control: the gate with the Java job rounding half-even.  Passes only when the gate fails and the
+# violations are INT-Q01 by the target on the tie cases and nowhere else -> work/lab/negative-report.md
+lab-gate-negative: lab-prepare
+	$(PY) lab/replay.py negative --report work/lab/negative-report.md --json work/lab/negative.json
 
 lab-test:
 	$(PY) -m pytest lab/tests -q -p no:cacheprovider
 
-# starts its own lab server on LAB_E2E_PORT (default 8091) unless LAB_E2E_URL names a running one
+# starts its own lab server on LAB_E2E_PORT (default 8091) unless LAB_E2E_URL names a running one, and a
+# half-even lab on LAB_E2E_NEGATIVE_PORT (default 8092) for row 10
 lab-e2e: lab-prepare
 	$(PY) -m pytest lab/e2e -v -p no:cacheprovider

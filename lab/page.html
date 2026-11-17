@@ -43,6 +43,13 @@ textarea{width:100%;min-height:230px;font:13px/1.4 ui-monospace,Menlo,Consolas,m
 #gate.PASS{border-color:var(--green);background:#eefaf0}
 #gate.FAIL{border-color:var(--red);background:#fdecea}
 #gateVerdict{font-size:22px;font-weight:800}
+#gateWhy{flex-basis:100%}
+#gateReasons{margin:2px 0 0 18px;padding:0}
+#gateReasons li.failed{color:var(--red);font-weight:600}
+.openQuestion{background:#fff8e1;border:1px solid #e3c260;border-radius:6px;padding:8px 12px;margin:8px 0}
+.openQuestion p{margin:3px 0}
+.caseNotes{margin:6px 0 6px 18px;padding:0;font-size:13.5px;color:var(--muted)}
+.laterRun{border-top:2px dashed var(--line);margin-top:10px;padding-top:6px}
 #gate.PASS #gateVerdict{color:var(--green)}
 #gate.FAIL #gateVerdict{color:var(--red)}
 table{border-collapse:collapse;width:100%}
@@ -88,6 +95,7 @@ footer{color:var(--muted);font-size:13px;margin-top:26px}
 <span>Lab commit <b id="labCommit">...</b></span>
 <span>Frozen business date <b id="businessDate">...</b></span>
 <span>PARM <b id="parmDate">...</b></span>
+<span>Target options <b id="targetArgs">...</b></span>
 <span><a id="boardLink" href="/board" target="_blank" rel="noopener">Rules board</a></span>
 <span><a id="registerLink" href="/decisions" target="_blank" rel="noopener">Decision register</a></span>
 </div>
@@ -131,16 +139,17 @@ footer{color:var(--muted);font-size:13px;margin-top:26px}
 <span id="gateScope">No case has been run in this page since it was loaded.</span>
 <span id="gateCounts"></span>
 <span id="gateCoverage"></span>
-<span id="gateViolations"></span>
+<span id="gateOpenQuestions"></span>
+<div id="gateWhy"><b id="gateWhyTitle"></b><ul id="gateReasons"></ul></div>
 </div>
-<p class="meta">The gate passes only when UNCLASSIFIED is zero over the cases run in this page. <code>make lab-gate</code> runs the seven golden cases and the edge probes and exits with the same rule.</p>
+<p class="meta">The gate passes only when both conditions hold over the cases run in this page: no compared value is UNCLASSIFIED, and neither engine VIOLATES a rule in any case. <code>make lab-gate</code> runs the seven golden cases and the edge probes and exits 0 or 1 by the same rule.</p>
 </section>
 
 <section>
 <h2>Cases run in this page</h2>
 <table id="summary">
-<thead><tr><th>Set</th><th>Case</th><th class="num">MATCH</th><th class="num">INTENDED_CHANGE</th><th class="num">UNRESOLVED</th><th class="num">UNCLASSIFIED</th><th>Legacy breaks</th><th>Target breaks</th><th>Run</th></tr></thead>
-<tbody id="summaryBody"><tr id="summaryEmpty"><td colspan="9" class="empty">No result yet. Results appear here only for runs started from this page after it was loaded.</td></tr></tbody>
+<thead><tr><th>Set</th><th>Case</th><th class="num">MATCH</th><th class="num">INTENDED_CHANGE</th><th class="num">UNRESOLVED</th><th class="num">engines agree</th><th class="num">engines differ</th><th class="num">UNCLASSIFIED</th><th>Legacy breaks</th><th>Target breaks</th><th>Run</th></tr></thead>
+<tbody id="summaryBody"><tr id="summaryEmpty"><td colspan="11" class="empty">No result yet. Results appear here only for runs started from this page after it was loaded.</td></tr></tbody>
 <tfoot id="summaryFoot" hidden></tfoot>
 </table>
 <p><button type="button" id="saveSnapshot" disabled>Save this page as a file</button>
@@ -196,6 +205,7 @@ async function loadMeta() {
   byId("labCommit").textContent = meta.header.labCommit.slice(0, 12) + " (" + meta.header.branch + ")";
   byId("businessDate").textContent = meta.header.businessDate;
   byId("parmDate").textContent = meta.header.parmDate;
+  byId("targetArgs").textContent = meta.header.targetArgs.length ? meta.header.targetArgs.join(" ") : "none (defaults of java/interest)";
   for (const [name, version] of meta.header.toolchain)
     byId("toolchain").append(element("span", {text: name + " " + version}));
   for (const item of meta.golden) byId("goldenList").append(caseEntry("golden", item.name, item.name, item.note));
@@ -305,6 +315,14 @@ function addResult(result) {
   render(key);
 }
 
+function unresolvedOf(result) {
+  return result.unresolved || {agree: result.counts.UNRESOLVED, differ: 0};
+}
+
+function countsText(counts, split, separator) {
+  return classNames.map((n) => n + " " + counts[n] + (n === "UNRESOLVED" ? " (engines agree " + split.agree + ", engines differ " + split.differ + ")" : "")).join(separator);
+}
+
 function violationText(result, engine) {
   return result.violations[engine].length ? result.violations[engine].join(", ") : "none";
 }
@@ -316,18 +334,27 @@ function render(openKey) {
   byId("results").replaceChildren();
   byId("saveSnapshot").disabled = byId("clearResults").disabled = results.length === 0;
   if (!results.length) {
-    body.append(element("tr", {id: "summaryEmpty"}, element("td", {colspan: "9", class: "empty", text: "No result yet. Results appear here only for runs started from this page after it was loaded."})));
+    body.append(element("tr", {id: "summaryEmpty"}, element("td", {colspan: "11", class: "empty", text: "No result yet. Results appear here only for runs started from this page after it was loaded."})));
     byId("summaryFoot").hidden = true;
   }
   const totals = {MATCH: 0, INTENDED_CHANGE: 0, UNRESOLVED: 0, UNCLASSIFIED: 0};
+  const totalSplit = {agree: 0, differ: 0}, failures = [], violated = [];
   const exercised = new Set(), broken = {legacy: new Set(), target: new Set()};
   for (const result of results) {
     const row = element("tr", {"data-case": result.case, "data-kind": result.kind, title: "Show this case"},
       element("td", {text: result.kind}), element("td", {text: result.case}));
+    const split = unresolvedOf(result);
+    totalSplit.agree += split.agree;
+    totalSplit.differ += split.differ;
     for (const name of classNames) {
       totals[name] += result.counts[name];
       row.append(element("td", {class: "num", "data-class": name, text: String(result.counts[name])}));
+      if (name === "UNRESOLVED") row.append(element("td", {class: "num", "data-class": "UNRESOLVED_AGREE", text: String(split.agree)}),
+        element("td", {class: "num", "data-class": "UNRESOLVED_DIFFER", text: String(split.differ)}));
     }
+    if (result.counts.UNCLASSIFIED) failures.push({failed: true, text: "UNCLASSIFIED: case " + result.case + ", " + result.counts.UNCLASSIFIED + " value(s)"});
+    for (const engine of ["legacy", "target"]) for (const rule of result.violations[engine])
+      violated.push({failed: true, text: "VIOLATES: case " + result.case + ", engine " + engine + ", rule " + rule});
     row.append(element("td", {text: violationText(result, "legacy")}), element("td", {text: violationText(result, "target")}),
       element("td", {text: result.runId + " " + result.finishedAt.slice(11)}));
     row.addEventListener("click", () => {
@@ -343,7 +370,11 @@ function render(openKey) {
   if (results.length) {
     const foot = byId("summaryFoot");
     const total = element("tr", {id: "summaryTotal"}, element("td", {colspan: "2", text: "Total, " + results.length + " case" + (results.length === 1 ? "" : "s")}));
-    for (const name of classNames) total.append(element("td", {class: "num", "data-class": name, text: String(totals[name])}));
+    for (const name of classNames) {
+      total.append(element("td", {class: "num", "data-class": name, text: String(totals[name])}));
+      if (name === "UNRESOLVED") total.append(element("td", {class: "num", "data-class": "UNRESOLVED_AGREE", text: String(totalSplit.agree)}),
+        element("td", {class: "num", "data-class": "UNRESOLVED_DIFFER", text: String(totalSplit.differ)}));
+    }
     total.append(element("td", {text: [...broken.legacy].sort().join(", ") || "none"}), element("td", {text: [...broken.target].sort().join(", ") || "none"}), element("td"));
     foot.replaceChildren(total);
     foot.hidden = false;
@@ -353,18 +384,28 @@ function render(openKey) {
     gate.className = "NOTRUN";
     byId("gateVerdict").textContent = "NOT RUN";
     byId("gateScope").textContent = "No case has been run in this page since it was loaded.";
-    byId("gateCounts").textContent = byId("gateCoverage").textContent = byId("gateViolations").textContent = "";
+    byId("gateCounts").textContent = byId("gateCoverage").textContent = byId("gateOpenQuestions").textContent = byId("gateWhyTitle").textContent = "";
+    byId("gateReasons").replaceChildren();
     return;
   }
-  const verdict = totals.UNCLASSIFIED === 0 ? "PASS" : "FAIL";
+  const verdict = failures.length === 0 && violated.length === 0 ? "PASS" : "FAIL";
   const kinds = {golden: 0, probe: 0, custom: 0};
   results.forEach((r) => { kinds[r.kind] += 1; });
   gate.className = verdict;
   byId("gateVerdict").textContent = verdict;
   byId("gateScope").textContent = "Over " + results.length + " case" + (results.length === 1 ? "" : "s") + " run in this page: " + kinds.golden + " golden, " + kinds.probe + " edge probes, " + kinds.custom + " custom.";
-  byId("gateCounts").textContent = classNames.map((n) => n + " " + totals[n]).join("   ");
-  byId("gateCoverage").textContent = "Rule coverage: " + exercised.size + " of " + pageState.meta.rules.length + " rules exercised";
-  byId("gateViolations").textContent = "Rules broken - legacy: " + ([...broken.legacy].sort().join(", ") || "none") + "; target: " + ([...broken.target].sort().join(", ") || "none");
+  byId("gateCounts").textContent = countsText(totals, totalSplit, "   ");
+  const waiting = pageState.meta.notReplayable, waitingIds = waiting.map((n) => n.rule);
+  const replayable = pageState.meta.rules.filter((r) => !waitingIds.includes(r.id));
+  const missing = replayable.filter((r) => !exercised.has(r.id)).map((r) => r.id);
+  byId("gateCoverage").textContent = "Rule coverage: " + (replayable.length - missing.length) + " of " + replayable.length + " rules a replay can exercise" + (missing.length ? "; not exercised: " + missing.join(", ") : "");
+  byId("gateOpenQuestions").textContent = "Open questions no case can settle: " + waiting.length + " - " + waiting.map((n) => n.rule + " (" + n.waitsFor + ")").join("; ");
+  byId("gateWhyTitle").textContent = verdict === "PASS" ? "Why PASS: both conditions hold." : "Why FAIL:";
+  byId("gateReasons").replaceChildren(
+    element("li", {class: failures.length ? "failed" : "", "data-condition": "UNCLASSIFIED", text: "Condition 1, no compared value is UNCLASSIFIED: " + (failures.length ? "FAILED (" + totals.UNCLASSIFIED + " values)" : "passed")}),
+    ...failures.map((f) => element("li", {class: "failed reason", text: f.text})),
+    element("li", {class: violated.length ? "failed" : "", "data-condition": "VIOLATES", text: "Condition 2, neither engine VIOLATES a rule in any case: " + (violated.length ? "FAILED (" + violated.length + " violation(s))" : "passed")}),
+    ...violated.map((f) => element("li", {class: "failed reason", text: f.text})));
 }
 
 function recordTable(records, fields) {
@@ -378,20 +419,37 @@ function recordTable(records, fields) {
 
 function laneColumn(lane, result) {
   const column = element("div", {class: "lane " + lane.engine, "data-engine": lane.engine},
-    element("h4", {text: (lane.engine === "legacy" ? "Observed - legacy: " : "Target: ") + lane.label}),
-    element("p", {class: "meta", text: "Ended: " + lane.runEnd + " - " + lane.seconds + " s - output " + lane.outputDir}));
+    element("h4", {text: (lane.engine === "legacy" ? "Observed - legacy: " : "Target: ") + lane.label}));
+  laneRun(column, lane, result, 1);
+  (lane.laterRuns || []).forEach((later, index) => {
+    const block = element("div", {class: "laterRun", "data-run-number": String(index + 2)}, element("h4", {text: "Run " + (index + 2) + " - on the files the run before left"}));
+    laneRun(block, later, result, index + 2);
+    column.append(block);
+  });
+  return column;
+}
+
+function laneRun(column, lane, result, number) {
+  column.append(element("p", {class: "meta laneEnd", text: "Ended: " + lane.runEnd + " - return code " + (lane.returnCode === null ? "not written" : lane.returnCode) + " (" + lane.returnCodeSource + ") - " + lane.seconds + " s - output " + lane.outputDir}));
+  if (number > 1) {
+    laneFiles(column, lane);
+    return;
+  }
   if (lane.engine === "legacy")
     column.append(element("p", {class: "meta", text: result.goldenParity
       ? "Rerun against the golden files of fixtures/: " + result.goldenParity.verdict + " (" + result.goldenParity.fields + " decoded fields, " + result.goldenParity.differences + " differences)"
       : "No golden file for this case: this run is the observed side."}));
   else column.append(element("p", {class: "meta", text: "Three steps through PostgreSQL (profile database), as make parity-java launches the job."}));
+  laneFiles(column, lane);
+}
+
+function laneFiles(column, lane) {
   column.append(element("h5", {text: "Interest transactions (" + (lane.transactionDataset || "not written") + ")"}),
     recordTable(lane.transactions, ["TRAN-ID", "TRAN-TYPE-CD", "TRAN-CAT-CD", "TRAN-AMT", "TRAN-CARD-NUM", "TRAN-DESC", "TRAN-ORIG-TS"]),
     element("h5", {text: "Accounts after the run (" + (lane.accountDataset || "not written") + ")"}),
     recordTable(lane.accounts, ["ACCT-ID", "ACCT-ACTIVE-STATUS", "ACCT-CURR-BAL", "ACCT-CURR-CYC-CREDIT", "ACCT-CURR-CYC-DEBIT", "ACCT-GROUP-ID"]),
     element("h5", {text: "Job log (SYSOUT INTCALC.STEP15)"}), element("pre", {text: (lane.sysout || ["(not written)"]).join("\n")}));
-  if (lane.processExit !== 0) column.append(element("h5", {text: "Process output (exit " + lane.processExit + ")"}), element("pre", {text: lane.log}));
-  return column;
+  if (lane.stopped) column.append(element("p", {class: "meta", text: "The run stopped. The files above are what it left behind; they are shown, not compared."}));
 }
 
 function itemsTable(result) {
@@ -409,8 +467,9 @@ function itemsTable(result) {
     if (item.options && item.options.length) detail.append(element("p", {class: "options", text: "Options of the open decision: " +
       item.options.map((o) => o.rule + " " + o.option + (o.asCoded ? " (as coded)" : "") + " gives " + o.value).join("; ")}));
     if (item.rules.length) detail.append(element("p", {class: "meta", text: "Rulebook cites: " + item.rules.join(", ") + " (expectation " + item.expectedStatus + ")"}));
-    body.append(element("tr", {class: item.class, "data-class": item.class, "data-where": item.where, "data-field": item.field},
-      element("td", {}, badge(item.class)), element("td", {text: item.where}), element("td", {text: item.field}),
+    body.append(element("tr", {class: item.class, "data-class": item.class, "data-agree": String(item.agree !== false), "data-where": item.where, "data-field": item.field},
+      element("td", {}, badge(item.class), item.class === "UNRESOLVED" ? element("div", {class: "meta unresolvedKind", text: item.agree === false ? "engines differ" : "engines agree"}) : ""),
+      element("td", {text: item.where}), element("td", {text: item.field}),
       element("td", {class: "value", text: item.observed}), element("td", {class: "value", text: item.target}),
       element("td", {class: "value", text: item.expected}), element("td", {}, detail)));
   }
@@ -437,11 +496,17 @@ function verdictTable(result) {
 function caseSection(result, open) {
   const section = element("details", {class: "case", id: "case-" + result.key.replace(":", "-"), "data-case": result.case, "data-run": result.runId});
   if (open) section.open = true;
-  const counts = classNames.map((n) => n + " " + result.counts[n]).join("  ");
+  const counts = countsText(result.counts, unresolvedOf(result), "  ");
   section.append(element("summary", {}, (result.kind === "golden" ? "Golden: " : result.kind === "probe" ? "Edge probe: " : "Custom: ") + result.case,
     element("span", {class: "counts", text: counts + "  -  run " + result.runId + ", finished " + result.finishedAt})));
   section.append(element("p", {class: "meta", text: result.note.replace(/^# .*\n/, "")}),
     element("p", {class: "meta", text: "Expected from: " + result.expectationSource + " (status " + result.expectationStatus + "). " + result.compared + " values compared."}));
+  for (const question of result.openQuestions || [])
+    section.append(element("div", {class: "openQuestion", "data-rule": question.rule},
+      element("p", {}, element("b", {text: question.rule + " - what the engines do today, not what is right."})),
+      element("p", {text: question.note}), element("p", {text: "Legacy today: " + question.legacy + "."}),
+      element("p", {text: "Target today: " + question.target + "."})));
+  if ((result.notes || []).length) section.append(element("ul", {class: "caseNotes"}, ...result.notes.map((text) => element("li", {text}))));
   section.append(element("h3", {text: "The two lanes"}), element("div", {class: "lanes"}, laneColumn(result.legacy, result), laneColumn(result.target, result)));
   const showMatchId = "showMatch-" + result.runId;
   section.append(element("h3", {text: "Classified differences"}),
@@ -449,7 +514,7 @@ function caseSection(result, open) {
     element("input", {type: "checkbox", class: "showMatch", id: showMatchId}), element("label", {for: showMatchId, text: " also show the " + result.counts.MATCH + " MATCH rows"}),
     itemsTable(result));
   section.append(element("h3", {text: "Rule verdicts - each engine against the rulebook"}),
-    element("p", {class: "meta", text: "Independent of the comparison above: an engine VIOLATES a rule when one of its values is not what the rulebook requires, even when both engines agree."}),
+    element("p", {class: "meta", text: "Independent of the comparison above: an engine VIOLATES a rule when one of its values is not what the rulebook requires, even when both engines agree. A VIOLATES fails the gate. NOT DETERMINED: the source does not determine this case. NOT JUDGED: the run stopped before the rule could show in a compared value."}),
     verdictTable(result));
   return section;
 }

@@ -124,4 +124,9 @@ public class PostingStore {
     public List<Transaction> transactions() {
         return jdbc.query("select * from transaction order by tran_id", TRANSACTION);
     }
+
+    public boolean transactionExists(String tranId) {
+        Integer n = jdbc.queryForObject("select count(*) from transaction where tran_id = ?", Integer.class, tranId);
+        return n != null && n > 0;
+    }
 }

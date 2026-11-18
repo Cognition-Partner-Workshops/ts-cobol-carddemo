@@ -133,29 +133,51 @@ TRANREPT / CBTRN03C (report):
     before the abend are kept.
 20. **CBTRN02C opens TRANFILE OUTPUT**, so the transaction cluster is rebuilt from this run's
     postings only (in every fixture it starts empty).
+21. **An abend in CBTRN02C keeps the work done before it**, including the balance updates of the
+    record whose TRANSACT WRITE failed (see Decisions 1).
+
+## Decisions
+
+The fixtures don't settle the behaviour below, so it was decided explicitly. The default is to
+follow the COBOL as written (legacy quirks are features).
+
+1. **Abend partial writes match legacy.** When CBTRN02C abends mid-run, everything written or
+   rewritten before the abend persists, as the COBOL leaves it: TRANSACT, DALYREJS, ACCTDATA
+   and TCATBALF. That includes the TCATBALF/ACCTDATA updates of the failing record, because
+   2700/2800 run before the 2900 WRITE. RC stays 12, `END OF EXECUTION` and the counts are not
+   displayed, and nothing after the failing record is processed. In Java the abend does not
+   throw: the chunk commits, the reader stops and the unload step still writes the clusters
+   back (`PostTransactionsStep`, `StepFiles.abend`).
+   *Proof:* a throwaway case, not added to `fixtures/`, with a duplicate TRAN-ID after one
+   posted and one rejected transaction, and one more record after the duplicate. It ran on
+   legacy and on Java in a scratch copy of the estate and was compared with
+   `tools/parity/compare.py`; the result is at the end of `work/parity/report-java-posting.md`.
+   All datasets, TRANREPT and `rc.json` are equal field for field. The only difference is
+   that legacy SYSOUT ends with GnuCOBOL's `libcob: warning: implicit CLOSE of ...` lines.
+   These come from the off-host runtime's STDERR, not from CBTRN02C, so they are not
+   reproduced (same as `java/interest`).
+2. **TRANFILE opened OUTPUT: kept** (quirk 20). The transaction cluster is rebuilt from this
+   run's postings. GnuCOBOL recreates the indexed file. On z/OS, OPEN OUTPUT on a non-empty
+   KSDS without REUSE fails. Every fixture starts with it empty.
+3. **Overflow: left truncation kept** (quirk 9), assuming `TRUNC(STD)`. High-order digits beyond
+   the receiving PIC are dropped. No fixture comes near the limits.
+4. **Card sort: byte compare kept.** The JCL sorts `TRAN-CARD-NUM` as `ZD`. The off-host SORT
+   compares bytes, which gives the same order only when card numbers are all digits. That is
+   assumed.
+5. **p07: the expected file is authoritative.** The fixture README says "report with headers and
+   zero detail lines", but the golden TRANREPT is empty (quirk 12: the blank record fails the
+   date test and ends the report). Java matches the golden file. The fixture is not edited.
+6. **A zero amount prints blanks: kept** (quirk 18, zero-suppressed edit picture). No fixture
+   prints one.
 
 ## Not proven by the fixtures
 
-The seven fixtures pass field for field, but they do not cover the behaviour below. The Java
-code follows the COBOL as written; confirm on the mainframe before relying on it.
-
-* **Abends** (quirk 19, and I/O errors): no fixture covers them. The SYSOUT lines and RC 12
-  follow the COBOL and the `CEE3ABD` stand-in. If CBTRN02C abends mid-run, Java writes no cluster
-  changes back, while legacy keeps the records written before the abend.
-* **Overflow** (quirk 9): no fixture comes close to the PIC limits. Left truncation is the
-  COBOL standard; GnuCOBOL vs Enterprise COBOL `TRUNC` options were not compared.
-* **A zero total or amount** edits to spaces (quirk 18). No fixture prints a zero total.
-* **A record outside the DATEPARM range** (quirk 12) only shows up on an empty day in the
+* **Other abends** (quirk 19, I/O errors): they follow the same contract as decision 1, but only
+  the duplicate-TRAN-ID path was compared against legacy.
+* **A record outside the DATEPARM range** (quirk 12) only appears on an empty day in the
   fixtures. The SORT window and DATEPARM agree in every case.
-* **TRANFILE OPEN OUTPUT** (quirk 20): GnuCOBOL recreates the indexed file. On z/OS, OPEN OUTPUT
-  on a non-empty KSDS without REUSE fails. The fixtures never start with transactions.
 * **ACCTDATA filler:** the account record's 178-byte FILLER is rewritten as spaces. It is blank
   in every fixture.
-* **Duplicate TRAN-ID in one day:** COBOL abends on the failed WRITE. Java fails the chunk
-  on the primary key, so the effect is the same (job fails), but the reject/SYSOUT state at
-  the point of failure was not compared.
-* **The fixture README for p07** says "report with headers and zero detail lines". The golden
-  report is empty (quirk 12). Java matches the golden file.
 
 ## Build and test
 

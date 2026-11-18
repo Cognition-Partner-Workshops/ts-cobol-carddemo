@@ -32,8 +32,10 @@ import org.springframework.stereotype.Component;
 /**
  * POSTTRAN STEP15 (CBTRN02C): validate each daily transaction against CARDXREF and ACCTDATA,
  * post the accepted ones (TCATBALF, ACCTDATA, TRANSACT) and write the rest to DALYREJS(+1).
- * The processor applies the balance updates itself so that later records of the same chunk see
- * them, exactly like the record-at-a-time COBOL loop.
+ * The processor applies the balance updates and the TRANSACT write itself, so later records of
+ * the same chunk see them, as in the record-at-a-time COBOL loop. An abend (9999-ABEND-PROGRAM)
+ * does not throw: the chunk commits what was written before it, the reader stops, and the
+ * unload step still writes the clusters back, so partial work persists as it does on the KSDS.
  */
 @Component
 public class PostTransactionsStep implements ItemStreamReader<PostTransactionsStep.Daily>,
@@ -83,6 +85,9 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
 
     @Override
     public Daily read() throws IOException {
+        if (run.abended()) {
+            return null;
+        }
         if (dailyRecords == null || !dailyRecords.hasNext()) {
             return null;
         }
@@ -92,6 +97,10 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
 
     @Override
     public Outcome process(Daily daily) {
+        if (run.abended()) {
+            // records the chunk read ahead of an abend are never processed by CBTRN02C
+            return null;
+        }
         transactionCount++;
         Transaction tran = daily.transaction();
         Optional<CardXref> xref = store.findXref(tran.cardNum());
@@ -123,6 +132,13 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
         Transaction posted = tran.withProcTs(run.db2Timestamp());
         updateTranCatBalance(account.acctId(), tran);
         updateAccount(account, tran.amount());
+        // 2900-WRITE-TRANSACTION-FILE runs after the TCATBALF/ACCTFILE rewrites, which stay
+        // in place when the WRITE fails (status 22, duplicate TRAN-ID) and the program abends.
+        if (store.transactionExists(posted.tranId())) {
+            run.abend("ERROR WRITING TO TRANSACTION FILE", "22");
+            return null;
+        }
+        store.insert(posted);
         return new Outcome(daily, posted, 0, "");
     }
 
@@ -153,9 +169,7 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
     @Override
     public void write(Chunk<? extends Outcome> chunk) throws IOException {
         for (Outcome outcome : chunk) {
-            if (outcome.posted() != null) {
-                store.insert(outcome.posted());
-            } else {
+            if (outcome.posted() == null) {
                 rejectCount++;
                 String reject = Records.reject(outcome.daily().record(), outcome.reason(),
                         outcome.reasonDescription());
@@ -178,6 +192,9 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
+        if (run.abended()) {
+            return stepExecution.getExitStatus();
+        }
         run.display("TRANSACTIONS PROCESSED :" + Text.digits(transactionCount, 9));
         run.display("TRANSACTIONS REJECTED  :" + Text.digits(rejectCount, 9));
         run.display("END OF EXECUTION OF PROGRAM CBTRN02C");

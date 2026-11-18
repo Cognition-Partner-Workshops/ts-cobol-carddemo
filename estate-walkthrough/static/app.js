@@ -9,9 +9,10 @@ const steps = [
   { id: 5, title: "Roll the estate up" },
   { id: 6, title: "Deeper module analysis" },
   { id: 7, title: "Open asks and next steps" },
+  { id: 8, title: "Strangler-fig migration" },
 ];
 const placeableExcluded = new Set(["document", "data", "tooling", "binary", "empty", "unclassified"]);
-const state = { catalog: null, modules: null, estate: null, perModule: {} };
+const state = { catalog: null, modules: null, estate: null, perModule: {}, migration: null };
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (ch) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
@@ -32,10 +33,10 @@ async function getJson(path) {
 }
 
 async function loadStore() {
-  const [catalog, modules, estate] = await Promise.all([
-    getJson("store/catalog.json"), getJson("store/modules.json"), getJson("store/estate.json"),
+  const [catalog, modules, estate, migration] = await Promise.all([
+    getJson("store/catalog.json"), getJson("store/modules.json"), getJson("store/estate.json"), getJson("migration.json"),
   ]);
-  Object.assign(state, { catalog, modules, estate });
+  Object.assign(state, { catalog, modules, estate, migration });
   const files = ["descriptions", "findings", "online", "chains", "annotations", "modulenotes", "profile", "dyncalls"];
   await Promise.all(moduleIds.map(async (moduleId) => {
     const docs = await Promise.all(files.map((f) => getJson(`store/${moduleId}/${f}.json`)));
@@ -186,16 +187,23 @@ function viewDeep() {
     <table><thead><tr><th>field</th><th>severity</th><th>modules</th><th>the ask</th></tr></thead><tbody>${profRows}</tbody></table>` + stepNav(6);
 }
 
+const nextStep = {
+  CARDDEMO: "posting and interest are migrated behind the switch (step 8); the CICS screens are analysis-only off-host.",
+  AUTH: "Answer the IMS, Db2 and MQ environment asks before slicing its 5 batch chains.",
+  TRANTYPE: "trantype-update is the suggested next slice; trantype-dynamic waits on the CBTRNDYN runtime parameter.",
+  VSAMMQ: "No batch work; its 2 MQ transactions wait on the online target design.",
+};
+
 function viewAsks() {
   const asks = state.estate.asks;
   const scopes = ["all", ...new Set(asks.map((a) => a.scope))];
-  const html = stepHeader(6, "Everything the analysis could not prove from the repository is an ask with an owner. The high ones are what to put to the customer next; then each module goes on to <code>module-inventory-analysis</code> and the chain/transaction deep-dives before any code moves.") +
+  const html = stepHeader(7, "Everything the analysis could not prove from the repository is an ask with an owner. The high ones are what to put to the customer next. The deeper analysis (step 6) is done for every module; the batch chains it proved now move off the mainframe one slice at a time (step 8).") +
     `<div class="controls"><select id="askScope">${scopes.map((s) => `<option>${esc(s)}</option>`).join("")}</select>
      <select id="askSeverity"><option>all</option><option>high</option><option>medium</option><option>info</option></select>
      <input id="askText" placeholder="filter text" size="24"></div><div id="askTable"></div>
      <h3>Next step per module</h3><div class="grid">${moduleIds.map((m) => {
        const mod = state.estate.modules.find((x) => x.id === m);
-       return `<div class="card"><b>${m}</b><p style="margin:6px 0">Run <code>module-inventory-analysis ${m}</code>: environment profile, dynamic-call resolution and name bindings on top of this scan.</p>
+       return `<div class="card"><b>${m}</b><p style="margin:6px 0">${esc(nextStep[m] || "")}</p>
          <div class="cite">${mod.findings.open} open findings · ${mod.findings.high} high · boundary must-establish ${mod.boundary["must-establish"] || 0}</div></div>`;
      }).join("")}</div>` + stepNav(7);
   setTimeout(() => {
@@ -213,6 +221,31 @@ function viewAsks() {
     draw();
   });
   return html;
+}
+
+function viewMigration() {
+  const mig = state.migration;
+  if (!mig) return stepHeader(8, "") + `<div class="callout warn">migration.json could not be loaded.</div>`;
+  const prUrl = (n) => `https://github.com/Cognition-Partner-Workshops/ts-cobol-carddemo/pull/${n}`;
+  const ok = (v) => pill(v, /^(\d+)\/\1$|green/.test(v) ? "ok" : "medium");
+  const sliceRows = mig.slices.map((s) => `<tr><td><b>${esc(s.chain)}</b><div class="cite">${esc(s.module)}</div></td><td>${esc(s.jobs)}<div>${s.programs.map((p) => `<code>${esc(p)}</code>`).join(" ")}</div></td>
+    <td>${ok(s.javaParity)}</td><td>${ok(s.legacyParity)}</td><td>${ok(s.ci)}</td><td>${pill(s.default, "info")}<div class="cite">${esc(s.switchFile)}</div></td>
+    <td><a href="${prUrl(s.pr)}" target="_blank" rel="noopener">PR ${s.pr}</a><div class="cite">merge #${s.mergeOrder} · base ${esc(s.base)}</div></td></tr>`).join("");
+  const sliceCards = mig.slices.map((s) => `<h3>${esc(s.chain)} — ${esc(s.target)}</h3>
+    <div class="grid"><div class="card"><b>Legacy quirks reproduced</b><ul class="points">${s.quirks.map((q) => `<li>${esc(q)}</li>`).join("")}</ul></div></div>
+    <table style="margin-top:12px"><thead><tr><th>Edge case (no fixture covers it)</th><th>Decision: follow the COBOL as written</th></tr></thead><tbody>${s.decisions.map((d) => `<tr><td>${esc(d.q)}</td><td>${esc(d.a)}</td></tr>`).join("")}</tbody></table>`).join("");
+  const switchRows = mig.switch.map((w) => `<tr><td>${esc(w.how)}</td><td><code>${esc(w.command)}</code></td></tr>`).join("");
+  const remRows = mig.remaining.map((r) => `<tr><td><b>${esc(r.chain)}</b><div class="cite">${esc(r.module)}</div></td><td>${esc(r.jobs)}<div class="cite">${esc(r.programs)}</div></td>
+    <td>${pill(r.status, r.status === "next" ? "info" : r.status === "blocked" ? "high" : "")}</td><td>${esc(r.note)}</td></tr>`).join("");
+  const done = mig.slices.length, total = mig.slices.length + mig.remaining.length;
+  return stepHeader(8, esc(mig.approach)) +
+    `<div class="stats">${stat(`${done}/${total}`, "slices with a Java path")}${stat(mig.slices.reduce((n, s) => n + s.programs.length, 0), "programs migrated")}${stat("24/24", "legacy parity cases")}${stat("0", "slices cut over (default: legacy)")}</div>
+    <div class="callout">Nothing is merged and nothing is cut over: COBOL stays the default for every chain. Merge PR 203 first, then PR 204, which is stacked on it. Parity is field-level (<code>tools/parity/compare.py</code>) against the golden fixtures, which were not edited.</div>
+    <h3>Slices</h3><table><thead><tr><th>chain</th><th>jobs · programs</th><th>java parity</th><th>legacy parity</th><th>CI</th><th>default</th><th>PR</th></tr></thead><tbody>${sliceRows}</tbody></table>
+    <h3>The switch</h3><table><tbody>${switchRows}</tbody></table>
+    ${sliceCards}
+    <h3>What is still on the mainframe</h3><table><thead><tr><th>chain</th><th>jobs · programs</th><th>status</th><th>note</th></tr></thead><tbody>${remRows}</tbody></table>
+    <div class="cite" style="margin-top:8px">Updated ${esc(mig.updated)}</div>` + stepNav(8);
 }
 
 function viewModule(moduleId) {
@@ -255,7 +288,7 @@ function route() {
   const view = document.getElementById("view");
   const [kind, ...rest] = hash.split("/");
   const arg = decodeURIComponent(rest.join("/"));
-  const stepViews = { 1: viewSweep, 2: viewModules, 3: viewCheck, 4: viewScans, 5: viewRollup, 6: viewDeep, 7: viewAsks };
+  const stepViews = { 1: viewSweep, 2: viewModules, 3: viewCheck, 4: viewScans, 5: viewRollup, 6: viewDeep, 7: viewAsks, 8: viewMigration };
   if (kind === "step" && stepViews[arg]) view.innerHTML = stepViews[arg]();
   else if (kind === "module" && moduleIds.includes(arg)) view.innerHTML = viewModule(arg);
   else if (kind === "report" && /^reports\/[\w./-]+\.html$/.test(arg) && !arg.includes("..")) view.innerHTML = viewReport(arg);

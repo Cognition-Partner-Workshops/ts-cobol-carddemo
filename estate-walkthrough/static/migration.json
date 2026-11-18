@@ -1,0 +1,69 @@
+{
+  "updated": "2026-11-18",
+  "approach": "Strangler fig at the JCL step: the legacy runner (tools/runjcl/runjcl.py) keeps running every job, SORT and utility step; for a program listed in tools/runjcl/impl/<chain>.json it hands that one step to the Java implementation instead (tools/runjcl/candidate.py). Each chain's \"default\" field is its cutover / rollback switch, so chains move independently.",
+  "switch": [
+    {"how": "Per run", "command": "make run CHAIN=posting IMPL=java"},
+    {"how": "Per run, several chains", "command": "CARDDEMO_IMPL=posting=java,interest=java make parity"},
+    {"how": "Java parity for one chain", "command": "make parity-java-posting / make parity-java-interest"},
+    {"how": "Cut over or roll back", "command": "\"default\": \"java\" | \"legacy\" in tools/runjcl/impl/<chain>.json"}
+  ],
+  "slices": [
+    {
+      "chain": "interest",
+      "module": "CARDDEMO",
+      "jobs": "INTCALC STEP15",
+      "programs": ["CBACT04C"],
+      "target": "java/interest (Java 21, Spring Batch, PostgreSQL 15)",
+      "switchFile": "tools/runjcl/impl/interest.json",
+      "default": "legacy",
+      "pr": 203,
+      "base": "main",
+      "mergeOrder": 1,
+      "javaParity": "7/7",
+      "legacyParity": "24/24",
+      "ci": "green",
+      "quirks": [
+        "Interest is truncated, never rounded (no ROUNDED in CBACT04C).",
+        "The last account's TCATBAL update is never written, as in the COBOL."
+      ],
+      "decisions": [
+        {"q": "GnuCOBOL 'libcob: warning: implicit CLOSE' lines in abend job logs", "a": "Left out: they come from the off-host COBOL runtime, not CBACT04C."},
+        {"q": "Transaction ID counter past 999999", "a": "Wraps as a six-digit COBOL field."},
+        {"q": "Duplicate card cross-references for one account", "a": "First in file order wins."}
+      ]
+    },
+    {
+      "chain": "posting",
+      "module": "CARDDEMO",
+      "jobs": "POSTTRAN STEP15, TRANREPT STEP10R",
+      "programs": ["CBTRN02C", "CBTRN03C"],
+      "target": "java/posting (Java 21, Spring Batch, PostgreSQL 15)",
+      "switchFile": "tools/runjcl/impl/posting.json",
+      "default": "legacy",
+      "pr": 204,
+      "base": "devin/1794844285-interest-java (stacked on PR 203)",
+      "mergeOrder": 2,
+      "javaParity": "7/7",
+      "legacyParity": "24/24",
+      "ci": "green",
+      "quirks": [
+        "The credit limit is checked against cycle amounts, not the balance (CBTRN02C).",
+        "The SORT step in TRANREPT stays on the legacy runner; only the programs move."
+      ],
+      "decisions": [
+        {"q": "Return code on abend (unknown card, type or category; I/O error)", "a": "12, as the COBOL and the abend stub."},
+        {"q": "Records written before a mid-run abend", "a": "Kept, exactly as the COBOL leaves them."},
+        {"q": "Transaction file opened for OUTPUT", "a": "Rebuilt from this run's postings, as written."},
+        {"q": "Numeric overflow", "a": "High-order digits dropped, assuming TRUNC(STD)."},
+        {"q": "Card-number sort (JCL says zoned decimal)", "a": "Byte order, assuming card numbers are all digits."},
+        {"q": "Zero totals on the report", "a": "Printed as blanks, as the COBOL does."},
+        {"q": "p07 README says 'report with headers', expected file is empty", "a": "The expected file is authoritative; Java writes an empty report."}
+      ]
+    }
+  ],
+  "remaining": [
+    {"chain": "trantype-update", "module": "TRANTYPE", "jobs": "MNTTRDB2", "programs": "COBTUPDT (Db2 via ocesql/PostgreSQL)", "status": "next", "note": "Suggested next slice through the same switch; quirk: SQLCODE +100 is ignored."},
+    {"chain": "trantype-dynamic", "module": "TRANTYPE", "jobs": "MNTTRDYN", "programs": "CBTRNDYN (dynamic SQL + dynamic CALL)", "status": "blocked", "note": "The JCL never passes the parameter that picks the CALL target; needs the runtime input or runbook (5 open findings)."},
+    {"chain": "online (CICS)", "module": "CARDDEMO, AUTH, TRANTYPE, VSAMMQ", "jobs": "25 transactions", "programs": "CO* programs, BMS maps", "status": "analysis only", "note": "No off-host CICS runtime in this harness; needs a target UI/service design before slicing."}
+  ]
+}

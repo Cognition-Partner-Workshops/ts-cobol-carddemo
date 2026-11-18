@@ -76,6 +76,16 @@ other migrated chains.
 | 11 | Stores into `S9(n)V99` fields drop excess high-order digits (no `ON SIZE ERROR`) | `Fixed.fit` | (unit test) |
 | 12 | Unrecoverable lookups (account, cross reference, `DEFAULT` group missing) DISPLAY the error, `FILE STATUS IS: NNNN0023`, `ABENDING PROGRAM`, `CEE3ABD: USER ABEND U+0000000999` and end the step with RC 12. Writes made before the abend are kept (including the previous account's rewrite), `END OF EXECUTION` is not displayed, and later records are not processed. Checked against legacy with throwaway cases (missing account, missing `DEFAULT` group): datasets and return codes are identical. SYSOUT differs only by the `libcob: warning: implicit CLOSE of ...` lines that the GnuCOBOL runtime prints to STDERR. Those are an artifact of the off-host runtime, not of CBACT04C, so they are not reproduced. | `Abend`, `PostingWriter` (commits, then stops the step) | (no fixture) |
 
+## Decisions
+
+These are legacy behaviours with no fixture coverage, settled with the requester ("go with your defaults"). None of them changes behaviour.
+
+| # | Question | Decision |
+|---|---|---|
+| D1 | GnuCOBOL prints `libcob: warning: implicit CLOSE of ...` on STDERR when CBACT04C abends. Should the Java step output them? | **No.** They come from the off-host GnuCOBOL runtime, not from CBACT04C (z/OS prints nothing like them). On abend paths, datasets and return codes match legacy, and SYSOUT differs only by these lines. |
+| D2 | `WS-TRANID-SUFFIX` is `PIC 9(06)`. What happens past 999999 transactions in one run? | **Keep the six-digit wrap** (999999 -> 000000), as a COBOL `ADD 1` without `ON SIZE ERROR` does. |
+| D3 | Several card cross-references for the same account (`XREFFIL1` alternate key on account id). Which card goes on the interest transaction? | **The first in file order**, i.e. the first duplicate the alternate-index read returns (`card_xref.load_seq`). |
+
 ## Build and test
 
 ```sh

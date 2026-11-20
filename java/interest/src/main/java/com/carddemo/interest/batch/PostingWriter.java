@@ -48,7 +48,8 @@ public class PostingWriter implements ItemWriter<StepOutput> {
             }
             abended |= out.abended();
         }
-        jdbc.batchUpdate("UPDATE account SET curr_bal = ?, curr_cyc_credit = ?, curr_cyc_debit = ? WHERE acct_id = ?",
+        jdbc.batchUpdate("UPDATE account SET curr_bal = ?, curr_cyc_credit = ?, curr_cyc_debit = ?, rewritten = true"
+                + " WHERE acct_id = ?",
                 rewrites);
         jdbc.batchUpdate("INSERT INTO systran (write_seq, tran_id, tran_type_cd, tran_cat_cd, tran_source, tran_desc,"
                 + " tran_amt, merchant_id, merchant_name, merchant_city, merchant_zip, card_num, orig_ts, proc_ts)"

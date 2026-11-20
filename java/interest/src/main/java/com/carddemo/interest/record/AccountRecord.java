@@ -28,4 +28,10 @@ public record AccountRecord(long acctId, String activeStatus, BigDecimal currBal
                 + zoned(currCycCredit, 12, 2) + zoned(currCycDebit, 12, 2) + pad(addrZip, 10) + pad(groupId, 10)
                 + pad(filler, 178);
     }
+
+    public static String rewrite(String original, BigDecimal currBal, BigDecimal currCycCredit,
+                                 BigDecimal currCycDebit) {
+        return original.substring(0, 12) + zoned(currBal, 12, 2) + original.substring(24, 78)
+                + zoned(currCycCredit, 12, 2) + zoned(currCycDebit, 12, 2) + original.substring(102);
+    }
 }

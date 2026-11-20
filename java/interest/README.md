@@ -65,6 +65,9 @@ InterestRunner     DISPLAY 'START...'; load DD images -> schema interest; run jo
 `interest` schema of the estate's PostgreSQL 15 (`db` service). Spring Batch's metadata tables live
 in the same schema. During coexistence the VSAM files remain the system of record, so every run
 rebuilds the schema from the step's DD images (`VsamDatasets`) and writes the results back.
+Raw TCATBALF records are retained for DISPLAY, and raw account images are retained for
+writeback. Only accounts actually rewritten by 1050 have their balance and cycle amount
+fields re-encoded; untouched fields keep their original zoned-sign bytes.
 Once the neighbouring chains read PostgreSQL directly, that adapter and the reload go away.
 
 Record layouts (`record/`) are local copies of `CVACT01Y`, `CVACT03Y`, `CVTRA01Y`, `CVTRA02Y` and

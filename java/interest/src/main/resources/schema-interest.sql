@@ -18,7 +18,9 @@ CREATE TABLE interest.account (
     curr_cyc_debit     numeric(12,2) NOT NULL,
     addr_zip           varchar(10)   NOT NULL,
     group_id           varchar(10)   NOT NULL,
-    filler             varchar(178)  NOT NULL
+    filler             varchar(178)  NOT NULL,
+    raw_record         varchar(300)  NOT NULL,
+    rewritten          boolean       NOT NULL DEFAULT false
 );
 
 -- AWS.M2.CARDDEMO.CARDXREF.VSAM.KSDS + AIX on acct id (CVACT03Y)
@@ -49,6 +51,7 @@ CREATE TABLE interest.tran_cat_balance (
     tran_cat_cd   integer       NOT NULL,
     tran_cat_bal  numeric(11,2) NOT NULL,
     filler        varchar(22)   NOT NULL,
+    raw_record    varchar(50)   NOT NULL,
     PRIMARY KEY (acct_id, tran_type_cd, tran_cat_cd)
 );
 

@@ -51,10 +51,10 @@ public class InterestJobConfig {
         return new JdbcCursorItemReaderBuilder<TranCatBalRecord>()
                 .name("tranCatBalReader")
                 .dataSource(dataSource)
-                .sql("SELECT acct_id, tran_type_cd, tran_cat_cd, tran_cat_bal, filler FROM tran_cat_balance"
+                .sql("SELECT acct_id, tran_type_cd, tran_cat_cd, tran_cat_bal, filler, raw_record FROM tran_cat_balance"
                         + " ORDER BY acct_id, tran_type_cd COLLATE \"C\", tran_cat_cd")
                 .rowMapper((rs, n) -> new TranCatBalRecord(rs.getLong(1), rs.getString(2), rs.getInt(3),
-                        rs.getBigDecimal(4), rs.getString(5)))
+                        rs.getBigDecimal(4), rs.getString(5), rs.getString(6)))
                 .build();
     }
 

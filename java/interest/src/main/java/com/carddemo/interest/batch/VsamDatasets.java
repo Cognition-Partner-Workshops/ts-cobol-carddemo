@@ -34,12 +34,15 @@ public class VsamDatasets {
 
     public void load(Path acctFile, Path xrefFile, Path discGrp, Path tcatBalF) throws IOException {
         List<Object[]> rows = new ArrayList<>();
-        for (AccountRecord a : read(acctFile, AccountRecord.LENGTH, AccountRecord::parse)) {
+        for (String raw : read(acctFile, AccountRecord.LENGTH, Function.identity())) {
+            AccountRecord a = AccountRecord.parse(raw);
             rows.add(new Object[] {a.acctId(), a.activeStatus(), a.currBal(), a.creditLimit(), a.cashCreditLimit(),
                     a.openDate(), a.expirationDate(), a.reissueDate(), a.currCycCredit(), a.currCycDebit(),
-                    a.addrZip(), a.groupId(), a.filler()});
+                    a.addrZip(), a.groupId(), a.filler(), raw});
         }
-        jdbc.batchUpdate("INSERT INTO account VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", rows);
+        jdbc.batchUpdate("INSERT INTO account (acct_id, active_status, curr_bal, credit_limit, cash_credit_limit,"
+                + " open_date, expiration_date, reissue_date, curr_cyc_credit, curr_cyc_debit, addr_zip, group_id,"
+                + " filler, raw_record) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", rows);
 
         rows = new ArrayList<>();
         int seq = 0;
@@ -56,20 +59,18 @@ public class VsamDatasets {
 
         rows = new ArrayList<>();
         for (TranCatBalRecord t : read(tcatBalF, TranCatBalRecord.LENGTH, TranCatBalRecord::parse)) {
-            rows.add(new Object[] {t.acctId(), t.tranTypeCd(), t.tranCatCd(), t.tranCatBal(), t.filler()});
+            rows.add(new Object[] {t.acctId(), t.tranTypeCd(), t.tranCatCd(), t.tranCatBal(), t.filler(), t.rawRecord()});
         }
-        jdbc.batchUpdate("INSERT INTO tran_cat_balance VALUES (?, ?, ?, ?, ?)", rows);
+        jdbc.batchUpdate("INSERT INTO tran_cat_balance VALUES (?, ?, ?, ?, ?, ?)", rows);
     }
 
     /** ACCTFILE in key order, rewritten balances included. */
     public void unloadAccounts(Path acctFile) throws IOException {
         List<String> records = jdbc.query("SELECT * FROM account ORDER BY acct_id",
-                (rs, n) -> new AccountRecord(rs.getLong("acct_id"), rs.getString("active_status"),
-                        rs.getBigDecimal("curr_bal"), rs.getBigDecimal("credit_limit"),
-                        rs.getBigDecimal("cash_credit_limit"), rs.getString("open_date"),
-                        rs.getString("expiration_date"), rs.getString("reissue_date"),
-                        rs.getBigDecimal("curr_cyc_credit"), rs.getBigDecimal("curr_cyc_debit"),
-                        rs.getString("addr_zip"), rs.getString("group_id"), rs.getString("filler")).format());
+                (rs, n) -> rs.getBoolean("rewritten")
+                        ? AccountRecord.rewrite(rs.getString("raw_record"), rs.getBigDecimal("curr_bal"),
+                                rs.getBigDecimal("curr_cyc_credit"), rs.getBigDecimal("curr_cyc_debit"))
+                        : rs.getString("raw_record"));
         write(acctFile, records);
     }
 

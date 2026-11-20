@@ -1,0 +1,14 @@
+{
+ "chain": "trantype-update",
+ "description": "MNTTRDB2 STEP1: COBTUPDT on Spring Batch and JDBC/PostgreSQL 15",
+ "default": "legacy",
+ "implementations": {
+  "java": {
+   "requires": "java/trantype-update/target/trantype-update.jar",
+   "build": "make java-trantype-update-build",
+   "programs": {
+    "COBTUPDT": ["java", "-jar", "java/trantype-update/target/trantype-update.jar"]
+   }
+  }
+ }
+}

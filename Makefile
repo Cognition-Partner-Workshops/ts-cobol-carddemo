@@ -120,6 +120,21 @@ java-interest-build:
 
 parity-java: parity-java-interest
 
+.PHONY: java-trantype-dynamic-build parity-java-trantype-dynamic
+java-trantype-dynamic-build:
+	@mkdir -p "$(MAVEN_HOME_DIR)"
+	docker run --rm -u $(UID):$(GID) -e HOME=/var/maven -e MAVEN_CONFIG=/var/maven/.m2 \
+	  -v "$(MAVEN_HOME_DIR)":/var/maven/.m2 -v "$(CURDIR)/java/trantype-dynamic":/src -w /src \
+	  $(MAVEN_IMAGE) mvn -B -q -Duser.home=/var/maven package
+
+parity-java-trantype-dynamic: java-trantype-dynamic-build
+	@rm -f work/parity/report-java-trantype-dynamic.md; mkdir -p work/parity; fail=0; \
+	for case in $(if $(CASE),$(CASE),$$(ls fixtures/trantype-dynamic)); do \
+	  $(COMPOSE) exec -T -e CARDDEMO_IMPL=trantype-dynamic=java estate $(PY) tools/parity/record.py trantype-dynamic $$case --out work/parity/trantype-dynamic/$$case/java > /dev/null || { echo "trantype-dynamic/$$case: java run failed"; fail=1; continue; }; \
+	  $(COMPOSE) exec -T estate $(PY) tools/parity/compare.py trantype-dynamic $$case --actual work/parity/trantype-dynamic/$$case/java --report work/parity/report-java-trantype-dynamic.md --label "java (java/trantype-dynamic)" || fail=1; \
+	done; \
+	echo "report: work/parity/report-java-trantype-dynamic.md"; exit $$fail
+
 parity-java-interest: java-interest-build
 	@rm -f work/parity/report-java-interest.md; mkdir -p work/parity; fail=0; \
 	for case in $(if $(CASE),$(CASE),$$(ls fixtures/interest)); do \

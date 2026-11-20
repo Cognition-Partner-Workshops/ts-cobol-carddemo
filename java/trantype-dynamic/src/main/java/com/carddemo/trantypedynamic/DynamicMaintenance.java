@@ -1,0 +1,115 @@
+package com.carddemo.trantypedynamic;
+
+import java.io.PrintStream;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+final class DynamicMaintenance {
+    record SqlInput(String statement, int lines) {}
+
+    static SqlInput assemble(List<String> records) {
+        StringBuilder sql = new StringBuilder();
+        int lines = 0;
+        for (String record : records) {
+            if (!record.startsWith("--")) {
+                sql.append(fixed(record, 72)).append(' ');
+                lines = (lines + 1) % 100;
+            }
+        }
+        return new SqlInput(sql.substring(0, Math.min(sql.length(), 800)), lines);
+    }
+
+    static String fixed(String value, int width) {
+        return (value + " ".repeat(width)).substring(0, width);
+    }
+
+    private final PrintStream out;
+
+    DynamicMaintenance(PrintStream out) {
+        this.out = out;
+    }
+
+    int run(Connection connection, SqlInput input, String program, List<String> updates) throws SQLException {
+        out.println("DSNRUN: DSN ATTACHED, RUNNING CBTRNDYN");
+        out.printf("CBTRNDYN: %02d SQL LINES READ%n", input.lines());
+        int rc = 0;
+        try (var statement = connection.createStatement()) {
+            statement.execute(input.statement());
+            out.println("CBTRNDYN: EXECUTE SQLCODE +0000000000");
+        } catch (SQLException failure) {
+            out.printf("CBTRNDYN: EXECUTE SQLCODE -%010d%n", sqlcode(failure));
+            rc = 8;
+        }
+        if (!program.isEmpty()) {
+            program = fixed(program, 8);
+            out.println("CBTRNDYN: CALLING " + program);
+            if (!program.stripTrailing().equals("COBTUPDT")) {
+                throw new IllegalArgumentException("Unsupported dynamic CALL: " + program);
+            }
+            rc = apply(connection, updates);
+        } else {
+            out.println("CBTRNDYN: END");
+        }
+        out.println("DSNRUN: COMMIT AT END OF TASK");
+        connection.commit();
+        return rc;
+    }
+
+    private int apply(Connection connection, List<String> updates) {
+        out.println("OPEN FILE OK");
+        int rc = 0;
+        for (String line : updates) {
+            String record = fixed(line, 53);
+            out.println("PROCESSING   " + record);
+            char operation = record.charAt(0);
+            if (operation == '*') {
+                out.println("IGNORING COMMENTED LINE");
+                continue;
+            }
+            String sql;
+            String success;
+            switch (operation) {
+                case 'A' -> {
+                    out.println("ADDING RECORD");
+                    sql = "INSERT INTO carddemo.transaction_type (tr_description, tr_type) VALUES (?, ?)";
+                    success = "INSERTED";
+                }
+                case 'U' -> {
+                    out.println("UPDATING RECORD");
+                    sql = "UPDATE carddemo.transaction_type SET tr_description = ? WHERE tr_type = ?";
+                    success = "UPDATED";
+                }
+                case 'D' -> {
+                    out.println("DELETING RECORD");
+                    sql = "DELETE FROM carddemo.transaction_type WHERE tr_type = ?";
+                    success = "DELETED";
+                }
+                default -> {
+                    out.println(fixed("ERROR: TYPE NOT VALID", 80));
+                    rc = 4;
+                    continue;
+                }
+            }
+            try (var statement = connection.prepareStatement(sql)) {
+                int keyParameter = 1;
+                if (operation != 'D') {
+                    statement.setString(1, record.substring(3));
+                    keyParameter = 2;
+                }
+                statement.setString(keyParameter, record.substring(1, 3));
+                statement.executeUpdate();
+                out.println("RECORD " + success + " SUCCESSFULLY");
+            } catch (SQLException failure) {
+                out.println(fixed("Error accessing: TRANSACTION_TYPE table. SQLCODE:"
+                        + String.format("%5d", -sqlcode(failure)), 80));
+                rc = 4;
+            }
+        }
+        return rc;
+    }
+
+    static int sqlcode(SQLException failure) {
+        return "23505".equals(failure.getSQLState()) ? 403 : 400;
+    }
+}

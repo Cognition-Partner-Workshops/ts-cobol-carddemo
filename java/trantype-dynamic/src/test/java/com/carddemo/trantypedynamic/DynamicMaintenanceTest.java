@@ -1,0 +1,119 @@
+package com.carddemo.trantypedynamic;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+class DynamicMaintenanceTest {
+    private final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    private final DynamicMaintenance maintenance = new DynamicMaintenance(new PrintStream(bytes));
+
+    @Test
+    void assemblesFixedColumnsAndSkipsOnlyColumnOneComments() {
+        var input = DynamicMaintenance.assemble(List.of("-- comment", "UPDATE t", " ".repeat(72) + "ignored"));
+        assertThat(input.lines()).isEqualTo(2);
+        assertThat(input.statement()).isEqualTo(DynamicMaintenance.fixed("UPDATE t", 72) + " " + " ".repeat(73));
+        assertThat(DynamicMaintenance.assemble(List.of("x".repeat(80))).statement()).isEqualTo("x".repeat(72) + " ");
+    }
+
+    @Test
+    void emptyAndOverflowSqlBuffer() {
+        assertThat(DynamicMaintenance.assemble(List.of())).isEqualTo(new DynamicMaintenance.SqlInput("", 0));
+        assertThat(DynamicMaintenance.assemble(java.util.Collections.nCopies(100, "x")).lines()).isZero();
+        assertThat(DynamicMaintenance.assemble(java.util.Collections.nCopies(12, "x")).statement()).hasSize(800);
+    }
+
+    @Test
+    void fixedRecordCodecKeepsSpacesAndRejectsPartialRecord() {
+        assertThat(DynamicApplication.records("A01abc  D02     ".getBytes(StandardCharsets.ISO_8859_1), 8))
+                .containsExactly("A01abc  ", "D02     ");
+        assertThat(DynamicApplication.records(new byte[0], 53)).isEmpty();
+        assertThatThrownBy(() -> DynamicApplication.records(new byte[1], 53))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void dynamicSqlAndCalledUpdatesShareConnectionWithPaddedDescription() throws Exception {
+        Connection connection = mock(Connection.class);
+        Statement dynamic = mock(Statement.class);
+        PreparedStatement update = mock(PreparedStatement.class);
+        when(connection.createStatement()).thenReturn(dynamic);
+        when(connection.prepareStatement(anyString())).thenReturn(update);
+        int rc = maintenance.run(connection, DynamicMaintenance.assemble(List.of("DELETE FROM t")),
+                "COBTUPDT", List.of("A04Authorization", "U01Purchase", "D03", "*ignored"));
+        assertThat(rc).isZero();
+        verify(dynamic).execute(anyString());
+        verify(update).setString(1, DynamicMaintenance.fixed("Authorization", 50));
+        verify(update).setString(2, "04");
+        verify(update).setString(1, "03");
+        verify(connection).commit();
+        assertThat(bytes.toString()).contains("RECORD INSERTED SUCCESSFULLY", "RECORD UPDATED SUCCESSFULLY",
+                "RECORD DELETED SUCCESSFULLY", "IGNORING COMMENTED LINE").doesNotContain("CBTRNDYN: END");
+    }
+
+    @Test
+    void failedDynamicSqlStillCallsWithoutRollbackAndCalledReturnCodeWins() throws Exception {
+        Connection connection = mock(Connection.class);
+        Statement dynamic = mock(Statement.class);
+        PreparedStatement update = mock(PreparedStatement.class);
+        when(connection.createStatement()).thenReturn(dynamic);
+        when(dynamic.execute(anyString())).thenThrow(new SQLException("bad column", "42703"));
+        when(connection.prepareStatement(anyString())).thenReturn(update);
+        when(update.executeUpdate()).thenThrow(new SQLException("transaction aborted", "25P02"));
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("bad", 1),
+                "COBTUPDT", List.of("U01Purchase"))).isEqualTo(4);
+        verify(connection, never()).rollback();
+        verify(connection).commit();
+        assertThat(bytes.toString()).contains("EXECUTE SQLCODE -0000000400",
+                DynamicMaintenance.fixed("Error accessing: TRANSACTION_TYPE table. SQLCODE: -400", 80));
+    }
+
+    @Test
+    void emptyCalledInputClearsDynamicFailureReturnCode() throws Exception {
+        Connection connection = mock(Connection.class);
+        when(connection.createStatement()).thenThrow(new SQLException("syntax", "42601"));
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("", 0), "COBTUPDT", List.of())).isZero();
+        assertThat(bytes.toString()).contains("OPEN FILE OK");
+    }
+
+    @Test
+    void noCallReturnsDynamicFailureAndPrintsEnd() throws Exception {
+        Connection connection = mock(Connection.class);
+        when(connection.createStatement()).thenThrow(new SQLException("syntax", "42601"));
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("", 0), "", List.of())).isEqualTo(8);
+        assertThat(bytes.toString()).contains("CBTRNDYN: END");
+    }
+
+    @Test
+    void invalidOperationAndDuplicateAreReportedAndProcessingContinues() throws Exception {
+        Connection connection = mock(Connection.class);
+        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        PreparedStatement update = mock(PreparedStatement.class);
+        when(connection.prepareStatement(anyString())).thenReturn(update);
+        when(update.executeUpdate()).thenThrow(new SQLException("duplicate", "23505"));
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("sql", 1),
+                "COBTUPDT", List.of("?01", "A01", "*comment"))).isEqualTo(4);
+        assertThat(bytes.toString()).contains("ERROR: TYPE NOT VALID", "SQLCODE: -403", "IGNORING COMMENTED LINE");
+    }
+
+    @Test
+    void unsupportedCallFailsExplicitly() throws Exception {
+        Connection connection = mock(Connection.class);
+        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        assertThatThrownBy(() -> maintenance.run(connection, new DynamicMaintenance.SqlInput("sql", 1),
+                "UNKNOWN", List.of())).isInstanceOf(IllegalArgumentException.class);
+        verify(connection, never()).commit();
+    }
+}

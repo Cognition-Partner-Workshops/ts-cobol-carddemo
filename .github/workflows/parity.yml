@@ -27,6 +27,9 @@ jobs:
       - name: Interest chain on the Java implementation (java/interest)
         run: make parity-java-interest
 
+      - name: Dynamic transaction type chain on Java (java/trantype-dynamic)
+        run: make parity-java-trantype-dynamic
+
       - name: Naive half-even reference fails only on the tie case
         run: |
           set +e

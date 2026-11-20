@@ -171,4 +171,35 @@ class DynamicMaintenanceTest {
                 "UNKNOWN", List.of())).isInstanceOf(IllegalArgumentException.class);
         verify(connection, never()).commit();
     }
+
+    @ParameterizedTest
+    @CsvSource({"23505,-403", "25P02,-400"})
+    void invalidOperationRetainsSqlErrorTailAcrossComments(String state, int code) throws Exception {
+        Connection connection = mock(Connection.class);
+        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        PreparedStatement update = mock(PreparedStatement.class);
+        when(connection.prepareStatement(anyString())).thenReturn(update);
+        when(update.executeUpdate()).thenThrow(new SQLException("failure", state));
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("sql", 1),
+                "COBTUPDT", List.of("A01", "*comment", "?01", "?02"))).isEqualTo(4);
+        String retained = DynamicMaintenance.fixed("ERROR: TYPE NOT VALIDSACTION_TYPE table. SQLCODE:"
+                + String.format("%5d", code), 80);
+        assertThat(bytes.toString().lines().filter(line -> line.startsWith("ERROR: TYPE")))
+                .containsExactly(retained, retained);
+    }
+
+    @Test
+    void invalidOperationStartsWithBlankBufferOnEachInvocation() throws Exception {
+        Connection connection = mock(Connection.class);
+        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        PreparedStatement update = mock(PreparedStatement.class);
+        when(connection.prepareStatement(anyString())).thenReturn(update);
+        when(update.executeUpdate()).thenThrow(new SQLException("duplicate", "23505"));
+        maintenance.run(connection, new DynamicMaintenance.SqlInput("sql", 1), "COBTUPDT", List.of("A01"));
+        bytes.reset();
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("sql", 1),
+                "COBTUPDT", List.of("?01"))).isEqualTo(4);
+        assertThat(bytes.toString().lines().filter(line -> line.startsWith("ERROR: TYPE")))
+                .containsExactly(DynamicMaintenance.fixed("ERROR: TYPE NOT VALID", 80));
+    }
 }

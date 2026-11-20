@@ -65,6 +65,7 @@ final class DynamicMaintenance {
     private int apply(Connection connection, List<String> updates) {
         out.println("OPEN FILE OK");
         int rc = 0;
+        StringBuilder errorBuffer = new StringBuilder(" ".repeat(80));
         for (String line : updates) {
             String record = fixed(line, 53);
             out.println("PROCESSING   " + record);
@@ -92,7 +93,9 @@ final class DynamicMaintenance {
                     success = "DELETED";
                 }
                 default -> {
-                    out.println(fixed("ERROR: TYPE NOT VALID", 80));
+                    String message = "ERROR: TYPE NOT VALID";
+                    errorBuffer.replace(0, message.length(), message);
+                    out.println(errorBuffer);
                     rc = 4;
                     continue;
                 }
@@ -107,8 +110,10 @@ final class DynamicMaintenance {
                 statement.executeUpdate();
                 out.println("RECORD " + success + " SUCCESSFULLY");
             } catch (SQLException failure) {
-                out.println(fixed("Error accessing: TRANSACTION_TYPE table. SQLCODE:"
-                        + String.format("%5d", sqlcode(failure)), 80));
+                String message = "Error accessing: TRANSACTION_TYPE table. SQLCODE:"
+                        + String.format("%5d", sqlcode(failure));
+                errorBuffer.replace(0, message.length(), message);
+                out.println(errorBuffer);
                 rc = 4;
             }
         }

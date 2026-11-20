@@ -56,6 +56,11 @@ is no durable Batch metadata or restart-in-place.
 * Maintenance descriptions are sent as all 50 space-padded bytes, matching
   ocesql's VARCHAR host-variable handling. PROCESSING and error lines retain
   their trailing spaces (53-byte records and 80-byte error buffers).
+* COBTUPDT's 80-byte error buffer starts blank once per invocation, not once
+  per record. STRING overwrites only the message prefix. After a SQL error,
+  an invalid operation therefore displays e.g.
+  `ERROR: TYPE NOT VALIDSACTION_TYPE table. SQLCODE: -403` plus trailing
+  spaces. Comments and subsequent invalid operations do not clear the tail.
 * SQL errors do not stop the input loop. Server SQLSTATEs use the ocesql 1.4
   mapping (`dblib/ocpgsql.c:OCDB_PGSetResultStatus`): duplicate keys -403,
   cardinality violations -404, type mismatches -204, connection errors

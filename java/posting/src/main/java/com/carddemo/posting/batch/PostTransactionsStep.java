@@ -148,12 +148,12 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
             run.display("TCATBAL record not found for key : "
                     + TranCatBalance.key(acctId, tran.typeCd(), tran.catCd()) + ".. Creating.");
             store.insert(new TranCatBalance(acctId, tran.typeCd(), tran.catCd(),
-                    Zoned.fit(tran.amount(), 9, 2)));
+                    Zoned.fit(tran.amount(), 9, 2), " ".repeat(22)));
             return;
         }
         TranCatBalance current = balance.get();
         store.updateBalance(new TranCatBalance(acctId, current.typeCd(), current.catCd(),
-                Zoned.fit(current.balance().add(tran.amount()), 9, 2)));
+                Zoned.fit(current.balance().add(tran.amount()), 9, 2), current.filler()));
     }
 
     private void updateAccount(Account account, BigDecimal amount) {
@@ -163,7 +163,7 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
                 account.openDate(), account.expirationDate(), account.reissueDate(),
                 credit ? Zoned.fit(account.currCycCredit().add(amount), 10, 2) : account.currCycCredit(),
                 credit ? account.currCycDebit() : Zoned.fit(account.currCycDebit().add(amount), 10, 2),
-                account.addrZip(), account.groupId()));
+                account.addrZip(), account.groupId(), account.filler()));
     }
 
     @Override

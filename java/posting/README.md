@@ -176,8 +176,6 @@ follow the COBOL as written (legacy quirks are features).
   the duplicate-TRAN-ID path was compared against legacy.
 * **A record outside the DATEPARM range** (quirk 12) only appears on an empty day in the
   fixtures. The SORT window and DATEPARM agree in every case.
-* **ACCTDATA filler:** the account record's 178-byte FILLER is rewritten as spaces. It is blank
-  in every fixture.
 
 ## Build and test
 

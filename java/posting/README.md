@@ -167,6 +167,11 @@ follow the COBOL as written (legacy quirks are features).
 5. **p07: the expected file is authoritative.** The fixture README says "report with headers and
    zero detail lines", but the golden TRANREPT is empty (quirk 12: the blank record fails the
    date test and ends the report). Java matches the golden file. The fixture is not edited.
+7. **FILLER bytes are preserved.** The 178-byte FILLER of CVACT01Y and the 22-byte FILLER of
+   CVTRA01Y are carried through PostgreSQL (`filler` columns, Flyway V3) and written back
+   unchanged, as the COBOL REWRITEs do. A new TCATBALF record gets a blank FILLER
+   (`INITIALIZE`). *Proof:* a throwaway case (p01 with non-blank FILLER text in ACCTDATA and
+   TCATBALF, not added to `fixtures/`) gives PASS, 0 differences, legacy vs Java.
 6. **A zero amount prints blanks: kept** (quirk 18, zero-suppressed edit picture). No fixture
    prints one.
 
@@ -176,8 +181,6 @@ follow the COBOL as written (legacy quirks are features).
   the duplicate-TRAN-ID path was compared against legacy.
 * **A record outside the DATEPARM range** (quirk 12) only appears on an empty day in the
   fixtures. The SORT window and DATEPARM agree in every case.
-* **ACCTDATA filler:** the account record's 178-byte FILLER is rewritten as spaces. It is blank
-  in every fixture.
 
 ## Build and test
 

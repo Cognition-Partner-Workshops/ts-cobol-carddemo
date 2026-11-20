@@ -22,11 +22,11 @@ public class PostingStore {
             rs.getString("active_status"), rs.getBigDecimal("curr_bal"), rs.getBigDecimal("credit_limit"),
             rs.getBigDecimal("cash_credit_limit"), rs.getString("open_date"), rs.getString("expiration_date"),
             rs.getString("reissue_date"), rs.getBigDecimal("curr_cyc_credit"), rs.getBigDecimal("curr_cyc_debit"),
-            rs.getString("addr_zip"), rs.getString("group_id"));
+            rs.getString("addr_zip"), rs.getString("group_id"), rs.getString("filler"));
     private static final RowMapper<CardXref> XREF = (rs, n) -> new CardXref(rs.getString("card_num"),
             rs.getLong("cust_id"), rs.getLong("acct_id"));
     private static final RowMapper<TranCatBalance> TCATBAL = (rs, n) -> new TranCatBalance(rs.getLong("acct_id"),
-            rs.getString("type_cd"), rs.getInt("cat_cd"), rs.getBigDecimal("balance"));
+            rs.getString("type_cd"), rs.getInt("cat_cd"), rs.getBigDecimal("balance"), rs.getString("filler"));
     private static final RowMapper<TranType> TRAN_TYPE = (rs, n) -> new TranType(rs.getString("type_cd"),
             rs.getString("description"));
     private static final RowMapper<TranCategory> TRAN_CATEGORY = (rs, n) -> new TranCategory(
@@ -53,9 +53,9 @@ public class PostingStore {
     }
 
     public void insert(Account a) {
-        jdbc.update("insert into account values (?,?,?,?,?,?,?,?,?,?,?,?)", a.acctId(), a.activeStatus(),
+        jdbc.update("insert into account values (?,?,?,?,?,?,?,?,?,?,?,?,?)", a.acctId(), a.activeStatus(),
                 a.currBal(), a.creditLimit(), a.cashCreditLimit(), a.openDate(), a.expirationDate(),
-                a.reissueDate(), a.currCycCredit(), a.currCycDebit(), a.addrZip(), a.groupId());
+                a.reissueDate(), a.currCycCredit(), a.currCycDebit(), a.addrZip(), a.groupId(), a.filler());
     }
 
     public void insert(CardXref x) {
@@ -63,8 +63,8 @@ public class PostingStore {
     }
 
     public void insert(TranCatBalance b) {
-        jdbc.update("insert into tran_cat_balance values (?,?,?,?)", b.acctId(), b.typeCd(), b.catCd(),
-                b.balance());
+        jdbc.update("insert into tran_cat_balance values (?,?,?,?,?)", b.acctId(), b.typeCd(), b.catCd(),
+                b.balance(), b.filler());
     }
 
     public void insert(TranType t) {

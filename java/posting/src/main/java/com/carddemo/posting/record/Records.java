@@ -49,7 +49,8 @@ public final class Records {
     /** CVACT01Y (ACCTDATA, 300). */
     public record Account(long acctId, String activeStatus, BigDecimal currBal, BigDecimal creditLimit,
                           BigDecimal cashCreditLimit, String openDate, String expirationDate, String reissueDate,
-                          BigDecimal currCycCredit, BigDecimal currCycDebit, String addrZip, String groupId) {
+                          BigDecimal currCycCredit, BigDecimal currCycDebit, String addrZip, String groupId,
+                          String filler) {
 
         public static final int LRECL = 300;
 
@@ -58,7 +59,7 @@ public final class Records {
                     Zoned.decode(slice(record, 24, 12), 2), Zoned.decode(slice(record, 36, 12), 2),
                     field(record, 48, 10), field(record, 58, 10), field(record, 68, 10),
                     Zoned.decode(slice(record, 78, 12), 2), Zoned.decode(slice(record, 90, 12), 2),
-                    field(record, 102, 10), field(record, 112, 10));
+                    field(record, 102, 10), field(record, 112, 10), slice(record, 122, 178));
         }
 
         public String format() {
@@ -66,7 +67,7 @@ public final class Records {
                     + Zoned.encode(creditLimit, 10, 2, true) + Zoned.encode(cashCreditLimit, 10, 2, true)
                     + pad(openDate, 10) + pad(expirationDate, 10) + pad(reissueDate, 10)
                     + Zoned.encode(currCycCredit, 10, 2, true) + Zoned.encode(currCycDebit, 10, 2, true)
-                    + pad(addrZip, 10) + pad(groupId, 10) + pad("", 178);
+                    + pad(addrZip, 10) + pad(groupId, 10) + pad(filler, 178);
         }
     }
 
@@ -79,13 +80,13 @@ public final class Records {
     }
 
     /** CVTRA01Y (TCATBALF, 50). */
-    public record TranCatBalance(long acctId, String typeCd, int catCd, BigDecimal balance) {
+    public record TranCatBalance(long acctId, String typeCd, int catCd, BigDecimal balance, String filler) {
 
         public static final int LRECL = 50;
 
         public static TranCatBalance parse(String record) {
             return new TranCatBalance(unsigned(record, 0, 11), field(record, 11, 2), (int) unsigned(record, 13, 4),
-                    Zoned.decode(slice(record, 17, 11), 2));
+                    Zoned.decode(slice(record, 17, 11), 2), slice(record, 28, 22));
         }
 
         /** TRAN-CAT-KEY as DISPLAYed by CBTRN02C. */
@@ -94,7 +95,7 @@ public final class Records {
         }
 
         public String format() {
-            return key(acctId, typeCd, catCd) + Zoned.encode(balance, 9, 2, true) + pad("", 22);
+            return key(acctId, typeCd, catCd) + Zoned.encode(balance, 9, 2, true) + pad(filler, 22);
         }
     }
 

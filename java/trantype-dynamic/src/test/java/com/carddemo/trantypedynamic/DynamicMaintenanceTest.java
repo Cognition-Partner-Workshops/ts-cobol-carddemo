@@ -51,7 +51,7 @@ class DynamicMaintenanceTest {
     @Test
     void dynamicSqlAndCalledUpdatesShareConnectionWithPaddedDescription() throws Exception {
         Connection connection = mock(Connection.class);
-        Statement dynamic = mock(Statement.class);
+        Statement dynamic = statement();
         PreparedStatement update = mock(PreparedStatement.class);
         when(connection.createStatement()).thenReturn(dynamic);
         when(connection.prepareStatement(anyString())).thenReturn(update);
@@ -70,7 +70,7 @@ class DynamicMaintenanceTest {
     @Test
     void failedDynamicSqlStillCallsWithoutRollbackAndCalledReturnCodeWins() throws Exception {
         Connection connection = mock(Connection.class);
-        Statement dynamic = mock(Statement.class);
+        Statement dynamic = statement();
         PreparedStatement update = mock(PreparedStatement.class);
         when(connection.createStatement()).thenReturn(dynamic);
         when(dynamic.execute(anyString())).thenThrow(new SQLException("bad column", "42703"));
@@ -87,7 +87,7 @@ class DynamicMaintenanceTest {
     @Test
     void emptyCalledInputClearsDynamicFailureReturnCode() throws Exception {
         Connection connection = mock(Connection.class);
-        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        doReturn(statement()).when(connection).createStatement();
         assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("", 0), "COBTUPDT", List.of())).isZero();
         assertThat(bytes.toString()).contains("EXECUTE SQLCODE -0000000212", "OPEN FILE OK");
     }
@@ -104,7 +104,7 @@ class DynamicMaintenanceTest {
     @ValueSource(strings = {"", "   ", "; ;", "--comment", "/* comment */", "/* outer /* nested */ */ ;"})
     void emptyQueryReportsMinus212AndNoParmReturnsEight(String sql) throws Exception {
         Connection connection = mock(Connection.class);
-        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        doReturn(statement()).when(connection).createStatement();
         assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput(sql, 0), "", List.of())).isEqualTo(8);
         assertThat(bytes.toString()).contains("EXECUTE SQLCODE -0000000212", "CBTRNDYN: END");
         verify(connection).commit();
@@ -121,7 +121,7 @@ class DynamicMaintenanceTest {
     @CsvSource({"true,+0000000000", "false,+0000000100"})
     void selectResultEmptinessSetsSqlcodeButNotErrorReturnCode(boolean hasRow, String code) throws Exception {
         Connection connection = mock(Connection.class);
-        Statement statement = mock(Statement.class);
+        Statement statement = statement();
         ResultSet result = mock(ResultSet.class);
         when(connection.createStatement()).thenReturn(statement);
         when(statement.execute(anyString())).thenReturn(true);
@@ -138,7 +138,7 @@ class DynamicMaintenanceTest {
             "55P03,-400", "25P02,-400", "42601,-400", "42703,-400"})
     void serverSqlstatesMatchOcesqlMapping(String state, int code) throws Exception {
         Connection connection = mock(Connection.class);
-        Statement statement = mock(Statement.class);
+        Statement statement = statement();
         when(connection.createStatement()).thenReturn(statement);
         when(statement.execute(anyString())).thenThrow(new SQLException("failure", state));
         assertThat(DynamicMaintenance.sqlcode(new SQLException("failure", state))).isEqualTo(code);
@@ -154,7 +154,7 @@ class DynamicMaintenanceTest {
     @Test
     void invalidOperationAndDuplicateAreReportedAndProcessingContinues() throws Exception {
         Connection connection = mock(Connection.class);
-        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        doReturn(statement()).when(connection).createStatement();
         PreparedStatement update = mock(PreparedStatement.class);
         when(connection.prepareStatement(anyString())).thenReturn(update);
         when(update.executeUpdate()).thenThrow(new SQLException("duplicate", "23505"));
@@ -166,7 +166,7 @@ class DynamicMaintenanceTest {
     @Test
     void unsupportedCallFailsExplicitly() throws Exception {
         Connection connection = mock(Connection.class);
-        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        doReturn(statement()).when(connection).createStatement();
         assertThatThrownBy(() -> maintenance.run(connection, new DynamicMaintenance.SqlInput("sql", 1),
                 "UNKNOWN", List.of())).isInstanceOf(IllegalArgumentException.class);
         verify(connection, never()).commit();
@@ -176,7 +176,7 @@ class DynamicMaintenanceTest {
     @CsvSource({"23505,-403", "25P02,-400"})
     void invalidOperationRetainsSqlErrorTailAcrossComments(String state, int code) throws Exception {
         Connection connection = mock(Connection.class);
-        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        doReturn(statement()).when(connection).createStatement();
         PreparedStatement update = mock(PreparedStatement.class);
         when(connection.prepareStatement(anyString())).thenReturn(update);
         when(update.executeUpdate()).thenThrow(new SQLException("failure", state));
@@ -191,7 +191,7 @@ class DynamicMaintenanceTest {
     @Test
     void invalidOperationStartsWithBlankBufferOnEachInvocation() throws Exception {
         Connection connection = mock(Connection.class);
-        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        doReturn(statement()).when(connection).createStatement();
         PreparedStatement update = mock(PreparedStatement.class);
         when(connection.prepareStatement(anyString())).thenReturn(update);
         when(update.executeUpdate()).thenThrow(new SQLException("duplicate", "23505"));
@@ -201,5 +201,78 @@ class DynamicMaintenanceTest {
                 "COBTUPDT", List.of("?01"))).isEqualTo(4);
         assertThat(bytes.toString().lines().filter(line -> line.startsWith("ERROR: TYPE")))
                 .containsExactly(DynamicMaintenance.fixed("ERROR: TYPE NOT VALID", 80));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false,true,+0000000000", "true,false,+0000000100"})
+    void multiSelectUsesLastResult(boolean firstHasRow, boolean lastHasRow, String code) throws Exception {
+        Connection connection = mock(Connection.class);
+        Statement statement = statement();
+        ResultSet first = mock(ResultSet.class);
+        ResultSet last = mock(ResultSet.class);
+        when(connection.createStatement()).thenReturn(statement);
+        when(statement.execute(anyString())).thenReturn(true);
+        when(statement.getResultSet()).thenReturn(first, last);
+        when(statement.getMoreResults()).thenReturn(true, false);
+        when(first.next()).thenReturn(firstHasRow);
+        when(last.next()).thenReturn(lastHasRow);
+        assertThat(maintenance.run(connection,
+                new DynamicMaintenance.SqlInput("SELECT 1 WHERE FALSE; SELECT 1", 1), "", List.of())).isZero();
+        assertThat(bytes.toString()).contains("EXECUTE SQLCODE " + code);
+        verify(first).close();
+        verify(last).close();
+    }
+
+    @Test
+    void updateThenEmptySelectUsesSelectStatus() throws Exception {
+        Connection connection = mock(Connection.class);
+        Statement statement = statement();
+        ResultSet result = mock(ResultSet.class);
+        when(connection.createStatement()).thenReturn(statement);
+        when(statement.getUpdateCount()).thenReturn(1, -1);
+        when(statement.getMoreResults()).thenReturn(true, false);
+        when(statement.getResultSet()).thenReturn(result);
+        assertThat(maintenance.run(connection,
+                new DynamicMaintenance.SqlInput("UPDATE t SET x=1; SELECT 1 WHERE FALSE", 1), "", List.of())).isZero();
+        assertThat(bytes.toString()).contains("EXECUTE SQLCODE +0000000100");
+        verify(result).close();
+    }
+
+    @Test
+    void emptySelectThenZeroRowUpdateUsesCommandStatus() throws Exception {
+        Connection connection = mock(Connection.class);
+        Statement statement = statement();
+        ResultSet result = mock(ResultSet.class);
+        when(connection.createStatement()).thenReturn(statement);
+        when(statement.execute(anyString())).thenReturn(true);
+        when(statement.getUpdateCount()).thenReturn(0, -1);
+        when(statement.getResultSet()).thenReturn(result);
+        assertThat(maintenance.run(connection,
+                new DynamicMaintenance.SqlInput("SELECT 1 WHERE FALSE; UPDATE t SET x=1 WHERE FALSE", 1),
+                "", List.of())).isZero();
+        assertThat(bytes.toString()).contains("EXECUTE SQLCODE +0000000000");
+        verify(result).close();
+    }
+
+    @Test
+    void laterResultFailureUsesOcesqlErrorMapping() throws Exception {
+        Connection connection = mock(Connection.class);
+        Statement statement = statement();
+        ResultSet result = mock(ResultSet.class);
+        when(connection.createStatement()).thenReturn(statement);
+        when(statement.execute(anyString())).thenReturn(true);
+        when(statement.getResultSet()).thenReturn(result);
+        when(result.next()).thenReturn(true);
+        when(statement.getMoreResults()).thenThrow(new SQLException("bad column", "42703"));
+        assertThat(maintenance.run(connection,
+                new DynamicMaintenance.SqlInput("SELECT 1; SELECT missing_column", 1), "", List.of())).isEqualTo(8);
+        assertThat(bytes.toString()).contains("EXECUTE SQLCODE -0000000400");
+        verify(result).close();
+    }
+
+    private static Statement statement() throws SQLException {
+        Statement statement = mock(Statement.class);
+        when(statement.getUpdateCount()).thenReturn(-1);
+        return statement;
     }
 }

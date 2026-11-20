@@ -74,6 +74,10 @@ is no durable Batch metadata or restart-in-place.
   Calling COBTUPDT replaces that RC, including RC 0 for empty maintenance
   input. These paths were compared against DSNRUN/CBTRNDYN in the estate
   using scratch DD images, not fixture or golden changes.
+* Multi-command DYNSQL reports the last result's SQLCODE, matching ocesql's
+  PQexec: empty SELECT then nonempty SELECT reports 0; the reverse reports
+  +100. JDBC results are consumed through the final result, including update
+  counts (0 SQLCODE even for zero affected rows) and later statement errors.
 * A missing update/delete is reported
   successful, matching the off-host affected-row handling.
 

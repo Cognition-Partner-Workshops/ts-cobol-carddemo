@@ -37,10 +37,17 @@ final class DynamicMaintenance {
         try (var statement = connection.createStatement()) {
             boolean rows = statement.execute(input.statement());
             code = hasSqlToken(input.statement()) ? 0 : -212;
-            if (rows) {
-                try (var result = statement.getResultSet()) {
-                    code = result.next() ? 0 : 100;
+            while (true) {
+                if (rows) {
+                    try (var result = statement.getResultSet()) {
+                        code = result.next() ? 0 : 100;
+                    }
+                } else if (statement.getUpdateCount() == -1) {
+                    break;
+                } else {
+                    code = hasSqlToken(input.statement()) ? 0 : -212;
                 }
+                rows = statement.getMoreResults();
             }
         } catch (SQLException failure) {
             code = sqlcode(failure);

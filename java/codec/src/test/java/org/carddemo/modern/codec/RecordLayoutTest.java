@@ -50,6 +50,13 @@ class RecordLayoutTest {
     }
 
     @Test
+    void rejectLineEncodesAndDecodesTheReasonCode() {
+        String line = new RejectRecord(DALYTRAN_LINE, 102, "SYNTHETIC REJECTION").toLine();
+        assertEquals("0102", line.substring(350, 354));
+        assertEquals(new BigDecimal("102"), Layouts.REJTRAN.decode(line).get("REJ-FAIL-REASON"));
+    }
+
+    @Test
     void rejectLineCopiesTheTransactionBytesUnchanged() {
         String blankAmount = DALYTRAN_LINE.substring(0, 132) + " ".repeat(11) + DALYTRAN_LINE.substring(143);
         String line = new RejectRecord(blankAmount, 101, "ACCOUNT RECORD NOT FOUND").toLine();

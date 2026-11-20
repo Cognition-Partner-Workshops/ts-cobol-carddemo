@@ -147,7 +147,9 @@ follow the COBOL as written (legacy quirks are features).
    2700/2800 run before the 2900 WRITE. RC stays 12, `END OF EXECUTION` and the counts are not
    displayed, and nothing after the failing record is processed. In Java the abend does not
    throw: the chunk commits, the reader stops and the unload step still writes the clusters
-   back (`PostTransactionsStep`, `StepFiles.abend`).
+   back (`PostTransactionsStep`, `StepFiles.abend`). Rejects are written in record order too, so a
+   failed DALYREJS WRITE (`ERROR WRITING TO REJECTS FILE`) abends the same way and keeps the
+   postings before it.
    *Proof:* a throwaway case, not added to `fixtures/`, with a duplicate TRAN-ID after one
    posted and one rejected transaction, and one more record after the duplicate. It ran on
    legacy and on Java in a scratch copy of the estate and was compared with
@@ -179,6 +181,9 @@ follow the COBOL as written (legacy quirks are features).
 
 * **Other abends** (quirk 19, I/O errors): they follow the same contract as decision 1, but only
   the duplicate-TRAN-ID path was compared against legacy.
+* **A failed DALYREJS WRITE** reports `FILE STATUS IS: NNNN0030`. 30 (permanent I/O error) is
+  assumed, since a Java I/O exception carries no COBOL file status. This path was not compared
+  against legacy.
 * **A record outside the DATEPARM range** (quirk 12) only appears on an empty day in the
   fixtures. The SORT window and DATEPARM agree in every case.
 

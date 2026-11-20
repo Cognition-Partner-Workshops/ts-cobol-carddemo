@@ -55,7 +55,11 @@ run:
 record:
 	$(call for_each_case,$(EXEC) $(PY) tools/parity/record.py $$chain $$case --out fixtures/$$chain/$$case/expected)
 
-parity:
+.PHONY: test-runjcl
+test-runjcl:
+	PYTHONDONTWRITEBYTECODE=1 $(PY) -m unittest discover -s tools/runjcl/tests -v
+
+parity: test-runjcl
 	@rm -f work/parity/report.md; mkdir -p work/parity; fail=0; \
 	chains="$(if $(CHAIN),$(CHAIN),$(CHAINS))"; \
 	for chain in $$chains; do \

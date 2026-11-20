@@ -11,6 +11,18 @@ and legacy stays the default.
 holds the chain's default (`"default": "legacy"`). `tools/runjcl/candidate.py` reads every
 `impl/<chain>.json`, so each chain is switched on its own:
 
+Selection is scoped to the running chain, including when chains share a program. The
+parity/run harness passes that chain to the runner; direct `runjcl.py` invocations must
+pass `--chain <name>` to enable candidates (without it they stay legacy). Unrelated
+chains' defaults and build requirements do not affect the run.
+
+The `programs` mapping accepts plain program names (the existing interest format),
+step names such as `STEP15`, or step/program names such as `STEP15.CBACT04C`.
+Resolution prefers `STEP.PROGRAM`, then `STEP`, then `PROGRAM` (case-insensitive).
+For `IKJEFT01`, resolution uses the inner `DSN RUN PROGRAM(x)` program and its PARM,
+with the enclosing step name; an unmatched program still runs through legacy `DSNRUN`.
+`make test-runjcl` tests these rules and also runs as part of `make parity` in CI.
+
 | What | How |
 |---|---|
 | Run one case on Java | `make run CHAIN=interest IMPL=java [CASE=i02-tie-half-cent]` |

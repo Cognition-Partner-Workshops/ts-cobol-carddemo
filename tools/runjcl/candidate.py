@@ -33,13 +33,16 @@ def selected() -> dict[str, str]:
     return choice
 
 
-def load(jcl) -> dict[str, dict]:
-    """program -> {chain, impl, command} for every chain switched off legacy."""
+def load(jcl, chain: str | None = None) -> dict[str, dict]:
+    """Entry -> {chain, impl, command} for the running chain's selected implementation."""
+    if chain is None:
+        return {}
     choice = selected()
     programs: dict[str, dict] = {}
     for path in sorted(IMPL_DIR.glob("*.json")):
         spec = json.loads(path.read_text())
-        chain = spec["chain"]
+        if spec["chain"] != chain:
+            continue
         impl = choice.get(chain, spec.get("default", "legacy"))
         if impl == "legacy":
             continue
@@ -52,6 +55,14 @@ def load(jcl) -> dict[str, dict]:
         for program, command in target["programs"].items():
             programs[program.upper()] = {"chain": chain, "impl": impl, "command": command}
     return programs
+
+
+def resolve(programs: dict[str, dict], step) -> dict | None:
+    """Prefer a step/program entry, then a step entry, then a program entry."""
+    for key in (f"{step.name}.{step.program}", step.name, step.program):
+        if key and key.upper() in programs:
+            return programs[key.upper()]
+    return None
 
 
 def _digest(path: Path) -> str:

@@ -19,7 +19,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class PostingJobConfig {
 
-    static final int CHUNK_SIZE = 100;
+    // A reject write must finish before the next transaction can change a cluster.
+    static final int CHUNK_SIZE = 1;
 
     /** POSTTRAN STEP15. */
     @Bean

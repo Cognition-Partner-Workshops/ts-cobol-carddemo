@@ -168,15 +168,25 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
 
     @Override
     public void write(Chunk<? extends Outcome> chunk) throws IOException {
+        if (run.abended()) {
+            return;
+        }
         for (Outcome outcome : chunk) {
             if (outcome.posted() == null) {
-                rejectCount++;
                 String reject = Records.reject(outcome.daily().record(), outcome.reason(),
                         outcome.reasonDescription());
-                rejectFile.write(Text.pad(reject, REJECT_LRECL));
+                try {
+                    rejectFile.write(Text.pad(reject, REJECT_LRECL));
+                    rejectFile.flush();
+                    rejectCount++;
+                } catch (IOException e) {
+                    run.abend("ERROR WRITING TO REJECTS FILE",
+                            e.getMessage() != null && e.getMessage().contains("No space left on device")
+                                    ? "34" : "30");
+                    return;
+                }
             }
         }
-        rejectFile.flush();
     }
 
     @Override
@@ -186,7 +196,9 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
                 rejectFile.close();
             }
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            if (!run.abended()) {
+                run.abend("ERROR CLOSING DAILY REJECTS FILE", "00");
+            }
         }
     }
 

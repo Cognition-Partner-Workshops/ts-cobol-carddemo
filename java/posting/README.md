@@ -148,6 +148,9 @@ follow the COBOL as written (legacy quirks are features).
    displayed, and nothing after the failing record is processed. In Java the abend does not
    throw: the chunk commits, the reader stops and the unload step still writes the clusters
    back (`PostTransactionsStep`, `StepFiles.abend`).
+   Chunks contain one transaction, and each reject is flushed before the next transaction.
+   Reject write/flush failures take the same abend path, so preceding postings are unloaded
+   and transactions after the failed reject are not applied.
    *Proof:* a throwaway case, not added to `fixtures/`, with a duplicate TRAN-ID after one
    posted and one rejected transaction, and one more record after the duplicate. It ran on
    legacy and on Java in a scratch copy of the estate and was compared with

@@ -1,0 +1,14 @@
+{
+ "chain": "trantype-dynamic",
+ "description": "MNTTRDYN STEP1: CBTRNDYN and dynamic COBTUPDT CALL on Spring Batch / PostgreSQL",
+ "default": "legacy",
+ "implementations": {
+  "java": {
+   "requires": "java/trantype-dynamic/target/trantype-dynamic.jar",
+   "build": "make java-trantype-dynamic-build",
+   "programs": {
+    "CBTRNDYN": ["java", "-jar", "java/trantype-dynamic/target/trantype-dynamic.jar"]
+   }
+  }
+ }
+}

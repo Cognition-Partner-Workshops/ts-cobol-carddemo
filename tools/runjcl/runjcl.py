@@ -29,10 +29,12 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import candidate  # noqa: E402
 JCL_DIR = ROOT / "app" / "jcl"
 PROC_DIRS = [ROOT / "app" / "proc", ROOT / "app" / "app-transaction-type-db2" / "proc"]
 CTL_DIRS = [ROOT / "app" / "ctl", ROOT / "app" / "app-transaction-type-db2" / "ctl"]
@@ -512,7 +514,8 @@ def ksds_module(entry: dict, unload: bool = False) -> str:
 # runner
 # --------------------------------------------------------------------------
 class Runner:
-    def __init__(self, clock: str | None = None, joblog: Path | None = None, verbose: bool = False) -> None:
+    def __init__(self, clock: str | None = None, joblog: Path | None = None, verbose: bool = False,
+                 chain: str | None = None) -> None:
         self.catalog = Catalog()
         self.clock = clock
         self.joblog = joblog or WORK / "joblog"
@@ -520,6 +523,7 @@ class Runner:
         self.pending_gdg: dict[str, int] = {}
         self.rcs: dict[str, int] = {}
         self.outputs: list[dict] = []      # datasets written by this run
+        self.candidates = candidate.load(sys.modules[__name__], chain)
         DATASETS.mkdir(parents=True, exist_ok=True)
         self.joblog.mkdir(parents=True, exist_ok=True)
 
@@ -707,8 +711,14 @@ class Runner:
         for m in re.finditer(r"RUN\s+PROGRAM\(([A-Z0-9#@$]+)\)(?:.*?PARMS?\('([^']*)'\))?", text, re.I | re.S):
             program, parm = m.group(1).upper(), m.group(2)
             self.log(f"    DSN RUN PROGRAM({program})")
-            argv = ["DSNRUN", program] + ([parm] if parm else [])
-            rc = max(rc, self._cobcrun(argv, env, stepdir=stepdir))
+            inner = replace(step, program=program, parm=parm)
+            target = candidate.resolve(self.candidates, inner)
+            if target:
+                cc = candidate.run_step(self, sys.modules[__name__], inner, env, infos, stepdir, target)
+            else:
+                argv = ["DSNRUN", program] + ([parm] if parm else [])
+                cc = self._cobcrun(argv, env, stepdir=stepdir)
+            rc = max(rc, cc)
         if "DD_SYSTSPRT" in env and env["DD_SYSTSPRT"] != "/dev/null":
             shutil.copyfile(stepdir / "SYSOUT.txt", env["DD_SYSTSPRT"])
         return rc
@@ -1078,6 +1088,9 @@ class Runner:
             return 0
         if program == "IKJEFT01":
             return self.ikjeft01(step, env, infos, stepdir)
+        target = candidate.resolve(self.candidates, step)
+        if target:
+            return candidate.run_step(self, sys.modules[__name__], step, env, infos, stepdir, target)
         argv = ["PARMDRV", program, step.parm.strip("'")] if step.parm else [program]
         return self._cobcrun(argv, env, stepdir=stepdir)
 
@@ -1098,11 +1111,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("jobs", nargs="+", help="JCL member names or paths")
     parser.add_argument("--clock", help="value for COB_CURRENT_DATE, e.g. '2022/07/05 10:00:00'")
+    parser.add_argument("--chain", help="chain name for implementation selection (otherwise legacy)")
     parser.add_argument("--sym", action="append", default=[], help="symbol override NAME=value")
     parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
     symbols = dict(s.split("=", 1) for s in args.sym)
-    runner = Runner(clock=args.clock, verbose=True)
+    runner = Runner(clock=args.clock, verbose=True, chain=args.chain)
     worst = 0
     for job in args.jobs:
         try:

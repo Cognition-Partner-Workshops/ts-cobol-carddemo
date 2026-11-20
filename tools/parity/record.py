@@ -118,7 +118,8 @@ def run_case(chain_name: str, case: str, out: Path, verbose: bool = False) -> in
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    runner = runjcl.Runner(clock=chain["clock"], joblog=runjcl.WORK / "joblog" / chain_name / case, verbose=verbose)
+    runner = runjcl.Runner(clock=chain["clock"], joblog=runjcl.WORK / "joblog" / chain_name / case,
+                          verbose=verbose, chain=chain_name)
     materialise_inputs(chain, case_dir, runner.catalog)
     reset_database(chain, case_dir)
     rcs: dict[str, dict] = {}

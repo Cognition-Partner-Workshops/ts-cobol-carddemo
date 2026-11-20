@@ -57,7 +57,7 @@ record:
 
 .PHONY: test-runjcl
 test-runjcl:
-	PYTHONDONTWRITEBYTECODE=1 $(PY) -m unittest discover -s tools/runjcl/tests -v
+	$(EXEC) env PYTHONDONTWRITEBYTECODE=1 $(PY) -m unittest discover -s tools/runjcl/tests -v
 
 parity: test-runjcl
 	@rm -f work/parity/report.md; mkdir -p work/parity; fail=0; \

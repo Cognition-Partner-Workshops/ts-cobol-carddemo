@@ -33,14 +33,20 @@ final class DynamicMaintenance {
     int run(Connection connection, SqlInput input, String program, List<String> updates) throws SQLException {
         out.println("DSNRUN: DSN ATTACHED, RUNNING CBTRNDYN");
         out.printf("CBTRNDYN: %02d SQL LINES READ%n", input.lines());
-        int rc = 0;
+        int code;
         try (var statement = connection.createStatement()) {
-            statement.execute(input.statement());
-            out.println("CBTRNDYN: EXECUTE SQLCODE +0000000000");
+            boolean rows = statement.execute(input.statement());
+            code = hasSqlToken(input.statement()) ? 0 : -212;
+            if (rows) {
+                try (var result = statement.getResultSet()) {
+                    code = result.next() ? 0 : 100;
+                }
+            }
         } catch (SQLException failure) {
-            out.printf("CBTRNDYN: EXECUTE SQLCODE -%010d%n", sqlcode(failure));
-            rc = 8;
+            code = sqlcode(failure);
         }
+        out.printf("CBTRNDYN: EXECUTE SQLCODE %+011d%n", code);
+        int rc = code < 0 ? 8 : 0;
         if (!program.isEmpty()) {
             program = fixed(program, 8);
             out.println("CBTRNDYN: CALLING " + program);
@@ -102,7 +108,7 @@ final class DynamicMaintenance {
                 out.println("RECORD " + success + " SUCCESSFULLY");
             } catch (SQLException failure) {
                 out.println(fixed("Error accessing: TRANSACTION_TYPE table. SQLCODE:"
-                        + String.format("%5d", -sqlcode(failure)), 80));
+                        + String.format("%5d", sqlcode(failure)), 80));
                 rc = 4;
             }
         }
@@ -110,6 +116,54 @@ final class DynamicMaintenance {
     }
 
     static int sqlcode(SQLException failure) {
-        return "23505".equals(failure.getSQLState()) ? 403 : 400;
+        if (failure.getSQLState() == null) {
+            return -9999;
+        }
+        return switch (failure.getSQLState()) {
+            case "08001" -> -402;
+            case "08003" -> -220;
+            case "08007" -> -401;
+            case "21000" -> -404;
+            case "23505" -> -403;
+            case "25001" -> -603;
+            case "25P01" -> -604;
+            case "34000" -> -602;
+            case "42804" -> -204;
+            case "42P03" -> -605;
+            default -> -400;
+        };
+    }
+
+    static boolean hasSqlToken(String sql) {
+        int position = 0;
+        while (position < sql.length()) {
+            char ch = sql.charAt(position);
+            if (Character.isWhitespace(ch) || ch == ';') {
+                position++;
+            } else if (sql.startsWith("--", position)) {
+                int newline = sql.indexOf('\n', position + 2);
+                position = newline < 0 ? sql.length() : newline + 1;
+            } else if (sql.startsWith("/*", position)) {
+                int depth = 1;
+                position += 2;
+                while (position < sql.length() && depth > 0) {
+                    if (sql.startsWith("/*", position)) {
+                        depth++;
+                        position += 2;
+                    } else if (sql.startsWith("*/", position)) {
+                        depth--;
+                        position += 2;
+                    } else {
+                        position++;
+                    }
+                }
+                if (depth != 0) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 }

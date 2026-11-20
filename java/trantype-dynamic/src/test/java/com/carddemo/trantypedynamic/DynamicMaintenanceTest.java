@@ -5,11 +5,15 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -83,17 +87,68 @@ class DynamicMaintenanceTest {
     @Test
     void emptyCalledInputClearsDynamicFailureReturnCode() throws Exception {
         Connection connection = mock(Connection.class);
-        when(connection.createStatement()).thenThrow(new SQLException("syntax", "42601"));
+        when(connection.createStatement()).thenReturn(mock(Statement.class));
         assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("", 0), "COBTUPDT", List.of())).isZero();
-        assertThat(bytes.toString()).contains("OPEN FILE OK");
+        assertThat(bytes.toString()).contains("EXECUTE SQLCODE -0000000212", "OPEN FILE OK");
     }
 
     @Test
     void noCallReturnsDynamicFailureAndPrintsEnd() throws Exception {
         Connection connection = mock(Connection.class);
         when(connection.createStatement()).thenThrow(new SQLException("syntax", "42601"));
-        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("", 0), "", List.of())).isEqualTo(8);
-        assertThat(bytes.toString()).contains("CBTRNDYN: END");
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("bad", 1), "", List.of())).isEqualTo(8);
+        assertThat(bytes.toString()).contains("EXECUTE SQLCODE -0000000400", "CBTRNDYN: END");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "   ", "; ;", "--comment", "/* comment */", "/* outer /* nested */ */ ;"})
+    void emptyQueryReportsMinus212AndNoParmReturnsEight(String sql) throws Exception {
+        Connection connection = mock(Connection.class);
+        when(connection.createStatement()).thenReturn(mock(Statement.class));
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput(sql, 0), "", List.of())).isEqualTo(8);
+        assertThat(bytes.toString()).contains("EXECUTE SQLCODE -0000000212", "CBTRNDYN: END");
+        verify(connection).commit();
+    }
+
+    @Test
+    void sqlTokenDetectionDoesNotConfuseQuotedTextOrInvalidCommentWithEmptySql() {
+        assertThat(DynamicMaintenance.hasSqlToken("SELECT '--'")).isTrue();
+        assertThat(DynamicMaintenance.hasSqlToken("--comment\nSELECT 1")).isTrue();
+        assertThat(DynamicMaintenance.hasSqlToken("/* unterminated")).isTrue();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"true,+0000000000", "false,+0000000100"})
+    void selectResultEmptinessSetsSqlcodeButNotErrorReturnCode(boolean hasRow, String code) throws Exception {
+        Connection connection = mock(Connection.class);
+        Statement statement = mock(Statement.class);
+        ResultSet result = mock(ResultSet.class);
+        when(connection.createStatement()).thenReturn(statement);
+        when(statement.execute(anyString())).thenReturn(true);
+        when(statement.getResultSet()).thenReturn(result);
+        when(result.next()).thenReturn(hasRow);
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("SELECT 1", 1), "", List.of())).isZero();
+        assertThat(bytes.toString()).contains("EXECUTE SQLCODE " + code, "CBTRNDYN: END");
+        verify(result).close();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"08001,-402", "08003,-220", "08007,-401", "21000,-404", "23505,-403",
+            "25001,-603", "25P01,-604", "34000,-602", "42804,-204", "42P03,-605",
+            "55P03,-400", "25P02,-400", "42601,-400", "42703,-400"})
+    void serverSqlstatesMatchOcesqlMapping(String state, int code) throws Exception {
+        Connection connection = mock(Connection.class);
+        Statement statement = mock(Statement.class);
+        when(connection.createStatement()).thenReturn(statement);
+        when(statement.execute(anyString())).thenThrow(new SQLException("failure", state));
+        assertThat(DynamicMaintenance.sqlcode(new SQLException("failure", state))).isEqualTo(code);
+        assertThat(maintenance.run(connection, new DynamicMaintenance.SqlInput("sql", 1), "", List.of())).isEqualTo(8);
+        assertThat(bytes.toString()).contains(String.format("EXECUTE SQLCODE %+011d", code));
+    }
+
+    @Test
+    void absentServerSqlstateMapsToUndefinedOcesqlError() {
+        assertThat(DynamicMaintenance.sqlcode(new SQLException("no SQLSTATE"))).isEqualTo(-9999);
     }
 
     @Test

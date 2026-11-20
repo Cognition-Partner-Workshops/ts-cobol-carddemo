@@ -56,8 +56,20 @@ is no durable Batch metadata or restart-in-place.
 * Maintenance descriptions are sent as all 50 space-padded bytes, matching
   ocesql's VARCHAR host-variable handling. PROCESSING and error lines retain
   their trailing spaces (53-byte records and 80-byte error buffers).
-* SQL errors do not stop the input loop. Duplicate keys map to ocesql -403;
-  other statement errors map to -400. A missing update/delete is reported
+* SQL errors do not stop the input loop. Server SQLSTATEs use the ocesql 1.4
+  mapping (`dblib/ocpgsql.c:OCDB_PGSetResultStatus`): duplicate keys -403,
+  cardinality violations -404, type mismatches -204, connection errors
+  08001/08003/08007 map to -402/-220/-401, and 25001/25P01/34000/42P03
+  map to -603/-604/-602/-605. Other server errors map to -400; an absent
+  SQLSTATE maps to -9999.
+* Empty SQL (including whitespace, comments and semicolon-only text) reports
+  EXECUTE SQLCODE -212. An empty row-producing result reports +100, not 0;
+  command results with zero affected rows still report 0. With no PARM,
+  negative SQLCODEs return RC 8 and successful/+100 results return RC 0.
+  Calling COBTUPDT replaces that RC, including RC 0 for empty maintenance
+  input. These paths were compared against DSNRUN/CBTRNDYN in the estate
+  using scratch DD images, not fixture or golden changes.
+* A missing update/delete is reported
   successful, matching the off-host affected-row handling.
 
 ## Decisions outside d01-d03 coverage

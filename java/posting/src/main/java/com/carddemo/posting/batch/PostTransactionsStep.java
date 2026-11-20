@@ -105,11 +105,11 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
         Transaction tran = daily.transaction();
         Optional<CardXref> xref = store.findXref(tran.cardNum());
         if (xref.isEmpty()) {
-            return new Outcome(daily, null, 100, "INVALID CARD NUMBER FOUND");
+            return reject(daily, 100, "INVALID CARD NUMBER FOUND");
         }
         Optional<Account> found = store.findAccount(xref.get().acctId());
         if (found.isEmpty()) {
-            return new Outcome(daily, null, 101, "ACCOUNT RECORD NOT FOUND");
+            return reject(daily, 101, "ACCOUNT RECORD NOT FOUND");
         }
         Account account = found.get();
         int reason = 0;
@@ -127,7 +127,7 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
             reasonDescription = "TRANSACTION RECEIVED AFTER ACCT EXPIRATION";
         }
         if (reason != 0) {
-            return new Outcome(daily, null, reason, reasonDescription);
+            return reject(daily, reason, reasonDescription);
         }
         Transaction posted = tran.withProcTs(run.db2Timestamp());
         updateTranCatBalance(account.acctId(), tran);
@@ -166,27 +166,24 @@ public class PostTransactionsStep implements ItemStreamReader<PostTransactionsSt
                 account.addrZip(), account.groupId(), account.filler()));
     }
 
+    /** 2500-WRITE-REJECT-REC runs before processing the next daily transaction. */
+    private Outcome reject(Daily daily, int reason, String reasonDescription) {
+        try {
+            rejectFile.write(Text.pad(Records.reject(daily.record(), reason, reasonDescription), REJECT_LRECL));
+            rejectFile.flush();
+            rejectCount++;
+        } catch (IOException e) {
+            run.abend("ERROR WRITING TO REJECTS FILE",
+                    e.getMessage() != null && e.getMessage().contains("No space left on device")
+                            ? "34" : "30");
+            return null;
+        }
+        return new Outcome(daily, null, reason, reasonDescription);
+    }
+
+    /** Every write happens in {@link #process}, in record order. */
     @Override
-    public void write(Chunk<? extends Outcome> chunk) throws IOException {
-        if (run.abended()) {
-            return;
-        }
-        for (Outcome outcome : chunk) {
-            if (outcome.posted() == null) {
-                String reject = Records.reject(outcome.daily().record(), outcome.reason(),
-                        outcome.reasonDescription());
-                try {
-                    rejectFile.write(Text.pad(reject, REJECT_LRECL));
-                    rejectFile.flush();
-                    rejectCount++;
-                } catch (IOException e) {
-                    run.abend("ERROR WRITING TO REJECTS FILE",
-                            e.getMessage() != null && e.getMessage().contains("No space left on device")
-                                    ? "34" : "30");
-                    return;
-                }
-            }
-        }
+    public void write(Chunk<? extends Outcome> chunk) {
     }
 
     @Override

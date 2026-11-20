@@ -148,7 +148,7 @@ follow the COBOL as written (legacy quirks are features).
    displayed, and nothing after the failing record is processed. In Java the abend does not
    throw: the chunk commits, the reader stops and the unload step still writes the clusters
    back (`PostTransactionsStep`, `StepFiles.abend`).
-   Chunks contain one transaction, and each reject is flushed before the next transaction.
+   Each reject is written and flushed in the processor before the next transaction.
    Reject write/flush failures take the same abend path, so preceding postings are unloaded
    and transactions after the failed reject are not applied.
    *Proof:* a throwaway case, not added to `fixtures/`, with a duplicate TRAN-ID after one
@@ -172,6 +172,15 @@ follow the COBOL as written (legacy quirks are features).
    date test and ends the report). Java matches the golden file. The fixture is not edited.
 6. **A zero amount prints blanks: kept** (quirk 18, zero-suppressed edit picture). No fixture
    prints one.
+7. **Existing FILLER bytes are preserved.** The 178-byte FILLER of CVACT01Y and the 22-byte
+   FILLER of CVTRA01Y are carried through PostgreSQL and written back unchanged, as the
+   COBOL REWRITEs do. Flyway V4 converts V3's text columns to `bytea`, since FILLER can
+   contain NUL or high bytes. A scratch p01 case with nonblank, NUL and high-byte FILLER
+   in ACCTDATA and TCATBALF is compared against legacy without changing fixtures.
+8. **Reject disk-full errors match legacy.** A scratch case with 100 accepted transactions
+   followed by rejects written to `/dev/full` keeps the 100 postings and returns RC 12,
+   with `ERROR WRITING TO REJECTS FILE` and `FILE STATUS IS: NNNN0034`. Other Java I/O
+   exceptions use status 30 (permanent I/O error). Close failures do not mask a write abend.
 
 ## Not proven by the fixtures
 

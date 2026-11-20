@@ -127,3 +127,24 @@ parity-java-interest: java-interest-build
 	  $(COMPOSE) exec -T estate $(PY) tools/parity/compare.py interest $$case --actual work/parity/interest/$$case/java --report work/parity/report-java-interest.md --label "java (java/interest)" || fail=1; \
 	done; \
 	echo "report: work/parity/report-java-interest.md"; exit $$fail
+
+# ------------------------------------------------------- java/posting (POSTTRAN + TRANREPT)
+#   make java-posting-build       package java/posting/target/posting.jar (Maven in Docker)
+#   make parity-java-posting [CASE=..]  posting chain on the Java implementation -> work/parity/report-java-posting.md
+.PHONY: java-posting-build parity-java-posting
+
+java-posting-build:
+	@mkdir -p "$(MAVEN_HOME_DIR)"
+	docker run --rm -u $(UID):$(GID) -e HOME=/var/maven -e MAVEN_CONFIG=/var/maven/.m2 \
+	  -v "$(MAVEN_HOME_DIR)":/var/maven/.m2 -v "$(CURDIR)/java/posting":/src -w /src \
+	  $(MAVEN_IMAGE) mvn -B -q -Duser.home=/var/maven package
+
+parity-java: parity-java-posting
+
+parity-java-posting: java-posting-build
+	@rm -f work/parity/report-java-posting.md; mkdir -p work/parity; fail=0; \
+	for case in $(if $(CASE),$(CASE),$$(ls fixtures/posting)); do \
+	  $(COMPOSE) exec -T -e CARDDEMO_IMPL=posting=java estate $(PY) tools/parity/record.py posting $$case --out work/parity/posting/$$case/java > /dev/null || { echo "posting/$$case: java run failed"; fail=1; continue; }; \
+	  $(COMPOSE) exec -T estate $(PY) tools/parity/compare.py posting $$case --actual work/parity/posting/$$case/java --report work/parity/report-java-posting.md --label "java (java/posting)" || fail=1; \
+	done; \
+	echo "report: work/parity/report-java-posting.md"; exit $$fail
